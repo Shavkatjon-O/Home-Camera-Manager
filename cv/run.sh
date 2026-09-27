@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")"
+
+# Run this in a terminal on the PC's own screen (not over SSH).
+xhost +local: >/dev/null 2>&1 || true
+
+# Detect the current screen resolution so tiles are sized to fill it.
+SIZE="$(DISPLAY="${DISPLAY:-:0}" xrandr 2>/dev/null | awk '/\*/{print $1; exit}')"
+SCREEN_W="${SIZE%x*}"; SCREEN_H="${SIZE#*x}"
+: "${SCREEN_W:=1920}"; : "${SCREEN_H:=1080}"
+
+docker run --rm -it \
+  --name home-cameras-cv \
+  --network host \
+  -e DISPLAY="${DISPLAY:-:0}" \
+  -e STREAM="${STREAM:-main}" \
+  -e SCREEN_W="$SCREEN_W" -e SCREEN_H="$SCREEN_H" \
+  --env-file ../.env \
+  -v /tmp/.X11-unix:/tmp/.X11-unix \
+  home-cameras-cv:latest "$@"

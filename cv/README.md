@@ -1,0 +1,45 @@
+# Home Cameras — OpenCV viewer
+
+A single window showing every camera at once, security-monitor style.
+OpenCV opens the RTSP streams and decodes H.265 directly, then draws all
+cameras side by side. No H.264 re-encode and no browser buffering, so it is
+lighter and smoother than a web player. Software decode only; no GPU.
+
+## Build (once)
+
+    cd ./cv
+    docker build -t home-cameras-cv:latest .
+
+The password comes from `../.env` (`CAMERA_PASSWORD=...`), same file the web
+stack uses.
+
+## Run the window
+
+Open a terminal **on the PC's own screen** (not over SSH) and:
+
+    ./cv/run.sh
+
+A window opens with both cameras. Keys:
+
+- `q` or `Esc` — quit
+- `f` — toggle fullscreen
+
+Lighter mode (uses the small 768x432 sub-stream instead of 5MP):
+
+    STREAM=sub ./cv/run.sh
+
+## Headless check (no window)
+
+Saves one composed grid image and exits, for verifying access without a display:
+
+    docker run --rm --network host --env-file ../.env \
+      -v "$PWD":/out home-cameras-cv:latest --snapshot /out/grid.jpg
+
+## Notes
+
+- `run.sh` runs `xhost +local:` so the container can reach your X server.
+  Undo later with `xhost -local:` if you want.
+- Each capture runs in its own thread and always shows the newest frame
+  (stale frames are dropped), which keeps the view live with low latency.
+- Add or rename cameras by editing `CAMERAS` in `cv_viewer.py`. The third
+  camera joins here once it is on the Wi-Fi.
