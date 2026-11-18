@@ -1,0 +1,265 @@
+"use client"
+
+import * as React from "react"
+import Link from "next/link"
+import { useSearchParams } from "next/navigation"
+import {
+  CircleAlertIcon,
+  CctvOffIcon,
+  MaximizeIcon,
+  MinimizeIcon,
+  PencilIcon,
+  RefreshCwIcon,
+} from "lucide-react"
+import { toast } from "sonner"
+
+import { CameraDetails } from "@/components/camera/camera-details"
+import { PtzPad } from "@/components/camera/ptz-pad"
+import { usePtz, usePtzKeyboard } from "@/components/camera/use-ptz"
+import { CameraFormDialog } from "@/components/cameras/camera-form-dialog"
+import { AppFrame } from "@/components/shell/app-frame"
+import { IconButton } from "@/components/shell/icon-button"
+import { Chip, EmptyState, LoadingState, Spinner, StatusDot } from "@/components/shell/primitives"
+import { Segmented } from "@/components/shell/segmented"
+import { useSession } from "@/components/shell/session"
+import { Button } from "@/components/ui/button"
+import { VideoPlaceholder } from "@/components/video/video-placeholder"
+import { VideoStream } from "@/components/video/video-stream"
+import { ApiError, api, errorMessage, isAbort } from "@/lib/api"
+import { toggleFullscreen, useFullscreenElement } from "@/lib/stores"
+import type { Camera } from "@/lib/types"
+
+const POLL_MS = 10000
+
+type Quality = "main" | "sub"
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="flex flex-col gap-3 border-b border-hairline px-4 py-4 last:border-b-0">
+      <h2 className="text-xs text-text-3">{title}</h2>
+      {children}
+    </section>
+  )
+}
+
+function CameraView({ id }: { id: string }) {
+  const { refresh: refreshSession } = useSession()
+  const [camera, setCamera] = React.useState<Camera | null>(null)
+  const [error, setError] = React.useState<Error | null>(null)
+  const [reload, setReload] = React.useState(0)
+  const [quality, setQuality] = React.useState<Quality>("main")
+  const [speed, setSpeed] = React.useState(0.5)
+  const [checking, setChecking] = React.useState(false)
+  const [editing, setEditing] = React.useState(false)
+  const [player, setPlayer] = React.useState<HTMLDivElement | null>(null)
+  const viewRef = React.useRef<HTMLDivElement>(null)
+  const fullscreen = useFullscreenElement()
+  const ptz = usePtz(id, speed)
+  const keyboard = usePtzKeyboard(camera?.ptz_enabled ? ptz : null)
+
+  React.useEffect(() => {
+    const controller = new AbortController()
+    let timer = 0
+    const load = async () => {
+      try {
+        const data = await api.getCamera(id, controller.signal)
+        setCamera(data)
+        setError(null)
+      } catch (err) {
+        if (isAbort(err)) return
+        setError(err instanceof Error ? err : new Error(errorMessage(err)))
+        if (err instanceof ApiError && err.status === 404) return
+      }
+      if (!controller.signal.aborted) timer = window.setTimeout(load, POLL_MS)
+    }
+    void load()
+    return () => {
+      controller.abort()
+      window.clearTimeout(timer)
+    }
+  }, [id, reload])
+
+  const name = camera?.name
+  React.useEffect(() => {
+    if (name) document.title = `${name} - Home cameras`
+  }, [name])
+
+  const ptzEnabled = camera?.ptz_enabled ?? false
+  React.useEffect(() => {
+    if (ptzEnabled) viewRef.current?.focus({ preventScroll: true })
+  }, [ptzEnabled])
+
+  const check = async () => {
+    setChecking(true)
+    try {
+      const data = await api.checkCamera(id)
+      setCamera(data)
+      toast.success(data.status.online ? `${data.name} is online` : `${data.name} is offline`)
+    } catch (err) {
+      toast.error(errorMessage(err))
+    } finally {
+      setChecking(false)
+    }
+  }
+
+  const onFullscreen = async () => {
+    const ok = await toggleFullscreen(player)
+    if (!ok) toast.error("Fullscreen is not available in this browser")
+  }
+
+  const hasSub = Boolean(camera?.streams.sub)
+  const activeQuality: Quality = quality === "sub" && hasSub ? "sub" : "main"
+  const stream = camera ? (activeQuality === "sub" ? camera.streams.sub : camera.streams.main) : null
+  const isFullscreen = player !== null && fullscreen === player
+
+  if (!camera) {
+    const notFound = error instanceof ApiError && error.status === 404
+    return (
+      <AppFrame>
+        <main className="min-w-0 flex-1">
+          {notFound ? (
+            <EmptyState icon={<CctvOffIcon />} title="Camera not found">
+              <span>It may have been deleted.</span>
+              <Button asChild variant="outline">
+                <Link href="/">Back to the wall</Link>
+              </Button>
+            </EmptyState>
+          ) : error ? (
+            <EmptyState icon={<CircleAlertIcon />} title="Cannot load the camera">
+              <span className="font-data text-xs">{error.message}</span>
+              <Button variant="outline" onClick={() => setReload((value) => value + 1)}>
+                Try again
+              </Button>
+            </EmptyState>
+          ) : (
+            <LoadingState label="Loading camera" />
+          )}
+        </main>
+      </AppFrame>
+    )
+  }
+
+  const actions = (
+    <>
+      <Segmented<Quality>
+        label="Stream quality"
+        value={activeQuality}
+        options={[
+          { value: "main", label: "Main" },
+          { value: "sub", label: "Sub", disabled: !hasSub },
+        ]}
+        onChange={setQuality}
+      />
+      <IconButton
+        label={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+        disabled={!camera.enabled}
+        onClick={onFullscreen}
+      >
+        {isFullscreen ? <MinimizeIcon /> : <MaximizeIcon />}
+      </IconButton>
+    </>
+  )
+
+  let video: React.ReactNode
+  if (!camera.enabled) {
+    video = <VideoPlaceholder title="This camera is disabled" detail="Enable it to stream and show it on the wall." />
+  } else if (camera.status.online === false) {
+    video = <VideoPlaceholder title="Camera offline" detail={camera.status.error} />
+  } else if (stream) {
+    video = <VideoStream key={stream} stream={stream} className="absolute inset-0" />
+  }
+
+  return (
+    <AppFrame
+      actions={actions}
+      status={error ? <Chip className="text-danger">Refresh failed</Chip> : null}
+    >
+      <div
+        ref={viewRef}
+        tabIndex={-1}
+        onKeyDown={keyboard.onKeyDown}
+        onKeyUp={keyboard.onKeyUp}
+        onBlur={keyboard.onBlur}
+        className="flex min-h-0 min-w-0 flex-1 flex-col outline-none focus-visible:shadow-none md:flex-row"
+      >
+        <main className="relative h-[45dvh] shrink-0 bg-black md:h-auto md:min-h-0 md:min-w-0 md:flex-1">
+          <div ref={setPlayer} className="absolute inset-0 bg-black">
+            {video}
+            <div className="pointer-events-none absolute bottom-2 left-2 flex max-w-[calc(100%-1rem)] items-center gap-2 rounded-md bg-black/60 px-2 py-1">
+              <StatusDot online={camera.status.online} />
+              <span className="truncate text-[12px] text-white">{camera.name}</span>
+              <span className="font-mono text-[11px] text-white/55">{activeQuality === "main" ? "Main" : "Sub"}</span>
+            </div>
+          </div>
+        </main>
+        <aside className="flex min-h-0 flex-1 flex-col overflow-y-auto border-t border-hairline md:w-[300px] md:flex-none md:border-t-0 md:border-l">
+          <div className="flex items-start justify-between gap-3 border-b border-hairline px-4 py-4">
+            <div className="flex min-w-0 flex-col gap-0.5">
+              <h1 className="truncate text-[15px] font-medium text-foreground">{camera.name}</h1>
+              <span className="truncate text-[12px] text-text-3">{camera.location ?? "No location"}</span>
+            </div>
+            <div className="flex shrink-0 items-center gap-0.5">
+              <IconButton label="Check now" size="icon-sm" disabled={checking} onClick={check}>
+                {checking ? <Spinner className="size-3.5" /> : <RefreshCwIcon />}
+              </IconButton>
+              <IconButton label="Edit" size="icon-sm" onClick={() => setEditing(true)}>
+                <PencilIcon />
+              </IconButton>
+            </div>
+          </div>
+          {camera.ptz_enabled ? (
+            <Section title="PTZ">
+              <PtzPad controls={ptz} speed={speed} onSpeedChange={setSpeed} />
+            </Section>
+          ) : null}
+          <Section title="Details">
+            <CameraDetails camera={camera} />
+          </Section>
+        </aside>
+      </div>
+      <CameraFormDialog
+        open={editing}
+        onOpenChange={setEditing}
+        camera={camera}
+        onSaved={(saved) => {
+          setCamera(saved)
+          void refreshSession()
+        }}
+      />
+    </AppFrame>
+  )
+}
+
+function CameraRoute() {
+  const id = useSearchParams().get("id")
+  if (!id) {
+    return (
+      <AppFrame>
+        <main className="min-w-0 flex-1">
+          <EmptyState icon={<CctvOffIcon />} title="No camera selected">
+            <Button asChild variant="outline">
+              <Link href="/">Back to the wall</Link>
+            </Button>
+          </EmptyState>
+        </main>
+      </AppFrame>
+    )
+  }
+  return <CameraView key={id} id={id} />
+}
+
+export function CameraPage() {
+  return (
+    <React.Suspense
+      fallback={
+        <AppFrame>
+          <main className="min-w-0 flex-1">
+            <LoadingState label="Loading camera" />
+          </main>
+        </AppFrame>
+      }
+    >
+      <CameraRoute />
+    </React.Suspense>
+  )
+}

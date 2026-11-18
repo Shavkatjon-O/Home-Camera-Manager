@@ -1,0 +1,166 @@
+import type {
+  Camera,
+  CameraCreate,
+  CameraOrder,
+  CameraUpdate,
+  InspectRequest,
+  InspectResult,
+  Page,
+  PtzVector,
+  ScanResult,
+  User,
+} from "@/lib/types"
+
+export class ApiError extends Error {
+  status: number
+  code: string
+
+  constructor(status: number, code: string, message: string) {
+    super(message)
+    this.name = "ApiError"
+    this.status = status
+    this.code = code
+  }
+}
+
+interface RequestOptions {
+  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE"
+  body?: unknown
+  signal?: AbortSignal
+  redirectOn401?: boolean
+}
+
+export const LOGIN_PATH = "/login/"
+
+export function redirectToLogin() {
+  if (typeof window === "undefined") return
+  const { pathname, search } = window.location
+  if (pathname.startsWith(LOGIN_PATH)) return
+  const next = encodeURIComponent(pathname + search)
+  window.location.replace(`${LOGIN_PATH}?next=${next}`)
+}
+
+function messageFromDetail(detail: unknown): { code?: string; message?: string } {
+  if (typeof detail === "string") return { message: detail }
+  if (Array.isArray(detail)) {
+    const first = detail[0] as { loc?: unknown[]; msg?: string } | undefined
+    if (!first?.msg) return {}
+    const field = Array.isArray(first.loc) ? first.loc.filter((p) => p !== "body").join(".") : ""
+    return { code: "validation_error", message: field ? `${field}: ${first.msg}` : first.msg }
+  }
+  if (detail && typeof detail === "object") {
+    const d = detail as { code?: unknown; message?: unknown }
+    return {
+      code: typeof d.code === "string" ? d.code : undefined,
+      message: typeof d.message === "string" ? d.message : undefined,
+    }
+  }
+  return {}
+}
+
+async function parseError(res: Response): Promise<ApiError> {
+  let code = `http_${res.status}`
+  let message = `Request failed with status ${res.status}`
+  try {
+    const data = (await res.json()) as { detail?: unknown }
+    const parsed = messageFromDetail(data?.detail)
+    if (parsed.code) code = parsed.code
+    if (parsed.message) message = parsed.message
+  } catch {
+    if (res.status === 502 || res.status === 503 || res.status === 504) {
+      message = "The server is not responding"
+    }
+  }
+  return new ApiError(res.status, code, message)
+}
+
+export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  const { method = "GET", body, signal, redirectOn401 = true } = options
+  const headers: Record<string, string> = { Accept: "application/json" }
+  if (body !== undefined) headers["Content-Type"] = "application/json"
+  let res: Response
+  try {
+    res = await fetch(`/api/v1${path}`, {
+      method,
+      headers,
+      body: body === undefined ? undefined : JSON.stringify(body),
+      credentials: "same-origin",
+      cache: "no-store",
+      signal,
+    })
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") throw error
+    throw new ApiError(0, "network_error", "Cannot reach the server")
+  }
+  if (res.status === 401 && redirectOn401) {
+    redirectToLogin()
+    throw await parseError(res)
+  }
+  if (!res.ok) throw await parseError(res)
+  if (res.status === 204) return undefined as T
+  const text = await res.text()
+  return (text ? JSON.parse(text) : undefined) as T
+}
+
+export function errorMessage(error: unknown): string {
+  if (error instanceof ApiError) return error.message
+  if (error instanceof Error) return error.message
+  return "Something went wrong"
+}
+
+export function isAbort(error: unknown): boolean {
+  return error instanceof DOMException && error.name === "AbortError"
+}
+
+function query(params: Record<string, string | number | undefined>): string {
+  const search = new URLSearchParams()
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined) search.set(key, String(value))
+  }
+  const text = search.toString()
+  return text ? `?${text}` : ""
+}
+
+export const api = {
+  login: (username: string, password: string) =>
+    request<User>("/auth/login", {
+      method: "POST",
+      body: { username, password },
+      redirectOn401: false,
+    }),
+  logout: () => request<void>("/auth/logout", { method: "POST", redirectOn401: false }),
+  me: (redirectOn401 = true, signal?: AbortSignal) =>
+    request<User>("/auth/me", { redirectOn401, signal }),
+
+  listCameras: (
+    params: { page?: number; page_size?: number; order?: CameraOrder } = {},
+    signal?: AbortSignal,
+  ) => request<Page<Camera>>(`/cameras${query(params)}`, { signal }),
+  getCamera: (uuid: string, signal?: AbortSignal) =>
+    request<Camera>(`/cameras/${encodeURIComponent(uuid)}`, { signal }),
+  createCamera: (data: CameraCreate) =>
+    request<Camera>("/cameras", { method: "POST", body: data }),
+  updateCamera: (uuid: string, data: CameraUpdate) =>
+    request<Camera>(`/cameras/${encodeURIComponent(uuid)}`, { method: "PATCH", body: data }),
+  deleteCamera: (uuid: string) =>
+    request<void>(`/cameras/${encodeURIComponent(uuid)}`, { method: "DELETE" }),
+  reorderCameras: (uuids: string[]) =>
+    request<void>("/cameras/order", { method: "PUT", body: { uuids } }),
+  checkCamera: (uuid: string) =>
+    request<Camera>(`/cameras/${encodeURIComponent(uuid)}/check`, { method: "POST" }),
+  ptzMove: (uuid: string, vector: PtzVector) =>
+    request<void>(`/cameras/${encodeURIComponent(uuid)}/ptz/move`, {
+      method: "POST",
+      body: vector,
+    }),
+  ptzStop: (uuid: string) =>
+    request<void>(`/cameras/${encodeURIComponent(uuid)}/ptz/stop`, { method: "POST" }),
+
+  scan: (subnet?: string) =>
+    request<ScanResult>("/discovery/scan", {
+      method: "POST",
+      body: subnet ? { subnet } : {},
+    }),
+  inspect: (data: InspectRequest) =>
+    request<InspectResult>("/discovery/inspect", { method: "POST", body: data }),
+}

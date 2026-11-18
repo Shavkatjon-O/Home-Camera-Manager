@@ -1,0 +1,197 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+:root {
+  color-scheme: dark;
+
+  --bg: #000000;
+  --surface: #0a0a0a;
+  --surface-2: #161616;
+  --surface-3: #262626;
+  --border: #1f1f1f;
+  --border-input: #2e2e2e;
+  --border-strong: #4a4a4a;
+  --text: #ededed;
+  --text-2: #a1a1a1;
+  --text-3: #7c7c7c;
+  --focus: #0090ff;
+  --sel-bg: #ffffff24;
+  --chip-bg: #ffffff12;
+
+  --status-ok: #45c25f;
+  --status-err: #f2555a;
+  --status-off: #5c5c5c;
+  --danger: #e5484d;
+  --danger-text: #ff8589;
+
+  --background: var(--bg);
+  --foreground: var(--text);
+  --card: var(--surface);
+  --card-foreground: var(--text);
+  --popover: var(--surface);
+  --popover-foreground: var(--text);
+  --primary: #ededed;
+  --primary-foreground: #0a0a0a;
+  --secondary: var(--surface-2);
+  --secondary-foreground: var(--text);
+  --muted: var(--surface-2);
+  --muted-foreground: var(--text-2);
+  --accent: var(--surface-2);
+  --accent-foreground: var(--text);
+  --destructive: var(--danger);
+  --destructive-foreground: #ffffff;
+  --input: var(--border-input);
+  --ring: var(--focus);
+
+  --radius: 0.5rem;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+
+    --bg: #ffffff;
+    --surface: #fafafa;
+    --surface-2: #f2f2f2;
+    --surface-3: #e8e8e8;
+    --border: #ebebeb;
+    --border-input: #dcdcdc;
+    --border-strong: #b5b5b5;
+    --text: #171717;
+    --text-2: #4d4d4d;
+    --text-3: #6b6b6b;
+    --focus: #0072f5;
+    --sel-bg: #0000001a;
+    --chip-bg: #0000000d;
+
+    --status-ok: #1f9a3b;
+    --status-err: #d93036;
+    --status-off: #b0b0b0;
+    --danger: #d93036;
+    --danger-text: #c4262c;
+
+    --primary: #171717;
+    --primary-foreground: #ffffff;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-hairline: var(--border);
+  --color-hairline-strong: var(--border-strong);
+  --color-text-2: var(--text-2);
+  --color-text-3: var(--text-3);
+  --color-chip: var(--chip-bg);
+  --color-status-ok: var(--status-ok);
+  --color-status-err: var(--status-err);
+  --color-status-off: var(--status-off);
+  --color-danger: var(--danger-text);
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html,
+  body {
+    height: 100%;
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+    font-size: 14px;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  ::selection {
+    background: var(--sel-bg);
+    color: var(--text);
+  }
+
+  *:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--focus);
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--surface-3);
+    border-radius: 4px;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--surface-3) transparent;
+  }
+
+  video-stream {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  video-stream video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  :fullscreen {
+    background: #000000;
+  }
+}
+
+@layer utilities {
+  .font-data {
+    font-family: var(--font-geist-mono), ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+}
