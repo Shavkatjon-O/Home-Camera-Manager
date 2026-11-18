@@ -3,6 +3,10 @@ import type {
   CameraCreate,
   CameraOrder,
   CameraUpdate,
+  FloorPlan,
+  FloorPlanCreate,
+  FloorPlanSummary,
+  FloorPlanUpdate,
   InspectRequest,
   InspectResult,
   Page,
@@ -28,6 +32,7 @@ interface RequestOptions {
   body?: unknown
   signal?: AbortSignal
   redirectOn401?: boolean
+  keepalive?: boolean
 }
 
 export const LOGIN_PATH = "/login/"
@@ -75,7 +80,7 @@ async function parseError(res: Response): Promise<ApiError> {
 }
 
 export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const { method = "GET", body, signal, redirectOn401 = true } = options
+  const { method = "GET", body, signal, redirectOn401 = true, keepalive } = options
   const headers: Record<string, string> = { Accept: "application/json" }
   if (body !== undefined) headers["Content-Type"] = "application/json"
   let res: Response
@@ -87,6 +92,7 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
       credentials: "same-origin",
       cache: "no-store",
       signal,
+      keepalive,
     })
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") throw error
@@ -163,4 +169,15 @@ export const api = {
     }),
   inspect: (data: InspectRequest) =>
     request<InspectResult>("/discovery/inspect", { method: "POST", body: data }),
+
+  listFloorPlans: (params: { page?: number; page_size?: number } = {}, signal?: AbortSignal) =>
+    request<Page<FloorPlanSummary>>(`/floorplans${query(params)}`, { signal }),
+  getFloorPlan: (uuid: string, signal?: AbortSignal) =>
+    request<FloorPlan>(`/floorplans/${encodeURIComponent(uuid)}`, { signal }),
+  createFloorPlan: (data: FloorPlanCreate) =>
+    request<FloorPlan>("/floorplans", { method: "POST", body: data }),
+  updateFloorPlan: (uuid: string, data: FloorPlanUpdate, keepalive = false) =>
+    request<FloorPlan>(`/floorplans/${encodeURIComponent(uuid)}`, { method: "PATCH", body: data, keepalive }),
+  deleteFloorPlan: (uuid: string) =>
+    request<void>(`/floorplans/${encodeURIComponent(uuid)}`, { method: "DELETE" }),
 }

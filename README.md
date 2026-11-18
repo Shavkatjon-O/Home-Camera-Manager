@@ -6,9 +6,9 @@ A web app for the home IP cameras: register cameras, watch one camera large, wat
 
 | Service | Image | Role |
 |---|---|---|
-| postgres | postgres:17.6-alpine | Users and the camera registry |
+| postgres | postgres:17.6-alpine | Users, the camera registry and the floor plans |
 | go2rtc | alexxit/go2rtc:1.9.14-hardware | Pulls each camera's RTSP stream and serves it to the browser, encoding H.264 on the NVIDIA GPU when needed |
-| backend | home-cameras-backend:local | FastAPI: sign in, cameras, discovery, ONVIF PTZ, go2rtc stream registration and status probes |
+| backend | home-cameras-backend:local | FastAPI: sign in, cameras, discovery, ONVIF PTZ, floor plans, go2rtc stream registration and status probes |
 | v380-ptz-1, v380-ptz-2 | home-cameras-v380-bridge:local | One bridge per V380 camera: logs in over the V380 protocol on port 8800, decrypts the stream and serves it as RTSP on 8554 and ONVIF with PTZ on 8080 |
 | web | home-cameras-web:local | nginx serving the Next.js static export and proxying the API and the video websocket |
 
@@ -29,6 +29,7 @@ Set HC_SECRET_KEY to a long random value and HC_LAN_BIND to this machine's home 
 - **Camera** - one camera on its main or sub stream, its details and status, and a PTZ pad with speed for PTZ cameras; arrow keys and plus or minus drive it while the view has focus. A camera with several lenses shows them side by side or one at a time.
 - **Cameras** - the registry: add, edit, delete and the wall order. Detect reads stream paths and PTZ support from the camera over ONVIF.
 - **Discover** - scans the home subnet for cameras and opens the add form prefilled for any it finds.
+- **Coverage** - plans Wi-Fi coverage on a floor plan: routers, optional walls by material, devices and an optional background image whose shape sets the plan height. A heatmap shows the predicted signal per band with distance and wall loss, the side panel gives the covered share and what each router serves, and Suggest placement moves unlocked routers to the spots that cover the most area. Where no walls are drawn the model assumes open space.
 
 ## Cameras
 

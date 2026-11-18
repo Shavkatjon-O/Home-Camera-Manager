@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { CctvIcon, LayoutGridIcon, ListIcon, LogOutIcon, RadarIcon } from "lucide-react"
+import { CctvIcon, LayoutGridIcon, ListIcon, LogOutIcon, RadarIcon, WifiIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { IconButton } from "@/components/shell/icon-button"
@@ -18,6 +18,7 @@ const TABS = [
   { href: "/", label: "Wall", icon: LayoutGridIcon, match: (path: string) => path === "/" || path.startsWith("/camera/") },
   { href: "/cameras/", label: "Cameras", icon: ListIcon, match: (path: string) => path.startsWith("/cameras/") },
   { href: "/discover/", label: "Discover", icon: RadarIcon, match: (path: string) => path.startsWith("/discover/") },
+  { href: "/coverage/", label: "Coverage", icon: WifiIcon, match: (path: string) => path.startsWith("/coverage/") },
 ]
 
 function normalize(path: string | null): string {

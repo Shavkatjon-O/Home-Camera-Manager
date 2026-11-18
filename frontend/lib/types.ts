@@ -111,3 +111,96 @@ export interface InspectResult {
   profiles: InspectProfile[]
   ptz: boolean
 }
+
+export type WallMaterial =
+  | "drywall"
+  | "wood"
+  | "glass"
+  | "brick"
+  | "thick_brick"
+  | "concrete"
+  | "reinforced_concrete"
+  | "metal"
+
+export type AccessPointPreset = "archer_c64" | "archer_c54" | "reyee_ew300n" | "generic"
+
+export type Band = "2.4" | "5"
+
+export interface Wall {
+  id: string
+  x1: number
+  y1: number
+  x2: number
+  y2: number
+  material: WallMaterial
+}
+
+export interface AccessPoint {
+  id: string
+  name: string
+  x: number
+  y: number
+  preset: AccessPointPreset
+  band_24: boolean
+  band_5: boolean
+  power_24_dbm: number
+  power_5_dbm: number
+  locked: boolean
+}
+
+export interface Device {
+  id: string
+  name: string
+  x: number
+  y: number
+  band: Band
+}
+
+export interface PlanSettings {
+  path_loss_exponent: number
+  target_dbm: number
+  snap_m: number
+}
+
+export interface FloorPlanSummary {
+  uuid: string
+  name: string
+  width_m: number
+  height_m: number
+  walls: Wall[]
+  access_points: AccessPoint[]
+  devices: Device[]
+  settings: PlanSettings
+  has_background: boolean
+  background_opacity: number
+  created_at: string
+  updated_at: string
+}
+
+export interface FloorPlan extends FloorPlanSummary {
+  background_image: string | null
+}
+
+export interface FloorPlanCreate {
+  name: string
+  width_m: number
+  height_m: number
+  walls?: Wall[]
+  access_points?: AccessPoint[]
+  devices?: Device[]
+  settings?: PlanSettings
+  background_image?: string | null
+  background_opacity?: number
+}
+
+export interface FloorPlanUpdate {
+  name?: string
+  width_m?: number
+  height_m?: number
+  walls?: Wall[]
+  access_points?: AccessPoint[]
+  devices?: Device[]
+  settings?: PlanSettings
+  background_image?: string
+  background_opacity?: number
+}
