@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     session_hours: int = 168
 
     go2rtc_url: str = "http://go2rtc:1984"
+    transcode_hardware: str = ""
 
     discovery_subnet: str = "192.168.1.0/24"
 

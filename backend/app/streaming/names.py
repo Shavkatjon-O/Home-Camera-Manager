@@ -2,11 +2,13 @@ import re
 from urllib.parse import quote
 from uuid import UUID
 
+from app.core.config import settings
+
 MAIN = "main"
 SUB = "sub"
 
 NAME_PATTERN = re.compile(r"^[0-9a-f]{32}_(main|sub)$")
-TRANSCODE_OPTIONS = "#video=h264#audio=aac"
+TRANSCODE_VIDEO = "#video=h264"
 
 
 def stream_name(camera_uuid: UUID, kind: str) -> str:
@@ -33,8 +35,14 @@ def rtsp_url(host: str, port: int, path: str, username: str | None, password: st
     return f"rtsp://{credentials}{host}:{port}{path}"
 
 
+def transcode_options() -> str:
+    if settings.transcode_hardware:
+        return f"{TRANSCODE_VIDEO}#hardware={settings.transcode_hardware}"
+    return TRANSCODE_VIDEO
+
+
 def stream_sources(name: str, url: str) -> list[str]:
-    return [url, f"ffmpeg:{name}{TRANSCODE_OPTIONS}"]
+    return [url, f"ffmpeg:{name}{transcode_options()}"]
 
 
 def camera_streams(

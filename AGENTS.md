@@ -33,4 +33,8 @@ alembic revision --autogenerate -m "<message>"
 - Keep the player asking for H.264 only, because go2rtc's direct H.265 path from the V380 delivers no frames.
 - Keep rtsp.listen on loopback inside go2rtc, because every ffmpeg transcode source reads the stream back through go2rtc's RTSP server.
 - Proxy the video websocket with the browser's Host header, because go2rtc rejects websocket origins that do not match it.
+- Keep transcodes video only, because bridged V380 cameras advertise an audio track they never send and an audio transcode then waits until go2rtc kills it.
+- Keep the go2rtc h264 template on h264_nvenc with CPU decoding, because software x264 on the 5 MP streams misses go2rtc's start timeout and GPU decoding fails on the PTZ 1 bridge stream.
+- Build the V380 bridge from the pinned upstream pull request commit in v380-bridge/Dockerfile, because the released decoder stalls on short stream login replies and the camera resets the connection.
+- Never publish bridge ports, because their RTSP and ONVIF have no authentication.
 - No comments, emojis or non-ASCII characters in code, configs or docs.

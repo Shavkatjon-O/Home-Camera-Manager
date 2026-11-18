@@ -10,4 +10,7 @@ rtsp:
 webrtc:
   listen: ""
 
+ffmpeg:
+  h264: "-codec:v h264_nvenc -g:v 30 -bf:v 0 -profile:v high -preset:v p2 -tune:v ll -pix_fmt:v yuv420p"
+
 streams: {}

@@ -16,7 +16,7 @@ def test_camera_streams_add_a_transcode_after_the_camera_source():
     streams = camera_streams(CAMERA, "192.168.1.237", 554, "/live/ch00_0", "/live/ch00_1", None, None)
     main = stream_name(CAMERA, "main")
     assert main == "0f3c2b1a11114222833394445555666" + "6_main"
-    assert streams[main] == ["rtsp://192.168.1.237:554/live/ch00_0", f"ffmpeg:{main}#video=h264#audio=aac"]
+    assert streams[main] == ["rtsp://192.168.1.237:554/live/ch00_0", f"ffmpeg:{main}#video=h264"]
     assert set(streams) == {main, stream_name(CAMERA, "sub")}
 
 
@@ -30,3 +30,13 @@ def test_managed_names():
     assert not is_managed("cam_a")
     assert belongs_to(stream_name(CAMERA, "main"), CAMERA)
     assert not belongs_to(stream_name(UUID(int=1), "main"), CAMERA)
+
+
+def test_hardware_transcode_option(monkeypatch):
+    from app.core.config import settings
+    from app.streaming.names import transcode_options
+
+    monkeypatch.setattr(settings, "transcode_hardware", "cuda")
+    assert transcode_options() == "#video=h264#hardware=cuda"
+    monkeypatch.setattr(settings, "transcode_hardware", "")
+    assert transcode_options() == "#video=h264"

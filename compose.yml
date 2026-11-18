@@ -19,9 +19,16 @@ services:
     networks: [cams]
 
   go2rtc:
-    image: alexxit/go2rtc:1.9.14
+    image: alexxit/go2rtc:1.9.14-hardware
     container_name: home-cameras-go2rtc
     restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu, video]
     volumes:
       - ./go2rtc.yaml:/config/go2rtc.yaml:ro
     networks: [cams]
@@ -37,6 +44,52 @@ services:
         condition: service_healthy
       go2rtc:
         condition: service_started
+    networks: [cams]
+
+  v380-ptz-1:
+    build: ./v380-bridge
+    image: home-cameras-v380-bridge:local
+    container_name: home-cameras-v380-ptz-1
+    restart: unless-stopped
+    command:
+      - --id
+      - ${V380_PTZ_1_ID:?set V380_PTZ_1_ID}
+      - --username
+      - ${V380_USERNAME:-admin}
+      - --password
+      - ${V380_PASSWORD:?set V380_PASSWORD}
+      - --ip
+      - ${V380_PTZ_1_HOST:?set V380_PTZ_1_HOST}
+      - --output
+      - rtsp
+      - --enable-onvif
+      - --rtsp-port
+      - "8554"
+      - --http-port
+      - "8080"
+    networks: [cams]
+
+  v380-ptz-2:
+    build: ./v380-bridge
+    image: home-cameras-v380-bridge:local
+    container_name: home-cameras-v380-ptz-2
+    restart: unless-stopped
+    command:
+      - --id
+      - ${V380_PTZ_2_ID:?set V380_PTZ_2_ID}
+      - --username
+      - ${V380_USERNAME:-admin}
+      - --password
+      - ${V380_PASSWORD:?set V380_PASSWORD}
+      - --ip
+      - ${V380_PTZ_2_HOST:?set V380_PTZ_2_HOST}
+      - --output
+      - rtsp
+      - --enable-onvif
+      - --rtsp-port
+      - "8554"
+      - --http-port
+      - "8080"
     networks: [cams]
 
   web:
