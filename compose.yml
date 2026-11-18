@@ -47,7 +47,6 @@ services:
     depends_on: [backend, go2rtc]
     ports:
       - "127.0.0.1:${HC_WEB_PORT:-8750}:80"
-      - "${HC_BIND}:${HC_WEB_PORT:-8750}:80"
     networks: [cams]
 
 volumes:

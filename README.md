@@ -11,7 +11,7 @@ A web app for the home IP cameras: register cameras, watch one camera large, wat
 | backend | home-cameras-backend:local | FastAPI: sign in, cameras, discovery, ONVIF PTZ, go2rtc stream registration and status probes |
 | web | home-cameras-web:local | nginx serving the Next.js static export and proxying the API and the video websocket |
 
-Only the web service publishes a port: 8750 on loopback and on the address in HC_BIND.
+Only the web service publishes a port, 8750, and only on loopback, so the app is reachable from this machine alone.
 
 ## Run
 
@@ -20,7 +20,7 @@ cp .env.example .env
 docker compose up -d --build
 ```
 
-Set HC_SECRET_KEY to a long random value and HC_BIND to an address of this machine before the first start. Open http://127.0.0.1:8750 and sign in with HC_ADMIN_USERNAME and HC_ADMIN_PASSWORD; the backend creates that user on first start and never overwrites its password afterwards.
+Set HC_SECRET_KEY to a long random value before the first start. Open http://127.0.0.1:8750 and sign in with HC_ADMIN_USERNAME and HC_ADMIN_PASSWORD; the backend creates that user on first start and never overwrites its password afterwards.
 
 ## Pages
 
