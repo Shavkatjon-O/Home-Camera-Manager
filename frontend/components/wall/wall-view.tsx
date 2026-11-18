@@ -12,7 +12,7 @@ import { Segmented } from "@/components/shell/segmented"
 import { useSession } from "@/components/shell/session"
 import { Button } from "@/components/ui/button"
 import { WallTile } from "@/components/wall/wall-tile"
-import { WALL_LAYOUTS, wallGrid, type WallLayout } from "@/lib/grid"
+import { WALL_LAYOUTS, wallGrid, wallItems, type WallLayout } from "@/lib/grid"
 import { setWallLayout, toggleFullscreen, useFullscreenElement, useWallLayout } from "@/lib/stores"
 
 function useElementSize(element: HTMLElement | null) {
@@ -63,11 +63,12 @@ export function WallView() {
   const fullscreen = useFullscreenElement()
 
   const enabled = React.useMemo(() => cameras.filter((camera) => camera.enabled), [cameras])
+  const items = React.useMemo(() => wallItems(enabled), [enabled])
   const portrait = size.height > size.width * 1.15
-  const grid = wallGrid(layout, enabled.length, portrait)
-  const pageCount = Math.max(1, Math.ceil(enabled.length / grid.perPage))
+  const grid = wallGrid(layout, items.length, portrait)
+  const pageCount = Math.max(1, Math.ceil(items.length / grid.perPage))
   const page = Math.min(requestedPage, pageCount - 1)
-  const visible = enabled.slice(page * grid.perPage, (page + 1) * grid.perPage)
+  const visible = items.slice(page * grid.perPage, (page + 1) * grid.perPage)
   const slots = grid.cols * grid.rows
 
   const changeLayout = (value: WallLayout) => {
@@ -160,8 +161,8 @@ export function WallView() {
           gridTemplateRows: `repeat(${grid.rows}, minmax(0, 1fr))`,
         }}
       >
-        {visible.map((camera) => (
-          <WallTile key={camera.uuid} camera={camera} />
+        {visible.map((item) => (
+          <WallTile key={item.key} camera={item.camera} lens={item.lens} />
         ))}
         {Array.from({ length: Math.max(0, slots - visible.length) }, (_, index) => (
           <div key={`empty-${index}`} aria-hidden className="bg-black" />

@@ -25,8 +25,8 @@ Set HC_SECRET_KEY to a long random value and HC_LAN_BIND to this machine's home 
 
 ## Pages
 
-- **Wall** - every enabled camera in one grid that fills the screen, sub streams, automatic or forced 1, 2x2 and 3x3 layouts, fullscreen for the wall and for each tile.
-- **Camera** - one camera on its main or sub stream, its details and status, and a PTZ pad with speed for PTZ cameras; arrow keys and plus or minus drive it while the view has focus.
+- **Wall** - every enabled camera in one grid that fills the screen, sub streams, automatic or forced 1, 2x2 and 3x3 layouts, fullscreen for the wall and for each tile. A camera with several lenses takes one tile per lens.
+- **Camera** - one camera on its main or sub stream, its details and status, and a PTZ pad with speed for PTZ cameras; arrow keys and plus or minus drive it while the view has focus. A camera with several lenses shows them side by side or one at a time.
 - **Cameras** - the registry: add, edit, delete and the wall order. Detect reads stream paths and PTZ support from the camera over ONVIF.
 - **Discover** - scans the home subnet for cameras and opens the add form prefilled for any it finds.
 
@@ -43,7 +43,7 @@ The brand fills the defaults for fields left empty:
 
 EZVIZ cameras need Local Service Settings switched on in the EZVIZ app; their user is admin and their password is the camera's image-encryption password.
 
-V380 cameras go through their bridge, because their own RTSP server stops answering once a device password is set and some models have no RTSP or ONVIF at all. A bridge needs the camera's address and device ID in V380_PTZ_<n>_HOST and V380_PTZ_<n>_ID, and the shared V380_USERNAME and V380_PASSWORD set as the device login in V380 Pro. Register the camera with brand onvif, host home-cameras-v380-ptz-<n>, RTSP port 8554, ONVIF port 8080, main path /live, no sub path, no login and PTZ on. Another V380 camera gets another bridge service and env group in the same shape. Discover lists V380 cameras by their port 8800 even when RTSP is closed.
+V380 cameras go through their bridge, because their own RTSP server stops answering once a device password is set and some models have no RTSP or ONVIF at all. A bridge needs the camera's address and device ID in V380_PTZ_<n>_HOST and V380_PTZ_<n>_ID, and the shared V380_USERNAME and V380_PASSWORD set as the device login in V380 Pro. Register the camera with brand onvif, host home-cameras-v380-ptz-<n>, RTSP port 8554, ONVIF port 8080, main path /live, no sub path, no login and PTZ on. Another V380 camera gets another bridge service and env group in the same shape. Dual-lens cameras send both pictures stacked in one frame; set Lenses to 2 and the browser crops each band into its own view, with no extra transcoding. Discover lists V380 cameras by their port 8800 even when RTSP is closed.
 
 ## Streaming
 

@@ -42,6 +42,7 @@ interface FormState {
   clearPassword: boolean
   mainPath: string
   subPath: string
+  lenses: string
   ptz: boolean | null
   location: string
   enabled: boolean
@@ -63,6 +64,7 @@ function initialState(camera: Camera | null | undefined, prefill: CameraPrefill 
       clearPassword: false,
       mainPath: camera.main_path,
       subPath: camera.sub_path ?? "",
+      lenses: String(camera.lenses),
       ptz: camera.ptz_enabled,
       location: camera.location ?? "",
       enabled: camera.enabled,
@@ -79,6 +81,7 @@ function initialState(camera: Camera | null | undefined, prefill: CameraPrefill 
     clearPassword: false,
     mainPath: "",
     subPath: "",
+    lenses: "1",
     ptz: null,
     location: "",
     enabled: true,
@@ -234,6 +237,7 @@ function CameraForm({
     if (form.password) body.password = form.password
     if (form.mainPath.trim()) body.main_path = form.mainPath.trim()
     if (form.subPath.trim()) body.sub_path = form.subPath.trim()
+    if (form.lenses !== "1") body.lenses = Number(form.lenses)
     if (form.ptz !== null) body.ptz_enabled = form.ptz
     if (form.location.trim()) body.location = form.location.trim()
     return body
@@ -259,6 +263,7 @@ function CameraForm({
     else if (form.password) body.password = form.password
     if (mainPath !== original.main_path) body.main_path = mainPath
     if (subPath !== original.sub_path) body.sub_path = subPath
+    if (Number(form.lenses) !== original.lenses) body.lenses = Number(form.lenses)
     if (ptzChecked !== original.ptz_enabled) body.ptz_enabled = ptzChecked
     if (location !== original.location) body.location = location
     if (form.enabled !== original.enabled) body.enabled = form.enabled
@@ -473,6 +478,26 @@ function CameraForm({
               ))}
             </div>
           ) : null}
+        </div>
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex flex-col gap-0.5">
+            <Label htmlFor="camera-lenses" className="text-[13px] text-foreground">
+              Lenses
+            </Label>
+            <span className="text-[12px] text-text-3">Pictures stacked in one frame, 2 for dual-lens cameras</span>
+          </div>
+          <Select value={form.lenses} onValueChange={(value) => update("lenses", value)}>
+            <SelectTrigger id="camera-lenses" className="w-20 font-mono text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {["1", "2", "3", "4"].map((count) => (
+                <SelectItem key={count} value={count} className="font-mono text-xs">
+                  {count}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div className="flex items-start justify-between gap-3">
           <div className="flex flex-col gap-0.5">

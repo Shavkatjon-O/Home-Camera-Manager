@@ -1,4 +1,20 @@
+import type { Camera } from "@/lib/types"
+
 export type WallLayout = "auto" | "1" | "2x2" | "3x3"
+
+export interface WallItem {
+  key: string
+  camera: Camera
+  lens: number | null
+}
+
+export function wallItems(cameras: Camera[]): WallItem[] {
+  return cameras.flatMap((camera): WallItem[] =>
+    camera.lenses > 1
+      ? Array.from({ length: camera.lenses }, (_, lens) => ({ key: `${camera.uuid}-${lens}`, camera, lens }))
+      : [{ key: camera.uuid, camera, lens: null }],
+  )
+}
 
 export const WALL_LAYOUTS: { value: WallLayout; label: string }[] = [
   { value: "auto", label: "Auto" },

@@ -21,7 +21,7 @@ export function cameraHref(uuid: string): string {
   return `/camera/?id=${encodeURIComponent(uuid)}`
 }
 
-export function WallTile({ camera }: { camera: Camera }) {
+export function WallTile({ camera, lens = null }: { camera: Camera; lens?: number | null }) {
   const router = useRouter()
   const [tile, setTile] = React.useState<HTMLDivElement | null>(null)
   const fullscreen = useFullscreenElement()
@@ -44,12 +44,13 @@ export function WallTile({ camera }: { camera: Camera }) {
       {offline ? (
         <VideoPlaceholder title="Camera offline" detail={camera.status.error} />
       ) : (
-        <VideoStream stream={stream} compact className="absolute inset-0" />
+        <VideoStream stream={stream} compact lens={lens} lenses={camera.lenses} className="absolute inset-0" />
       )}
 
       <div className="pointer-events-none absolute bottom-2 left-2 flex max-w-[calc(100%-1rem)] items-center gap-2 rounded-md bg-black/60 px-2 py-1">
         <StatusDot online={camera.status.online} />
         <span className="truncate text-[12px] text-white">{camera.name}</span>
+        {lens !== null ? <span className="shrink-0 font-mono text-[11px] text-white/55">Lens {lens + 1}</span> : null}
         {camera.location ? (
           <span className="hidden truncate text-[11px] text-white/55 sm:inline">{camera.location}</span>
         ) : null}

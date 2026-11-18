@@ -26,7 +26,10 @@ PATH_PATTERN = re.compile(r"^\S+$")
 PORT_MIN = 1
 PORT_MAX = 65535
 
-REQUIRED_ON_UPDATE = ("name", "brand", "host", "rtsp_port", "main_path", "ptz_enabled", "enabled")
+LENSES_MIN = 1
+LENSES_MAX = 4
+
+REQUIRED_ON_UPDATE = ("name", "brand", "host", "rtsp_port", "main_path", "lenses", "ptz_enabled", "enabled")
 
 
 def clean_text(value: str | None) -> str | None:
@@ -76,6 +79,7 @@ class CameraRead(BaseModel):
     has_password: bool
     main_path: str
     sub_path: str | None
+    lenses: int
     ptz_enabled: bool
     location: str | None
     position: int
@@ -124,6 +128,7 @@ class CameraCreate(CameraFields):
 
     main_path: str | None = Field(default=None, max_length=255)
     sub_path: str | None = Field(default=None, max_length=255)
+    lenses: int = Field(default=1, ge=LENSES_MIN, le=LENSES_MAX)
 
     ptz_enabled: bool | None = None
     enabled: bool = True
@@ -143,6 +148,7 @@ class CameraUpdate(CameraFields):
 
     main_path: str | None = Field(default=None, max_length=255)
     sub_path: str | None = Field(default=None, max_length=255)
+    lenses: int | None = Field(default=None, ge=LENSES_MIN, le=LENSES_MAX)
 
     ptz_enabled: bool | None = None
     enabled: bool | None = None

@@ -27,6 +27,7 @@ export interface Camera {
   has_password: boolean
   main_path: string
   sub_path: string | null
+  lenses: number
   ptz_enabled: boolean
   location: string | null
   position: number
@@ -56,6 +57,7 @@ export interface CameraCreate {
   password?: string | null
   main_path?: string
   sub_path?: string | null
+  lenses?: number
   ptz_enabled?: boolean
   location?: string | null
   enabled?: boolean

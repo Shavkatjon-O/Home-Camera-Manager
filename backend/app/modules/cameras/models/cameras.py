@@ -22,6 +22,7 @@ class Camera(BaseModel):
 
     main_path: Mapped[str] = mapped_column(String(255), nullable=False)
     sub_path: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    lenses: Mapped[int] = mapped_column(Integer, nullable=False, default=1, server_default="1")
 
     ptz_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     position: Mapped[int] = mapped_column(Integer, nullable=False, default=0)

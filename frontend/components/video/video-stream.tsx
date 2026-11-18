@@ -19,15 +19,21 @@ const SNAPSHOT_TIMEOUT_MS = 8000
 
 type Phase = "connecting" | "live" | "error"
 
+const DEFAULT_ASPECT = 16 / 9
+
 export function VideoStream({
   stream,
   snapshot = true,
   compact = false,
+  lens = null,
+  lenses = 1,
   className,
 }: {
   stream: string
   snapshot?: boolean
   compact?: boolean
+  lens?: number | null
+  lenses?: number
   className?: string
 }) {
   const holderRef = React.useRef<HTMLDivElement>(null)
@@ -35,6 +41,7 @@ export function VideoStream({
   const [message, setMessage] = React.useState<string | null>(null)
   const [attempt, setAttempt] = React.useState(0)
   const [poster, setPoster] = React.useState<string | null>(null)
+  const [frame, setFrame] = React.useState<{ width: number; height: number } | null>(null)
   const snapshotAbort = React.useRef<AbortController | null>(null)
 
   React.useEffect(() => {
@@ -80,6 +87,11 @@ export function VideoStream({
       setPhase("live")
       setMessage(null)
     }
+    const onMetadata = () => {
+      if (video && video.videoWidth > 0 && video.videoHeight > 0) {
+        setFrame({ width: video.videoWidth, height: video.videoHeight })
+      }
+    }
     const onEmptied = () => {
       setPhase((current) => (current === "live" ? "connecting" : current))
     }
@@ -102,6 +114,8 @@ export function VideoStream({
         video = element.video
         video?.addEventListener("playing", onPlaying)
         video?.addEventListener("emptied", onEmptied)
+        video?.addEventListener("loadedmetadata", onMetadata)
+        video?.addEventListener("resize", onMetadata)
       })
       .catch((err: unknown) => {
         if (cancelled) return
@@ -116,6 +130,8 @@ export function VideoStream({
       if (video) {
         video.removeEventListener("playing", onPlaying)
         video.removeEventListener("emptied", onEmptied)
+        video.removeEventListener("loadedmetadata", onMetadata)
+        video.removeEventListener("resize", onMetadata)
       }
       if (element) {
         element.removeEventListener(STREAM_ERROR_EVENT, onStreamError)
@@ -126,17 +142,52 @@ export function VideoStream({
   }, [stream, attempt])
 
   const showPoster = snapshot && poster !== null && phase !== "live"
+  const cropped = lenses > 1 && lens !== null
+  const lensIndex = lens ?? 0
+  const aspect = frame ? frame.width / (frame.height / lenses) : DEFAULT_ASPECT
+  const band = cropped ? (lensIndex / (lenses - 1)) * 100 : 0
 
   return (
-    <div className={cn("relative overflow-hidden bg-black", className)}>
-      {showPoster ? (
-        <div
-          aria-hidden
-          className="absolute inset-0 bg-contain bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${poster})` }}
-        />
-      ) : null}
-      <div ref={holderRef} className="absolute inset-0" />
+    <div className={cn("relative overflow-hidden bg-black", className)} style={cropped ? { containerType: "size" } : undefined}>
+      {cropped ? (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div
+            className="relative overflow-hidden"
+            style={{
+              width: `min(100cqw, calc(100cqh * ${aspect}))`,
+              height: `min(100cqh, calc(100cqw / ${aspect}))`,
+            }}
+          >
+            {showPoster ? (
+              <div
+                aria-hidden
+                className="absolute inset-0 bg-no-repeat"
+                style={{
+                  backgroundImage: `url(${poster})`,
+                  backgroundSize: `100% ${lenses * 100}%`,
+                  backgroundPosition: `0% ${band}%`,
+                }}
+              />
+            ) : null}
+            <div
+              ref={holderRef}
+              className="absolute left-0 w-full [&_video]:object-fill"
+              style={{ height: `${lenses * 100}%`, top: `${-lensIndex * 100}%` }}
+            />
+          </div>
+        </div>
+      ) : (
+        <>
+          {showPoster ? (
+            <div
+              aria-hidden
+              className="absolute inset-0 bg-contain bg-center bg-no-repeat"
+              style={{ backgroundImage: `url(${poster})` }}
+            />
+          ) : null}
+          <div ref={holderRef} className="absolute inset-0" />
+        </>
+      )}
       {phase === "connecting" ? (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <div className="flex items-center gap-2 rounded-md bg-black/60 px-2.5 py-1.5 font-mono text-[11px] text-white/70">

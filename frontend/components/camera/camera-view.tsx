@@ -48,6 +48,7 @@ function CameraView({ id }: { id: string }) {
   const [error, setError] = React.useState<Error | null>(null)
   const [reload, setReload] = React.useState(0)
   const [quality, setQuality] = React.useState<Quality>("main")
+  const [lensView, setLensView] = React.useState("all")
   const [speed, setSpeed] = React.useState(0.5)
   const [checking, setChecking] = React.useState(false)
   const [editing, setEditing] = React.useState(false)
@@ -150,6 +151,17 @@ function CameraView({ id }: { id: string }) {
         ]}
         onChange={setQuality}
       />
+      {camera.lenses > 1 ? (
+        <Segmented<string>
+          label="Lenses"
+          value={lensView}
+          options={[
+            { value: "all", label: camera.lenses === 2 ? "Both" : "All" },
+            ...Array.from({ length: camera.lenses }, (_, lens) => ({ value: String(lens), label: `Lens ${lens + 1}` })),
+          ]}
+          onChange={setLensView}
+        />
+      ) : null}
       <IconButton
         label={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
         disabled={!camera.enabled}
@@ -165,6 +177,32 @@ function CameraView({ id }: { id: string }) {
     video = <VideoPlaceholder title="This camera is disabled" detail="Enable it to stream and show it on the wall." />
   } else if (camera.status.online === false) {
     video = <VideoPlaceholder title="Camera offline" detail={camera.status.error} />
+  } else if (stream && camera.lenses > 1 && lensView !== "all") {
+    const lens = Number(lensView)
+    video = (
+      <VideoStream
+        key={`${stream}-${lens}`}
+        stream={stream}
+        lens={lens}
+        lenses={camera.lenses}
+        className="absolute inset-0"
+      />
+    )
+  } else if (stream && camera.lenses > 1) {
+    video = (
+      <div className="absolute inset-0 flex flex-col gap-px bg-black landscape:flex-row">
+        {Array.from({ length: camera.lenses }, (_, lens) => (
+          <VideoStream
+            key={`${stream}-${lens}`}
+            stream={stream}
+            snapshot={false}
+            lens={lens}
+            lenses={camera.lenses}
+            className="min-h-0 min-w-0 flex-1"
+          />
+        ))}
+      </div>
+    )
   } else if (stream) {
     video = <VideoStream key={stream} stream={stream} className="absolute inset-0" />
   }

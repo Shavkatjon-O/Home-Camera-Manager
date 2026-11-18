@@ -39,6 +39,7 @@ export function CameraDetails({ camera }: { camera: Camera }) {
       </Row>
       <Row label="Main path">{camera.main_path}</Row>
       <Row label="Sub path">{camera.sub_path ?? "-"}</Row>
+      <Row label="Lenses">{camera.lenses}</Row>
       <Row label="Location">
         <span className="font-sans">{camera.location ?? "-"}</span>
       </Row>
