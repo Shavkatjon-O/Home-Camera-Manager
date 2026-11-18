@@ -51,6 +51,43 @@ export function wallGrid(layout: WallLayout, count: number, portrait: boolean): 
   }
 }
 
+export type WallSlot = WallItem | null
+
+export type WallFlow = "row" | "column"
+
+export interface WallPlan extends WallGrid {
+  flow: WallFlow
+  slots: WallSlot[]
+}
+
+export function arrangeItems(items: WallItem[], line: number): WallSlot[] {
+  const slots: WallSlot[] = []
+  for (const item of items) {
+    const span = item.lens === 0 ? item.camera.lenses : 1
+    const used = slots.length % line
+    if (span > 1 && span <= line && used + span > line) {
+      while (slots.length % line !== 0) slots.push(null)
+    }
+    slots.push(item)
+  }
+  return slots
+}
+
+export function wallPlan(layout: WallLayout, items: WallItem[], portrait: boolean): WallPlan {
+  let count = items.length
+  let plan: WallPlan | null = null
+  for (let pass = 0; pass < 3; pass += 1) {
+    const grid = wallGrid(layout, count, portrait)
+    const flow: WallFlow = grid.cols >= grid.rows ? "column" : "row"
+    const slots = arrangeItems(items, flow === "column" ? grid.rows : grid.cols)
+    const capacity = grid.cols * grid.rows
+    plan = { ...grid, perPage: layout === "auto" ? Math.max(capacity, 1) : grid.perPage, flow, slots }
+    if (layout !== "auto" || slots.length <= capacity) break
+    count = slots.length
+  }
+  return plan as WallPlan
+}
+
 export function isWallLayout(value: unknown): value is WallLayout {
   return value === "auto" || value === "1" || value === "2x2" || value === "3x3"
 }

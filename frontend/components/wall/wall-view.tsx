@@ -12,7 +12,7 @@ import { Segmented } from "@/components/shell/segmented"
 import { useSession } from "@/components/shell/session"
 import { Button } from "@/components/ui/button"
 import { WallTile } from "@/components/wall/wall-tile"
-import { WALL_LAYOUTS, wallGrid, wallItems, type WallLayout } from "@/lib/grid"
+import { WALL_LAYOUTS, wallItems, wallPlan, type WallLayout } from "@/lib/grid"
 import { setWallLayout, toggleFullscreen, useFullscreenElement, useWallLayout } from "@/lib/stores"
 
 function useElementSize(element: HTMLElement | null) {
@@ -65,10 +65,10 @@ export function WallView() {
   const enabled = React.useMemo(() => cameras.filter((camera) => camera.enabled), [cameras])
   const items = React.useMemo(() => wallItems(enabled), [enabled])
   const portrait = size.height > size.width * 1.15
-  const grid = wallGrid(layout, items.length, portrait)
-  const pageCount = Math.max(1, Math.ceil(items.length / grid.perPage))
+  const grid = React.useMemo(() => wallPlan(layout, items, portrait), [layout, items, portrait])
+  const pageCount = Math.max(1, Math.ceil(grid.slots.length / grid.perPage))
   const page = Math.min(requestedPage, pageCount - 1)
-  const visible = items.slice(page * grid.perPage, (page + 1) * grid.perPage)
+  const visible = grid.slots.slice(page * grid.perPage, (page + 1) * grid.perPage)
   const slots = grid.cols * grid.rows
 
   const changeLayout = (value: WallLayout) => {
@@ -159,11 +159,16 @@ export function WallView() {
         style={{
           gridTemplateColumns: `repeat(${grid.cols}, minmax(0, 1fr))`,
           gridTemplateRows: `repeat(${grid.rows}, minmax(0, 1fr))`,
+          gridAutoFlow: grid.flow,
         }}
       >
-        {visible.map((item) => (
-          <WallTile key={item.key} camera={item.camera} lens={item.lens} />
-        ))}
+        {visible.map((slot, index) =>
+          slot ? (
+            <WallTile key={slot.key} camera={slot.camera} lens={slot.lens} />
+          ) : (
+            <div key={`gap-${page}-${index}`} aria-hidden className="bg-black" />
+          ),
+        )}
         {Array.from({ length: Math.max(0, slots - visible.length) }, (_, index) => (
           <div key={`empty-${index}`} aria-hidden className="bg-black" />
         ))}
