@@ -1,0 +1,57 @@
+name: home-cameras
+
+services:
+  postgres:
+    image: postgres:17.6-alpine
+    container_name: home-cameras-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${HC_DB_NAME:-home_cameras}
+      POSTGRES_USER: ${HC_DB_USER:-home_cameras}
+      POSTGRES_PASSWORD: ${HC_DB_PASSWORD:-home_cameras}
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [cams]
+
+  go2rtc:
+    image: alexxit/go2rtc:1.9.14
+    container_name: home-cameras-go2rtc
+    restart: unless-stopped
+    volumes:
+      - ./go2rtc.yaml:/config/go2rtc.yaml:ro
+    networks: [cams]
+
+  backend:
+    build: ./backend
+    image: home-cameras-backend:local
+    container_name: home-cameras-backend
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      go2rtc:
+        condition: service_started
+    networks: [cams]
+
+  web:
+    build: ./frontend
+    image: home-cameras-web:local
+    container_name: home-cameras-web
+    restart: unless-stopped
+    depends_on: [backend, go2rtc]
+    ports:
+      - "127.0.0.1:${HC_WEB_PORT:-8750}:80"
+      - "${HC_BIND}:${HC_WEB_PORT:-8750}:80"
+    networks: [cams]
+
+volumes:
+  postgres:
+
+networks:
+  cams:
