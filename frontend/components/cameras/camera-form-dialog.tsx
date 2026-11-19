@@ -35,6 +35,7 @@ interface FormState {
   name: string
   brand: CameraBrand
   host: string
+  deviceHost: string
   rtspPort: string
   onvifPort: string
   username: string
@@ -57,6 +58,7 @@ function initialState(camera: Camera | null | undefined, prefill: CameraPrefill 
       name: camera.name,
       brand: camera.brand,
       host: camera.host,
+      deviceHost: camera.device_host ?? "",
       rtspPort: String(camera.rtsp_port),
       onvifPort: camera.onvif_port == null ? "" : String(camera.onvif_port),
       username: camera.username ?? "",
@@ -74,6 +76,7 @@ function initialState(camera: Camera | null | undefined, prefill: CameraPrefill 
     name: prefill?.name ?? "",
     brand: prefill?.brand ?? "ezviz",
     host: prefill?.host ?? "",
+    deviceHost: "",
     rtspPort: "",
     onvifPort: prefill?.onvif_port ? String(prefill.onvif_port) : "",
     username: "",
@@ -233,6 +236,7 @@ function CameraForm({
     const onvif = parsePort(form.onvifPort)
     if (typeof rtsp === "number") body.rtsp_port = rtsp
     if (typeof onvif === "number") body.onvif_port = onvif
+    if (form.deviceHost.trim()) body.device_host = form.deviceHost.trim()
     if (form.username.trim()) body.username = form.username.trim()
     if (form.password) body.password = form.password
     if (form.mainPath.trim()) body.main_path = form.mainPath.trim()
@@ -249,6 +253,7 @@ function CameraForm({
     const host = form.host.trim()
     const rtsp = parsePort(form.rtspPort)
     const onvif = parsePort(form.onvifPort)
+    const deviceHost = nullable(form.deviceHost)
     const username = nullable(form.username)
     const mainPath = form.mainPath.trim()
     const subPath = nullable(form.subPath)
@@ -256,6 +261,7 @@ function CameraForm({
     if (name !== original.name) body.name = name
     if (form.brand !== original.brand) body.brand = form.brand
     if (host !== original.host) body.host = host
+    if (deviceHost !== original.device_host) body.device_host = deviceHost
     if (typeof rtsp === "number" && rtsp !== original.rtsp_port) body.rtsp_port = rtsp
     if (onvif !== "invalid" && onvif !== original.onvif_port) body.onvif_port = onvif
     if (username !== original.username) body.username = username
@@ -445,6 +451,23 @@ function CameraForm({
             placeholder={defaults.subPath ?? (form.brand === "onvif" ? "Resolved through ONVIF" : "None")}
             className="font-data"
             maxLength={255}
+            spellCheck={false}
+          />
+        </FormField>
+        <FormField
+          id="camera-device-host"
+          label="Device address"
+          hint="The camera's own address when its stream comes through a bridge, so Discover knows it is added."
+          className="sm:col-span-2"
+        >
+          <Input
+            id="camera-device-host"
+            value={form.deviceHost}
+            onChange={(event) => update("deviceHost", event.target.value)}
+            placeholder="None"
+            className="font-data"
+            maxLength={255}
+            autoComplete="off"
             spellCheck={false}
           />
         </FormField>

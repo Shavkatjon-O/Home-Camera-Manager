@@ -31,7 +31,7 @@ class Go2rtcClient:
         except httpx.HTTPError as exc:
             raise Go2rtcError(f"go2rtc does not answer ({type(exc).__name__})")
 
-    async def streams(self) -> dict[str, list[str]]:
+    async def snapshot(self) -> dict[str, dict]:
         response = await self.request("GET")
         if response.status_code != 200:
             raise Go2rtcError(f"go2rtc answered HTTP {response.status_code} to the stream list")
@@ -39,11 +39,44 @@ class Go2rtcClient:
             data = response.json() or {}
         except ValueError:
             raise Go2rtcError("go2rtc answered the stream list with invalid JSON")
+        return {name: info or {} for name, info in data.items()}
+
+    async def streams(self) -> dict[str, list[str]]:
         result = {}
-        for name, info in data.items():
-            producers = (info or {}).get("producers") or []
+        for name, info in (await self.snapshot()).items():
+            producers = info.get("producers") or []
             result[name] = [producer["url"] for producer in producers if producer.get("url")]
         return result
+
+    async def consumer_agents(self) -> dict[str, list[str]]:
+        result = {}
+        for name, info in (await self.snapshot()).items():
+            consumers = info.get("consumers") or []
+            result[name] = [consumer.get("user_agent") or "" for consumer in consumers]
+        return result
+
+    async def received(self) -> dict[str, int | None]:
+        result = {}
+        for name, info in (await self.snapshot()).items():
+            counts = [producer["bytes_recv"] for producer in info.get("producers") or [] if producer.get("bytes_recv")]
+            result[name] = sum(counts) if counts else None
+        return result
+
+    async def probe(self, name: str, timeout: float) -> bool:
+        try:
+            response = await self.client().get(STREAMS_PATH, params=[("src", name), ("video", "")], timeout=timeout)
+        except httpx.HTTPError:
+            return False
+        if response.status_code != 200:
+            return False
+        try:
+            data = response.json() or {}
+        except ValueError:
+            return False
+        for producer in data.get("producers") or []:
+            if any(str(media).startswith("video") for media in producer.get("medias") or []):
+                return True
+        return False
 
     async def put(self, name: str, sources: list[str]) -> None:
         params = [("name", name), *(("src", source) for source in sources)]

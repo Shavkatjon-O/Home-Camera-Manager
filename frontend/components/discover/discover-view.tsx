@@ -53,7 +53,9 @@ export function DiscoverView() {
         ? {
             ...current,
             items: current.items.map((item) =>
-              item.host === camera.host ? { ...item, camera_uuid: camera.uuid } : item,
+              item.host === camera.host || item.host === camera.device_host
+                ? { ...item, camera_uuid: camera.uuid }
+                : item,
             ),
           }
         : current,

@@ -1,4 +1,5 @@
 import time
+from collections.abc import Iterable
 from datetime import UTC, datetime
 
 from sqlalchemy import select
@@ -20,7 +21,16 @@ from app.modules.discovery.schemas import (
 from app.onvif.client import DeviceInfo, OnvifClient
 from app.onvif.soap import OnvifError
 
-__all__ = ["DiscoveryService"]
+__all__ = ["DiscoveryService", "index_hosts"]
+
+
+def index_hosts(cameras: Iterable[Camera]) -> dict[str, Camera]:
+    hosts: dict[str, Camera] = {}
+    for camera in cameras:
+        for host in (camera.host, camera.device_host):
+            if host:
+                hosts.setdefault(host, camera)
+    return hosts
 
 
 class DiscoveryService:
@@ -32,10 +42,7 @@ class DiscoveryService:
         rows = await self.session.scalars(
             select(Camera).where(Camera.deleted_at.is_(None)).order_by(Camera.position.asc(), Camera.id.asc())
         )
-        hosts: dict[str, Camera] = {}
-        for camera in rows:
-            hosts.setdefault(camera.host, camera)
-        return hosts
+        return index_hosts(rows)
 
     async def scan(self, payload: ScanRequest) -> ScanResult:
         try:

@@ -1,6 +1,7 @@
 import base64
 import hashlib
 import hmac
+import secrets
 from datetime import UTC, datetime, timedelta
 from functools import lru_cache
 from uuid import UUID
@@ -20,6 +21,8 @@ SESSION_COOKIE_PATH = "/"
 SESSION_COOKIE_SAMESITE = "lax"
 
 BCRYPT_MAX_BYTES = 72
+
+TOKEN_BYTES = 32
 
 
 def require_secret_key() -> str:
@@ -120,3 +123,11 @@ def decrypt_secret(value: str | None) -> str | None:
         return fernet().decrypt(value.encode()).decode()
     except InvalidToken:
         return None
+
+
+def new_token() -> str:
+    return secrets.token_urlsafe(TOKEN_BYTES)
+
+
+def hash_token(token: str) -> str:
+    return hashlib.sha256(token.encode()).hexdigest()

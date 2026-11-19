@@ -31,6 +31,7 @@ export function CameraDetails({ camera }: { camera: Camera }) {
       ) : null}
       <Row label="Brand">{brandLabel(camera.brand)}</Row>
       <Row label="Host">{camera.host}</Row>
+      <Row label="Device address">{camera.device_host ?? "-"}</Row>
       <Row label="RTSP port">{camera.rtsp_port}</Row>
       <Row label="ONVIF port">{camera.onvif_port ?? "-"}</Row>
       <Row label="Username">{camera.username ?? "-"}</Row>

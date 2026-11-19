@@ -11,10 +11,12 @@ import {
   PencilIcon,
   PlusIcon,
   Trash2Icon,
+  TvIcon,
 } from "lucide-react"
 
 import { CameraFormDialog } from "@/components/cameras/camera-form-dialog"
 import { DeleteCameraDialog } from "@/components/cameras/delete-camera-dialog"
+import { TvDialog } from "@/components/cameras/tv-dialog"
 import { WallOrder } from "@/components/cameras/wall-order"
 import { AppFrame } from "@/components/shell/app-frame"
 import { IconButton } from "@/components/shell/icon-button"
@@ -39,6 +41,7 @@ export function CamerasView() {
   const [formOpen, setFormOpen] = React.useState(false)
   const [editing, setEditing] = React.useState<Camera | null>(null)
   const [deleting, setDeleting] = React.useState<Camera | null>(null)
+  const [tvOpen, setTvOpen] = React.useState(false)
 
   React.useEffect(() => {
     const controller = new AbortController()
@@ -79,11 +82,17 @@ export function CamerasView() {
   const last = Math.min(page * PAGE_SIZE, total)
 
   const actions = (
-    <Button onClick={openAdd}>
-      <PlusIcon />
-      <span className="hidden sm:inline">Add camera</span>
-      <span className="sm:hidden">Add</span>
-    </Button>
+    <>
+      <Button variant="outline" onClick={() => setTvOpen(true)}>
+        <TvIcon />
+        TV
+      </Button>
+      <Button onClick={openAdd}>
+        <PlusIcon />
+        <span className="hidden sm:inline">Add camera</span>
+        <span className="sm:hidden">Add</span>
+      </Button>
+    </>
   )
 
   let content: React.ReactNode
@@ -229,6 +238,7 @@ export function CamerasView() {
         }}
         onDeleted={() => changed()}
       />
+      <TvDialog open={tvOpen} onOpenChange={setTvOpen} />
     </AppFrame>
   )
 }

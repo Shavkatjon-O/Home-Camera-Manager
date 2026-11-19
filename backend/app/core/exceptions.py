@@ -27,6 +27,10 @@ class Unprocessable(ServiceError):
     status_code = 422
 
 
+class TooManyRequests(ServiceError):
+    status_code = 429
+
+
 class BadGateway(ServiceError):
     status_code = 502
 

@@ -12,6 +12,8 @@ import type {
   Page,
   PtzVector,
   ScanResult,
+  TvDevice,
+  TvDeviceList,
   User,
 } from "@/lib/types"
 
@@ -180,4 +182,10 @@ export const api = {
     request<FloorPlan>(`/floorplans/${encodeURIComponent(uuid)}`, { method: "PATCH", body: data, keepalive }),
   deleteFloorPlan: (uuid: string) =>
     request<void>(`/floorplans/${encodeURIComponent(uuid)}`, { method: "DELETE" }),
+
+  listTvDevices: (signal?: AbortSignal) => request<TvDeviceList>("/tv/devices", { signal }),
+  approveTvPairing: (code: string) =>
+    request<TvDevice>("/tv/pairings/approve", { method: "POST", body: { code } }),
+  revokeTvDevice: (uuid: string) =>
+    request<void>(`/tv/devices/${encodeURIComponent(uuid)}`, { method: "DELETE" }),
 }

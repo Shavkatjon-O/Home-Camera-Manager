@@ -14,6 +14,7 @@ from app.core.exceptions import ServiceError, Unavailable
 from app.core.logging import setup_logging
 from app.core.security import require_secret_key
 from app.core.seed import seed_admin
+from app.modules.tv.routers import tv_internal_router
 from app.streaming.supervisor import supervisor
 
 setup_logging()
@@ -91,3 +92,4 @@ async def root() -> dict:
 app.include_router(health_router)
 app.include_router(health_router, prefix="/api/v1")
 app.include_router(v1_routers, prefix="/api/v1")
+app.include_router(tv_internal_router, prefix="/internal/tv", include_in_schema=False)

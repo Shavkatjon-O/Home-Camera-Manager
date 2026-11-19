@@ -21,6 +21,7 @@ export interface Camera {
   name: string
   brand: CameraBrand
   host: string
+  device_host: string | null
   rtsp_port: number
   onvif_port: number | null
   username: string | null
@@ -51,6 +52,7 @@ export interface CameraCreate {
   name: string
   brand: CameraBrand
   host: string
+  device_host?: string | null
   rtsp_port?: number
   onvif_port?: number | null
   username?: string | null
@@ -203,4 +205,15 @@ export interface FloorPlanUpdate {
   settings?: PlanSettings
   background_image?: string
   background_opacity?: number
+}
+
+export interface TvDevice {
+  uuid: string
+  name: string
+  created_at: string
+  last_seen_at: string | null
+}
+
+export interface TvDeviceList {
+  items: TvDevice[]
 }

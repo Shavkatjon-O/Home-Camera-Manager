@@ -8,6 +8,8 @@ APP_VERSION = "0.1.0"
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="HC_", env_file=".env", case_sensitive=False, extra="ignore")
 
+    lan_bind: str = ""
+
     db_host: str = "127.0.0.1"
     db_port: int = 5432
     db_name: str = "home_cameras"
@@ -21,6 +23,9 @@ class Settings(BaseSettings):
 
     go2rtc_url: str = "http://go2rtc:1984"
     transcode_hardware: str = ""
+
+    tv_rtsp_username: str = "tv"
+    tv_rtsp_password: str = ""
 
     discovery_subnet: str = "192.168.1.0/24"
 

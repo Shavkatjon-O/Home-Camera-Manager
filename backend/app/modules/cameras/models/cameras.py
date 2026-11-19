@@ -14,6 +14,7 @@ class Camera(BaseModel):
     location: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
     host: Mapped[str] = mapped_column(String(255), nullable=False)
+    device_host: Mapped[str | None] = mapped_column(String(255), nullable=True)
     rtsp_port: Mapped[int] = mapped_column(Integer, nullable=False, default=554)
     onvif_port: Mapped[int | None] = mapped_column(Integer, nullable=True)
 

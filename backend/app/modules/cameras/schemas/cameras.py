@@ -73,6 +73,7 @@ class CameraRead(BaseModel):
     name: str
     brand: CameraBrand
     host: str
+    device_host: str | None
     rtsp_port: int
     onvif_port: int | None
     username: str | None
@@ -103,7 +104,7 @@ class CameraFields(BaseModel):
     def strip_text(cls, value):
         return clean_text(value) if isinstance(value, str) else value
 
-    @field_validator("host", mode="before", check_fields=False)
+    @field_validator("host", "device_host", mode="before", check_fields=False)
     @classmethod
     def normalize_host(cls, value):
         return clean_host(value) if isinstance(value, str) else value
@@ -118,6 +119,7 @@ class CameraCreate(CameraFields):
     name: str = Field(min_length=1, max_length=100)
     brand: CameraBrand
     host: str = Field(min_length=1, max_length=255)
+    device_host: str | None = Field(default=None, max_length=255)
     location: str | None = Field(default=None, max_length=100)
 
     rtsp_port: int | None = Field(default=None, ge=PORT_MIN, le=PORT_MAX)
@@ -138,6 +140,7 @@ class CameraUpdate(CameraFields):
     name: str | None = Field(default=None, min_length=1, max_length=100)
     brand: CameraBrand | None = None
     host: str | None = Field(default=None, min_length=1, max_length=255)
+    device_host: str | None = Field(default=None, max_length=255)
     location: str | None = Field(default=None, max_length=100)
 
     rtsp_port: int | None = Field(default=None, ge=PORT_MIN, le=PORT_MAX)

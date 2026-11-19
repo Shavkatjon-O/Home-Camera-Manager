@@ -7,3 +7,10 @@ class UserContext:
     id: int
     uuid: UUID
     username: str
+
+
+@dataclass(frozen=True)
+class TvDeviceContext:
+    id: int
+    uuid: UUID
+    name: str

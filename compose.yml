@@ -29,8 +29,14 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu, video]
+    environment:
+      HC_TV_RTSP_USERNAME: ${HC_TV_RTSP_USERNAME:-tv}
+      HC_TV_RTSP_PASSWORD: ${HC_TV_RTSP_PASSWORD:?set HC_TV_RTSP_PASSWORD}
     volumes:
       - ./go2rtc.yaml:/config/go2rtc.yaml:ro
+      - ./go2rtc-tv.sh:/config/tv.sh:ro
+    ports:
+      - "${HC_LAN_BIND:?set HC_LAN_BIND to this machine home network address}:8554:8554"
     networks: [cams]
 
   backend:
