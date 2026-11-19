@@ -14,6 +14,7 @@ from app.core.exceptions import ServiceError, Unavailable
 from app.core.logging import setup_logging
 from app.core.security import require_secret_key
 from app.core.seed import seed_admin
+from app.health.prober import health_prober
 from app.modules.tv.routers import tv_internal_router
 from app.streaming.supervisor import supervisor
 
@@ -27,8 +28,10 @@ async def lifespan(application: FastAPI):
     await verify_db_connection()
     await seed_admin()
     await supervisor.start()
+    await health_prober.start()
     logger.info("%s %s started", APP_NAME, APP_VERSION)
     yield
+    await health_prober.stop()
     await supervisor.stop()
     await async_engine.dispose()
 

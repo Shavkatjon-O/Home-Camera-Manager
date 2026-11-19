@@ -1,17 +1,26 @@
 import type {
   Camera,
   CameraCreate,
+  CameraLink,
+  CameraLinkUpdate,
   CameraOrder,
   CameraUpdate,
   FloorPlan,
   FloorPlanCreate,
   FloorPlanSummary,
   FloorPlanUpdate,
+  HealthOverview,
+  HealthRange,
   InspectRequest,
   InspectResult,
+  NetworkDevice,
+  NetworkDeviceCreate,
+  NetworkDeviceUpdate,
+  Outage,
   Page,
   PtzVector,
   ScanResult,
+  TargetDetail,
   TvDevice,
   TvDeviceList,
   User,
@@ -188,4 +197,21 @@ export const api = {
     request<TvDevice>("/tv/pairings/approve", { method: "POST", body: { code } }),
   revokeTvDevice: (uuid: string) =>
     request<void>(`/tv/devices/${encodeURIComponent(uuid)}`, { method: "DELETE" }),
+
+  healthOverview: (range: HealthRange, signal?: AbortSignal) =>
+    request<HealthOverview>(`/health/overview${query({ range })}`, { signal }),
+  healthTarget: (uuid: string, range: HealthRange, signal?: AbortSignal) =>
+    request<TargetDetail>(`/health/targets/${encodeURIComponent(uuid)}${query({ range })}`, { signal }),
+  listOutages: (
+    params: { page?: number; page_size?: number; target_uuid?: string } = {},
+    signal?: AbortSignal,
+  ) => request<Page<Outage>>(`/health/outages${query(params)}`, { signal }),
+  createNetworkDevice: (data: NetworkDeviceCreate) =>
+    request<NetworkDevice>("/health/devices", { method: "POST", body: data }),
+  updateNetworkDevice: (uuid: string, data: NetworkDeviceUpdate) =>
+    request<NetworkDevice>(`/health/devices/${encodeURIComponent(uuid)}`, { method: "PATCH", body: data }),
+  deleteNetworkDevice: (uuid: string) =>
+    request<void>(`/health/devices/${encodeURIComponent(uuid)}`, { method: "DELETE" }),
+  setCameraLink: (cameraUuid: string, data: CameraLinkUpdate) =>
+    request<CameraLink>(`/health/camera-links/${encodeURIComponent(cameraUuid)}`, { method: "PUT", body: data }),
 }

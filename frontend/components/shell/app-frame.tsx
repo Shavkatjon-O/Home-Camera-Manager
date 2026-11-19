@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { CctvIcon, LayoutGridIcon, ListIcon, LogOutIcon, RadarIcon, WifiIcon } from "lucide-react"
+import { ActivityIcon, CctvIcon, LayoutGridIcon, ListIcon, LogOutIcon, RadarIcon, WifiIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { IconButton } from "@/components/shell/icon-button"
@@ -19,6 +19,7 @@ const TABS = [
   { href: "/cameras/", label: "Cameras", icon: ListIcon, match: (path: string) => path.startsWith("/cameras/") },
   { href: "/discover/", label: "Discover", icon: RadarIcon, match: (path: string) => path.startsWith("/discover/") },
   { href: "/coverage/", label: "Coverage", icon: WifiIcon, match: (path: string) => path.startsWith("/coverage/") },
+  { href: "/health/", label: "Health", icon: ActivityIcon, match: (path: string) => path.startsWith("/health/") },
 ]
 
 function normalize(path: string | null): string {
@@ -28,8 +29,31 @@ function normalize(path: string | null): string {
 
 function NavTabs() {
   const pathname = normalize(usePathname())
+  const navRef = React.useRef<HTMLElement>(null)
+
+  React.useEffect(() => {
+    const nav = navRef.current
+    if (!nav) return
+    const reveal = () => {
+      const active = nav.querySelector<HTMLElement>("[aria-current='page']")
+      if (!active) return
+      const bounds = nav.getBoundingClientRect()
+      const box = active.getBoundingClientRect()
+      if (box.right > bounds.right) nav.scrollLeft += box.right - bounds.right
+      else if (box.left < bounds.left) nav.scrollLeft -= bounds.left - box.left
+    }
+    reveal()
+    const observer = new ResizeObserver(reveal)
+    observer.observe(nav)
+    return () => observer.disconnect()
+  }, [pathname])
+
   return (
-    <nav aria-label="Sections" className="flex h-full items-stretch gap-0.5">
+    <nav
+      ref={navRef}
+      aria-label="Sections"
+      className="flex h-full min-w-0 items-stretch gap-0.5 overflow-x-auto [scrollbar-width:none]"
+    >
       {TABS.map((tab) => {
         const active = tab.match(pathname)
         const Icon = tab.icon
@@ -40,7 +64,7 @@ function NavTabs() {
             aria-label={tab.label}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "relative flex items-center px-2 font-mono text-xs transition-colors sm:px-2.5",
+              "relative flex shrink-0 items-center px-2 font-mono text-xs transition-colors sm:px-2.5",
               active
                 ? "text-foreground after:absolute after:inset-x-2 after:bottom-0 after:h-[2px] after:bg-foreground"
                 : "text-text-2 hover:text-foreground",

@@ -217,3 +217,134 @@ export interface TvDevice {
 export interface TvDeviceList {
   items: TvDevice[]
 }
+
+export type DeviceKind = "router" | "access_point" | "repeater" | "switch" | "other"
+
+export type LinkKind = "cable" | "wifi_24" | "wifi_5"
+
+export type TargetKind = "device" | "camera"
+
+export type TargetStatus = "up" | "degraded" | "down" | "unknown" | "disabled"
+
+export type HealthRange = "1h" | "24h" | "7d"
+
+export interface LatencyStats {
+  avg_ms: number | null
+  p50_ms: number | null
+  p95_ms: number | null
+  max_ms: number | null
+}
+
+export interface HealthBucket {
+  start: string
+  samples: number
+  availability: number | null
+  latency_ms: number | null
+}
+
+export interface OutageBrief {
+  uuid: string
+  started_at: string
+  ended_at: string | null
+  duration_seconds: number
+  upstream_uuid: string | null
+  upstream_name: string | null
+}
+
+export interface TargetHealth {
+  uuid: string
+  kind: TargetKind
+  device_kind: DeviceKind | null
+  name: string
+  host: string
+  port: number
+  parent_uuid: string | null
+  parent_name: string | null
+  link: LinkKind | null
+  notes: string | null
+  enabled: boolean
+  status: TargetStatus
+  last_sample_at: string | null
+  last_error: string | null
+  samples: number
+  uptime_percent: number | null
+  latency: LatencyStats
+  outage_count: number
+  last_outage: OutageBrief | null
+  buckets: HealthBucket[]
+}
+
+export interface HealthOverview {
+  range: HealthRange
+  since: string
+  until: string
+  bucket_seconds: number
+  interval_seconds: number
+  targets: TargetHealth[]
+}
+
+export interface TargetDetail {
+  range: HealthRange
+  since: string
+  until: string
+  bucket_seconds: number
+  interval_seconds: number
+  target: TargetHealth
+}
+
+export interface Outage {
+  uuid: string
+  target_kind: TargetKind
+  target_uuid: string
+  target_name: string | null
+  started_at: string
+  ended_at: string | null
+  ongoing: boolean
+  duration_seconds: number
+  failed_samples: number
+  upstream_uuid: string | null
+  upstream_name: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface NetworkDevice {
+  uuid: string
+  name: string
+  kind: DeviceKind
+  host: string
+  probe_port: number
+  parent_uuid: string | null
+  parent_name: string | null
+  link: LinkKind | null
+  notes: string | null
+  enabled: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface NetworkDeviceCreate {
+  name: string
+  kind: DeviceKind
+  host: string
+  probe_port?: number
+  parent_uuid?: string | null
+  link?: LinkKind | null
+  notes?: string | null
+  enabled?: boolean
+}
+
+export type NetworkDeviceUpdate = Partial<NetworkDeviceCreate>
+
+export interface CameraLinkUpdate {
+  parent_uuid: string | null
+  link: LinkKind | null
+}
+
+export interface CameraLink {
+  camera_uuid: string
+  parent_uuid: string | null
+  parent_name: string | null
+  link: LinkKind | null
+  updated_at: string | null
+}

@@ -6,9 +6,9 @@ A web app for the home IP cameras: register cameras, watch one camera large, wat
 
 | Service | Image | Role |
 |---|---|---|
-| postgres | postgres:17.6-alpine | Users, the camera registry and the floor plans |
+| postgres | postgres:17.6-alpine | Users, the camera registry, the floor plans, the network devices and the health samples and outages |
 | go2rtc | alexxit/go2rtc:1.9.14-hardware | Pulls each camera's RTSP stream and serves it to the browser, encoding H.264 on the NVIDIA GPU when needed, and serves the composed TV streams over RTSP |
-| backend | home-cameras-backend:local | FastAPI: sign in, cameras, discovery, ONVIF PTZ, floor plans, TV pairing, go2rtc stream registration and status probes |
+| backend | home-cameras-backend:local | FastAPI: sign in, cameras, discovery, ONVIF PTZ, floor plans, TV pairing, go2rtc stream registration, status probes and the network health prober |
 | v380-ptz-1, v380-ptz-2 | home-cameras-v380-bridge:local | One bridge per V380 camera: logs in over the V380 protocol on port 8800, decrypts the stream and serves it as RTSP on 8554 and ONVIF with PTZ on 8080 |
 | web | home-cameras-web:local | nginx serving the Next.js static export and proxying the API and the video websocket |
 
@@ -30,6 +30,15 @@ Set HC_SECRET_KEY to a long random value, HC_TV_RTSP_PASSWORD to another one and
 - **Cameras** - the registry: add, edit, delete and the wall order. Detect reads stream paths and PTZ support from the camera over ONVIF. TV pairs a TV by the code it shows and lists or revokes paired TVs.
 - **Discover** - scans the home subnet for cameras and opens the add form prefilled for any it finds; a camera counts as added when its address matches a camera's host or device address.
 - **Coverage** - plans Wi-Fi coverage on a floor plan: routers, optional walls by material, devices and an optional background image whose shape sets the plan height. A heatmap shows the predicted signal per band with distance and wall loss, the side panel gives the covered share and what each router serves, and Suggest placement moves unlocked routers to the spots that cover the most area. Where no walls are drawn the model assumes open space.
+- **Health** - how stable each router and camera is over the last hour, 24 hours or 7 days: a card per target with its status, uptime, typical and p95 latency, outage count, an availability strip and a latency line, and an outage log below. A card opens a side panel with a finer latency chart, the target's outages with the device that caused them, and editing of the device or of how the camera connects.
+
+## Health
+
+The backend probes every enabled network device and camera every HC_HEALTH_INTERVAL_SECONDS with a TCP connect that gives up after 1.5 s, and stores one sample per target with its latency or error. A device is probed on its address and probe port; a camera on its RTSP host and port, or on its device address and the V380 port 8800 when it streams through a bridge, because the bridge container answers even when the camera is gone. Samples older than HC_HEALTH_RETENTION_DAYS are deleted every hour.
+
+Each network device and each camera link names the device it connects through and how: cable, Wi-Fi 2.4 GHz or Wi-Fi 5 GHz. Two failed samples in a row open an outage that starts at the first of them, and the first answer closes it. When the upstream device of a target is down at the start of the target's outage, or goes down within two probe intervals after it, the outage counts as caused upstream and names the top device of that chain, so a camera behind a repeater that dropped with the main router names the main router.
+
+Uptime is the share of answered samples in the range; latency figures cover answered samples only. The 1 hour range shows 1 minute bars, 24 hours 15 minute bars and 7 days 2 hour bars, and the side panel's chart uses 30 second, 5 minute and 30 minute bars. Bars are green when every sample answered, amber when some did, red when none did and grey without samples.
 
 ## Cameras
 

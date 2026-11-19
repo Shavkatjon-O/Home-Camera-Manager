@@ -41,4 +41,6 @@ alembic revision --autogenerate -m "<message>"
 - Keep the go2rtc h264 template on h264_nvenc with CPU decoding, because software x264 on the 5 MP streams misses go2rtc's start timeout and GPU decoding fails on the PTZ 1 bridge stream.
 - Build the V380 bridge from the pinned upstream pull request commit in v380-bridge/Dockerfile, because the released decoder stalls on short stream login replies and the camera resets the connection.
 - Never publish bridge ports, because their RTSP and ONVIF have no authentication.
+- Probe a bridged camera's health on its device address and port 8800, never on the bridge, because the bridge container answers even when the camera is gone.
+- Keep camera links in the health module and read camera fields there without changing the cameras module, because the health page must not touch the registry the wall and the TV depend on.
 - No comments, emojis or non-ASCII characters in code, configs or docs.

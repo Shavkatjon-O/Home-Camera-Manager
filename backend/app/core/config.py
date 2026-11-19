@@ -31,6 +31,9 @@ class Settings(BaseSettings):
 
     monitor_interval_seconds: int = 20
 
+    health_interval_seconds: int = 10
+    health_retention_days: int = 14
+
     @property
     def database_url(self) -> str:
         url = URL.create(
