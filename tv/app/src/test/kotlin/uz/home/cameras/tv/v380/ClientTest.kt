@@ -13,7 +13,7 @@ import org.junit.Test
 
 class ClientTest {
     private val ticket = 0x0BADF00DL
-    private val deviceId = 11223344L
+    private val deviceId = 12345678L
 
     private fun fragment(type: Int, total: Int, index: Int, payload: ByteArray): ByteArray {
         val header = ByteArray(12)

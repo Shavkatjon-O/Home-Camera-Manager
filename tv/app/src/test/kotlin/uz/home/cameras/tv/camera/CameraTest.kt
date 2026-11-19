@@ -17,7 +17,7 @@ class CameraTest {
         ptz1.name=PTZ 1
         ptz1.kind=v380
         ptz1.host=192.168.1.237
-        ptz1.device=11223344
+        ptz1.device=12345678
         ptz1.password=x
         ptz1.lenses=2
         broken.kind=onvif
@@ -35,7 +35,7 @@ class CameraTest {
         val ptz = cameras[1]
         assertEquals(Kind.V380, ptz.kind)
         assertEquals(8800, ptz.port)
-        assertEquals(11223344L, ptz.deviceId)
+        assertEquals(12345678L, ptz.deviceId)
         assertEquals(2, ptz.lenses)
         assertEquals("192.168.1.237", ptz.address)
     }

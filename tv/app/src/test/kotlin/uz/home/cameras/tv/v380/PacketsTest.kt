@@ -10,13 +10,13 @@ class PacketsTest {
     @Test
     fun authRequestUsesTheLanLayout() {
         val password = ByteArray(64) { (it + 1).toByte() }
-        val packet = Packets.auth(11223344L, "admin", password)
+        val packet = Packets.auth(12345678L, "admin", password)
         assertEquals(520, packet.size)
         assertEquals(1167L, packet.u32(0))
         assertEquals(120L, packet.u32(4))
         assertEquals(31, packet[8].toInt())
         assertEquals(1L, packet.u32(9))
-        assertEquals(11223344L, packet.u32(13))
+        assertEquals(12345678L, packet.u32(13))
         assertEquals("admin", String(packet, 49, 5))
         assertEquals(0, packet[54].toInt())
         assertEquals(1, packet[81].toInt())
@@ -45,15 +45,15 @@ class PacketsTest {
 
     @Test
     fun streamLoginCarriesQualityAndAudio() {
-        val sd = Packets.login(55667788L, 0xCAFEL, hd = false, audio = false)
+        val sd = Packets.login(87654321L, 0xCAFEL, hd = false, audio = false)
         assertEquals(256, sd.size)
         assertEquals(301L, sd.u32(0))
-        assertEquals(55667788L, sd.u32(4))
+        assertEquals(87654321L, sd.u32(4))
         assertEquals(20, sd.u16(12))
         assertEquals(0xCAFEL, sd.u32(14))
         assertEquals(4096L, sd.u32(22))
         assertEquals(0L, sd.u32(26))
-        val hd = Packets.login(55667788L, 0xCAFEL, hd = true, audio = true)
+        val hd = Packets.login(87654321L, 0xCAFEL, hd = true, audio = true)
         assertEquals(4097L, hd.u32(22))
         assertEquals(1L, hd.u32(26))
     }
