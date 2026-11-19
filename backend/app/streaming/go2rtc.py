@@ -1,3 +1,5 @@
+"""Client for the go2rtc stream API."""
+
 import httpx
 
 STREAMS_PATH = "/api/streams"
@@ -6,32 +8,70 @@ DEFAULT_TIMEOUT_SECONDS = 5.0
 
 
 class Go2rtcError(Exception):
+    """Error raised when go2rtc does not answer or refuses a request."""
+
     pass
 
 
 class Go2rtcClient:
+    """Async client for the go2rtc stream list, registration and probing.
+
+    Attributes:
+        base_url: Base URL of the go2rtc API without a trailing slash.
+        timeout: Default request timeout in seconds.
+        http: Shared HTTP client, created on first use and recreated once closed.
+    """
+
     def __init__(self, base_url: str, timeout: float = DEFAULT_TIMEOUT_SECONDS):
+        """Bind the client to a go2rtc instance.
+
+        Args:
+            base_url: Base URL of the go2rtc API.
+            timeout: Default request timeout in seconds.
+        """
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
         self.http: httpx.AsyncClient | None = None
 
     def client(self) -> httpx.AsyncClient:
+        """Return the shared HTTP client, creating it when it is missing or closed."""
         if self.http is None or self.http.is_closed:
             self.http = httpx.AsyncClient(base_url=self.base_url, timeout=self.timeout)
         return self.http
 
     async def close(self) -> None:
+        """Close the shared HTTP client if it is open."""
         if self.http is not None and not self.http.is_closed:
             await self.http.aclose()
         self.http = None
 
     async def request(self, method: str, params: list[tuple[str, str]] | None = None) -> httpx.Response:
+        """Send a request to the go2rtc stream endpoint.
+
+        Args:
+            method: HTTP method.
+            params: Query parameters as name and value pairs.
+
+        Returns:
+            The response, whatever its status.
+
+        Raises:
+            Go2rtcError: When go2rtc cannot be reached.
+        """
         try:
             return await self.client().request(method, STREAMS_PATH, params=params)
         except httpx.HTTPError as exc:
             raise Go2rtcError(f"go2rtc does not answer ({type(exc).__name__})")
 
     async def snapshot(self) -> dict[str, dict]:
+        """Fetch the full stream list with producers and consumers.
+
+        Returns:
+            The go2rtc info of every stream, keyed by stream name, with an empty dict for a stream without info.
+
+        Raises:
+            Go2rtcError: When go2rtc answers with a status other than 200 or with invalid JSON.
+        """
         response = await self.request("GET")
         if response.status_code != 200:
             raise Go2rtcError(f"go2rtc answered HTTP {response.status_code} to the stream list")
@@ -42,6 +82,11 @@ class Go2rtcClient:
         return {name: info or {} for name, info in data.items()}
 
     async def streams(self) -> dict[str, list[str]]:
+        """List the source URLs of every stream.
+
+        Returns:
+            The producer URLs of each stream, keyed by stream name.
+        """
         result = {}
         for name, info in (await self.snapshot()).items():
             producers = info.get("producers") or []
@@ -49,6 +94,11 @@ class Go2rtcClient:
         return result
 
     async def consumer_agents(self) -> dict[str, list[str]]:
+        """List the user agents of the consumers of every stream.
+
+        Returns:
+            The user agent of each consumer per stream, keyed by stream name, with an empty string for a missing agent.
+        """
         result = {}
         for name, info in (await self.snapshot()).items():
             consumers = info.get("consumers") or []
@@ -56,6 +106,11 @@ class Go2rtcClient:
         return result
 
     async def received(self) -> dict[str, int | None]:
+        """Sum the bytes received from the producers of every stream.
+
+        Returns:
+            The total of received bytes per stream, or None when no producer has received anything.
+        """
         result = {}
         for name, info in (await self.snapshot()).items():
             counts = [producer["bytes_recv"] for producer in info.get("producers") or [] if producer.get("bytes_recv")]
@@ -63,6 +118,17 @@ class Go2rtcClient:
         return result
 
     async def probe(self, name: str, timeout: float) -> bool:
+        """Check whether a stream delivers video.
+
+        Asks go2rtc to connect to the stream and looks for a video media in its producers.
+
+        Args:
+            name: Stream name.
+            timeout: Request timeout in seconds.
+
+        Returns:
+            True when a producer offers a video media, False on any failure.
+        """
         try:
             response = await self.client().get(STREAMS_PATH, params=[("src", name), ("video", "")], timeout=timeout)
         except httpx.HTTPError:
@@ -79,6 +145,17 @@ class Go2rtcClient:
         return False
 
     async def put(self, name: str, sources: list[str]) -> None:
+        """Register a stream with the given sources.
+
+        A refused request is accepted when the stream already exists with exactly these sources.
+
+        Args:
+            name: Stream name.
+            sources: Source URLs of the stream.
+
+        Raises:
+            Go2rtcError: When go2rtc refuses the stream and it does not exist with these sources.
+        """
         params = [("name", name), *(("src", source) for source in sources)]
         response = await self.request("PUT", params)
         if response.is_success:
@@ -89,6 +166,16 @@ class Go2rtcClient:
         raise Go2rtcError(f"go2rtc refused the stream {name} with HTTP {response.status_code}")
 
     async def delete(self, name: str) -> None:
+        """Remove a stream.
+
+        A refused request is accepted when the stream no longer exists.
+
+        Args:
+            name: Stream name.
+
+        Raises:
+            Go2rtcError: When go2rtc refuses to remove a stream that still exists.
+        """
         response = await self.request("DELETE", [("src", name)])
         if response.is_success:
             return

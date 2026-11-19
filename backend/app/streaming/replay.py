@@ -1,3 +1,5 @@
+"""Temporary go2rtc streams for SD card playback, one session per camera."""
+
 import asyncio
 import logging
 import time
@@ -21,11 +23,24 @@ FAILURES_KEPT = 50
 
 
 class ReplayBusy(Exception):
+    """Error raised when another viewer is playing a recording from the camera."""
+
     pass
 
 
 @dataclass
 class ReplaySession:
+    """One open playback of a recording.
+
+    Attributes:
+        id: Session identifier.
+        camera_uuid: Camera being played.
+        name: go2rtc stream name of the session.
+        start: Start time of the recording.
+        opened_at: Monotonic time when the session opened.
+        task: Task watching the session.
+    """
+
     id: str
     camera_uuid: UUID
     name: str
@@ -36,6 +51,16 @@ class ReplaySession:
 
 @dataclass(frozen=True)
 class ReplayStatus:
+    """Playback state of a camera.
+
+    Attributes:
+        active: Whether a session is open.
+        session: Identifier of the open session.
+        stream: Stream name of the open session.
+        start: Start time of the recording being played.
+        failure: Reason the last session failed, when no session is open.
+    """
+
     active: bool
     session: str | None
     stream: str | None
@@ -44,32 +69,86 @@ class ReplayStatus:
 
 
 def replay_name(camera_uuid: UUID) -> str:
+    """Build the go2rtc stream name of the playback of a camera.
+
+    Args:
+        camera_uuid: Camera identifier.
+
+    Returns:
+        The camera UUID in hex followed by replay.
+    """
     return f"{camera_uuid.hex}_replay"
 
 
 def flow(info: dict) -> tuple[int, int]:
+    """Measure the activity of a go2rtc stream.
+
+    Args:
+        info: go2rtc info of the stream.
+
+    Returns:
+        The number of consumers and the bytes received by all producers.
+    """
     consumers = len(info.get("consumers") or [])
     received = sum(producer.get("bytes_recv") or 0 for producer in info.get("producers") or [])
     return consumers, received
 
 
 class ReplayStreams:
+    """Opens, watches and ends the playback streams of the cameras.
+
+    Attributes:
+        go2rtc: Client used to register and remove the streams.
+        sessions: Open session of each camera.
+        failures: Reason the latest session of a camera failed, newest last and limited in number.
+        locks: Lock of each camera that serializes opening and closing.
+    """
+
     def __init__(self, go2rtc: Go2rtcClient):
+        """Create the manager with no sessions.
+
+        Args:
+            go2rtc: Client used to register and remove the streams.
+        """
         self.go2rtc = go2rtc
         self.sessions: dict[UUID, ReplaySession] = {}
         self.failures: dict[UUID, str] = {}
         self.locks: dict[UUID, asyncio.Lock] = {}
 
     def lock(self, camera_uuid: UUID) -> asyncio.Lock:
+        """Return the lock of a camera, creating it on first use.
+
+        Args:
+            camera_uuid: Camera identifier.
+
+        Returns:
+            The lock that serializes changes to the playback of the camera.
+        """
         return self.locks.setdefault(camera_uuid, asyncio.Lock())
 
     def status(self, camera_uuid: UUID) -> ReplayStatus:
+        """Describe the playback state of a camera.
+
+        Args:
+            camera_uuid: Camera identifier.
+
+        Returns:
+            The open session, or the last failure when none is open.
+        """
         session = self.sessions.get(camera_uuid)
         if session is None:
             return ReplayStatus(False, None, None, None, self.failures.get(camera_uuid))
         return ReplayStatus(True, session.id, session.name, session.start, None)
 
     async def watchers(self, name: str) -> int:
+        """Count the consumers of a stream.
+
+        Args:
+            name: Stream name.
+
+        Returns:
+            The number of consumers, or zero when the stream is missing or go2rtc cannot be read.
+        """
         try:
             info = (await self.go2rtc.snapshot()).get(name)
         except Go2rtcError:
@@ -77,6 +156,23 @@ class ReplayStreams:
         return flow(info)[0] if info else 0
 
     async def open(self, camera_uuid: UUID, url: str, start: datetime, session_id: str | None) -> ReplaySession:
+        """Open the playback of a recording, replacing the camera's current one.
+
+        Only one session exists per camera. A request for nearly the same start time returns the current session.
+        Replacing a session that has viewers is refused unless the request comes from that session.
+
+        Args:
+            camera_uuid: Camera identifier.
+            url: RTSP URL of the recording.
+            start: Start time of the recording.
+            session_id: Identifier of the session the caller already holds, if any.
+
+        Returns:
+            The session now playing.
+
+        Raises:
+            ReplayBusy: When another viewer is playing a recording from the camera.
+        """
         async with self.lock(camera_uuid):
             current = self.sessions.get(camera_uuid)
             if current is not None:
@@ -93,6 +189,13 @@ class ReplayStreams:
             return session
 
     async def close(self, camera_uuid: UUID, session_id: str | None) -> None:
+        """Close the playback of a camera.
+
+        Args:
+            camera_uuid: Camera identifier.
+            session_id: Identifier of the session to close, or None to close whichever is open. A different identifier
+                leaves the session open.
+        """
         async with self.lock(camera_uuid):
             current = self.sessions.get(camera_uuid)
             if current is None or (session_id and session_id != current.id):
@@ -100,6 +203,12 @@ class ReplayStreams:
             await self.end(current, None)
 
     async def end(self, session: ReplaySession, failure: str | None) -> None:
+        """End a session, stop its watcher and remove its stream.
+
+        Args:
+            session: Session to end.
+            failure: Reason to remember when the session failed.
+        """
         if self.sessions.get(session.camera_uuid) is session:
             del self.sessions[session.camera_uuid]
         if failure:
@@ -116,6 +225,11 @@ class ReplayStreams:
             logger.warning("Removing the replay stream %s failed: %s", session.name, exc)
 
     async def watch(self, session: ReplaySession) -> None:
+        """Watch a session and end it when its stream disappears, stalls, idles or exceeds its maximum length.
+
+        Args:
+            session: Session to watch.
+        """
         received = 0
         changed_at = time.monotonic()
         seen_at = time.monotonic()

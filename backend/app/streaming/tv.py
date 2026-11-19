@@ -1,3 +1,5 @@
+"""Builds the ffmpeg commands that compose the camera wall and single tiles for the TV."""
+
 import re
 from dataclasses import dataclass
 from urllib.parse import quote
@@ -53,12 +55,29 @@ WALLCLOCK = "setpts=(RTCTIME-RTCSTART)/(TB*1000000)"
 
 @dataclass(frozen=True)
 class TvCommand:
+    """ffmpeg command of one TV stream.
+
+    Attributes:
+        args: ffmpeg arguments.
+        inputs: Camera stream name read for each camera shown in the command.
+    """
+
     args: list[str]
     inputs: dict[UUID, str]
 
 
 @dataclass(frozen=True)
 class Frame:
+    """Rectangle of the wall canvas that shows one picture.
+
+    Attributes:
+        cell: Wall cell the rectangle belongs to.
+        x: Left edge in pixels.
+        y: Top edge in pixels.
+        width: Width in pixels.
+        height: Height in pixels.
+    """
+
     cell: WallCell
     x: int
     y: int
@@ -67,10 +86,26 @@ class Frame:
 
 
 def tile_name(index: int) -> str:
+    """Build the TV stream name of a tile.
+
+    Args:
+        index: Cell index.
+
+    Returns:
+        The tile stream name.
+    """
     return f"{TV_TILE_PREFIX}{index}"
 
 
 def tile_index(name: str) -> int | None:
+    """Read the cell index from a TV tile stream name.
+
+    Args:
+        name: TV stream name.
+
+    Returns:
+        The index, or None when the name is not a tile name or the index is at or above the tile limit.
+    """
     match = TILE_PATTERN.match(name)
     if match is None:
         return None
@@ -79,6 +114,17 @@ def tile_index(name: str) -> int | None:
 
 
 def tv_url(name: str, host: str, username: str, password: str) -> str:
+    """Build the RTSP URL a TV uses to read a TV stream.
+
+    Args:
+        name: TV stream name.
+        host: Host of the go2rtc RTSP port.
+        username: Login name.
+        password: Password, omitted from the URL when empty.
+
+    Returns:
+        The RTSP URL with percent-encoded credentials.
+    """
     credentials = quote(username, safe="")
     if password:
         credentials = f"{credentials}:{quote(password, safe='')}"
@@ -86,20 +132,54 @@ def tv_url(name: str, host: str, username: str, password: str) -> str:
 
 
 def even(value: int) -> int:
+    """Round a size down to an even number of at least 2.
+
+    Args:
+        value: Size in pixels.
+
+    Returns:
+        The even size.
+    """
     return max(2, value - value % 2)
 
 
 def wall_source(camera: Camera) -> str:
+    """Choose the stream kind a camera contributes to the wall.
+
+    Args:
+        camera: Camera shown on the wall.
+
+    Returns:
+        The sub stream when the camera has one, otherwise the main stream.
+    """
     return SUB if camera.sub_path else MAIN
 
 
 def lens_crop(lens: int | None, lenses: int) -> str | None:
+    """Build the crop filter that cuts one lens out of a stacked multi-lens picture.
+
+    Args:
+        lens: Lens index, or None for a whole picture.
+        lenses: Number of lenses of the camera.
+
+    Returns:
+        The crop filter, or None when no crop is needed.
+    """
     if lens is None or lenses <= 1:
         return None
     return f"crop=iw:ih/{lenses}:0:ih*{lens}/{lenses}"
 
 
 def fit(width: int, height: int) -> str:
+    """Build the filters that scale a picture into a rectangle, padding to keep its aspect ratio.
+
+    Args:
+        width: Rectangle width in pixels.
+        height: Rectangle height in pixels.
+
+    Returns:
+        The filter chain.
+    """
     return (
         f"scale={width}:{height}:force_original_aspect_ratio=decrease:force_divisible_by=2:flags=bilinear:out_range=limited,"
         f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p"
@@ -107,11 +187,27 @@ def fit(width: int, height: int) -> str:
 
 
 def frame_chain(frame: Frame) -> str:
+    """Build the filter chain that crops the lens and fits the picture into its rectangle.
+
+    Args:
+        frame: Rectangle to fill.
+
+    Returns:
+        The filter chain.
+    """
     crop = lens_crop(frame.cell.item.lens, frame.cell.item.camera.lenses)
     return ",".join(part for part in (crop, fit(frame.width, frame.height)) if part)
 
 
 def canvas(frames: list[Frame]) -> str:
+    """Build the lavfi source of the base canvas, with an offline label centred in every rectangle.
+
+    Args:
+        frames: Rectangles on the canvas.
+
+    Returns:
+        The lavfi filter graph of the canvas.
+    """
     parts = [f"color=c={CANVAS_COLOR}:s={WALL_WIDTH}x{WALL_HEIGHT}:r={WALL_FPS}"]
     for frame in frames:
         size = max(CANVAS_TEXT_MIN, frame.height // CANVAS_TEXT_RATIO)
@@ -126,6 +222,14 @@ def canvas(frames: list[Frame]) -> str:
 
 
 def encoder_options(bitrate: str) -> list[str]:
+    """Build the video encoder and RTSP output options.
+
+    Args:
+        bitrate: Constant video bitrate.
+
+    Returns:
+        The ffmpeg options.
+    """
     return [
         "-an",
         "-c:v",
@@ -156,6 +260,20 @@ def encoder_options(bitrate: str) -> list[str]:
 
 
 def compose(frames: list[Frame], sources: dict[UUID, str], offline: set[UUID], bitrate: str) -> TvCommand:
+    """Build the ffmpeg command that overlays camera pictures on the canvas.
+
+    Each camera is opened once even when it fills several rectangles. Cameras that are offline are not opened and
+    their rectangles keep the canvas label.
+
+    Args:
+        frames: Rectangles to fill.
+        sources: Camera stream name of each camera.
+        offline: Cameras to leave out.
+        bitrate: Constant video bitrate of the output.
+
+    Returns:
+        The command and the camera streams it reads.
+    """
     args = [*GLOBAL_OPTIONS, "-re", "-f", "lavfi", "-i", canvas(frames)]
     numbers: dict[UUID, int] = {}
     inputs: dict[UUID, str] = {}
@@ -201,12 +319,30 @@ def compose(frames: list[Frame], sources: dict[UUID, str], offline: set[UUID], b
 
 
 def wall_frames(plan: WallPlan) -> list[Frame]:
+    """Place the cells of a plan on the wall canvas.
+
+    Args:
+        plan: Wall plan.
+
+    Returns:
+        One rectangle per cell, in equal even sized grid cells.
+    """
     width = even(WALL_WIDTH // plan.cols)
     height = even(WALL_HEIGHT // plan.rows)
     return [Frame(cell, cell.col * width, cell.row * height, width, height) for cell in plan.cells]
 
 
 def stream_sources(plan: WallPlan, name: str) -> dict[UUID, str] | None:
+    """Find the camera streams a TV stream shows.
+
+    Args:
+        plan: Wall plan.
+        name: TV stream name.
+
+    Returns:
+        The camera stream name of each camera, or None when the name is unknown or shows no camera. The wall uses the
+        sub stream where there is one and a tile uses the main stream.
+    """
     if name == TV_WALL:
         if not plan.cells:
             return None
@@ -222,6 +358,16 @@ def stream_sources(plan: WallPlan, name: str) -> dict[UUID, str] | None:
 
 
 def stream_command(plan: WallPlan, name: str, offline: set[UUID] | None = None) -> TvCommand | None:
+    """Build the ffmpeg command of a TV stream.
+
+    Args:
+        plan: Wall plan.
+        name: TV stream name.
+        offline: Cameras to leave out, if any.
+
+    Returns:
+        The command, or None when the name is unknown or shows no camera.
+    """
     sources = stream_sources(plan, name)
     if sources is None:
         return None

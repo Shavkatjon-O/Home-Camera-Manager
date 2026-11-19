@@ -1,3 +1,5 @@
+"""Liveness tracking of the camera streams that feed the TV wall."""
+
 import asyncio
 import logging
 import time
@@ -27,18 +29,51 @@ COOLDOWN_MAX_SECONDS = 600.0
 
 @dataclass
 class Issued:
+    """TV ffmpeg command last handed out for a TV stream.
+
+    Attributes:
+        command: Command that was handed out.
+        at: Clock time when it was handed out.
+    """
+
     command: TvCommand
     at: float
 
 
 @dataclass
 class Cooldown:
+    """Back-off period during which a camera is left out of the TV wall.
+
+    Attributes:
+        until: Clock time when the cooldown ends.
+        step: Length of this cooldown in seconds.
+    """
+
     until: float
     step: float
 
 
 class TvLiveness:
+    """Decides which cameras are left out of the TV streams and tracks how the issued commands fare.
+
+    Attributes:
+        go2rtc: Client used to read stream counters, consumers and probes.
+        statuses: Store of the latest reachability results.
+        clock: Function returning the current time in seconds.
+        probes: Time and outcome of the latest video probe of each stream.
+        samples: Time and received byte count of the latest sample of each stream.
+        cooldowns: Active or expired cooldown of each camera.
+        issued: Command last handed out for each TV stream.
+    """
+
     def __init__(self, go2rtc: Go2rtcClient, statuses: StatusStore, clock: Callable[[], float] = time.monotonic):
+        """Create the tracker with empty state.
+
+        Args:
+            go2rtc: Client used to read stream counters, consumers and probes.
+            statuses: Store of the latest reachability results.
+            clock: Function returning the current time in seconds.
+        """
         self.go2rtc = go2rtc
         self.statuses = statuses
         self.clock = clock
@@ -49,19 +84,52 @@ class TvLiveness:
         self.issued: dict[str, Issued] = {}
 
     def cooling(self, camera_uuid: UUID, now: float) -> bool:
+        """Tell whether a camera is in a cooldown.
+
+        Args:
+            camera_uuid: Camera identifier.
+            now: Current time in seconds.
+
+        Returns:
+            True when the cooldown of the camera has not yet ended.
+        """
         cooldown = self.cooldowns.get(camera_uuid)
         return cooldown is not None and cooldown.until > now
 
     def lose(self, camera_uuid: UUID, now: float) -> None:
+        """Start a cooldown for a camera that could not be shown.
+
+        The first cooldown is one minute and each further one doubles, up to ten minutes.
+
+        Args:
+            camera_uuid: Camera identifier.
+            now: Current time in seconds.
+        """
         previous = self.cooldowns.get(camera_uuid)
         step = COOLDOWN_FIRST_SECONDS if previous is None else min(previous.step * 2, COOLDOWN_MAX_SECONDS)
         self.cooldowns[camera_uuid] = Cooldown(until=now + step, step=step)
 
     def settle(self, camera_uuid: UUID, now: float) -> None:
+        """Forget the cooldown history of a camera that is shown again, unless it is still cooling.
+
+        Args:
+            camera_uuid: Camera identifier.
+            now: Current time in seconds.
+        """
         if not self.cooling(camera_uuid, now):
             self.cooldowns.pop(camera_uuid, None)
 
     async def probe(self, name: str, now: float, fresh: bool = False) -> bool:
+        """Check whether a camera stream delivers video, reusing a recent result.
+
+        Args:
+            name: Stream name.
+            now: Current time in seconds.
+            fresh: Whether to ignore a cached result.
+
+        Returns:
+            True when the stream delivers video.
+        """
         cached = self.probes.get(name)
         if not fresh and cached is not None and now - cached[0] < PROBE_TTL_SECONDS:
             return cached[1]
@@ -70,6 +138,19 @@ class TvLiveness:
         return alive
 
     async def flowing(self, streams: list[str], wait: bool) -> dict[str, bool | None]:
+        """Tell whether bytes are still arriving on streams by comparing counter samples over time.
+
+        A stream without an earlier usable sample is sampled now. With wait set the check pauses for a second and
+        compares again; without it such streams count as flowing.
+
+        Args:
+            streams: Stream names.
+            wait: Whether to pause and sample again for streams without a usable earlier sample.
+
+        Returns:
+            True or False per stream, or None when go2rtc has received nothing on the stream. Every stream is None when
+            the counters cannot be read.
+        """
         try:
             current = await self.go2rtc.received()
         except Go2rtcError as exc:
@@ -99,6 +180,19 @@ class TvLiveness:
         return result
 
     async def offline(self, sources: dict[UUID, str], known_offline: set[UUID], fresh: bool = False) -> set[UUID]:
+        """Find the cameras to leave out of a TV stream.
+
+        A camera is left out when it is known offline, is cooling down, has a stalled stream, or has no data and
+        fails a video probe.
+
+        Args:
+            sources: Camera stream name of each camera.
+            known_offline: Cameras already known to be offline.
+            fresh: Whether to wait for a new counter sample and ignore cached probes.
+
+        Returns:
+            The identifiers of the cameras to leave out.
+        """
         now = self.clock()
         result = {uuid for uuid in sources if uuid in known_offline or self.cooling(uuid, now)}
         pending = [(camera_uuid, name) for camera_uuid, name in sources.items() if camera_uuid not in result]
@@ -110,6 +204,13 @@ class TvLiveness:
         return result
 
     async def watch(self, name: str) -> None:
+        """Check that the inputs of the issued command are being read and start cooldowns for the ones that are not.
+
+        Nothing is checked until the command is past its start grace period.
+
+        Args:
+            name: TV stream name.
+        """
         issued = self.issued.get(name)
         now = self.clock()
         if issued is None or not issued.command.inputs or now - issued.at < START_GRACE_SECONDS:
@@ -128,6 +229,12 @@ class TvLiveness:
                 logger.info("The TV stream %s lost the camera stream %s", name, stream)
 
     def fail(self, name: str, stream: str) -> None:
+        """Start a cooldown for the cameras whose input the TV ffmpeg could not open.
+
+        Args:
+            name: TV stream name.
+            stream: Camera stream name that failed to open.
+        """
         issued = self.issued.get(name)
         if issued is None:
             return
@@ -139,6 +246,15 @@ class TvLiveness:
                 logger.info("The TV stream %s could not open the camera stream %s", name, stream)
 
     def remember(self, name: str, command: TvCommand, poll: bool) -> None:
+        """Record the command handed out for a TV stream.
+
+        A poll that returns the same command as before keeps the original time.
+
+        Args:
+            name: TV stream name.
+            command: Command handed out.
+            poll: Whether the request was a poll by the running stream.
+        """
         issued = self.issued.get(name)
         if poll and issued is not None and issued.command == command:
             return
