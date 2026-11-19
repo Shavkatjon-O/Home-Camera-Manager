@@ -1,3 +1,5 @@
+"""Outage service."""
+
 from datetime import datetime
 from uuid import UUID
 
@@ -13,15 +15,32 @@ __all__ = ["OutageService"]
 
 
 class OutageService(BaseModelService[Outage]):
+    """List recorded outages with the names of their targets and causes."""
+
     model = Outage
     not_found_code = "outage_not_found"
 
     async def names(self) -> dict[UUID, str]:
+        """Map device and camera ids to names.
+
+        Returns:
+            The name of every device and camera, including deleted ones.
+        """
         devices = await self.session.execute(select(NetworkDevice.uuid, NetworkDevice.name))
         cameras = await self.session.execute(select(Camera.uuid, Camera.name))
         return {target_uuid: name for target_uuid, name in [*devices.all(), *cameras.all()]}
 
     def read(self, outage: Outage, until: datetime, names: dict[UUID, str]) -> OutageRead:
+        """Convert an outage row to its API form.
+
+        Args:
+            outage: Outage row.
+            until: Time used as the end of an outage that is still open.
+            names: Target names keyed by public id.
+
+        Returns:
+            The outage with names filled in and its duration.
+        """
         return OutageRead(
             uuid=outage.uuid,
             target_kind=TargetKind(outage.target_kind),
@@ -39,6 +58,16 @@ class OutageService(BaseModelService[Outage]):
         )
 
     async def list_page(self, page: int, page_size: int, target_uuid: UUID | None = None) -> OutageList:
+        """List outages, newest first.
+
+        Args:
+            page: One-based page number.
+            page_size: Outages per page.
+            target_uuid: Only list outages of this device or camera.
+
+        Returns:
+            The requested page of outages.
+        """
         filters = [Outage.deleted_at.is_(None)]
         if target_uuid is not None:
             filters.append(Outage.target_uuid == target_uuid)

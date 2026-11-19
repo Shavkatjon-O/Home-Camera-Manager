@@ -1,3 +1,5 @@
+"""Routers of the health module combined under one router."""
+
 from fastapi import APIRouter
 
 from .devices import router as devices_router

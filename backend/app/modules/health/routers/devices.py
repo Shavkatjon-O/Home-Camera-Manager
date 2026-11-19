@@ -1,3 +1,5 @@
+"""Network device endpoints."""
+
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Response, status
@@ -18,6 +20,16 @@ async def list_devices(
     page_size: int = Query(PAGE_SIZE_DEFAULT, ge=1, le=PAGE_SIZE_MAX),
     service: NetworkDeviceService = Depends(get_network_device_service),
 ) -> NetworkDeviceList:
+    """List network devices, newest first.
+
+    Args:
+        page: One-based page number.
+        page_size: Devices per page.
+        service: Network device service for the request.
+
+    Returns:
+        The requested page of devices.
+    """
     return await service.list_page(page, page_size)
 
 
@@ -26,6 +38,15 @@ async def create_device(
     payload: NetworkDeviceCreate,
     service: NetworkDeviceService = Depends(get_network_device_service),
 ) -> NetworkDeviceRead:
+    """Create a network device.
+
+    Args:
+        payload: Fields of the new device.
+        service: Network device service for the request.
+
+    Returns:
+        The created device.
+    """
     return await service.create(payload)
 
 
@@ -33,6 +54,15 @@ async def create_device(
 async def get_device(
     uuid: UUID, service: NetworkDeviceService = Depends(get_network_device_service)
 ) -> NetworkDeviceRead:
+    """Return one network device.
+
+    Args:
+        uuid: Public id of the device.
+        service: Network device service for the request.
+
+    Returns:
+        The device.
+    """
     return await service.detail(uuid)
 
 
@@ -42,10 +72,29 @@ async def update_device(
     payload: NetworkDeviceUpdate,
     service: NetworkDeviceService = Depends(get_network_device_service),
 ) -> NetworkDeviceRead:
+    """Change fields of a network device.
+
+    Args:
+        uuid: Public id of the device.
+        payload: Fields to change.
+        service: Network device service for the request.
+
+    Returns:
+        The updated device.
+    """
     return await service.update(uuid, payload)
 
 
 @router.delete("/{uuid}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_device(uuid: UUID, service: NetworkDeviceService = Depends(get_network_device_service)) -> Response:
+    """Delete a network device.
+
+    Args:
+        uuid: Public id of the device.
+        service: Network device service for the request.
+
+    Returns:
+        An empty 204 response.
+    """
     await service.delete(uuid)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

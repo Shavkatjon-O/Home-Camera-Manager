@@ -1,3 +1,5 @@
+"""Health overview service: current status, availability, latency and outages of every target."""
+
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from uuid import UUID
@@ -42,6 +44,21 @@ LATEST_INTERVALS = 6
 
 @dataclass(frozen=True)
 class TargetInfo:
+    """Description of a device or camera as the overview shows it.
+
+    Attributes:
+        uuid: Public id.
+        kind: Whether the target is a device or a camera.
+        device_kind: Device kind, or None for a camera.
+        name: Display name.
+        host: Address that is probed.
+        port: TCP port that is probed.
+        parent_uuid: Public id of the device it connects through, if any.
+        link: How it connects to the parent.
+        notes: Notes of a device, None for a camera.
+        enabled: Whether the target is probed.
+    """
+
     uuid: UUID
     kind: TargetKind
     device_kind: DeviceKind | None
@@ -56,12 +73,33 @@ class TargetInfo:
 
 @dataclass(frozen=True)
 class Latest:
+    """Newest recent sample of a target.
+
+    Attributes:
+        ok: Whether the probe succeeded.
+        at: When the sample was taken.
+        error: Reason the probe failed, if it did.
+    """
+
     ok: bool
     at: datetime
     error: str | None
 
 
 def target_status(enabled: bool, ongoing: bool, latest: Latest | None, until: datetime, interval: int) -> TargetStatus:
+    """Decide a target's current status.
+
+    Args:
+        enabled: Whether the target is probed.
+        ongoing: Whether the target has an open outage.
+        latest: Newest recent sample, if any.
+        until: End of the range, the time the status is judged at.
+        interval: Seconds between probe rounds.
+
+    Returns:
+        Disabled, down, unknown when the sample is missing or older than three intervals, otherwise up or degraded
+        by the sample's result.
+    """
     if not enabled:
         return TargetStatus.DISABLED
     if ongoing:
@@ -72,24 +110,63 @@ def target_status(enabled: bool, ongoing: bool, latest: Latest | None, until: da
 
 
 def duration_seconds(started_at: datetime, ended_at: datetime | None, until: datetime) -> float:
+    """Compute how long an outage lasted or has lasted so far.
+
+    Args:
+        started_at: Start of the outage.
+        ended_at: End of the outage, or None while it continues.
+        until: Time to measure to when the outage is still open.
+
+    Returns:
+        The length in seconds rounded to one decimal, never negative.
+    """
     return round(max(0.0, ((ended_at or until) - started_at).total_seconds()), 1)
 
 
 class HealthOverviewService:
+    """Measure the health of devices and cameras from stored samples and outages.
+
+    Attributes:
+        session: Database session the service works in.
+        actor: User making the request, if any.
+        interval: Seconds between probe rounds.
+    """
+
     def __init__(
         self,
         session: AsyncSession,
         actor: UserContext | None = None,
         interval: int = settings.health_interval_seconds,
     ):
+        """Bind the service to a session, a user and the probe interval.
+
+        Args:
+            session: Database session the service works in.
+            actor: User making the request, if any.
+            interval: Seconds between probe rounds.
+        """
         self.session = session
         self.actor = actor
         self.interval = interval
 
     async def now(self) -> datetime:
+        """Read the database clock.
+
+        Returns:
+            The current database time.
+        """
         return await self.session.scalar(select(func.now()))
 
     async def target_infos(self) -> tuple[list[TargetInfo], dict[UUID, str]]:
+        """List every live device and camera and the names of all of them.
+
+        Devices come first, ordered with parents before children and by name within a level, followed by cameras in
+        their position order. Deleted devices and cameras are left out of the list but keep their names, so outages can
+        still show them.
+
+        Returns:
+            The target descriptions, and the name of every device and camera keyed by public id.
+        """
         devices = list(await self.session.scalars(select(NetworkDevice)))
         cameras = (
             await self.session.execute(
@@ -157,6 +234,17 @@ class HealthOverviewService:
         return infos, names
 
     async def bucket_counts(self, uuids: list[UUID], window: Window) -> dict[UUID, dict[datetime, BucketCounts]]:
+        """Count samples per target and time bucket.
+
+        Latency averages only successful samples.
+
+        Args:
+            uuids: Public ids of the targets.
+            window: Window whose buckets are counted.
+
+        Returns:
+            Counts keyed by target id and then by bucket start time.
+        """
         bucket = func.date_bin(timedelta(seconds=window.size), HealthSample.created_at, window.since).label("bucket")
         rows = await self.session.execute(
             select(
@@ -178,6 +266,15 @@ class HealthOverviewService:
         return counts
 
     async def histograms(self, uuids: list[UUID], since: datetime) -> dict[UUID, list[tuple[float, int]]]:
+        """Collect latency histograms of successful samples.
+
+        Args:
+            uuids: Public ids of the targets.
+            since: Earliest sample time to include.
+
+        Returns:
+            Pairs of latency and sample count for each target that has any.
+        """
         rows = await self.session.execute(
             select(HealthSample.target_uuid, HealthSample.latency_ms, func.count().label("samples"))
             .where(
@@ -194,6 +291,15 @@ class HealthOverviewService:
         return histograms
 
     async def latest(self, uuids: list[UUID], until: datetime) -> dict[UUID, Latest]:
+        """Find the newest sample of each target within the last six intervals.
+
+        Args:
+            uuids: Public ids of the targets.
+            until: End of the range.
+
+        Returns:
+            The newest recent sample keyed by target id.
+        """
         rows = await self.session.execute(
             select(HealthSample.target_uuid, HealthSample.ok, HealthSample.created_at, HealthSample.error)
             .where(
@@ -206,6 +312,15 @@ class HealthOverviewService:
         return {row.target_uuid: Latest(ok=row.ok, at=row.created_at, error=row.error) for row in rows.all()}
 
     async def outage_counts(self, uuids: list[UUID], window: Window) -> dict[UUID, int]:
+        """Count outages that overlap a window.
+
+        Args:
+            uuids: Public ids of the targets.
+            window: Time span to check.
+
+        Returns:
+            Number of outages keyed by target id, for targets that have any.
+        """
         rows = await self.session.execute(
             select(Outage.target_uuid, func.count().label("outages"))
             .where(
@@ -219,6 +334,14 @@ class HealthOverviewService:
         return {row.target_uuid: row.outages for row in rows.all()}
 
     async def last_outages(self, uuids: list[UUID]) -> dict[UUID, Outage]:
+        """Find each target's most recently started outage.
+
+        Args:
+            uuids: Public ids of the targets.
+
+        Returns:
+            The latest outage keyed by target id, for targets that have any.
+        """
         rows = await self.session.scalars(
             select(Outage)
             .where(Outage.target_uuid.in_(uuids), Outage.deleted_at.is_(None))
@@ -228,6 +351,16 @@ class HealthOverviewService:
         return {outage.target_uuid: outage for outage in rows}
 
     def brief(self, outage: Outage, until: datetime, names: dict[UUID, str]) -> OutageBrief:
+        """Summarize an outage.
+
+        Args:
+            outage: Outage row.
+            until: Time used as the end of an outage that is still open.
+            names: Target names keyed by public id.
+
+        Returns:
+            The outage in short form with its cause's name.
+        """
         return OutageBrief(
             uuid=outage.uuid,
             started_at=outage.started_at,
@@ -240,6 +373,17 @@ class HealthOverviewService:
     async def measure(
         self, infos: list[TargetInfo], names: dict[UUID, str], window: Window, buckets: Window
     ) -> list[TargetHealth]:
+        """Measure the health of targets over a window.
+
+        Args:
+            infos: Targets to measure.
+            names: Target names keyed by public id.
+            window: Span that latency, outage counts and status cover.
+            buckets: Window whose buckets form the history and give the sample and uptime totals.
+
+        Returns:
+            One health entry per target, in the order given.
+        """
         uuids = [info.uuid for info in infos]
         if not uuids:
             return []
@@ -294,9 +438,25 @@ class HealthOverviewService:
         return results
 
     async def window(self, health_range: HealthRange) -> Window:
+        """Build the window for a range ending now.
+
+        Args:
+            health_range: Range to cover.
+
+        Returns:
+            The window with the range's standard bucket length.
+        """
         return bucket_window(await self.now(), RANGE_SECONDS[health_range], BUCKET_SECONDS[health_range])
 
     async def overview(self, health_range: HealthRange) -> HealthOverview:
+        """Measure every device and camera over a range.
+
+        Args:
+            health_range: Range to cover.
+
+        Returns:
+            The health of every target.
+        """
         window = await self.window(health_range)
         infos, names = await self.target_infos()
         targets = await self.measure(infos, names, window, window)
@@ -310,6 +470,18 @@ class HealthOverviewService:
         )
 
     async def target(self, uuid: UUID, health_range: HealthRange) -> TargetDetail:
+        """Measure one device or camera over a range, with finer buckets than the overview.
+
+        Args:
+            uuid: Public id of the device or camera.
+            health_range: Range to cover.
+
+        Returns:
+            The health of the target.
+
+        Raises:
+            NotFound: No live device or camera has the id.
+        """
         window = await self.window(health_range)
         infos, names = await self.target_infos()
         info = next((item for item in infos if item.uuid == uuid), None)

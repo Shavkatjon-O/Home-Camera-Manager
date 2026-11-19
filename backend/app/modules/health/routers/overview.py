@@ -1,3 +1,5 @@
+"""Health overview endpoints."""
+
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -15,6 +17,15 @@ async def health_overview(
     health_range: HealthRange = Query(HealthRange.HOUR, alias="range"),
     service: HealthOverviewService = Depends(get_health_overview_service),
 ) -> HealthOverview:
+    """Return the health of every device and camera over a time range.
+
+    Args:
+        health_range: Time range to cover, passed as the range query parameter.
+        service: Health overview service for the request.
+
+    Returns:
+        The overview with one entry per target.
+    """
     return await service.overview(health_range)
 
 
@@ -24,4 +35,14 @@ async def health_target(
     health_range: HealthRange = Query(HealthRange.HOUR, alias="range"),
     service: HealthOverviewService = Depends(get_health_overview_service),
 ) -> TargetDetail:
+    """Return the health of one device or camera over a time range, with finer buckets.
+
+    Args:
+        uuid: Public id of the device or camera.
+        health_range: Time range to cover, passed as the range query parameter.
+        service: Health overview service for the request.
+
+    Returns:
+        The target's health detail.
+    """
     return await service.target(uuid, health_range)

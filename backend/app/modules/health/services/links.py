@@ -1,3 +1,5 @@
+"""Camera link service."""
+
 from uuid import UUID
 
 from sqlalchemy import func, select
@@ -12,10 +14,27 @@ __all__ = ["CameraLinkService"]
 
 
 class CameraLinkService(BaseModelService[CameraLink]):
+    """Set and clear the device each camera connects through."""
+
     model = CameraLink
     not_found_code = "camera_link_not_found"
 
     async def put(self, camera_uuid: UUID, payload: CameraLinkUpdate) -> CameraLinkRead:
+        """Set a camera's link, or clear it when no parent or link kind is given.
+
+        Clearing soft-deletes the stored link. Setting a link on a camera that had a cleared one revives the row.
+
+        Args:
+            camera_uuid: Public id of the camera.
+            payload: New parent device and link kind.
+
+        Returns:
+            The camera's link after the change.
+
+        Raises:
+            NotFound: The camera does not exist.
+            Unprocessable: The parent device does not exist.
+        """
         camera = await self.session.scalar(
             select(Camera.id).where(Camera.uuid == camera_uuid, Camera.deleted_at.is_(None))
         )

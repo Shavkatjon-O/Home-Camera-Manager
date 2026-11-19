@@ -1,3 +1,5 @@
+"""Outage endpoint."""
+
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -19,4 +21,15 @@ async def list_outages(
     target_uuid: UUID | None = Query(None),
     service: OutageService = Depends(get_outage_service),
 ) -> OutageList:
+    """List outages, newest first.
+
+    Args:
+        page: One-based page number.
+        page_size: Outages per page.
+        target_uuid: Only list outages of this device or camera.
+        service: Outage service for the request.
+
+    Returns:
+        The requested page of outages.
+    """
     return await service.list_page(page, page_size, target_uuid)

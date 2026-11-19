@@ -1,3 +1,5 @@
+"""Network device model."""
+
 from uuid import UUID
 
 from sqlalchemy import Boolean, Integer, String, Text, Uuid
@@ -9,6 +11,19 @@ __all__ = ["NetworkDevice"]
 
 
 class NetworkDevice(BaseModel):
+    """Router, access point or other network device that is probed.
+
+    Attributes:
+        name: Display name.
+        kind: Device kind, a DeviceKind value.
+        host: Address to probe.
+        probe_port: TCP port to probe.
+        parent_uuid: Public id of the device this one connects through, if any.
+        link: How it connects to the parent, a LinkKind value.
+        notes: Free-form notes.
+        enabled: Whether the device is probed.
+    """
+
     __tablename__ = "network_devices"
 
     name: Mapped[str] = mapped_column(String(100), nullable=False)

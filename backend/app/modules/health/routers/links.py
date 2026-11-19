@@ -1,3 +1,5 @@
+"""Camera link endpoint."""
+
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
@@ -15,4 +17,14 @@ async def put_camera_link(
     payload: CameraLinkUpdate,
     service: CameraLinkService = Depends(get_camera_link_service),
 ) -> CameraLinkRead:
+    """Set or clear the device a camera connects through.
+
+    Args:
+        camera_uuid: Public id of the camera.
+        payload: New parent device and link kind, or nulls to clear the link.
+        service: Camera link service for the request.
+
+    Returns:
+        The camera's link after the change.
+    """
     return await service.put(camera_uuid, payload)
