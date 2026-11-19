@@ -840,9 +840,9 @@ class CameraControlService(BaseModelService[Camera]):
         """Change a camera's motion sensitivity or switch detection on or off.
 
         When the camera reads back a different sensitivity than was written, the value is written
-        once more shifted by the difference, if that stays within 0 to 100. Switching detection off clears every active cell after
-        remembering them for this process, and switching it on restores the remembered cells, or
-        activates every cell when none are remembered.
+        once more shifted by the difference, if that stays within 0 to 100. Switching detection off
+        clears every active cell after remembering them for this process, and switching it on
+        restores the remembered cells, or activates every cell when none are remembered.
 
         Args:
             uuid: Public id of the camera.
