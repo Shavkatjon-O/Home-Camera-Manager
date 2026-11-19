@@ -1,3 +1,5 @@
+"""Async database engine, session factory and declarative base."""
+
 import json
 from collections.abc import AsyncGenerator
 from datetime import date, datetime
@@ -21,10 +23,28 @@ naming_convention = {
 
 
 class Base(DeclarativeBase):
+    """Declarative base whose metadata names constraints and indexes predictably.
+
+    Attributes:
+        metadata: Metadata carrying the constraint naming convention.
+    """
+
     metadata = MetaData(naming_convention=naming_convention)
 
 
 def json_default(value):
+    """Convert a value the json module cannot encode into one it can.
+
+    Args:
+        value: Value found while encoding a JSON column.
+
+    Returns:
+        ISO text for dates and times, text for UUIDs, a float for decimals, the value of an enum
+        member and a list for sets.
+
+    Raises:
+        TypeError: The value has no JSON form.
+    """
     if isinstance(value, (datetime, date)):
         return value.isoformat()
     if isinstance(value, UUID):
@@ -39,6 +59,14 @@ def json_default(value):
 
 
 def json_serializer(value) -> str:
+    """Encode a JSON column value, converting types the json module does not know.
+
+    Args:
+        value: Value stored in a JSON column.
+
+    Returns:
+        The JSON text.
+    """
     return json.dumps(value, default=json_default)
 
 
@@ -59,10 +87,16 @@ async_session_maker = async_sessionmaker(
 
 
 async def verify_db_connection() -> None:
+    """Run a trivial query to prove the database is reachable."""
     async with async_engine.connect() as connection:
         await connection.execute(text("SELECT 1"))
 
 
 async def get_db() -> AsyncGenerator[AsyncSession]:
+    """Open a database session for one request.
+
+    Yields:
+        Session that closes when the request ends.
+    """
     async with async_session_maker() as session:
         yield session

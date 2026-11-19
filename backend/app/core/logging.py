@@ -1,3 +1,5 @@
+"""Process-wide logging setup."""
+
 import logging
 import sys
 
@@ -5,6 +7,7 @@ QUIET_LOGGERS = ("httpx", "httpcore")
 
 
 def setup_logging() -> None:
+    """Log at INFO to stdout and limit the HTTP client libraries to warnings."""
     logging.basicConfig(
         level=logging.INFO,
         stream=sys.stdout,

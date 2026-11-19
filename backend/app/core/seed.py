@@ -1,3 +1,5 @@
+"""Creation of the first admin user from the settings."""
+
 import logging
 
 from sqlalchemy import select
@@ -12,6 +14,11 @@ logger = logging.getLogger(__name__)
 
 
 async def seed_admin() -> None:
+    """Create the admin user named in the settings unless that user already exists.
+
+    Nothing is created when the admin username or password is empty, and a concurrent insert of
+    the same user is ignored.
+    """
     username = settings.admin_username.strip()
     if not username or not settings.admin_password:
         logger.info("HC_ADMIN_USERNAME or HC_ADMIN_PASSWORD is empty, no admin is seeded")
