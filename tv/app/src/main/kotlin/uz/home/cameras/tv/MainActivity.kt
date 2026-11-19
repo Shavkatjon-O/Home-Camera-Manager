@@ -1,30 +1,50 @@
 package uz.home.cameras.tv
 
+import android.media.AudioManager
+import android.opengl.GLSurfaceView
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.lifecycleScope
-import uz.home.cameras.tv.data.Settings
-import uz.home.cameras.tv.player.LivePlayer
-import uz.home.cameras.tv.player.Viewer
+import uz.home.cameras.tv.camera.Store
+import uz.home.cameras.tv.render.Compositor
 import uz.home.cameras.tv.ui.App
-import uz.home.cameras.tv.ui.Screen
+import uz.home.cameras.tv.wall.Wall
 
 class MainActivity : ComponentActivity() {
-    private lateinit var live: LivePlayer
+    private lateinit var video: GLSurfaceView
+    private lateinit var wall: Wall
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val settings = Settings(this)
-        live = LivePlayer(this)
-        val screen = mutableStateOf(if (settings.token != null) Screen.Viewer else Screen.Setup)
-        val viewer = Viewer(this, settings, live, lifecycleScope) { screen.value = Screen.Pairing }
-        setContent { App(settings, live, viewer, screen) }
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        volumeControlStream = AudioManager.STREAM_MUSIC
+        val store = Store(this)
+        video = GLSurfaceView(this)
+        video.setEGLContextClientVersion(2)
+        val compositor = Compositor(video)
+        video.setRenderer(compositor)
+        video.renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
+        video.isFocusable = false
+        video.isFocusableInTouchMode = false
+        wall = Wall(applicationContext, store, compositor)
+        setContent { App(wall, store, video) }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        video.onResume()
+        wall.start()
+    }
+
+    override fun onStop() {
+        wall.stop()
+        video.onPause()
+        super.onStop()
     }
 
     override fun onDestroy() {
-        live.release()
+        wall.release()
         super.onDestroy()
     }
 }

@@ -1,6 +1,6 @@
 # Home cameras
 
-A web app for the home IP cameras: register cameras, watch one camera large, watch all of them at once as a security wall, find cameras on the network and drive PTZ cameras. An Android TV app in tv/ shows the same wall on the living-room TV.
+A web app for the home IP cameras: register cameras, watch one camera large, watch all of them at once as a security wall, find cameras on the network and drive PTZ cameras. An Android TV app in tv/ shows the cameras on the living-room TV on its own, straight from the cameras, as tv/README.md describes.
 
 ## Services
 
@@ -61,7 +61,7 @@ The backend registers two go2rtc streams per enabled camera, main and sub, each 
 
 ## TV
 
-The TV app pairs once: it asks POST /api/v1/tv/pairings for a 6-digit code, the code is entered under Cameras, TV, and the next poll of GET /api/v1/tv/pairings/{id} hands the TV its device token once. Codes expire after 10 minutes, at most 5 wait at once and each address may ask for 10 a minute. With the token as a Bearer header the TV reads GET /api/v1/tv/config, which lists the wall and every tile with RTSP URLs on HC_LAN_BIND carrying HC_TV_RTSP_USERNAME and HC_TV_RTSP_PASSWORD, and drives PTZ through /api/v1/tv/ptz/{camera}/move and /stop. Revoking a TV deletes its token.
+The backend serves a composed wall and tiles to paired TV clients; the Android TV app in tv/ does not use this path and connects to the cameras itself. A TV client pairs once: it asks POST /api/v1/tv/pairings for a 6-digit code, the code is entered under Cameras, TV, and the next poll of GET /api/v1/tv/pairings/{id} hands the TV its device token once. Codes expire after 10 minutes, at most 5 wait at once and each address may ask for 10 a minute. With the token as a Bearer header the TV reads GET /api/v1/tv/config, which lists the wall and every tile with RTSP URLs on HC_LAN_BIND carrying HC_TV_RTSP_USERNAME and HC_TV_RTSP_PASSWORD, and drives PTZ through /api/v1/tv/ptz/{camera}/move and /stop. Revoking a TV deletes its token.
 
 The wall follows the web wall's automatic landscape layout, filled by column with the lenses of a camera stacked in one column; a tile's index is its slot in that grid. tv_wall composes every enabled camera into one 1920x1080 H.264 stream at 15 fps and 6 Mbit/s from the sub streams where they exist, and tv_tile_<n> is one lens at 1920x1080 and 4 Mbit/s from the main stream. Both are exec sources in go2rtc.yaml, because go2rtc refuses exec sources through its API: go2rtc runs go2rtc-tv.sh only while a TV watches, the script fetches the current ffmpeg arguments from the backend at /internal/tv/streams/<name>, and ffmpeg reads the camera streams back from go2rtc on loopback, decodes on the CPU, crops and scales the lenses, overlays them on a dark 1920x1080 canvas and encodes with h264_nvenc for ultra low latency. tv_tile_0 to tv_tile_15 exist, so a wall with more than 16 slots offers only the first 16 fullscreen.
 

@@ -1,6 +1,6 @@
 package uz.home.cameras.tv.control
 
-import uz.home.cameras.tv.data.PtzMove
+import uz.home.cameras.tv.v380.PtzMove
 
 sealed interface TileAction {
     data class Move(val move: PtzMove) : TileAction
@@ -8,11 +8,11 @@ sealed interface TileAction {
     data object Previous : TileAction
     data object Next : TileAction
     data object Menu : TileAction
+    data object Mute : TileAction
+    data object Unmute : TileAction
     data object Consumed : TileAction
     data object Ignored : TileAction
 }
-
-const val PTZ_SPEED = 0.5f
 
 fun tileAction(key: Key, down: Boolean, repeatCount: Int, ptz: Boolean): TileAction {
     val move = ptzMoveFor(key)
@@ -23,28 +23,22 @@ fun tileAction(key: Key, down: Boolean, repeatCount: Int, ptz: Boolean): TileAct
             else -> TileAction.Consumed
         }
     }
+    val first = down && repeatCount == 0
     return when (key) {
-        Key.Left -> if (down && repeatCount == 0) TileAction.Previous else TileAction.Consumed
-        Key.Right -> if (down && repeatCount == 0) TileAction.Next else TileAction.Consumed
+        Key.Left -> if (first) TileAction.Previous else TileAction.Consumed
+        Key.Right -> if (first) TileAction.Next else TileAction.Consumed
         Key.Up, Key.Down, Key.ZoomIn, Key.ZoomOut -> TileAction.Consumed
-        Key.Menu -> if (down && repeatCount == 0) TileAction.Menu else TileAction.Consumed
+        Key.Menu -> if (first) TileAction.Menu else TileAction.Consumed
+        Key.Mute -> if (first) TileAction.Mute else TileAction.Consumed
+        Key.VolumeUp -> if (first) TileAction.Unmute else TileAction.Ignored
         else -> TileAction.Ignored
     }
 }
 
 fun ptzMoveFor(key: Key): PtzMove? = when (key) {
-    Key.Up -> PtzMove(tilt = PTZ_SPEED)
-    Key.Down -> PtzMove(tilt = -PTZ_SPEED)
-    Key.Left -> PtzMove(pan = -PTZ_SPEED)
-    Key.Right -> PtzMove(pan = PTZ_SPEED)
-    Key.ZoomIn -> PtzMove(zoom = PTZ_SPEED)
-    Key.ZoomOut -> PtzMove(zoom = -PTZ_SPEED)
+    Key.Up -> PtzMove.Up
+    Key.Down -> PtzMove.Down
+    Key.Left -> PtzMove.Left
+    Key.Right -> PtzMove.Right
     else -> null
-}
-
-fun neighbour(indexes: List<Int>, current: Int, step: Int): Int? {
-    if (indexes.isEmpty()) return null
-    val position = indexes.indexOf(current)
-    if (position < 0) return indexes.first()
-    return indexes[(position + step + indexes.size) % indexes.size]
 }

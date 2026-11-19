@@ -2,7 +2,7 @@ package uz.home.cameras.tv.control
 
 import android.view.KeyEvent
 
-enum class Key { Up, Down, Left, Right, Center, Menu, ZoomIn, ZoomOut, Other }
+enum class Key { Up, Down, Left, Right, Center, Menu, ZoomIn, ZoomOut, Mute, VolumeUp, VolumeDown, Other }
 
 fun keyOf(code: Int): Key = when (code) {
     KeyEvent.KEYCODE_DPAD_UP -> Key.Up
@@ -20,5 +20,9 @@ fun keyOf(code: Int): Key = when (code) {
     KeyEvent.KEYCODE_CHANNEL_DOWN,
     KeyEvent.KEYCODE_MEDIA_REWIND,
     KeyEvent.KEYCODE_ZOOM_OUT -> Key.ZoomOut
+    KeyEvent.KEYCODE_VOLUME_MUTE,
+    KeyEvent.KEYCODE_MUTE -> Key.Mute
+    KeyEvent.KEYCODE_VOLUME_UP -> Key.VolumeUp
+    KeyEvent.KEYCODE_VOLUME_DOWN -> Key.VolumeDown
     else -> Key.Other
 }

@@ -1,7 +1,23 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.kotlin.serialization)
+}
+
+val camerasFile = rootProject.file("cameras.local.properties").takeIf { it.exists() }
+    ?: rootProject.file("cameras.example.properties")
+val camerasText = providers.fileContents(layout.projectDirectory.file(camerasFile.absolutePath)).asText.get()
+val camerasLiteral = buildString {
+    append('"')
+    for (c in camerasText) {
+        when (c) {
+            '\\' -> append("\\\\")
+            '"' -> append("\\\"")
+            '\n' -> append("\\n")
+            '\r' -> Unit
+            else -> append(c)
+        }
+    }
+    append('"')
 }
 
 android {
@@ -12,8 +28,9 @@ android {
         applicationId = "uz.home.cameras.tv"
         minSdk = 23
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "2.0.0"
+        buildConfigField("String", "CAMERAS", camerasLiteral)
     }
 
     buildTypes {
@@ -38,7 +55,6 @@ android {
 
 dependencies {
     implementation(libs.kotlinx.coroutines.android)
-    implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.androidx.core)
     implementation(libs.androidx.activity.compose)
@@ -47,10 +63,6 @@ dependencies {
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.tv.material)
-
-    implementation(libs.media3.exoplayer)
-    implementation(libs.media3.exoplayer.rtsp)
-    implementation(libs.media3.ui)
 
     testImplementation(libs.junit)
 }
