@@ -1,6 +1,7 @@
 # Analytics
 
-Video analytics for the home cameras on NVIDIA DeepStream: people, vehicle and animal detection, tracking, zones,
+Video analytics for the home cameras on NVIDIA DeepStream 9.1 (the newest DeepStream image on nvcr.io, with CUDA
+13.2 and TensorRT 10.16): people, vehicle and animal detection, tracking, zones,
 lines, loitering, crowding and tamper watch, with an event clip and snapshot for every event.
 
 ## How it works
@@ -49,16 +50,17 @@ lines, loitering, crowding and tamper watch, with an event clip and snapshot for
 
 ## Run
 
-Download the models into the model folder, then start the development stack on the main stack's network:
+The service runs as the analytics service of the repository's compose.yml, which reads its views, zones and lines
+from the backend. Download the models first:
 
 ```
 scripts/download-models.sh
-docker compose -f analytics/compose.dev.yml --env-file .env up -d --build
-curl -s 127.0.0.1:8760/status
+docker compose up -d --build analytics
 ```
 
-The development stack reads its views from analytics/config.local.json, which stays out of git. The first start
-builds the TensorRT engine into the engine volume, which takes about a minute.
+Without HC_ANALYTICS_BACKEND_URL the service reads the same configuration from the JSON file in
+HC_ANALYTICS_CONFIG_FILE instead, for a host without the backend. The first start builds the TensorRT engine into
+the engine volume, which takes about a minute.
 
 ## Configuration
 
@@ -73,12 +75,15 @@ builds the TensorRT engine into the engine volume, which takes about a minute.
 | HC_ANALYTICS_CLIP_MAX | 60 | Longest clip in seconds |
 | HC_ANALYTICS_BUFFER_SECONDS | 120 | Seconds of segments kept per camera |
 | HC_TIMEZONE | UTC | Time zone of schedules |
+| HC_ANALYTICS_BACKEND_URL | empty | Backend the configuration comes from and events go to |
+| HC_ANALYTICS_TOKEN | empty | Shared token of the backend's internal routes and the status endpoint |
 
 ## Status
 
-GET /status on port 8080 returns the pipeline state, per view frame rate, latency, objects, rule counts, tamper
+GET /status on port 8080, with the shared token as a bearer token, returns the pipeline state, per view frame rate, latency, objects, rule counts, tamper
 readings and errors, the recorders, the GPU reading and recent events. GET /views/{view}/objects returns the tracked
-boxes of a view's latest frame.
+boxes of a view's latest frame, and GET /views/{view}/snapshot.jpg a fresh picture of the view, kept as a zone
+reference with reference=1.
 
 ## Tests
 

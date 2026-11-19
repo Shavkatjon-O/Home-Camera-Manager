@@ -12,6 +12,7 @@ from app.rules.schedule import Schedule
 VEHICLES = frozenset({"car", "truck", "bus", "motorcycle"})
 ANIMALS = frozenset({"dog", "cat"})
 GROUPS = {"vehicle": VEHICLES, "animal": ANIMALS}
+WHOLE_VIEW_AREA = 0.95
 
 
 class ArmMode(StrEnum):
@@ -215,6 +216,7 @@ class Zone:
         alert: When its events alert.
         enabled: False keeps the zone configured but silent.
         suspended: True while the view no longer matches the scene the zone was drawn on.
+        reference: Snapshot the zone was drawn on, relative to the events folder, for lenses that move.
     """
 
     id: str
@@ -228,6 +230,17 @@ class Zone:
     alert: AlertPolicy = field(default_factory=AlertPolicy)
     enabled: bool = True
     suspended: bool = False
+    reference: str | None = None
+
+    @property
+    def whole_view(self) -> bool:
+        """bool: True when the polygon covers nearly the whole picture, so it stays valid wherever a lens points."""
+        area = 0.0
+        points = self.polygon
+        for index, (x1, y1) in enumerate(points):
+            x2, y2 = points[(index + 1) % len(points)]
+            area += x1 * y2 - x2 * y1
+        return abs(area) / 2 >= WHOLE_VIEW_AREA
 
     @classmethod
     def from_dict(cls, data: dict) -> Zone:
@@ -251,6 +264,7 @@ class Zone:
             alert=AlertPolicy.from_dict(data.get("alert")),
             enabled=bool(data.get("enabled", True)),
             suspended=bool(data.get("suspended", False)),
+            reference=data.get("reference") or None,
         )
 
 
@@ -272,6 +286,7 @@ class Line:
         alert: When its events alert.
         enabled: False keeps the line configured but silent.
         suspended: True while the view no longer matches the scene the line was drawn on.
+        reference: Snapshot the line was drawn on, relative to the events folder, for lenses that move.
     """
 
     id: str
@@ -284,6 +299,7 @@ class Line:
     alert: AlertPolicy = field(default_factory=AlertPolicy)
     enabled: bool = True
     suspended: bool = False
+    reference: str | None = None
 
     @classmethod
     def from_dict(cls, data: dict) -> Line:
@@ -310,6 +326,7 @@ class Line:
             alert=AlertPolicy.from_dict(data.get("alert")),
             enabled=bool(data.get("enabled", True)),
             suspended=bool(data.get("suspended", False)),
+            reference=data.get("reference") or None,
         )
 
 

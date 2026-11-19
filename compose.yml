@@ -54,6 +54,42 @@ services:
         condition: service_started
     networks: [cams]
 
+  analytics:
+    build:
+      context: ./analytics
+      target: runtime
+    image: home-cameras-analytics:local
+    container_name: home-cameras-analytics
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      HC_ANALYTICS_BACKEND_URL: http://backend:8000
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility,video
+    deploy:
+      resources:
+        limits:
+          memory: 6g
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu, compute, utility, video]
+    volumes:
+      - ${HC_ANALYTICS_MODELS_DIR:-./analytics/models}:/models:ro
+      - analytics-engines:/engines
+      - events:/data/events
+      - type: tmpfs
+        target: /buffer
+        tmpfs:
+          size: 1073741824
+          mode: 01777
+    depends_on:
+      backend:
+        condition: service_started
+      go2rtc:
+        condition: service_started
+    networks: [cams]
+
   v380-ptz-1:
     build: ./v380-bridge
     image: home-cameras-v380-bridge:local
@@ -116,6 +152,7 @@ services:
 volumes:
   postgres:
   events:
+  analytics-engines:
 
 networks:
   cams:

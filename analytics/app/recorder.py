@@ -460,3 +460,29 @@ class ClipMaker:
         finally:
             os.unlink(listing)
             temporary.unlink(missing_ok=True)
+
+
+def latest_frame(folder: Path, lens: int, lenses: int) -> bytes | None:
+    """Return a JPEG of the newest keyframe in a camera's buffer, cropped to a lens.
+
+    Args:
+        folder: Camera buffer folder.
+        lens: Lens band, 0 for the whole frame.
+        lenses: Bands in the frame.
+
+    Returns:
+        The JPEG bytes, or None when the buffer has no usable segment.
+    """
+    segments = list_segments(folder)
+    for segment in reversed(segments[-3:]):
+        filters = crop_filter(lens, lenses) + [f"scale='min({CLIP_WIDTH},iw)':-2"]
+        command = ["ffmpeg", "-nostdin", "-hide_banner", "-loglevel", "error", "-i", str(segment.path)]
+        command += ["-frames:v", "1", "-vf", ",".join(filters), "-q:v", "3", "-f", "image2pipe", "-c:v", "mjpeg"]
+        command += ["pipe:1"]
+        try:
+            result = subprocess.run(command, capture_output=True, timeout=30, check=False)
+        except (OSError, subprocess.SubprocessError):
+            continue
+        if result.returncode == 0 and result.stdout.startswith(b"\xff\xd8"):
+            return result.stdout
+    return None

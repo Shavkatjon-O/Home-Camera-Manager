@@ -50,3 +50,10 @@ alembic revision --autogenerate -m "<message>"
 - Keep the bridges' API on the internal network, because it has no authentication and sounds the siren.
 - Never test reboot, siren or light on the real cameras, and read and restore every camera setting a test changes.
 - Give every Python module, class and function outside tests and migrations a docstring with Args, Returns, Yields, Raises and Attributes sections where they apply, and add a comment only where the code cannot show its reason, because ruff enforces the docstring convention and the docstrings are the code's reference; write no emojis or non-ASCII characters in code, configs or docs.
+- Run exactly one analytics pipeline: the compose analytics service. A second copy reading the cameras doubles the RTSP sessions and the GPU load.
+- Keep the analytics image on nvcr.io/nvidia/deepstream 9.1-samples-multiarch with NVIDIA's user_additional_install.sh, because the samples image strips the codec libraries ffmpeg needs and has no 9.2 tag.
+- Build TensorRT engines in the analytics service, never through nvinfer, because nvinfer resolves the ONNX path and saves engines beside the read-only model mount, so it would rebuild on every start.
+- Keep the recorder's wall clock timestamps and its segment watchdog, because the bridged V380 streams can start without timestamps, which stops the segment output while ffmpeg keeps running.
+- Run probes that load downloaded models under prlimit --as of 96 GB with a container memory limit, because TensorRT engine builds fail under a 32 GB address space cap.
+- Evaluate zones and lines in analytics/app/rules, never in nvdsanalytics, because zone edits must apply without a pipeline restart and the rules must run on a Jetson.
+- Keep model weights and engines out of git; scripts/download-models.sh fetches them with pinned checksums.

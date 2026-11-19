@@ -42,11 +42,6 @@ convention = "google"
 "__init__.py" = ["F401", "F403"]
 "tests/**" = ["D"]
 "migrations/**" = ["D"]
-"app/core/config.py" = ["D"]
-"app/main.py" = ["D"]
-"app/api/v1_routers.py" = ["D"]
-"app/models/__init__.py" = ["D"]
-"app/modules/events/**" = ["D"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
