@@ -1,3 +1,5 @@
+"""Routes for floor plans."""
+
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Response, status
@@ -18,6 +20,16 @@ async def list_floor_plans(
     page_size: int = Query(PAGE_SIZE_DEFAULT, ge=1, le=PAGE_SIZE_MAX),
     service: FloorPlanService = Depends(get_floor_plan_service),
 ) -> FloorPlanList:
+    """List floor plans, newest first.
+
+    Args:
+        page: One-based page number.
+        page_size: Number of plans per page.
+        service: Floor plan service for the signed-in user.
+
+    Returns:
+        One page of plan summaries with the total count.
+    """
     return await service.list_page(page, page_size)
 
 
@@ -26,11 +38,29 @@ async def create_floor_plan(
     payload: FloorPlanCreate,
     service: FloorPlanService = Depends(get_floor_plan_service),
 ) -> FloorPlanRead:
+    """Create a floor plan.
+
+    Args:
+        payload: Plan to create.
+        service: Floor plan service for the signed-in user.
+
+    Returns:
+        The created plan.
+    """
     return await service.create(payload)
 
 
 @router.get("/{uuid}", response_model=FloorPlanRead)
 async def get_floor_plan(uuid: UUID, service: FloorPlanService = Depends(get_floor_plan_service)) -> FloorPlanRead:
+    """Return one floor plan with its background image.
+
+    Args:
+        uuid: Public id of the plan.
+        service: Floor plan service for the signed-in user.
+
+    Returns:
+        The plan.
+    """
     return await service.detail(uuid)
 
 
@@ -40,10 +70,29 @@ async def update_floor_plan(
     payload: FloorPlanUpdate,
     service: FloorPlanService = Depends(get_floor_plan_service),
 ) -> FloorPlanRead:
+    """Change the given fields of a floor plan.
+
+    Args:
+        uuid: Public id of the plan.
+        payload: Fields to change.
+        service: Floor plan service for the signed-in user.
+
+    Returns:
+        The updated plan.
+    """
     return await service.update(uuid, payload)
 
 
 @router.delete("/{uuid}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_floor_plan(uuid: UUID, service: FloorPlanService = Depends(get_floor_plan_service)) -> Response:
+    """Delete a floor plan.
+
+    Args:
+        uuid: Public id of the plan.
+        service: Floor plan service for the signed-in user.
+
+    Returns:
+        Empty response.
+    """
     await service.delete(uuid)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

@@ -1,3 +1,5 @@
+"""Schemas of floor plans, with validation of their geometry and ids."""
+
 import re
 from datetime import datetime
 from typing import Annotated
@@ -72,6 +74,17 @@ Opacity = Annotated[float, Field(ge=0.0, le=1.0)]
 
 
 def clean_background(value: str | None) -> str | None:
+    """Check a background image value.
+
+    Args:
+        value: Background as sent, if any.
+
+    Returns:
+        The data URL, or None when the value is None or empty.
+
+    Raises:
+        ValueError: When the value is not a base64 png, jpeg, webp or gif data URL.
+    """
     if value is None or value == "":
         return None
     if not BACKGROUND_PATTERN.fullmatch(value):
@@ -80,6 +93,20 @@ def clean_background(value: str | None) -> str | None:
 
 
 def outside_plan(width_m: float, height_m: float, walls: list, access_points: list, devices: list) -> str | None:
+    """Find the first item that lies outside the plan area.
+
+    A small tolerance keeps items exactly on the far edge inside the plan.
+
+    Args:
+        width_m: Plan width in meters.
+        height_m: Plan height in meters.
+        walls: Walls of the plan.
+        access_points: Routers of the plan.
+        devices: Devices of the plan.
+
+    Returns:
+        A message naming the first item outside the plan, or None when every item is inside.
+    """
     limit_x = width_m + EDGE_TOLERANCE_M
     limit_y = height_m + EDGE_TOLERANCE_M
     size = f"{width_m:g} by {height_m:g} m"
@@ -96,6 +123,14 @@ def outside_plan(width_m: float, height_m: float, walls: list, access_points: li
 
 
 def repeated_id(items: list) -> str | None:
+    """Find an id that more than one item uses.
+
+    Args:
+        items: Items that carry an id.
+
+    Returns:
+        The first id seen twice, or None when all ids are unique.
+    """
     seen: set[str] = set()
     for item in items:
         if item.id in seen:
@@ -105,14 +140,30 @@ def repeated_id(items: list) -> str | None:
 
 
 class Strict(BaseModel):
+    """Base model that rejects unknown fields and non-finite numbers."""
+
     model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
 
 class Item(Strict):
+    """Plan item identified by an id that is unique within its list.
+
+    Attributes:
+        id: Identifier of the item, chosen by the editor.
+    """
+
     id: str = Field(pattern=ITEM_ID_PATTERN)
 
 
 class NamedItem(Item):
+    """Plan item with a name and a position.
+
+    Attributes:
+        name: Display name of the item.
+        x: Horizontal position in meters.
+        y: Vertical position in meters.
+    """
+
     name: str = Field(min_length=1, max_length=ITEM_NAME_MAX)
     x: Coordinate
     y: Coordinate
@@ -120,10 +171,28 @@ class NamedItem(Item):
     @field_validator("name", mode="before")
     @classmethod
     def strip_name(cls, value):
+        """Strip surrounding whitespace from the name.
+
+        Args:
+            value: Name as sent.
+
+        Returns:
+            The stripped name, or the value unchanged when it is not a string.
+        """
         return value.strip() if isinstance(value, str) else value
 
 
 class Wall(Item):
+    """Straight wall segment between two points.
+
+    Attributes:
+        x1: Horizontal position of the first end in meters.
+        y1: Vertical position of the first end in meters.
+        x2: Horizontal position of the second end in meters.
+        y2: Vertical position of the second end in meters.
+        material: Material of the wall.
+    """
+
     x1: Coordinate
     y1: Coordinate
     x2: Coordinate
@@ -132,12 +201,31 @@ class Wall(Item):
 
     @model_validator(mode="after")
     def has_length(self):
+        """Reject a wall whose two ends are the same point.
+
+        Returns:
+            The validated wall.
+
+        Raises:
+            ValueError: When both ends coincide.
+        """
         if self.x1 == self.x2 and self.y1 == self.y2:
             raise ValueError("a wall needs two different ends")
         return self
 
 
 class AccessPoint(NamedItem):
+    """Router placed on the plan.
+
+    Attributes:
+        preset: Router model, or generic.
+        band_24: Whether the 2.4 GHz band is on.
+        band_5: Whether the 5 GHz band is on.
+        power_24_dbm: Transmit power on 2.4 GHz in dBm.
+        power_5_dbm: Transmit power on 5 GHz in dBm.
+        locked: Whether the router stays where it is when the planner suggests router positions.
+    """
+
     preset: AccessPointPreset = AccessPointPreset.GENERIC
 
     band_24: bool = True
@@ -150,10 +238,24 @@ class AccessPoint(NamedItem):
 
 
 class Device(NamedItem):
+    """Client device placed on the plan.
+
+    Attributes:
+        band: Band the device connects on.
+    """
+
     band: Band = Band.BAND_24
 
 
 class PlanSettings(Strict):
+    """Propagation and editor settings of a plan.
+
+    Attributes:
+        path_loss_exponent: Exponent of the signal loss over distance.
+        target_dbm: Signal strength in dBm that counts as good coverage.
+        snap_m: Grid step in meters that the editor snaps items to.
+    """
+
     path_loss_exponent: float = Field(
         default=PATH_LOSS_EXPONENT_DEFAULT, ge=PATH_LOSS_EXPONENT_MIN, le=PATH_LOSS_EXPONENT_MAX
     )
@@ -162,19 +264,48 @@ class PlanSettings(Strict):
 
 
 class PlanFields(Strict):
+    """Validators shared by the create and update schemas."""
+
     @field_validator("name", mode="before", check_fields=False)
     @classmethod
     def strip_name(cls, value):
+        """Strip surrounding whitespace from the plan name.
+
+        Args:
+            value: Name as sent.
+
+        Returns:
+            The stripped name, or the value unchanged when it is not a string.
+        """
         return value.strip() if isinstance(value, str) else value
 
     @field_validator("background_image", check_fields=False)
     @classmethod
     def check_background(cls, value):
+        """Validate the background image.
+
+        Args:
+            value: Background as sent, if any.
+
+        Returns:
+            The data URL, or None when it is empty.
+        """
         return clean_background(value)
 
     @field_validator("walls", "access_points", "devices", check_fields=False)
     @classmethod
     def unique_ids(cls, value):
+        """Reject a list in which an id appears twice.
+
+        Args:
+            value: Walls, routers or devices as sent, if any.
+
+        Returns:
+            The list unchanged.
+
+        Raises:
+            ValueError: When two items share an id.
+        """
         if value is None:
             return value
         repeated = repeated_id(value)
@@ -184,6 +315,20 @@ class PlanFields(Strict):
 
 
 class FloorPlanCreate(PlanFields):
+    """Request body that creates a floor plan.
+
+    Attributes:
+        name: Name of the plan.
+        width_m: Plan width in meters.
+        height_m: Plan height in meters.
+        walls: Walls of the plan.
+        access_points: Routers of the plan.
+        devices: Devices of the plan.
+        settings: Propagation and editor settings.
+        background_image: Background image as a base64 data URL, if any.
+        background_opacity: Opacity of the background image from 0 to 1.
+    """
+
     name: str = Field(min_length=1, max_length=PLAN_NAME_MAX)
 
     width_m: PlanSize
@@ -199,6 +344,14 @@ class FloorPlanCreate(PlanFields):
 
     @model_validator(mode="after")
     def inside_plan(self):
+        """Reject a plan with an item outside its area.
+
+        Returns:
+            The validated plan.
+
+        Raises:
+            ValueError: When a wall, router or device lies outside the plan.
+        """
         problem = outside_plan(self.width_m, self.height_m, self.walls, self.access_points, self.devices)
         if problem is not None:
             raise ValueError(problem)
@@ -206,6 +359,22 @@ class FloorPlanCreate(PlanFields):
 
 
 class FloorPlanUpdate(PlanFields):
+    """Request body that changes some fields of a floor plan.
+
+    Fields that are left out are kept. The fields in REQUIRED_ON_UPDATE cannot be set to null.
+
+    Attributes:
+        name: New name of the plan.
+        width_m: New plan width in meters.
+        height_m: New plan height in meters.
+        walls: New list of walls.
+        access_points: New list of routers.
+        devices: New list of devices.
+        settings: New propagation and editor settings.
+        background_image: New background image as a base64 data URL; null removes it.
+        background_opacity: New opacity of the background image from 0 to 1.
+    """
+
     name: str | None = Field(default=None, min_length=1, max_length=PLAN_NAME_MAX)
 
     width_m: PlanSize | None = None
@@ -221,6 +390,14 @@ class FloorPlanUpdate(PlanFields):
 
     @model_validator(mode="after")
     def reject_null_required(self):
+        """Reject an explicit null for a field that cannot be empty.
+
+        Returns:
+            The validated update.
+
+        Raises:
+            ValueError: When a required field was sent as null.
+        """
         for field in REQUIRED_ON_UPDATE:
             if field in self.model_fields_set and getattr(self, field) is None:
                 raise ValueError(f"{field} cannot be empty")
@@ -228,6 +405,23 @@ class FloorPlanUpdate(PlanFields):
 
 
 class FloorPlanSummary(BaseModel):
+    """Floor plan as listed, without its background image.
+
+    Attributes:
+        uuid: Public id of the plan.
+        name: Name of the plan.
+        width_m: Plan width in meters.
+        height_m: Plan height in meters.
+        walls: Walls of the plan.
+        access_points: Routers of the plan.
+        devices: Devices of the plan.
+        settings: Propagation and editor settings.
+        has_background: Whether the plan has a background image.
+        background_opacity: Opacity of the background image from 0 to 1.
+        created_at: Time the plan was created.
+        updated_at: Time the plan was last changed.
+    """
+
     uuid: UUID
     name: str
 
@@ -247,10 +441,25 @@ class FloorPlanSummary(BaseModel):
 
 
 class FloorPlanRead(FloorPlanSummary):
+    """Floor plan with its background image.
+
+    Attributes:
+        background_image: Background image as a base64 data URL, if any.
+    """
+
     background_image: str | None
 
 
 class FloorPlanList(BaseModel):
+    """One page of floor plans.
+
+    Attributes:
+        items: Plan summaries on the page.
+        total: Number of plans across all pages.
+        page: One-based page number.
+        page_size: Number of plans per page.
+    """
+
     items: list[FloorPlanSummary]
     total: int
     page: int

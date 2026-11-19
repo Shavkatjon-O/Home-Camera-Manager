@@ -1,3 +1,5 @@
+"""FastAPI dependencies of the floor plan module."""
+
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,4 +13,13 @@ def get_floor_plan_service(
     session: AsyncSession = Depends(get_db),
     actor: UserContext = Depends(get_current_user),
 ) -> FloorPlanService:
+    """Build the floor plan service for a signed-in user.
+
+    Args:
+        session: Database session for the request.
+        actor: Signed-in user making the request.
+
+    Returns:
+        Floor plan service acting for the user.
+    """
     return FloorPlanService(session, actor)
