@@ -1,3 +1,5 @@
+"""Model of a paired TV device."""
+
 from datetime import datetime
 
 from sqlalchemy import Boolean, DateTime, String
@@ -9,6 +11,15 @@ __all__ = ["TvDevice"]
 
 
 class TvDevice(BaseModel):
+    """TV that has been paired and authenticates with its own device token.
+
+    Attributes:
+        name: Name the TV was paired under.
+        token_hash: Hash of the device token; the token itself is never stored.
+        last_seen_at: Time of the last authenticated request, if any.
+        revoked: Whether the device has been revoked.
+    """
+
     __tablename__ = "tv_devices"
 
     name: Mapped[str] = mapped_column(String(100), nullable=False)

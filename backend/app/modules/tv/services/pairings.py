@@ -1,3 +1,5 @@
+"""Service for the TV pairing flow."""
+
 import secrets
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
@@ -31,10 +33,24 @@ pairing_limiter = RateLimiter(PAIRINGS_PER_WINDOW, PAIRING_WINDOW_SECONDS)
 
 
 def new_code() -> str:
+    """Generate a random pairing code.
+
+    Returns:
+        Six digits, zero-padded.
+    """
     return f"{secrets.randbelow(CODE_SPACE):06d}"
 
 
 def pairing_state(pairing: TvPairing, now: datetime) -> PairingState:
+    """Work out the progress of a pairing.
+
+    Args:
+        pairing: Pairing row.
+        now: Current time.
+
+    Returns:
+        Approved when approved, otherwise expired once past its expiry time, otherwise pending.
+    """
     if pairing.approved:
         return PairingState.APPROVED
     if pairing.expires_at <= now:
@@ -43,6 +59,12 @@ def pairing_state(pairing: TvPairing, now: datetime) -> PairingState:
 
 
 class TvPairingService(BaseModelService[TvPairing]):
+    """Open, poll and approve TV pairings.
+
+    Attributes:
+        limiter: Rate limiter applied to pairing requests per client.
+    """
+
     model = TvPairing
     not_found_code = "pairing_not_found"
 
@@ -52,10 +74,25 @@ class TvPairingService(BaseModelService[TvPairing]):
         actor: UserContext | None = None,
         limiter: RateLimiter = pairing_limiter,
     ):
+        """Bind the service to a session, the acting user and a rate limiter.
+
+        Args:
+            session: Database session the service works in.
+            actor: Signed-in user making the request, if any.
+            limiter: Rate limiter applied to pairing requests per client.
+        """
         super().__init__(session, actor)
         self.limiter = limiter
 
     def open_filter(self, now: datetime) -> tuple:
+        """Build the conditions that select pairings still waiting for approval.
+
+        Args:
+            now: Current time.
+
+        Returns:
+            Conditions for pairings that are not deleted, not approved and not expired.
+        """
         return (
             TvPairing.deleted_at.is_(None),
             TvPairing.approved.is_(False),
@@ -63,9 +100,25 @@ class TvPairingService(BaseModelService[TvPairing]):
         )
 
     async def purge(self, now: datetime) -> None:
+        """Delete pairings that expired more than the retention period ago.
+
+        Args:
+            now: Current time.
+        """
         await self.session.execute(delete(TvPairing).where(TvPairing.expires_at < now - PAIRING_RETENTION))
 
     async def unique_code(self, now: datetime) -> str:
+        """Pick a code that no waiting pairing uses.
+
+        Args:
+            now: Current time.
+
+        Returns:
+            Free six-digit code.
+
+        Raises:
+            Unavailable: When no free code is found after several attempts.
+        """
         taken = set(await self.session.scalars(select(TvPairing.code).where(*self.open_filter(now))))
         for _ in range(CODE_ATTEMPTS):
             code = new_code()
@@ -74,6 +127,21 @@ class TvPairingService(BaseModelService[TvPairing]):
         raise Unavailable("pairing_code_unavailable", "No free pairing code, try again")
 
     async def create(self, payload: PairingCreate, client: str) -> PairingCreated:
+        """Open a pairing for a TV.
+
+        Applies the per-client rate limit, removes long-expired pairings and refuses new ones while too many
+        TVs are already waiting.
+
+        Args:
+            payload: Device name the TV asks for.
+            client: Key of the requesting client, used for rate limiting.
+
+        Returns:
+            Pairing id and code, with the time the code expires.
+
+        Raises:
+            TooManyRequests: When the client is over its rate limit or too many pairings are waiting.
+        """
         if not self.limiter.allow(client):
             raise TooManyRequests("rate_limited", "Too many pairing requests, try again in a minute")
         now = datetime.now(UTC)
@@ -93,6 +161,21 @@ class TvPairingService(BaseModelService[TvPairing]):
         return PairingCreated(id=pairing.uuid, code=pairing.code, expires_at=pairing.expires_at)
 
     async def status(self, uuid: UUID) -> PairingStatus:
+        """Report the status of a pairing and hand over the device token once it is approved.
+
+        The pairing row is locked while it is read. An approved pairing is soft-deleted, a fresh token is issued
+        for its device and returned, so the token is handed over exactly once. When the device has since been
+        revoked or removed, the pairing reports as expired instead.
+
+        Args:
+            uuid: Public id of the pairing.
+
+        Returns:
+            Pairing status, with the device token only on the call that hands it over.
+
+        Raises:
+            NotFound: When the pairing does not exist.
+        """
         pairing = await self.session.scalar(
             select(TvPairing).where(TvPairing.uuid == uuid, TvPairing.deleted_at.is_(None)).with_for_update()
         )
@@ -121,6 +204,17 @@ class TvPairingService(BaseModelService[TvPairing]):
         return PairingStatus(status=PairingState.APPROVED, token=token)
 
     async def approve(self, code: str) -> TvDeviceRead:
+        """Approve the newest waiting pairing with a code and create its device.
+
+        Args:
+            code: Six-digit code shown on the TV.
+
+        Returns:
+            The newly created device.
+
+        Raises:
+            NotFound: When no waiting pairing has the code.
+        """
         now = datetime.now(UTC)
         pairing = await self.session.scalar(
             select(TvPairing)

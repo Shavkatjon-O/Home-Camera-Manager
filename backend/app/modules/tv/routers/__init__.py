@@ -1,3 +1,5 @@
+"""Routers of the TV module."""
+
 from fastapi import APIRouter
 
 from .config import router as config_router

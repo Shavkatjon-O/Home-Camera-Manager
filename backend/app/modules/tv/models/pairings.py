@@ -1,3 +1,5 @@
+"""Model of a TV pairing request."""
+
 from datetime import datetime
 
 from sqlalchemy import BigInteger, Boolean, DateTime, ForeignKey, String
@@ -9,6 +11,16 @@ __all__ = ["TvPairing"]
 
 
 class TvPairing(BaseModel):
+    """Pairing request that a TV opened and a signed-in user approves with its code.
+
+    Attributes:
+        code: Six-digit code shown on the TV.
+        device_name: Name the TV asked to be paired under.
+        expires_at: Time after which the request can no longer be approved.
+        approved: Whether a user has approved the request.
+        device_id: Database id of the device created on approval, if any.
+    """
+
     __tablename__ = "tv_pairings"
 
     code: Mapped[str] = mapped_column(String(6), nullable=False, index=True)

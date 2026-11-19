@@ -1,3 +1,5 @@
+"""Routes for listing and revoking paired TV devices."""
+
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Response, status
@@ -11,10 +13,27 @@ router = APIRouter()
 
 @router.get("/devices", response_model=TvDeviceList)
 async def list_devices(service: TvDeviceService = Depends(get_device_service)) -> TvDeviceList:
+    """List the active paired TV devices.
+
+    Args:
+        service: Device service for the signed-in user.
+
+    Returns:
+        Active devices, newest first.
+    """
     return await service.list_all()
 
 
 @router.delete("/devices/{uuid}", status_code=status.HTTP_204_NO_CONTENT)
 async def revoke_device(uuid: UUID, service: TvDeviceService = Depends(get_device_service)) -> Response:
+    """Revoke a paired TV device so its token stops working.
+
+    Args:
+        uuid: Public id of the device.
+        service: Device service for the signed-in user.
+
+    Returns:
+        Empty response.
+    """
     await service.revoke(uuid)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
