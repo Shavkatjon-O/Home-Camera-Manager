@@ -36,7 +36,8 @@ alembic revision --autogenerate -m "<message>"
 - Publish go2rtc's RTSP port only on HC_LAN_BIND and keep HC_TV_RTSP_PASSWORD set, because clients arriving through the published port are the only ones go2rtc asks for credentials and the VPN must not reach the cameras.
 - Keep -flags low_delay on every TV ffmpeg input, the filter threads at 2 and bilinear scaling, because low_delay turns off frame-threaded decoding, which delays each picture by a frame per thread, and the default filter threads with bicubic scaling cost about three CPU cores on the wall instead of under one.
 - Compose the TV streams as overlays on a lavfi canvas, never with xstack, because xstack sends nothing until every input has delivered a frame, so one silent camera would hold the whole wall.
-- Keep the TV composer's input user agent free of the RTSP username, because go2rtc masks the username wherever it appears in its API output and the backend finds the composer's inputs by that user agent.- Proxy the video websocket with the browser's Host header, because go2rtc rejects websocket origins that do not match it.
+- Keep the TV composer's input user agent free of the RTSP username, because go2rtc masks the username wherever it appears in its API output and the backend finds the composer's inputs by that user agent.
+- Proxy the video websocket with the browser's Host header, because go2rtc rejects websocket origins that do not match it.
 - Keep transcodes video only, because bridged V380 cameras advertise an audio track they never send and an audio transcode then waits until go2rtc kills it.
 - Keep the go2rtc h264 template on h264_nvenc with CPU decoding, because software x264 on the 5 MP streams misses go2rtc's start timeout and GPU decoding fails on the PTZ 1 bridge stream.
 - Build the V380 bridge from the pinned upstream pull request commit in v380-bridge/Dockerfile, because the released decoder stalls on short stream login replies and the camera resets the connection.
@@ -48,4 +49,4 @@ alembic revision --autogenerate -m "<message>"
 - Keep SD card playback behind HC_REPLAY_ENABLED and one session per camera, because the cameras reset local playback sessions and go2rtc 1.9.14 keeps redialling a failed source after its stream is removed, which once made a camera restart.
 - Keep the bridges' API on the internal network, because it has no authentication and sounds the siren.
 - Never test reboot, siren or light on the real cameras, and read and restore every camera setting a test changes.
-- No comments, emojis or non-ASCII characters in code, configs or docs.
+- Give every Python module, class and function outside tests and migrations a docstring with Args, Returns, Yields, Raises and Attributes sections where they apply, and add a comment only where the code cannot show its reason, because ruff enforces the docstring convention and the docstrings are the code's reference; write no emojis or non-ASCII characters in code, configs or docs.
