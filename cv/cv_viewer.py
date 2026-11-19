@@ -1,3 +1,10 @@
+"""OpenCV viewer that shows every camera's RTSP stream in one grid window.
+
+Settings come from the environment: CAMERA_PASSWORD for the admin account, STREAM for the main or
+sub stream, SCREEN_W and SCREEN_H for the default grid size, and CV_CAMERA_HOSTS for a
+comma-separated list of camera addresses.
+"""
+
 import os
 import sys
 import time
@@ -27,7 +34,25 @@ BG = (16, 16, 20)
 
 
 class Camera(threading.Thread):
+    """Background thread that keeps reading one camera's stream and holds its latest frame.
+
+    Attributes:
+        name (str): Label drawn on the camera's cell.
+        url (str): RTSP address of the stream.
+        lock (threading.Lock): Guards frame and ts.
+        frame (numpy.ndarray | None): Latest decoded frame, or None before the first one.
+        ts (float): Wall-clock time the latest frame arrived.
+        connected (bool): Whether the stream is open.
+        stop (bool): Set to True to end the thread.
+    """
+
     def __init__(self, name, url):
+        """Create the reader thread as a daemon.
+
+        Args:
+            name (str): Label drawn on the camera's cell.
+            url (str): RTSP address of the stream.
+        """
         super().__init__(daemon=True)
         self.name = name
         self.url = url
@@ -38,6 +63,11 @@ class Camera(threading.Thread):
         self.stop = False
 
     def run(self):
+        """Read frames until stopped, reconnecting whenever the stream fails.
+
+        A stream that cannot be opened is retried after 2 seconds. More than 30 failed reads in a
+        row close the stream, and it is reopened after 1 second.
+        """
         while not self.stop:
             cap = cv2.VideoCapture(self.url, cv2.CAP_FFMPEG)
             try:
@@ -66,6 +96,11 @@ class Camera(threading.Thread):
             time.sleep(1.0)
 
     def latest(self):
+        """Return the latest frame and when it arrived.
+
+        Returns:
+            tuple: The frame, or None before the first one, and its arrival time.
+        """
         with self.lock:
             if self.frame is None:
                 return None, self.ts
@@ -73,6 +108,16 @@ class Camera(threading.Thread):
 
 
 def fit(frame, cw, ch):
+    """Scale a frame to fit a cell, keeping its aspect ratio and padding with the background.
+
+    Args:
+        frame (numpy.ndarray): Frame to scale.
+        cw (int): Cell width in pixels.
+        ch (int): Cell height in pixels.
+
+    Returns:
+        numpy.ndarray: Cell image with the frame centred.
+    """
     h, w = frame.shape[:2]
     scale = min(cw / w, ch / h)
     nw, nh = max(1, int(round(w * scale))), max(1, int(round(h * scale)))
@@ -86,6 +131,16 @@ def fit(frame, cw, ch):
 
 
 def label(img, text, ok):
+    """Draw a caption bar with a status dot along the bottom of a cell.
+
+    Args:
+        img (numpy.ndarray): Cell image, drawn on in place.
+        text (str): Caption text.
+        ok (bool): Whether the camera is live, which colours the dot green instead of grey.
+
+    Returns:
+        numpy.ndarray: The same image.
+    """
     h, w = img.shape[:2]
     cv2.rectangle(img, (0, h - 34), (w, h), (0, 0, 0), -1)
     color = (80, 220, 120) if ok else (120, 120, 120)
@@ -96,6 +151,16 @@ def label(img, text, ok):
 
 
 def blank(cw, ch, text):
+    """Build an empty cell with a centred grey message.
+
+    Args:
+        cw (int): Cell width in pixels.
+        ch (int): Cell height in pixels.
+        text (str): Message to show, or an empty string.
+
+    Returns:
+        numpy.ndarray: The cell image.
+    """
     img = np.empty((ch, cw, 3), np.uint8)
     img[:] = BG
     cv2.putText(img, text, (cw // 2 - 90, ch // 2),
@@ -104,6 +169,19 @@ def blank(cw, ch, text):
 
 
 def compose(cams, total_w, total_h):
+    """Lay out every camera's latest frame in a near-square grid.
+
+    A camera counts as live while it is connected and its latest frame is under 3 seconds old.
+    Cells left over in the last row stay blank.
+
+    Args:
+        cams (list[Camera]): Camera readers in display order.
+        total_w (int): Grid width in pixels.
+        total_h (int): Grid height in pixels.
+
+    Returns:
+        numpy.ndarray: The composed grid image.
+    """
     n = len(cams)
     cols = math.ceil(math.sqrt(n))
     rows = math.ceil(n / cols)
@@ -125,6 +203,12 @@ def compose(cams, total_w, total_h):
 
 
 def main():
+    """Start a reader per camera, then show the grid window or save one snapshot.
+
+    With --snapshot the viewer waits up to --wait seconds for a first frame from every camera,
+    saves one grid image and exits. Otherwise q or Esc quits, f toggles fullscreen and closing the
+    window ends the viewer.
+    """
     ap = argparse.ArgumentParser()
     ap.add_argument("--snapshot", metavar="PATH",
                     help="grab one composed frame, save it, and exit")
