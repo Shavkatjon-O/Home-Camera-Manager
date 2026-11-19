@@ -1,3 +1,5 @@
+"""ONVIF PullPoint event subscription for one camera, with a polling fallback."""
+
 import asyncio
 import logging
 import time
@@ -52,6 +54,14 @@ UNSUBSCRIBE_BODY = "<wsnt:Unsubscribe/>"
 
 
 def pull_body(wait_seconds: int) -> str:
+    """Build the PullMessages request body.
+
+    Args:
+        wait_seconds: How long the camera may hold the request open waiting for messages.
+
+    Returns:
+        The SOAP body.
+    """
     return (
         f"<tev:PullMessages><tev:Timeout>PT{wait_seconds}S</tev:Timeout>"
         f"<tev:MessageLimit>{PULL_LIMIT}</tev:MessageLimit></tev:PullMessages>"
@@ -59,11 +69,30 @@ def pull_body(wait_seconds: int) -> str:
 
 
 class Unsupported(Exception):
+    """Raised when a camera cannot provide ONVIF events, so retrying soon is pointless."""
+
     pass
 
 
 @dataclass
 class SourceStatus:
+    """State of the event source of one camera, as shown to clients.
+
+    Attributes:
+        camera_uuid: Public id of the camera.
+        camera_name: Name of the camera.
+        position: Position of the camera in the camera list.
+        state: Connection state.
+        mode: How events are being received.
+        endpoint: Label of the ONVIF endpoint in use, if known.
+        topics: Topics the camera advertises that the system records.
+        kinds: Event kinds those topics cover.
+        conditions: Latest state of each reported camera condition by name.
+        connected_at: Time the source went live, if it is live.
+        last_message_at: Time of the latest message, if any.
+        error: Reason the source is not live, if any.
+    """
+
     camera_uuid: UUID
     camera_name: str
     position: int = 0
@@ -84,6 +113,16 @@ Alive = Callable[[], Awaitable[bool]]
 
 
 def renew_seconds(subscription_current: datetime | None, termination: datetime | None) -> float:
+    """Work out how long to wait before renewing a subscription.
+
+    Args:
+        subscription_current: Camera time reported with the subscription, or None.
+        termination: Camera time the subscription expires, or None.
+
+    Returns:
+        Half of the remaining lifetime but at least the minimum, the minimum when it has already expired, or the
+        default when either time is unknown.
+    """
     if subscription_current is None or termination is None:
         return DEFAULT_RENEW_SECONDS
     remaining = (termination - subscription_current).total_seconds()
@@ -93,6 +132,24 @@ def renew_seconds(subscription_current: datetime | None, termination: datetime |
 
 
 class CameraSubscriber:
+    """Receive the ONVIF events of one camera in a background task and report them and the source status.
+
+    Events are received through a PullPoint subscription, falling back to creating a short subscription and pulling
+    it every few seconds for cameras that refuse PullMessages on a held subscription. Failures are retried with a
+    growing delay, and cameras without a usable events service are retried rarely.
+
+    Attributes:
+        status: Current source status.
+        endpoint: ONVIF endpoint of the camera.
+        on_messages: Callback that receives the delivered notifications.
+        on_status: Callback that receives every status change.
+        alive: Check of whether the camera answers on its stream port, if given.
+        connected: Whether the ONVIF service has answered since the last failure.
+        task: Background task running the subscriber, if started.
+        client: ONVIF client of the current session, if any.
+        subscription: Address of the open subscription, if any.
+    """
+
     def __init__(
         self,
         status: SourceStatus,
@@ -101,6 +158,16 @@ class CameraSubscriber:
         on_status: StatusChanged,
         alive: Alive | None = None,
     ):
+        """Bind the subscriber to a camera.
+
+        Args:
+            status: Initial source status.
+            endpoint: ONVIF endpoint of the camera.
+            on_messages: Callback that receives the camera id, notifications, camera time and whether they were polled.
+            on_status: Callback that receives every status change.
+            alive: Check of whether the camera answers on its stream port, used to tell an offline camera from one
+                without ONVIF.
+        """
         self.status = status
         self.endpoint = endpoint
         self.on_messages = on_messages
@@ -114,13 +181,16 @@ class CameraSubscriber:
 
     @property
     def camera_uuid(self) -> UUID:
+        """Return the public id of the camera."""
         return self.status.camera_uuid
 
     def start(self) -> None:
+        """Start the background task unless it is already running."""
         if self.task is None or self.task.done():
             self.task = asyncio.create_task(self.run(), name=f"camera-events-{self.camera_uuid.hex[:8]}")
 
     async def stop(self) -> None:
+        """Cancel the background task and close the open subscription."""
         if self.task is not None:
             self.task.cancel()
             await asyncio.gather(self.task, return_exceptions=True)
@@ -128,6 +198,11 @@ class CameraSubscriber:
         await self.unsubscribe()
 
     def update(self, **changes) -> None:
+        """Change fields of the status and report the new status if anything changed.
+
+        Args:
+            **changes: Status fields to replace.
+        """
         updated = replace(self.status, **changes)
         if updated == self.status:
             return
@@ -135,6 +210,11 @@ class CameraSubscriber:
         self.on_status(updated)
 
     async def run(self) -> None:
+        """Keep a session running until cancelled, recording failures in the status and retrying.
+
+        Raises:
+            asyncio.CancelledError: When the task is cancelled.
+        """
         backoff = BACKOFF_FIRST_SECONDS
         self.update(endpoint=self.endpoint.label)
         while True:
@@ -169,6 +249,13 @@ class CameraSubscriber:
                 backoff = min(backoff * 2, BACKOFF_MAX_SECONDS)
 
     async def session(self) -> None:
+        """Run one session: connect, subscribe and receive events until the subscription ends.
+
+        Falls back to polling when the camera refuses PullMessages.
+
+        Raises:
+            Unsupported: When the camera has no events service or refuses to create a subscription.
+        """
         client = self.endpoint.client(timeout=REQUEST_TIMEOUT_SECONDS)
         self.client = client
         services = await client.services()
@@ -187,6 +274,12 @@ class CameraSubscriber:
         await self.poll(client, address)
 
     async def load_topics(self, client: OnvifClient, address: str) -> None:
+        """Read the topics the camera advertises and store the recorded ones in the status.
+
+        Args:
+            client: ONVIF client to use.
+            address: Address of the events service.
+        """
         try:
             body = await client.call(address, "<tev:GetEventProperties/>", action=PROPERTIES_ACTION)
         except OnvifFault:
@@ -195,6 +288,18 @@ class CameraSubscriber:
         self.update(topics=topics, kinds=kinds)
 
     async def create(self, client: OnvifClient, address: str) -> Subscription:
+        """Create a PullPoint subscription and remember its address.
+
+        Args:
+            client: ONVIF client to use.
+            address: Address of the events service.
+
+        Returns:
+            The subscription the camera created.
+
+        Raises:
+            OnvifError: When the camera answers without a subscription address.
+        """
         body = await client.call(address, CREATE_BODY, action=CREATE_ACTION)
         subscription = parse_subscription(body)
         if subscription is None:
@@ -203,6 +308,18 @@ class CameraSubscriber:
         return subscription
 
     async def pull(self, client: OnvifClient, subscription: Subscription) -> bool:
+        """Pull messages from the open subscription and pass them on, renewing before it expires.
+
+        The status becomes live after the first successful pull.
+
+        Args:
+            client: ONVIF client to use.
+            subscription: Subscription to pull from.
+
+        Returns:
+            False when the camera refused the first pull, so polling should be tried instead, and True when a renew
+            or a later pull failed and the session should start over.
+        """
         address = self.subscription
         renew_at = time.monotonic() + renew_seconds(subscription.current_time, subscription.termination_time)
         pulled = False
@@ -240,6 +357,15 @@ class CameraSubscriber:
                 await asyncio.sleep(MIN_PULL_SECONDS)
 
     async def poll(self, client: OnvifClient, address: str) -> None:
+        """Receive events by creating a short subscription, pulling it once and closing it, repeatedly.
+
+        Args:
+            client: ONVIF client to use.
+            address: Address of the events service.
+
+        Raises:
+            Unsupported: When the camera refuses to create a subscription or to deliver events.
+        """
         while True:
             try:
                 subscription = await self.create(client, address)
@@ -268,6 +394,7 @@ class CameraSubscriber:
             await asyncio.sleep(POLL_INTERVAL_SECONDS)
 
     async def unsubscribe(self) -> None:
+        """Close the open subscription on the camera, ignoring failures and timeouts."""
         address = self.subscription
         client = self.client
         self.subscription = None
@@ -283,6 +410,17 @@ class CameraSubscriber:
 
 
 def rebase(client: OnvifClient, address: str) -> str:
+    """Point a subscription address at the host the client reached the camera on.
+
+    Only the path and query of the reported address are kept.
+
+    Args:
+        client: ONVIF client whose base URL is used.
+        address: Subscription address reported by the camera.
+
+    Returns:
+        The address on the client's base URL.
+    """
     parts = urlsplit(address)
     path = parts.path or "/"
     if parts.query:
