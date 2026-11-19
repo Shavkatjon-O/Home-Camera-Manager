@@ -1,3 +1,5 @@
+"""TCP port sweep and ONVIF identification of hosts on a subnet."""
+
 import asyncio
 from collections import defaultdict
 from dataclasses import dataclass
@@ -22,7 +24,20 @@ ONVIF_CONCURRENCY = 16
 
 
 class SubnetError(ValueError):
+    """Subnet that cannot be scanned.
+
+    Attributes:
+        code: Machine-readable error code.
+        message: Human-readable description.
+    """
+
     def __init__(self, code: str, message: str):
+        """Create the error.
+
+        Args:
+            code: Machine-readable error code.
+            message: Human-readable description.
+        """
         super().__init__(message)
         self.code = code
         self.message = message
@@ -30,6 +45,17 @@ class SubnetError(ValueError):
 
 @dataclass(frozen=True)
 class DiscoveredHost:
+    """Camera candidate found by a scan.
+
+    Attributes:
+        host: IPv4 address of the host.
+        open_ports: Scanned ports that accepted a connection.
+        brand: Guessed camera brand, or None when it could not be guessed.
+        manufacturer: Manufacturer the host reported over ONVIF.
+        model: Model the host reported over ONVIF.
+        onvif_port: ONVIF port that answered or was guessed from the brand.
+    """
+
     host: str
     open_ports: list[int]
     brand: CameraBrand | None
@@ -39,6 +65,17 @@ class DiscoveredHost:
 
 
 def parse_subnet(value: str) -> IPv4Network:
+    """Parse a subnet and check that it is small enough to scan.
+
+    Args:
+        value: Subnet in CIDR notation; host bits are ignored.
+
+    Returns:
+        The IPv4 network.
+
+    Raises:
+        SubnetError: The value is not a valid IPv4 subnet or is larger than the smallest allowed prefix.
+    """
     try:
         network = ip_network(value.strip(), strict=False)
     except ValueError:
@@ -51,11 +88,29 @@ def parse_subnet(value: str) -> IPv4Network:
 
 
 def subnet_hosts(network: IPv4Network) -> list[IPv4Address]:
+    """List the addresses to scan in a subnet.
+
+    Args:
+        network: Subnet to scan.
+
+    Returns:
+        Usable host addresses, or the network address itself for a subnet that has none.
+    """
     hosts = list(network.hosts())
     return hosts or [network.network_address]
 
 
 async def port_open(host: str, port: int, timeout: float = CONNECT_TIMEOUT_SECONDS) -> bool:
+    """Check whether a TCP port accepts a connection.
+
+    Args:
+        host: Address to connect to.
+        port: TCP port.
+        timeout: Seconds to wait for the connection and again for it to close.
+
+    Returns:
+        True when the connection was accepted.
+    """
     try:
         reader, writer = await asyncio.wait_for(asyncio.open_connection(host, port), timeout)
     except (OSError, TimeoutError):
@@ -69,9 +124,28 @@ async def port_open(host: str, port: int, timeout: float = CONNECT_TIMEOUT_SECON
 
 
 async def sweep(hosts: list[str], ports: tuple[int, ...], concurrency: int = SCAN_CONCURRENCY) -> dict[str, list[int]]:
+    """Check many hosts and ports for open TCP ports.
+
+    Args:
+        hosts: Addresses to check.
+        ports: Ports to check on every host.
+        concurrency: Most connection attempts in flight at once.
+
+    Returns:
+        Sorted open ports for each host that has at least one.
+    """
     semaphore = asyncio.Semaphore(concurrency)
 
     async def check(host: str, port: int) -> tuple[str, int, bool]:
+        """Check one port, limited by the shared semaphore.
+
+        Args:
+            host: Address to connect to.
+            port: TCP port.
+
+        Returns:
+            The host, the port and whether the port is open.
+        """
         async with semaphore:
             return host, port, await port_open(host, port)
 
@@ -84,6 +158,16 @@ async def sweep(hosts: list[str], ports: tuple[int, ...], concurrency: int = SCA
 
 
 async def identify(host: str, open_ports: list[int]) -> tuple[str | None, str | None, int | None]:
+    """Ask a host for its device information over ONVIF on the ONVIF ports it has open.
+
+    Args:
+        host: Address of the host.
+        open_ports: Ports of the host that accepted a connection.
+
+    Returns:
+        Manufacturer, model and the ONVIF port that answered. A port that answers with an ONVIF fault
+        returns no manufacturer or model but still counts as answered; all three are None when no port answered.
+    """
     for port in ONVIF_PORTS:
         if port not in open_ports:
             continue
@@ -99,6 +183,16 @@ async def identify(host: str, open_ports: list[int]) -> tuple[str | None, str | 
 
 
 async def describe(host: str, open_ports: list[int], semaphore: asyncio.Semaphore) -> DiscoveredHost:
+    """Identify a host over ONVIF and classify it.
+
+    Args:
+        host: Address of the host.
+        open_ports: Ports of the host that accepted a connection.
+        semaphore: Limit on concurrent ONVIF requests.
+
+    Returns:
+        The host with its guessed brand, manufacturer, model and ONVIF port.
+    """
     async with semaphore:
         manufacturer, model, answered_port = await identify(host, open_ports)
     brand = guess_brand(open_ports, manufacturer, answered_port)
@@ -113,6 +207,16 @@ async def describe(host: str, open_ports: list[int], semaphore: asyncio.Semaphor
 
 
 async def scan(network: IPv4Network) -> list[DiscoveredHost]:
+    """Scan a subnet for cameras.
+
+    Hosts with none of the camera ports open are dropped before the slower ONVIF identification.
+
+    Args:
+        network: Subnet to scan.
+
+    Returns:
+        Camera candidates sorted by address.
+    """
     hosts = [str(address) for address in subnet_hosts(network)]
     found = await sweep(hosts, SCAN_PORTS)
     candidates = {host: ports for host, ports in found.items() if CAMERA_PORTS.intersection(ports)}

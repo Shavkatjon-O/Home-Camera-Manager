@@ -1,3 +1,5 @@
+"""Camera discovery service."""
+
 import time
 from collections.abc import Iterable
 from datetime import UTC, datetime
@@ -25,6 +27,14 @@ __all__ = ["DiscoveryService", "index_hosts"]
 
 
 def index_hosts(cameras: Iterable[Camera]) -> dict[str, Camera]:
+    """Map every address a camera uses to that camera.
+
+    Args:
+        cameras: Cameras to index.
+
+    Returns:
+        Camera by host and by device host; the first camera wins when an address repeats.
+    """
     hosts: dict[str, Camera] = {}
     for camera in cameras:
         for host in (camera.host, camera.device_host):
@@ -34,17 +44,46 @@ def index_hosts(cameras: Iterable[Camera]) -> dict[str, Camera]:
 
 
 class DiscoveryService:
+    """Scan the network for cameras and inspect a camera over ONVIF.
+
+    Attributes:
+        session: Database session the service works in.
+        actor: User making the request, if any.
+    """
+
     def __init__(self, session: AsyncSession, actor: UserContext | None = None):
+        """Bind the service to a session and the user acting through it.
+
+        Args:
+            session: Database session the service works in.
+            actor: User making the request, if any.
+        """
         self.session = session
         self.actor = actor
 
     async def registered_hosts(self) -> dict[str, Camera]:
+        """Load live cameras indexed by address.
+
+        Returns:
+            Camera by host and by device host.
+        """
         rows = await self.session.scalars(
             select(Camera).where(Camera.deleted_at.is_(None)).order_by(Camera.position.asc(), Camera.id.asc())
         )
         return index_hosts(rows)
 
     async def scan(self, payload: ScanRequest) -> ScanResult:
+        """Scan a subnet and mark the hosts that are already registered cameras.
+
+        Args:
+            payload: Subnet to scan; the configured default subnet is used when it is missing.
+
+        Returns:
+            Hosts found, each with the id of the registered camera at its address, if any.
+
+        Raises:
+            Unprocessable: The subnet is invalid or too large.
+        """
         try:
             network = parse_subnet(payload.subnet or settings.discovery_subnet)
         except SubnetError as exc:
@@ -71,6 +110,19 @@ class DiscoveryService:
         return ScanResult(subnet=str(network), scanned_at=scanned_at, duration_ms=duration_ms, items=items)
 
     async def inspect(self, payload: InspectRequest) -> InspectResult:
+        """Read a camera's stream profiles and device information over ONVIF.
+
+        Device information is optional: an empty one is used when the camera does not give it.
+
+        Args:
+            payload: Address and optional login of the camera.
+
+        Returns:
+            Device information and stream profiles.
+
+        Raises:
+            BadGateway: The camera does not answer for its stream profiles.
+        """
         client = OnvifClient(payload.host, payload.onvif_port, payload.username, payload.password)
         try:
             profiles = await client.stream_profiles()
