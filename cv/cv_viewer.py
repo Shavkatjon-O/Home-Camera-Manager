@@ -16,9 +16,11 @@ CH = "101" if STREAM == "main" else "102"
 SCREEN_W = int(os.environ.get("SCREEN_W", "1920"))
 SCREEN_H = int(os.environ.get("SCREEN_H", "1080"))
 
+HOSTS = [host.strip() for host in os.environ.get("CV_CAMERA_HOSTS", "192.168.1.104,192.168.1.106").split(",") if host.strip()]
+
 CAMERAS = [
-    ("Camera A", f"rtsp://admin:{PW}@192.168.1.104:554/Streaming/Channels/{CH}"),
-    ("Camera B", f"rtsp://admin:{PW}@192.168.1.106:554/Streaming/Channels/{CH}"),
+    (f"Camera {chr(65 + index)}", f"rtsp://admin:{PW}@{host}:554/Streaming/Channels/{CH}")
+    for index, host in enumerate(HOSTS)
 ]
 
 BG = (16, 16, 20)

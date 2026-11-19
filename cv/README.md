@@ -1,4 +1,4 @@
-# Home Cameras — OpenCV viewer
+# Home Cameras - OpenCV viewer
 
 A single window showing every camera at once, security-monitor style.
 OpenCV opens the RTSP streams and decodes H.265 directly, then draws all
@@ -7,26 +7,26 @@ lighter and smoother than a web player. Software decode only; no GPU.
 
 ## Build (once)
 
-    cd ./cv
+    cd cv
     docker build -t home-cameras-cv:latest .
 
-The password comes from `../.env` (`CAMERA_PASSWORD=...`), same file the web
-stack uses.
+The password comes from `../.env` (`CAMERA_PASSWORD=...`) and the camera addresses from
+`CV_CAMERA_HOSTS`, a comma-separated list, in the same file the web stack uses.
 
 ## Run the window
 
 Open a terminal **on the PC's own screen** (not over SSH) and:
 
-    ./cv/run.sh
+    cv/run.sh
 
 A window opens with both cameras. Keys:
 
-- `q` or `Esc` — quit
-- `f` — toggle fullscreen
+- `q` or `Esc` - quit
+- `f` - toggle fullscreen
 
 Lighter mode (uses the small 768x432 sub-stream instead of 5MP):
 
-    STREAM=sub ./cv/run.sh
+    STREAM=sub cv/run.sh
 
 ## Headless check (no window)
 
