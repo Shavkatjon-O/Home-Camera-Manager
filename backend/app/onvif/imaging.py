@@ -1,3 +1,5 @@
+"""Imaging settings and options requests and parsers for ONVIF devices."""
+
 from dataclasses import dataclass, field
 from xml.etree.ElementTree import Element
 from xml.sax.saxutils import escape
@@ -16,6 +18,20 @@ LEVEL_ELEMENTS = {
 
 @dataclass(frozen=True)
 class ImagingState:
+    """Imaging settings of a video source, with None for settings the device does not report.
+
+    Attributes:
+        brightness: Brightness level.
+        contrast: Contrast level.
+        saturation: Colour saturation level.
+        sharpness: Sharpness level.
+        ir_cut_filter: Infrared cut filter mode.
+        wdr_mode: Wide dynamic range mode.
+        wdr_level: Wide dynamic range level.
+        backlight_mode: Backlight compensation mode.
+        backlight_level: Backlight compensation level.
+    """
+
     brightness: float | None = None
     contrast: float | None = None
     saturation: float | None = None
@@ -29,6 +45,17 @@ class ImagingState:
 
 @dataclass(frozen=True)
 class ImagingOptions:
+    """Values a video source accepts for its imaging settings.
+
+    Attributes:
+        levels: Setting name to its allowed range, only for ranges with a span.
+        ir_cut_filter_modes: Allowed infrared cut filter modes.
+        wdr_modes: Allowed wide dynamic range modes.
+        wdr_level: Allowed wide dynamic range level range.
+        backlight_modes: Allowed backlight compensation modes.
+        backlight_level: Allowed backlight compensation level range.
+    """
+
     levels: dict[str, Range] = field(default_factory=dict)
     ir_cut_filter_modes: tuple[str, ...] = ()
     wdr_modes: tuple[str, ...] = ()
@@ -38,6 +65,15 @@ class ImagingOptions:
 
 
 def modes(element: Element | None, name: str) -> tuple[str, ...]:
+    """Collect the distinct values of the child elements with a name.
+
+    Args:
+        element: Parent element, or None.
+        name: Local name of the child elements.
+
+    Returns:
+        The non-empty values in document order, without repeats.
+    """
     found = []
     for item in children(element, name):
         value = text(item)
@@ -47,6 +83,14 @@ def modes(element: Element | None, name: str) -> tuple[str, ...]:
 
 
 def parse_settings(body: Element) -> ImagingState:
+    """Read the imaging settings from a GetImagingSettings response.
+
+    Args:
+        body: SOAP body of the response.
+
+    Returns:
+        The settings, all None when the response has no imaging settings.
+    """
     settings = descendant(body, "ImagingSettings")
     if settings is None:
         return ImagingState()
@@ -66,6 +110,14 @@ def parse_settings(body: Element) -> ImagingState:
 
 
 def parse_options(body: Element) -> ImagingOptions:
+    """Read the allowed imaging values from a GetOptions response.
+
+    Args:
+        body: SOAP body of the response.
+
+    Returns:
+        The options, empty when the response has no imaging options.
+    """
     options = descendant(body, "ImagingOptions")
     if options is None:
         return ImagingOptions()
@@ -87,6 +139,16 @@ def parse_options(body: Element) -> ImagingOptions:
 
 
 def mode_block(name: str, mode: str | None, level: float | None) -> str:
+    """Build the XML of a setting that has a mode and an optional level.
+
+    Args:
+        name: Element name of the setting.
+        mode: Mode to set.
+        level: Level to set, left out when None.
+
+    Returns:
+        The XML, or an empty string when the mode is None.
+    """
     if mode is None:
         return ""
     level_xml = f"<tt:Level>{format_number(level)}</tt:Level>" if level is not None else ""
@@ -94,6 +156,17 @@ def mode_block(name: str, mode: str | None, level: float | None) -> str:
 
 
 def set_body(source_token: str, state: ImagingState) -> str:
+    """Build a SetImagingSettings request that is persisted on the device.
+
+    Only the settings that are not None are included.
+
+    Args:
+        source_token: Video source token.
+        state: Settings to apply.
+
+    Returns:
+        The XML of the request body.
+    """
     parts = [mode_block("BacklightCompensation", state.backlight_mode, state.backlight_level)]
     for key in ("brightness", "saturation", "contrast"):
         value = getattr(state, key)
@@ -112,15 +185,39 @@ def set_body(source_token: str, state: ImagingState) -> str:
 
 
 def settings_body(source_token: str) -> str:
+    """Build a GetImagingSettings request.
+
+    Args:
+        source_token: Video source token.
+
+    Returns:
+        The XML of the request body.
+    """
     source = f"<timg:VideoSourceToken>{escape(source_token)}</timg:VideoSourceToken>"
     return f"<timg:GetImagingSettings>{source}</timg:GetImagingSettings>"
 
 
 def options_body(source_token: str) -> str:
+    """Build an imaging GetOptions request.
+
+    Args:
+        source_token: Video source token.
+
+    Returns:
+        The XML of the request body.
+    """
     return f"<timg:GetOptions><timg:VideoSourceToken>{escape(source_token)}</timg:VideoSourceToken></timg:GetOptions>"
 
 
 def video_sources(body: Element) -> list[str]:
+    """Read the video source tokens from a GetVideoSources response.
+
+    Args:
+        body: SOAP body of the response.
+
+    Returns:
+        The tokens of the VideoSources elements.
+    """
     return [
         element.get("token") for element in body.iter() if element.get("token") and element.tag.endswith("VideoSources")
     ]

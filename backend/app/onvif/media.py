@@ -1,3 +1,5 @@
+"""Video encoder and media profile requests and parsers for the ONVIF media services."""
+
 from dataclasses import dataclass, field, replace
 from xml.etree.ElementTree import Element
 from xml.sax.saxutils import escape
@@ -10,12 +12,29 @@ MEDIA1 = "media"
 
 @dataclass(frozen=True)
 class Range:
+    """A numeric range.
+
+    Attributes:
+        minimum: Lower bound.
+        maximum: Upper bound.
+    """
+
     minimum: float
     maximum: float
 
 
 @dataclass(frozen=True)
 class Multicast:
+    """Multicast settings of a video encoder.
+
+    Attributes:
+        kind: Address type, such as IPv4.
+        address: Multicast address.
+        port: Multicast port.
+        ttl: Multicast time to live.
+        auto_start: Whether multicast starts automatically.
+    """
+
     kind: str = "IPv4"
     address: str = "0.0.0.0"
     port: int = 0
@@ -25,6 +44,27 @@ class Multicast:
 
 @dataclass(frozen=True)
 class Encoder:
+    """A video encoder configuration.
+
+    Attributes:
+        token: Configuration token.
+        name: Configuration name, the token when the device gives none.
+        use_count: Number of profiles using the configuration.
+        encoding: Video encoding, such as H264.
+        width: Video width in pixels.
+        height: Video height in pixels.
+        fps: Frame rate limit.
+        bitrate: Bitrate limit.
+        gop: Group of pictures length.
+        quality: Encoder quality.
+        profile: Encoding profile name, such as Main.
+        service: Media service the configuration belongs to, media or media2.
+        constant_bitrate: Whether the bitrate is constant, only reported by media2.
+        encoding_interval: Rate control encoding interval, only reported by media.
+        session_timeout: Session timeout duration, only reported by media.
+        multicast: Multicast settings.
+    """
+
     token: str
     name: str
     use_count: int
@@ -45,6 +85,19 @@ class Encoder:
 
 @dataclass(frozen=True)
 class EncodingOptions:
+    """What a video encoder accepts for one encoding.
+
+    Attributes:
+        encoding: Video encoding the options belong to.
+        resolutions: Available resolutions as width and height.
+        fps_values: Supported frame rates, when the device lists them.
+        fps_range: Supported frame rate range, when the device gives a range.
+        bitrate: Bitrate range.
+        gop: Group of pictures length range.
+        quality: Quality range.
+        profiles: Supported encoding profiles.
+    """
+
     encoding: str
     resolutions: tuple[tuple[int, int], ...]
     fps_values: tuple[float, ...] = ()
@@ -57,6 +110,15 @@ class EncodingOptions:
 
 @dataclass(frozen=True)
 class StreamProfile:
+    """A media profile and the configurations it uses.
+
+    Attributes:
+        token: Profile token.
+        name: Profile name, the token when the device gives none.
+        encoder_token: Token of the video encoder configuration.
+        source_token: Token of the video source.
+    """
+
     token: str
     name: str
     encoder_token: str | None
@@ -64,6 +126,14 @@ class StreamProfile:
 
 
 def number(value: str | None) -> float | None:
+    """Convert text to a number.
+
+    Args:
+        value: Text to convert, or None.
+
+    Returns:
+        The number, or None when the text is missing or not a number.
+    """
     if value is None:
         return None
     try:
@@ -73,11 +143,27 @@ def number(value: str | None) -> float | None:
 
 
 def whole(value: str | None) -> int | None:
+    """Convert text to a whole number, rounding a fractional value.
+
+    Args:
+        value: Text to convert, or None.
+
+    Returns:
+        The rounded integer, or None when the text is missing or not a number.
+    """
     result = number(value)
     return None if result is None else int(round(result))
 
 
 def value_range(element: Element | None) -> Range | None:
+    """Read a range from an element with Min and Max children.
+
+    Args:
+        element: Element to read, or None.
+
+    Returns:
+        The range, or None when the element or either bound is missing.
+    """
     if element is None:
         return None
     low = number(text(child(element, "Min")))
@@ -88,6 +174,14 @@ def value_range(element: Element | None) -> Range | None:
 
 
 def attribute_range(value: str | None) -> Range | None:
+    """Read a range from an attribute holding two numbers separated by whitespace.
+
+    Args:
+        value: Attribute text, or None.
+
+    Returns:
+        The range, or None when the text is not exactly two numbers.
+    """
     parts = (value or "").split()
     if len(parts) != 2:
         return None
@@ -98,6 +192,14 @@ def attribute_range(value: str | None) -> Range | None:
 
 
 def resolutions(element: Element | None) -> tuple[tuple[int, int], ...]:
+    """Read the available resolutions of an options element.
+
+    Args:
+        element: Element holding ResolutionsAvailable children, or None.
+
+    Returns:
+        The distinct width and height pairs with both values set, in document order.
+    """
     found = []
     for item in children(element, "ResolutionsAvailable"):
         width = whole(text(child(item, "Width")))
@@ -108,6 +210,14 @@ def resolutions(element: Element | None) -> tuple[tuple[int, int], ...]:
 
 
 def parse_multicast(element: Element | None) -> Multicast:
+    """Read multicast settings from a Multicast element.
+
+    Args:
+        element: Multicast element, or None.
+
+    Returns:
+        The settings, with defaults for missing parts and for a missing element.
+    """
     if element is None:
         return Multicast()
     address = child(element, "Address")
@@ -121,6 +231,15 @@ def parse_multicast(element: Element | None) -> Multicast:
 
 
 def parse_profiles(body: Element, service: str) -> list[StreamProfile]:
+    """Read the media profiles from a GetProfiles response.
+
+    Args:
+        body: SOAP body of the response.
+        service: Media service that answered, media or media2, which decides where the configurations are.
+
+    Returns:
+        The profiles that carry a token.
+    """
     result = []
     for element in descendants(body, "Profiles"):
         token = element.get("token")
@@ -145,6 +264,15 @@ def parse_profiles(body: Element, service: str) -> list[StreamProfile]:
 
 
 def parse_encoder(element: Element, service: str) -> Encoder | None:
+    """Read one video encoder configuration.
+
+    Args:
+        element: Configuration element.
+        service: Media service that answered, media or media2, which decides where the settings are.
+
+    Returns:
+        The encoder, or None when the element has no token.
+    """
     token = element.get("token")
     if not token:
         return None
@@ -182,6 +310,15 @@ def parse_encoder(element: Element, service: str) -> Encoder | None:
 
 
 def parse_encoders(body: Element, service: str) -> list[Encoder]:
+    """Read the video encoder configurations from a response.
+
+    Args:
+        body: SOAP body of the response.
+        service: Media service that answered, media or media2.
+
+    Returns:
+        The encoders that carry a token.
+    """
     result = []
     for element in descendants(body, "Configurations"):
         encoder = parse_encoder(element, service)
@@ -191,6 +328,14 @@ def parse_encoders(body: Element, service: str) -> list[Encoder]:
 
 
 def parse_media2_options(body: Element) -> list[EncodingOptions]:
+    """Read the encoder options from a media2 GetVideoEncoderConfigurationOptions response.
+
+    Args:
+        body: SOAP body of the response.
+
+    Returns:
+        One entry for each option set that names an encoding.
+    """
     result = []
     for element in descendants(body, "Options"):
         encoding = text(child(element, "Encoding"))
@@ -214,6 +359,14 @@ def parse_media2_options(body: Element) -> list[EncodingOptions]:
 
 
 def parse_media1_options(body: Element) -> list[EncodingOptions]:
+    """Read the encoder options from a media GetVideoEncoderConfigurationOptions response.
+
+    Args:
+        body: SOAP body of the response.
+
+    Returns:
+        One entry for each of H264, MPEG4 and JPEG that the response lists, empty when it has no options.
+    """
     options = next(iter(descendants(body, "Options")), None)
     if options is None:
         return []
@@ -246,10 +399,27 @@ def parse_media1_options(body: Element) -> list[EncodingOptions]:
 
 
 def changed(encoder: Encoder, **values) -> Encoder:
+    """Copy an encoder with some fields replaced.
+
+    Args:
+        encoder: Encoder to copy.
+        **values: Field values to set, fields given as None are left unchanged.
+
+    Returns:
+        The updated copy.
+    """
     return replace(encoder, **{key: value for key, value in values.items() if value is not None})
 
 
 def format_number(value: float | None) -> str:
+    """Format a number for XML.
+
+    Args:
+        value: Number to format, or None.
+
+    Returns:
+        An integer without decimals for whole values, otherwise up to six decimals, and "0" for None.
+    """
     if value is None:
         return "0"
     if float(value).is_integer():
@@ -258,6 +428,14 @@ def format_number(value: float | None) -> str:
 
 
 def multicast_xml(multicast: Multicast) -> str:
+    """Build the Multicast XML of an encoder configuration.
+
+    Args:
+        multicast: Multicast settings.
+
+    Returns:
+        The XML element.
+    """
     return (
         "<tt:Multicast><tt:Address>"
         f"<tt:Type>{escape(multicast.kind)}</tt:Type><tt:IPv4Address>{escape(multicast.address)}</tt:IPv4Address>"
@@ -267,6 +445,14 @@ def multicast_xml(multicast: Multicast) -> str:
 
 
 def media2_set_body(encoder: Encoder) -> str:
+    """Build a media2 SetVideoEncoderConfiguration request.
+
+    Args:
+        encoder: Encoder configuration to write.
+
+    Returns:
+        The XML of the request body.
+    """
     attributes = [f'token="{escape(encoder.token)}"']
     if encoder.gop is not None:
         attributes.append(f'GovLength="{encoder.gop}"')
@@ -289,6 +475,16 @@ def media2_set_body(encoder: Encoder) -> str:
 
 
 def media1_set_body(encoder: Encoder) -> str:
+    """Build a media SetVideoEncoderConfiguration request that is persisted on the device.
+
+    The H264 block is included only for H264 encoders.
+
+    Args:
+        encoder: Encoder configuration to write.
+
+    Returns:
+        The XML of the request body.
+    """
     h264 = ""
     if (encoder.encoding or "").upper() == "H264":
         h264 = (
@@ -311,10 +507,26 @@ def media1_set_body(encoder: Encoder) -> str:
 
 
 def set_body(encoder: Encoder) -> str:
+    """Build the SetVideoEncoderConfiguration request for the encoder's media service.
+
+    Args:
+        encoder: Encoder configuration to write.
+
+    Returns:
+        The XML of the request body.
+    """
     return media2_set_body(encoder) if encoder.service == MEDIA2 else media1_set_body(encoder)
 
 
 def options_body(encoder: Encoder) -> str:
+    """Build the GetVideoEncoderConfigurationOptions request for the encoder's media service.
+
+    Args:
+        encoder: Encoder whose options are requested.
+
+    Returns:
+        The XML of the request body.
+    """
     token = escape(encoder.token)
     if encoder.service == MEDIA2:
         return (
@@ -328,12 +540,28 @@ def options_body(encoder: Encoder) -> str:
 
 
 def profiles_body(service: str) -> str:
+    """Build the GetProfiles request for a media service.
+
+    Args:
+        service: Media service, media or media2.
+
+    Returns:
+        The XML of the request body.
+    """
     if service == MEDIA2:
         return "<tr2:GetProfiles><tr2:Type>All</tr2:Type></tr2:GetProfiles>"
     return "<trt:GetProfiles/>"
 
 
 def encoders_body(service: str) -> str:
+    """Build the GetVideoEncoderConfigurations request for a media service.
+
+    Args:
+        service: Media service, media or media2.
+
+    Returns:
+        The XML of the request body.
+    """
     if service == MEDIA2:
         return "<tr2:GetVideoEncoderConfigurations/>"
     return "<trt:GetVideoEncoderConfigurations/>"

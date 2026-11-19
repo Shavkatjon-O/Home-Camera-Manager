@@ -1,3 +1,5 @@
+"""WS-Security UsernameToken digest header for ONVIF requests."""
+
 import base64
 import hashlib
 import os
@@ -15,15 +17,44 @@ NONCE_BYTES = 16
 
 
 def password_digest(nonce: bytes, created: str, password: str) -> str:
+    """Compute the WS-Security password digest.
+
+    Args:
+        nonce: Random bytes sent with the token.
+        created: Creation timestamp text sent with the token.
+        password: Device password.
+
+    Returns:
+        The base64 encoded SHA-1 digest of nonce, timestamp and password.
+    """
     digest = hashlib.sha1(nonce + created.encode() + password.encode()).digest()
     return base64.b64encode(digest).decode()
 
 
 def format_created(moment: datetime) -> str:
+    """Format a moment as a UTC timestamp for the security header.
+
+    Args:
+        moment: Moment to format.
+
+    Returns:
+        The moment in UTC as YYYY-MM-DDTHH:MM:SSZ.
+    """
     return moment.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def security_header(username: str, password: str, created: datetime, nonce: bytes | None = None) -> str:
+    """Build the WS-Security header with a digest UsernameToken.
+
+    Args:
+        username: Device user name.
+        password: Device password.
+        created: Moment stamped on the token, normally the device's own clock.
+        nonce: Nonce to use, a fresh random one when omitted.
+
+    Returns:
+        The wsse:Security XML for the SOAP header.
+    """
     nonce = nonce if nonce is not None else os.urandom(NONCE_BYTES)
     stamp = format_created(created)
     digest = password_digest(nonce, stamp, password)

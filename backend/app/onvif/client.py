@@ -1,3 +1,5 @@
+"""Async ONVIF client over SOAP with WS-Security digest, plus parsers for profiles and device time."""
+
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime, timedelta
 from urllib.parse import urlsplit
@@ -64,6 +66,15 @@ CAPABILITY_SERVICES = {
 
 @dataclass(frozen=True)
 class DeviceInfo:
+    """Identity a device reports about itself.
+
+    Attributes:
+        manufacturer: Manufacturer name.
+        model: Model name.
+        firmware: Firmware version.
+        serial: Serial number.
+    """
+
     manufacturer: str | None = None
     model: str | None = None
     firmware: str | None = None
@@ -72,12 +83,31 @@ class DeviceInfo:
 
 @dataclass(frozen=True)
 class ServiceAddresses:
+    """Addresses of the ONVIF services the camera controls use.
+
+    Attributes:
+        media: Address of the media service.
+        ptz: Address of the PTZ service.
+    """
+
     media: str
     ptz: str
 
 
 @dataclass(frozen=True)
 class Profile:
+    """A media profile of a camera.
+
+    Attributes:
+        token: Profile token.
+        name: Profile name, the token when the device gives none.
+        encoding: Video encoding, such as H264.
+        width: Video width in pixels.
+        height: Video height in pixels.
+        ptz: Whether the profile has a PTZ configuration.
+        stream_uri: RTSP stream address, when it has been fetched.
+    """
+
     token: str
     name: str
     encoding: str | None
@@ -88,10 +118,24 @@ class Profile:
 
     @property
     def area(self) -> int:
+        """Return the resolution of the profile in pixels.
+
+        Returns:
+            Width times height, counting a missing value as zero.
+        """
         return (self.width or 0) * (self.height or 0)
 
 
 def addressing_header(action: str, address: str) -> str:
+    """Build the WS-Addressing header elements for a request.
+
+    Args:
+        action: SOAP action URI.
+        address: Address the request is sent to.
+
+    Returns:
+        The XML with the action, a new message id and the destination.
+    """
     return (
         f"<wsa:Action>{escape(action)}</wsa:Action>"
         f"<wsa:MessageID>urn:uuid:{uuid4()}</wsa:MessageID>"
@@ -100,6 +144,14 @@ def addressing_header(action: str, address: str) -> str:
 
 
 def to_int(value: str | None) -> int | None:
+    """Convert text to an integer.
+
+    Args:
+        value: Text to convert, or None.
+
+    Returns:
+        The integer, or None when the text is missing or not an integer.
+    """
     if value is None:
         return None
     try:
@@ -109,10 +161,26 @@ def to_int(value: str | None) -> int | None:
 
 
 def velocity(value: float) -> str:
+    """Format a PTZ velocity component.
+
+    Args:
+        value: Velocity, clamped to the range -1 to 1.
+
+    Returns:
+        The clamped value with three decimals.
+    """
     return f"{max(-1.0, min(1.0, value)):.3f}"
 
 
 def parse_profiles(body: Element) -> list[Profile]:
+    """Read the media profiles from a GetProfiles response.
+
+    Args:
+        body: SOAP body of the response.
+
+    Returns:
+        The profiles that carry a token, without stream addresses.
+    """
     profiles = []
     for element in descendants(body, "Profiles"):
         token = element.get("token")
@@ -134,6 +202,14 @@ def parse_profiles(body: Element) -> list[Profile]:
 
 
 def parse_device_time(body: Element) -> datetime | None:
+    """Read the device's UTC time from a GetSystemDateAndTime response.
+
+    Args:
+        body: SOAP body of the response.
+
+    Returns:
+        The time in UTC, or None when a date or time part is missing or invalid.
+    """
     moment = descendant(body, "UTCDateTime")
     date = child(moment, "Date")
     time = child(moment, "Time")
@@ -154,6 +230,15 @@ def parse_device_time(body: Element) -> datetime | None:
 
 
 def pick_streams(profiles: list[Profile]) -> tuple[Profile | None, Profile | None]:
+    """Choose the main and sub streams from profiles that have a stream address.
+
+    Args:
+        profiles: Profiles, with or without stream addresses.
+
+    Returns:
+        The playable profile with the largest resolution, and the one with the smallest resolution when it is a
+        different profile. Each is None when there is no such profile.
+    """
     playable = sorted((profile for profile in profiles if profile.stream_uri), key=lambda item: -item.area)
     if not playable:
         return None, None
@@ -163,6 +248,15 @@ def pick_streams(profiles: list[Profile]) -> tuple[Profile | None, Profile | Non
 
 
 def uri_path(uri: str) -> tuple[str, int | None]:
+    """Split a stream address into its path and port.
+
+    Args:
+        uri: Stream address.
+
+    Returns:
+        The path with its query string, "/" when the address has no path, and the port or None when it has no
+        valid port.
+    """
     parts = urlsplit(uri)
     path = parts.path or "/"
     if parts.query:
@@ -175,6 +269,19 @@ def uri_path(uri: str) -> tuple[str, int | None]:
 
 
 class OnvifClient:
+    """ONVIF client for one device that sends SOAP over HTTP.
+
+    When a password is set, requests carry a WS-Security digest stamped with the device's own clock.
+
+    Attributes:
+        host: Device host.
+        port: ONVIF port.
+        username: User name, empty when none.
+        password: Password, empty when none.
+        timeout: Default request timeout in seconds.
+        clock_offset: Device clock minus local clock, None until it has been read.
+    """
+
     def __init__(
         self,
         host: str,
@@ -183,6 +290,15 @@ class OnvifClient:
         password: str | None = None,
         timeout: float = DEFAULT_TIMEOUT_SECONDS,
     ):
+        """Bind the client to a device.
+
+        Args:
+            host: Device host.
+            port: ONVIF port.
+            username: User name, if any.
+            password: Password, if any.
+            timeout: Default request timeout in seconds.
+        """
         self.host = host
         self.port = port
         self.username = username or ""
@@ -192,13 +308,34 @@ class OnvifClient:
 
     @property
     def base_url(self) -> str:
+        """Return the HTTP base address of the device.
+
+        Returns:
+            The address built from host and port.
+        """
         return f"http://{self.host}:{self.port}"
 
     @property
     def device_address(self) -> str:
+        """Return the address of the device service.
+
+        Returns:
+            The base address plus the default device service path.
+        """
         return f"{self.base_url}{DEVICE_PATH}"
 
     def local_address(self, xaddr: str | None, default_path: str) -> str:
+        """Rebuild a service address on the host and port this client uses.
+
+        Only the path of the reported address is kept.
+
+        Args:
+            xaddr: Address the device reported, or None.
+            default_path: Path used when the device reported none.
+
+        Returns:
+            The address on this client's host and port.
+        """
         path = urlsplit(xaddr).path if xaddr else ""
         return f"{self.base_url}{path or default_path}"
 
@@ -210,6 +347,23 @@ class OnvifClient:
         action: str | None = None,
         timeout: float | None = None,
     ) -> Element:
+        """Send a SOAP request to the device.
+
+        Args:
+            address: Service address to post to.
+            body: XML of the request body.
+            secure: Whether to add the WS-Security header, which needs a password.
+            action: SOAP action URI, WS-Addressing headers are added when given.
+            timeout: Request timeout in seconds, the client default when omitted.
+
+        Returns:
+            The SOAP Body element of the response.
+
+        Raises:
+            OnvifRefused: When the device refuses the connection.
+            OnvifError: When the device does not answer, the answer is too large or it is not valid SOAP.
+            OnvifFault: When the device answers with a SOAP fault.
+        """
         header = await self.security() if secure else ""
         if action:
             header += addressing_header(action, address)
@@ -229,6 +383,17 @@ class OnvifClient:
         return parse_response(content, status_code)
 
     async def read(self, response: httpx.Response) -> bytes:
+        """Read a streamed response body up to the size limit.
+
+        Args:
+            response: Streaming HTTP response.
+
+        Returns:
+            The body bytes.
+
+        Raises:
+            OnvifError: When the body is larger than the limit.
+        """
         content = bytearray()
         async for chunk in response.aiter_bytes():
             content.extend(chunk)
@@ -237,6 +402,13 @@ class OnvifClient:
         return bytes(content)
 
     async def security(self) -> str:
+        """Build the security header for a request.
+
+        Tokens are stamped with the device's own time, so the offset of its clock is read once and then reused.
+
+        Returns:
+            The WS-Security header, or an empty string when the client has no password.
+        """
         if not self.password:
             return ""
         if self.clock_offset is None:
@@ -244,6 +416,11 @@ class OnvifClient:
         return security_header(self.username, self.password, datetime.now(UTC) + self.clock_offset)
 
     async def device_clock_offset(self) -> timedelta:
+        """Measure how far the device clock is from the local clock.
+
+        Returns:
+            Device time minus local time, zero when the device time cannot be read.
+        """
         try:
             device_time = await self.system_date_and_time()
         except OnvifError:
@@ -253,10 +430,20 @@ class OnvifClient:
         return device_time - datetime.now(UTC)
 
     async def system_date_and_time(self) -> datetime | None:
+        """Read the device's UTC time without authentication.
+
+        Returns:
+            The device time, or None when the answer has no valid time.
+        """
         body = await self.call(self.device_address, "<tds:GetSystemDateAndTime/>", secure=False)
         return parse_device_time(body)
 
     async def device_information(self) -> DeviceInfo:
+        """Read the identity of the device.
+
+        Returns:
+            The manufacturer, model, firmware and serial number.
+        """
         body = await self.call(self.device_address, "<tds:GetDeviceInformation/>")
         return DeviceInfo(
             manufacturer=descendant_text(body, "Manufacturer"),
@@ -266,6 +453,14 @@ class OnvifClient:
         )
 
     async def service_addresses(self) -> ServiceAddresses:
+        """Find the media and PTZ service addresses of the device.
+
+        GetCapabilities is tried first and GetServices when the device answers with a fault. Addresses the device
+        does not report fall back to the default paths.
+
+        Returns:
+            The media and PTZ service addresses on this client's host and port.
+        """
         media = None
         ptz = None
         try:
@@ -295,6 +490,16 @@ class OnvifClient:
         )
 
     async def services(self) -> dict[str, str]:
+        """Find the addresses of all the ONVIF services the device offers.
+
+        GetServices is read first, then GetCapabilities fills the services it did not list.
+
+        Returns:
+            Service name to service address on this client's host and port.
+
+        Raises:
+            OnvifFault: When GetCapabilities faults and GetServices found no service.
+        """
         found: dict[str, str] = {}
         try:
             body = await self.call(
@@ -325,10 +530,27 @@ class OnvifClient:
         return found
 
     async def profiles(self, media_address: str) -> list[Profile]:
+        """Read the media profiles of the device.
+
+        Args:
+            media_address: Address of the media service.
+
+        Returns:
+            The profiles without stream addresses.
+        """
         body = await self.call(media_address, "<trt:GetProfiles/>")
         return parse_profiles(body)
 
     async def stream_uri(self, media_address: str, profile_token: str) -> str | None:
+        """Read the RTSP stream address of a profile.
+
+        Args:
+            media_address: Address of the media service.
+            profile_token: Token of the profile.
+
+        Returns:
+            The stream address, or None when the answer has none.
+        """
         body = await self.call(
             media_address,
             "<trt:GetStreamUri><trt:StreamSetup><tt:Stream>RTP-Unicast</tt:Stream>"
@@ -338,6 +560,13 @@ class OnvifClient:
         return descendant_text(body, "Uri")
 
     async def stream_profiles(self) -> list[Profile]:
+        """Read every media profile together with its stream address.
+
+        A profile whose stream address request faults is returned without an address.
+
+        Returns:
+            The profiles with their stream addresses.
+        """
         addresses = await self.service_addresses()
         profiles = await self.profiles(addresses.media)
         result = []
@@ -350,6 +579,15 @@ class OnvifClient:
         return result
 
     async def continuous_move(self, ptz_address: str, profile_token: str, pan: float, tilt: float, zoom: float) -> None:
+        """Start a continuous PTZ move, or stop when every speed is zero.
+
+        Args:
+            ptz_address: Address of the PTZ service.
+            profile_token: Token of the PTZ profile.
+            pan: Pan speed from -1 to 1.
+            tilt: Tilt speed from -1 to 1.
+            zoom: Zoom speed from -1 to 1.
+        """
         parts = []
         if pan or tilt:
             parts.append(f'<tt:PanTilt x="{velocity(pan)}" y="{velocity(tilt)}"/>')
@@ -365,6 +603,12 @@ class OnvifClient:
         )
 
     async def stop(self, ptz_address: str, profile_token: str) -> None:
+        """Stop pan, tilt and zoom movement.
+
+        Args:
+            ptz_address: Address of the PTZ service.
+            profile_token: Token of the PTZ profile.
+        """
         await self.call(
             ptz_address,
             f"<tptz:Stop><tptz:ProfileToken>{escape(profile_token)}</tptz:ProfileToken>"
