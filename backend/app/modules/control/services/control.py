@@ -1,3 +1,5 @@
+"""Camera control service: ONVIF settings, PTZ presets, SD card recordings and replay, and the V380 bridge."""
+
 import asyncio
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -56,27 +58,64 @@ remembered_cells: dict[UUID, str] = {}
 
 
 class NotOffered(Exception):
+    """Raised when a camera does not offer the feature or ONVIF service a call needs."""
+
     pass
 
 
 @dataclass(frozen=True)
 class PtzTarget:
+    """ONVIF connection and profile that serve PTZ presets for a camera.
+
+    Attributes:
+        connection: Open connection to the endpoint that serves PTZ.
+        profile_token: Token of the media profile with PTZ.
+        node: PTZ node details, including preset and home support.
+    """
+
     connection: Connection
     profile_token: str
     node: ptz.NodeInfo
 
 
 def range_read(value: Range | None) -> RangeRead | None:
+    """Convert an ONVIF range to its response schema.
+
+    Args:
+        value: Range reported by the camera, if any.
+
+    Returns:
+        The range as a schema, or None when the camera reported none.
+    """
     if value is None:
         return None
     return RangeRead(min=value.minimum, max=value.maximum)
 
 
 def within(value: float, limits: Range | None) -> bool:
+    """Check that a value lies inside a range.
+
+    The range edges are widened by FPS_TOLERANCE, the margin also used to match listed frame rates.
+
+    Args:
+        value: Value to check.
+        limits: Allowed range, or None when the camera reports none.
+
+    Returns:
+        True when there are no limits or the value is inside them.
+    """
     return limits is None or limits.minimum - FPS_TOLERANCE <= value <= limits.maximum + FPS_TOLERANCE
 
 
 def options_read(option: EncodingOptions) -> EncoderOptionsRead:
+    """Convert one ONVIF encoding option to its response schema.
+
+    Args:
+        option: Encoder options the camera offers for one encoding.
+
+    Returns:
+        The options as a schema.
+    """
     return EncoderOptionsRead(
         encoding=option.encoding,
         resolutions=[ResolutionRead(width=width, height=height) for width, height in option.resolutions],
@@ -90,6 +129,17 @@ def options_read(option: EncodingOptions) -> EncoderOptionsRead:
 
 
 def with_credentials(uri: str, username: str | None, password: str | None) -> str:
+    """Put a username and password into a URI.
+
+    Args:
+        uri: URI to complete.
+        username: Username to embed, if any.
+        password: Password to embed, if any.
+
+    Returns:
+        The URI with the credentials percent-encoded into its host part, or the URI unchanged when there is no username
+        or it already carries credentials.
+    """
     parts = urlsplit(uri)
     if not username or "@" in parts.netloc:
         return uri
@@ -100,6 +150,15 @@ def with_credentials(uri: str, username: str | None, password: str | None) -> st
 
 
 def with_start(uri: str, start: datetime) -> str:
+    """Set the start time of an SD card replay URI.
+
+    Args:
+        uri: Replay URI the camera gave.
+        start: Time to play from.
+
+    Returns:
+        The URI with its starttime query parameter set to start in UTC, replacing any existing one.
+    """
     parts = urlsplit(uri)
     stamp = start.astimezone(UTC).strftime("%Y%m%dT%H%M%SZ")
     query = "&".join(item for item in parts.query.split("&") if item and not item.startswith("starttime="))
@@ -108,6 +167,15 @@ def with_start(uri: str, start: datetime) -> str:
 
 
 class CameraControlService(BaseModelService[Camera]):
+    """Reads and changes camera settings over ONVIF and the V380 bridge.
+
+    Attributes:
+        model: Model class the service manages.
+        not_found_code: Error code raised when a camera does not exist.
+        directory: Cache of open ONVIF connections.
+        replays: Registry of SD card playback sessions.
+    """
+
     model = Camera
     not_found_code = "camera_not_found"
 
@@ -118,11 +186,30 @@ class CameraControlService(BaseModelService[Camera]):
         services: Directory = directory,
         replays: ReplayStreams = replay_streams,
     ):
+        """Bind the service to a session, a user and its ONVIF and playback registries.
+
+        Args:
+            session: Database session the service works in.
+            actor: User making the request, if any.
+            services: Cache of open ONVIF connections.
+            replays: Registry of SD card playback sessions.
+        """
         super().__init__(session, actor)
         self.directory = services
         self.replays = replays
 
     async def open(self, endpoint: OnvifEndpoint) -> Connection:
+        """Open an ONVIF connection to an endpoint.
+
+        Args:
+            endpoint: Endpoint to connect to.
+
+        Returns:
+            Open connection with the services the endpoint lists.
+
+        Raises:
+            NotOffered: When the endpoint refuses ONVIF or cannot be reached.
+        """
         try:
             return await self.directory.open(endpoint)
         except OnvifRefused:
@@ -133,12 +220,42 @@ class CameraControlService(BaseModelService[Camera]):
             raise NotOffered(str(exc))
 
     async def device_connection(self, camera: Camera) -> Connection:
+        """Open the ONVIF connection to a camera's own device endpoint.
+
+        Args:
+            camera: Camera to connect to.
+
+        Returns:
+            Open connection to the camera.
+
+        Raises:
+            NotOffered: When the camera has no ONVIF port.
+        """
         endpoint = device_endpoint(camera)
         if endpoint is None:
             raise NotOffered("The camera has no ONVIF port")
         return await self.open(endpoint)
 
     async def call(self, connection: Connection, service: str, body: str, secure: bool = True):
+        """Send an ONVIF request to one of a connection's services.
+
+        A transport failure drops the cached connection so that the next request connects again; a fault the camera
+        answered with leaves it cached.
+
+        Args:
+            connection: Connection to send through.
+            service: Name of the ONVIF service to call.
+            body: SOAP body to send.
+            secure: Whether to sign the request with the camera's credentials.
+
+        Returns:
+            The parsed answer.
+
+        Raises:
+            NotOffered: When the camera offers no such service.
+            OnvifFault: When the camera answers with a fault.
+            OnvifError: When the request fails in transport or the answer is invalid.
+        """
         address = connection.address(service)
         if not address:
             raise NotOffered(f"The camera offers no {service} service")
@@ -151,12 +268,37 @@ class CameraControlService(BaseModelService[Camera]):
             raise
 
     def forbid(self, exc: NotOffered) -> Conflict:
+        """Turn a missing feature into an API error.
+
+        Args:
+            exc: Error that says what the camera does not offer.
+
+        Returns:
+            Conflict error with the not_supported code.
+        """
         return Conflict("not_supported", str(exc))
 
     def gateway(self, exc: OnvifError) -> BadGateway:
+        """Turn an ONVIF failure into an API error.
+
+        Args:
+            exc: ONVIF error to report.
+
+        Returns:
+            Bad gateway error with the onvif_error code.
+        """
         return BadGateway("onvif_error", str(exc))
 
     async def device(self, uuid: UUID) -> DeviceRead:
+        """Read a camera's device details and clock.
+
+        Args:
+            uuid: Public id of the camera.
+
+        Returns:
+            Device details, or a result marked unsupported with the reason when the camera cannot be
+            read. The clock is left out when it cannot be read.
+        """
         camera = await self.get(uuid)
         try:
             connection = await self.device_connection(camera)
@@ -194,6 +336,21 @@ class CameraControlService(BaseModelService[Camera]):
         )
 
     async def sync_time(self, uuid: UUID) -> DeviceRead:
+        """Set a camera's clock to this server's time.
+
+        A camera using NTP is put back in NTP mode after the manual time is set. The connection's cached clock offset is
+        cleared so request signing reads the new camera time.
+
+        Args:
+            uuid: Public id of the camera.
+
+        Returns:
+            Device details read after the change.
+
+        Raises:
+            Conflict: When the camera offers no ONVIF device service.
+            BadGateway: When the camera rejects or fails a request.
+        """
         camera = await self.get(uuid)
         try:
             connection = await self.device_connection(camera)
@@ -210,6 +367,15 @@ class CameraControlService(BaseModelService[Camera]):
         return await self.device(uuid)
 
     async def reboot(self, uuid: UUID) -> None:
+        """Reboot a camera and forget its cached connection.
+
+        Args:
+            uuid: Public id of the camera.
+
+        Raises:
+            Conflict: When the camera offers no ONVIF device service.
+            BadGateway: When the camera rejects or fails the request.
+        """
         camera = await self.get(uuid)
         try:
             connection = await self.device_connection(camera)
@@ -224,6 +390,21 @@ class CameraControlService(BaseModelService[Camera]):
     async def media_state(
         self, connection: Connection
     ) -> tuple[str, list[StreamProfile], list[Encoder], dict[str, list[EncodingOptions]]]:
+        """Read a camera's media profiles, video encoders and encoder options.
+
+        Media2 is tried first and Media1 when Media2 is missing or answers a fault.
+
+        Args:
+            connection: Connection to the camera.
+
+        Returns:
+            The media service used, its profiles, its encoders and the options offered for each
+            encoder token. An encoder whose options the camera refuses gets an empty list.
+
+        Raises:
+            OnvifFault: When every media service the camera lists answered a fault.
+            NotOffered: When the camera lists no media service.
+        """
         failure: Exception | None = None
         for service in (media.MEDIA2, media.MEDIA1):
             if not connection.address(service):
@@ -253,6 +434,14 @@ class CameraControlService(BaseModelService[Camera]):
         raise NotOffered("The camera offers no media service")
 
     async def video(self, uuid: UUID) -> VideoRead:
+        """Read a camera's video encoders and the options each offers.
+
+        Args:
+            uuid: Public id of the camera.
+
+        Returns:
+            Encoder settings, or a result marked unsupported with the reason when the camera cannot be read.
+        """
         camera = await self.get(uuid)
         try:
             connection = await self.device_connection(camera)
@@ -282,6 +471,23 @@ class CameraControlService(BaseModelService[Camera]):
         return VideoRead(camera_uuid=camera.uuid, supported=True, service=service, encoders=items)
 
     def validate_encoder(self, encoder: Encoder, options: list[EncodingOptions], payload: EncoderUpdate) -> Encoder:
+        """Apply requested changes to an encoder and check them against what the camera offers.
+
+        Changing the encoding without naming a profile selects the first profile the new encoding
+        offers when the current one is not among them. Nothing beyond the resolution pairing is
+        checked when the camera lists no options.
+
+        Args:
+            encoder: Current encoder settings.
+            options: Options the camera offers for the encoder.
+            payload: Requested changes.
+
+        Returns:
+            The encoder settings to write.
+
+        Raises:
+            Unprocessable: When only one of width and height is given, or a value is not among the options offered.
+        """
         if (payload.width is None) != (payload.height is None):
             raise Unprocessable("invalid_resolution", "Give both the width and the height")
         updated = media.changed(
@@ -321,6 +527,21 @@ class CameraControlService(BaseModelService[Camera]):
         return updated
 
     async def update_video(self, uuid: UUID, token: str, payload: EncoderUpdate) -> VideoRead:
+        """Change the settings of one video encoder.
+
+        Args:
+            uuid: Public id of the camera.
+            token: ONVIF token of the encoder.
+            payload: Requested changes.
+
+        Returns:
+            Encoder settings read after the change.
+
+        Raises:
+            Conflict: When the camera offers no ONVIF media service.
+            BadGateway: When the camera rejects or fails a request.
+            NotFound: When the camera has no encoder with the token.
+        """
         camera = await self.get(uuid)
         try:
             connection = await self.device_connection(camera)
@@ -342,6 +563,18 @@ class CameraControlService(BaseModelService[Camera]):
         return await self.video(uuid)
 
     async def source_token(self, connection: Connection) -> str:
+        """Find the token of a camera's video source.
+
+        Args:
+            connection: Connection to the camera.
+
+        Returns:
+            Token of the first source found in the media profiles, or in the Media1 source list when
+            the profiles name none.
+
+        Raises:
+            NotOffered: When the camera reports no video source.
+        """
         for service in (media.MEDIA1, media.MEDIA2):
             if not connection.address(service):
                 continue
@@ -361,6 +594,18 @@ class CameraControlService(BaseModelService[Camera]):
         raise NotOffered("The camera reports no video source")
 
     async def imaging_state(self, connection: Connection) -> tuple[str, imaging.ImagingState, imaging.ImagingOptions]:
+        """Read a camera's imaging settings and the options it offers.
+
+        Args:
+            connection: Connection to the camera.
+
+        Returns:
+            The video source token, the current settings and the options. The options are empty when
+            the camera answers a fault for them.
+
+        Raises:
+            NotOffered: When the camera offers no imaging service or video source.
+        """
         if not connection.address("imaging"):
             raise NotOffered("The camera offers no imaging service")
         source = await self.source_token(connection)
@@ -372,6 +617,14 @@ class CameraControlService(BaseModelService[Camera]):
         return source, state, options
 
     async def image(self, uuid: UUID) -> ImageRead:
+        """Read a camera's imaging settings and the options it offers.
+
+        Args:
+            uuid: Public id of the camera.
+
+        Returns:
+            Imaging settings, or a result marked unsupported with the reason when the camera cannot be read.
+        """
         camera = await self.get(uuid)
         try:
             connection = await self.device_connection(camera)
@@ -408,6 +661,22 @@ class CameraControlService(BaseModelService[Camera]):
     def validate_image(
         self, state: imaging.ImagingState, options: imaging.ImagingOptions, payload: ImageSettings
     ) -> imaging.ImagingState:
+        """Check requested imaging changes against what the camera offers.
+
+        A level change without its mode, or a mode change without its level, takes the missing half
+        from the current state so that the camera receives a complete pair.
+
+        Args:
+            state: Current imaging settings.
+            options: Options the camera offers.
+            payload: Requested changes.
+
+        Returns:
+            The settings to write.
+
+        Raises:
+            Unprocessable: When nothing is requested, a setting is not offered or a value is outside the range offered.
+        """
         values = payload.model_dump(exclude_unset=True, exclude_none=True)
         if not values:
             raise Unprocessable("nothing_to_change", "Give at least one setting")
@@ -444,6 +713,19 @@ class CameraControlService(BaseModelService[Camera]):
         return result
 
     async def update_image(self, uuid: UUID, payload: ImageSettings) -> ImageRead:
+        """Change a camera's imaging settings.
+
+        Args:
+            uuid: Public id of the camera.
+            payload: Requested changes.
+
+        Returns:
+            Imaging settings read after the change.
+
+        Raises:
+            Conflict: When the camera offers no imaging service.
+            BadGateway: When the camera rejects or fails a request.
+        """
         camera = await self.get(uuid)
         try:
             connection = await self.device_connection(camera)
@@ -460,6 +742,19 @@ class CameraControlService(BaseModelService[Camera]):
         return await self.image(uuid)
 
     async def motion_setup(self, connection: Connection) -> analytics.MotionSetup:
+        """Find a camera's motion detection module and rule.
+
+        Each analytics configuration of the media profiles is tried until one carries a sensitivity or active cells.
+
+        Args:
+            connection: Connection to the camera.
+
+        Returns:
+            The motion setup found.
+
+        Raises:
+            NotOffered: When the camera has no analytics service or exposes no motion rule.
+        """
         if not connection.address("analytics"):
             raise NotOffered("Motion detection is set in the vendor app: the camera offers no analytics service")
         tokens: list[str] = []
@@ -488,6 +783,17 @@ class CameraControlService(BaseModelService[Camera]):
         raise NotOffered("Motion detection is set in the vendor app: the camera exposes no motion rule")
 
     def motion_read(self, camera: Camera, setup: analytics.MotionSetup) -> MotionRead:
+        """Convert a motion setup to its response schema.
+
+        Detection counts as enabled when at least one cell is active.
+
+        Args:
+            camera: Camera the setup belongs to.
+            setup: Motion setup read from the camera.
+
+        Returns:
+            The setup as a schema.
+        """
         cells = setup.cells
         active = analytics.active_count(setup.active_cells, cells) if cells else None
         return MotionRead(
@@ -501,6 +807,14 @@ class CameraControlService(BaseModelService[Camera]):
         )
 
     async def motion(self, uuid: UUID) -> MotionRead:
+        """Read a camera's motion detection setup.
+
+        Args:
+            uuid: Public id of the camera.
+
+        Returns:
+            Motion setup, or a result marked unsupported with the reason when the camera cannot be read.
+        """
         camera = await self.get(uuid)
         try:
             connection = await self.device_connection(camera)
@@ -512,10 +826,35 @@ class CameraControlService(BaseModelService[Camera]):
         return self.motion_read(camera, setup)
 
     async def write_sensitivity(self, connection: Connection, setup: analytics.MotionSetup, value: int) -> None:
+        """Write a motion sensitivity into the camera's motion module.
+
+        Args:
+            connection: Connection to the camera.
+            setup: Motion setup that holds the module to change.
+            value: Sensitivity to write.
+        """
         module = analytics.with_item(setup.module, analytics.SENSITIVITY, str(value))
         await self.call(connection, "analytics", analytics.modify_module_body(setup.configuration_token, module))
 
     async def update_motion(self, uuid: UUID, payload: MotionUpdate) -> MotionRead:
+        """Change a camera's motion sensitivity or switch detection on or off.
+
+        When the camera reads back a different sensitivity than was written, the value is written
+        once more shifted by the difference, if that stays within 0 to 100. Switching detection off clears every active cell after
+        remembering them for this process, and switching it on restores the remembered cells, or
+        activates every cell when none are remembered.
+
+        Args:
+            uuid: Public id of the camera.
+            payload: Requested changes.
+
+        Returns:
+            Motion setup read after the change.
+
+        Raises:
+            Conflict: When the camera offers no motion detection or does not expose the sensitivity or area to change.
+            BadGateway: When the camera rejects or fails a request.
+        """
         camera = await self.get(uuid)
         try:
             connection = await self.device_connection(camera)
@@ -557,6 +896,19 @@ class CameraControlService(BaseModelService[Camera]):
         return await self.motion(uuid)
 
     async def ptz_target(self, camera: Camera) -> PtzTarget:
+        """Find the ONVIF endpoint and profile that serve a camera's PTZ presets.
+
+        The camera's own device endpoint is tried first and the V380 bridge endpoint second.
+
+        Args:
+            camera: Camera to look up.
+
+        Returns:
+            The connection, PTZ profile token and PTZ node.
+
+        Raises:
+            NotOffered: When no endpoint offers PTZ with a profile and preset or home support.
+        """
         endpoints = [endpoint for endpoint in (device_endpoint(camera), bridge_endpoint(camera)) if endpoint]
         reason = "The camera offers no PTZ presets"
         for endpoint in endpoints:
@@ -583,6 +935,14 @@ class CameraControlService(BaseModelService[Camera]):
         raise NotOffered(reason)
 
     async def presets(self, uuid: UUID) -> PresetsRead:
+        """List a camera's PTZ presets.
+
+        Args:
+            uuid: Public id of the camera.
+
+        Returns:
+            Presets, or a result marked unsupported with the reason when the camera has no PTZ or cannot be read.
+        """
         camera = await self.get(uuid)
         if not camera.ptz_enabled:
             return PresetsRead(camera_uuid=camera.uuid, supported=False, reason="The camera has no PTZ")
@@ -603,6 +963,18 @@ class CameraControlService(BaseModelService[Camera]):
         )
 
     async def ptz_action(self, uuid: UUID, build) -> None:
+        """Send one PTZ command to a camera.
+
+        The command is abandoned when the camera does not answer within PRESET_ACTION_TIMEOUT seconds.
+
+        Args:
+            uuid: Public id of the camera.
+            build: Function that takes the PTZ target and returns the SOAP body to send.
+
+        Raises:
+            Conflict: When the camera offers no PTZ presets.
+            BadGateway: When the camera rejects the command, fails it or does not answer in time.
+        """
         camera = await self.get(uuid)
         try:
             target = await self.ptz_target(camera)
@@ -617,27 +989,79 @@ class CameraControlService(BaseModelService[Camera]):
             raise self.gateway(exc)
 
     async def create_preset(self, uuid: UUID, name: str) -> PresetsRead:
+        """Save the camera's current position as a new PTZ preset.
+
+        Args:
+            uuid: Public id of the camera.
+            name: Name of the preset.
+
+        Returns:
+            Presets read after the change.
+        """
         await self.ptz_action(uuid, lambda target: ptz.set_preset_body(target.profile_token, name))
         return await self.presets(uuid)
 
     async def rename_preset(self, uuid: UUID, token: str, name: str) -> PresetsRead:
+        """Rename a PTZ preset.
+
+        Args:
+            uuid: Public id of the camera.
+            token: ONVIF token of the preset.
+            name: New name of the preset.
+
+        Returns:
+            Presets read after the change.
+        """
         await self.ptz_action(uuid, lambda target: ptz.set_preset_body(target.profile_token, name, token))
         return await self.presets(uuid)
 
     async def remove_preset(self, uuid: UUID, token: str) -> PresetsRead:
+        """Delete a PTZ preset.
+
+        Args:
+            uuid: Public id of the camera.
+            token: ONVIF token of the preset.
+
+        Returns:
+            Presets read after the change.
+        """
         await self.ptz_action(uuid, lambda target: ptz.remove_preset_body(target.profile_token, token))
         return await self.presets(uuid)
 
     async def goto_preset(self, uuid: UUID, token: str) -> None:
+        """Move a camera to a PTZ preset.
+
+        Args:
+            uuid: Public id of the camera.
+            token: ONVIF token of the preset.
+        """
         await self.ptz_action(uuid, lambda target: ptz.goto_preset_body(target.profile_token, token))
 
     async def goto_home(self, uuid: UUID) -> None:
+        """Move a camera to its PTZ home position.
+
+        Args:
+            uuid: Public id of the camera.
+        """
         await self.ptz_action(uuid, lambda target: ptz.goto_home_body(target.profile_token))
 
     async def set_home(self, uuid: UUID) -> None:
+        """Store a camera's current position as its PTZ home position.
+
+        Args:
+            uuid: Public id of the camera.
+        """
         await self.ptz_action(uuid, lambda target: ptz.set_home_body(target.profile_token))
 
     async def recording_list(self, connection: Connection) -> list[recordings.Recording]:
+        """List the recordings a camera reports.
+
+        Args:
+            connection: Connection to the camera.
+
+        Returns:
+            The recordings, or an empty list when the camera offers no recording service or answers a fault.
+        """
         if connection.address("recording"):
             try:
                 return recordings.parse_recordings(await self.call(connection, "recording", recordings.RECORDINGS))
@@ -648,6 +1072,20 @@ class CameraControlService(BaseModelService[Camera]):
     async def track_changes(
         self, connection: Connection, recording: str, start: datetime, end: datetime
     ) -> list[recordings.TrackChange]:
+        """Search a recording for the times its tracks start and stop recording.
+
+        Result pages are read for at most SEARCH_ROUNDS rounds or until the camera reports the search completed, and the
+        search is always ended afterwards.
+
+        Args:
+            connection: Connection to the camera.
+            recording: Token of the recording to search.
+            start: Start of the time range.
+            end: End of the time range.
+
+        Returns:
+            The track changes found, or an empty list when the camera starts no search.
+        """
         body = await self.call(connection, "search", recordings.find_events_body(recording, start, end))
         token = recordings.parse_search_token(body)
         if not token:
@@ -669,6 +1107,22 @@ class CameraControlService(BaseModelService[Camera]):
         return changes
 
     async def recordings(self, uuid: UUID, start: datetime | None, end: datetime | None) -> RecordingsRead:
+        """Summarise a camera's SD card recordings and list the recorded segments in a time range.
+
+        Segments are searched only when both ends of the range are given and the camera reports recordings.
+
+        Args:
+            uuid: Public id of the camera.
+            start: Start of the range, if any.
+            end: End of the range, if any.
+
+        Returns:
+            Recording summary and segments. When the camera cannot be read the result is marked unsupported with the
+            reason; when only the segment search fails the summary is kept and the reason is set.
+
+        Raises:
+            Unprocessable: When the range ends before it starts or is longer than two days.
+        """
         camera = await self.get(uuid)
         if start is not None and end is not None and end <= start:
             raise Unprocessable("invalid_range", "The end of the range must come after its start")
@@ -708,6 +1162,26 @@ class CameraControlService(BaseModelService[Camera]):
         return RecordingsRead(**{**result.model_dump(), "segments": segments})
 
     async def start_replay(self, uuid: UUID, start: datetime, session: str | None) -> ReplayRead:
+        """Start SD card playback from a point in time.
+
+        The replay address the camera gives is completed with the camera's credentials and the start time before it is
+        handed to the playback registry.
+
+        Args:
+            uuid: Public id of the camera.
+            start: Time to play from.
+            session: Id of the client's playback session, if it has one.
+
+        Returns:
+            The playback session that was opened.
+
+        Raises:
+            Conflict: When playback is switched off, the camera offers no replay or recordings, or
+                another session holds the camera.
+            Unprocessable: When the start time is in the future.
+            BadGateway: When the camera rejects a request or gives no replay address, or go2rtc
+                fails to open the stream.
+        """
         camera = await self.get(uuid)
         if not settings.replay_enabled:
             raise Conflict("not_supported", REPLAY_OFF)
@@ -739,6 +1213,14 @@ class CameraControlService(BaseModelService[Camera]):
         return ReplayRead(active=True, session=replay.id, stream=replay.name, start=replay.start)
 
     async def replay_status(self, uuid: UUID) -> ReplayRead:
+        """Read the state of a camera's playback session.
+
+        Args:
+            uuid: Public id of the camera.
+
+        Returns:
+            Whether a session is active, with its id, stream, start time and the failure of the last session.
+        """
         camera = await self.get(uuid)
         status = self.replays.status(camera.uuid)
         return ReplayRead(
@@ -750,10 +1232,25 @@ class CameraControlService(BaseModelService[Camera]):
         )
 
     async def stop_replay(self, uuid: UUID, session: str | None) -> None:
+        """Stop a camera's playback session.
+
+        Args:
+            uuid: Public id of the camera.
+            session: Id of the session to stop; when given, a different current session is left running.
+        """
         camera = await self.get(uuid)
         await self.replays.close(camera.uuid, session)
 
     async def extras(self, uuid: UUID) -> ExtrasRead:
+        """Report whether a camera has a light and siren behind a V380 bridge.
+
+        Args:
+            uuid: Public id of the camera.
+
+        Returns:
+            Light and siren availability, or a result marked unsupported with the reason when the
+            camera has no bridge or the bridge API is not enabled.
+        """
         camera = await self.get(uuid)
         if not camera.device_host:
             return ExtrasRead(
@@ -764,12 +1261,32 @@ class CameraControlService(BaseModelService[Camera]):
         return ExtrasRead(camera_uuid=camera.uuid, supported=True, light=True, siren=True)
 
     async def bridge(self, uuid: UUID) -> BridgeClient:
+        """Build a client for a camera's V380 bridge.
+
+        Args:
+            uuid: Public id of the camera.
+
+        Returns:
+            Client for the bridge API.
+
+        Raises:
+            Conflict: When the camera is not behind a V380 bridge.
+        """
         camera = await self.get(uuid)
         if not camera.device_host:
             raise Conflict("not_supported", "Light and siren come from a V380 bridge")
         return BridgeClient(camera.host)
 
     async def light(self, uuid: UUID, mode: str) -> None:
+        """Set the light mode through the V380 bridge.
+
+        Args:
+            uuid: Public id of the camera.
+            mode: Light mode, one of on, off or auto.
+
+        Raises:
+            BadGateway: When the bridge rejects or fails the request.
+        """
         client = await self.bridge(uuid)
         try:
             await client.light(mode)
@@ -777,6 +1294,15 @@ class CameraControlService(BaseModelService[Camera]):
             raise BadGateway("bridge_error", str(exc))
 
     async def siren(self, uuid: UUID, seconds: int) -> None:
+        """Sound or silence the siren through the V380 bridge.
+
+        Args:
+            uuid: Public id of the camera.
+            seconds: How long to sound the siren; 0 turns it off.
+
+        Raises:
+            BadGateway: When the bridge rejects or fails the request.
+        """
         client = await self.bridge(uuid)
         try:
             await client.siren(seconds)
@@ -784,6 +1310,17 @@ class CameraControlService(BaseModelService[Camera]):
             raise BadGateway("bridge_error", str(exc))
 
     async def audio(self, uuid: UUID) -> AudioRead:
+        """Report whether a camera stream carries audio the browser player can play.
+
+        Only AAC and Opus encodings are accepted; the first encoding listed in the media profiles that is one of them
+        decides the codec.
+
+        Args:
+            uuid: Public id of the camera.
+
+        Returns:
+            Audio support with the codec, or a result marked unsupported with the reason.
+        """
         camera = await self.get(uuid)
         if camera.device_host:
             return AudioRead(camera_uuid=camera.uuid, supported=False, reason="The V380 bridge carries no sound")
