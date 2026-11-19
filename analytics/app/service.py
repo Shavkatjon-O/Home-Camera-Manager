@@ -1,0 +1,829 @@
+"""The analytics service: configuration, pipeline supervision, rules, tamper watch, media and status.
+
+The DeepStream pipeline runs in a child process and sends tracked objects back over a queue. Everything else runs
+here: the rules engines, the tamper watch, the recorders, clip and snapshot cutting, and the status endpoint. Rule
+and zone changes apply at once; only a change to what the pipeline decodes or analyses restarts it.
+"""
+
+from __future__ import annotations
+
+import collections
+import json
+import logging
+import multiprocessing
+import queue
+import statistics
+import subprocess
+import threading
+import time
+import uuid
+from dataclasses import dataclass, field
+from pathlib import Path
+from zoneinfo import ZoneInfo
+
+import numpy as np
+
+from app.config import ServiceConfig, ViewConfig, parse_config
+from app.detectors import detector
+from app.pipeline.plan import PipelinePlan, SourcePlan, ViewPlan
+from app.recorder import CameraRecorder, ClipMaker
+from app.rules.engine import Event, RulesEngine, Update
+from app.rules.model import ArmMode, Box, Detection, EventKind, Frame
+from app.settings import Settings
+from app.sources import probe_size, redact, stream_uri
+from app.status import StatusServer
+from app.tamper import TamperWatch, lens_band
+
+logger = logging.getLogger(__name__)
+
+LOOP_SECONDS = 1.0
+CONFIG_POLL_SECONDS = 5.0
+STALL_SECONDS = 20.0
+PIPELINE_STALL_SECONDS = 90.0
+RESTART_DELAYS = (5, 10, 30, 60, 120)
+SNAPSHOT_DELAY = 1.5
+RECENT_EVENTS = 200
+GPU_POLL_SECONDS = 10.0
+
+
+class FileConfigSource:
+    """Reads the configuration from a JSON file whenever the file changes.
+
+    Attributes:
+        path: The file.
+        mtime: Modification time of the last read.
+    """
+
+    def __init__(self, path: Path):
+        """Watch a file.
+
+        Args:
+            path: The JSON file.
+        """
+        self.path = path
+        self.mtime: float | None = None
+
+    def poll(self) -> dict | None:
+        """Return the configuration when the file changed since the last call.
+
+        Returns:
+            The parsed JSON, or None when unchanged or unreadable.
+        """
+        try:
+            mtime = self.path.stat().st_mtime
+        except FileNotFoundError:
+            return None
+        if mtime == self.mtime:
+            return None
+        self.mtime = mtime
+        return json.loads(self.path.read_text())
+
+
+@dataclass
+class ViewRuntime:
+    """Live state of one view.
+
+    Attributes:
+        config: The view's configuration.
+        engine: Its rules engine, None for views without rules.
+        tamper: Its tamper watch, None when off.
+        frames: Frames analysed since the service started.
+        stamps: Arrival times of recent frames, for the rate.
+        latencies: Recent pipeline latencies in milliseconds.
+        last_frame_at: Arrival time of the latest frame.
+        objects: Tracked objects of the latest frame.
+        events: Events produced.
+        errors: Recent problems.
+    """
+
+    config: ViewConfig
+    engine: RulesEngine | None = None
+    tamper: TamperWatch | None = None
+    frames: int = 0
+    stamps: collections.deque = field(default_factory=lambda: collections.deque(maxlen=300))
+    latencies: collections.deque = field(default_factory=lambda: collections.deque(maxlen=200))
+    last_frame_at: float | None = None
+    objects: list[dict] = field(default_factory=list)
+    events: int = 0
+    errors: collections.deque = field(default_factory=lambda: collections.deque(maxlen=10))
+
+    def fps(self, now: float, window: float = 10.0) -> float:
+        """Return the analysed frame rate over a recent window.
+
+        Args:
+            now: Current time.
+            window: Window length in seconds.
+
+        Returns:
+            Frames per second.
+        """
+        recent = [stamp for stamp in self.stamps if now - stamp <= window]
+        return round(len(recent) / window, 2)
+
+    def latency(self) -> dict:
+        """Return pipeline latency percentiles.
+
+        Returns:
+            Median and 95th percentile in milliseconds, empty without samples.
+        """
+        if not self.latencies:
+            return {}
+        ordered = sorted(self.latencies)
+        return {
+            "p50_ms": round(statistics.median(ordered), 1),
+            "p95_ms": round(ordered[min(len(ordered) - 1, int(len(ordered) * 0.95))], 1),
+        }
+
+
+@dataclass
+class PendingClip:
+    """A clip waiting for its event to end or its length cap.
+
+    Attributes:
+        event: The event.
+        camera: Camera id.
+        lens: Lens band.
+        lenses: Bands in the frame.
+        start: Clip start.
+        deadline: Time at which the clip is cut even if the event is still open.
+    """
+
+    event: dict
+    camera: str
+    lens: int
+    lenses: int
+    start: float
+    deadline: float
+
+
+class Service:
+    """Runs everything except the pipeline itself.
+
+    Attributes:
+        settings: Environment settings.
+        config: Current configuration.
+        views: Runtime state per view id.
+    """
+
+    def __init__(self, settings: Settings):
+        """Create the service.
+
+        Args:
+            settings: Environment settings.
+        """
+        self.settings = settings
+        self.timezone = ZoneInfo(settings.timezone)
+        self.source = FileConfigSource(settings.config_file)
+        self.config: ServiceConfig | None = None
+        self.views: dict[str, ViewRuntime] = {}
+        self.recorders: dict[str, CameraRecorder] = {}
+        self.sizes: dict[str, tuple[int, int]] = {}
+        self.lock = threading.RLock()
+        self.started_at = time.time()
+
+        self.context = multiprocessing.get_context("spawn")
+        self.process: multiprocessing.Process | None = None
+        self.outbox: multiprocessing.Queue | None = None
+        self.plan: PipelinePlan | None = None
+        self.plan_key: tuple | None = None
+        self.pipeline_state = "idle"
+        self.pipeline_message = ""
+        self.pipeline_started: float | None = None
+        self.pipeline_restarts = 0
+        self.pipeline_failures = 0
+        self.retry_at = 0.0
+        self.dropped_batches = 0
+
+        self.clips = ClipMaker(settings.clip_encoder)
+        self.media_jobs: queue.Queue = queue.Queue()
+        self.pending: dict[str, PendingClip] = {}
+        self.recent: collections.deque = collections.deque(maxlen=RECENT_EVENTS)
+        self.tamper_events: dict[tuple[str, str], Event] = {}
+        self.gpu: dict = {}
+        self.gpu_polled = 0.0
+        self.stopping = threading.Event()
+
+    def arm_mode(self) -> ArmMode:
+        """Return the current arm mode.
+
+        Returns:
+            The arm mode of the configuration, disarmed without one.
+        """
+        return self.config.arm_mode if self.config else ArmMode.DISARMED
+
+    def run(self) -> None:
+        """Run until stopped."""
+        StatusServer(self.settings.status_port, self.status, self.live_objects).start()
+        threading.Thread(target=self.media_loop, name="media", daemon=True).start()
+        threading.Thread(target=self.read_loop, name="reader", daemon=True).start()
+        polled = 0.0
+        while not self.stopping.is_set():
+            now = time.time()
+            if now - polled >= CONFIG_POLL_SECONDS:
+                polled = now
+                self.reload()
+            try:
+                self.supervise(now)
+                self.tick(now)
+                self.maintain(now)
+            except Exception:
+                logger.exception("Service loop step failed")
+            self.stopping.wait(LOOP_SECONDS)
+        self.shutdown()
+
+    def shutdown(self) -> None:
+        """Stop the pipeline and the recorders."""
+        self.stop_pipeline()
+        for recorder in self.recorders.values():
+            recorder.stop()
+
+    def reload(self) -> None:
+        """Apply a changed configuration."""
+        try:
+            data = self.source.poll()
+        except (OSError, ValueError) as exc:
+            logger.warning("Reading the configuration failed: %s", exc)
+            return
+        if data is None:
+            return
+        try:
+            config = parse_config(data, self.settings.default_fps)
+        except (KeyError, TypeError, ValueError) as exc:
+            logger.warning("The configuration is invalid and was not applied: %s", exc)
+            return
+        self.apply(config)
+
+    def apply(self, config: ServiceConfig) -> None:
+        """Make the runtime match a configuration.
+
+        Args:
+            config: The new configuration.
+        """
+        with self.lock:
+            self.config = config
+            now = time.time()
+            wanted = {view.id: view for view in config.views}
+            for view_id in [key for key in self.views if key not in wanted]:
+                self.close_view(view_id, now)
+                del self.views[view_id]
+            for view in config.views:
+                runtime = self.views.get(view.id)
+                if runtime is None:
+                    runtime = self.views[view.id] = ViewRuntime(view)
+                runtime.config = view
+                if view.enabled and view.profile.rules:
+                    if runtime.engine is None:
+                        runtime.engine = RulesEngine(view.id, view.rules, now, self.timezone, self.arm_mode)
+                    else:
+                        self.handle(view, runtime.engine.configure(view.rules))
+                elif runtime.engine is not None:
+                    self.handle(view, runtime.engine.configure(type(view.rules)()))
+                    runtime.engine = None
+                tamper = view.enabled and bool(view.raw.get("tamper", view.profile.tamper))
+                if tamper and runtime.tamper is None:
+                    runtime.tamper = TamperWatch()
+                elif not tamper:
+                    runtime.tamper = None
+        self.sync_recorders()
+        logger.info(
+            "Configuration %s applied: %d cameras, %d views, %d analysed, arm mode %s",
+            config.version,
+            len(config.cameras),
+            len(config.views),
+            sum(1 for view in config.views if view.detects),
+            config.arm_mode.value,
+        )
+
+    def close_view(self, view_id: str, now: float) -> None:
+        """Close the open events of a view that goes away.
+
+        Args:
+            view_id: The view.
+            now: Current time.
+        """
+        runtime = self.views.get(view_id)
+        if runtime and runtime.engine:
+            closing = [runtime.engine.close(key, now) for key in list(runtime.engine.episodes)]
+            self.handle(runtime.config, closing)
+
+    def uri(self, stream: str) -> str:
+        """Return the go2rtc URI of a stream.
+
+        Args:
+            stream: Stream name.
+
+        Returns:
+            The URI with credentials.
+        """
+        settings = self.settings
+        return stream_uri(settings.rtsp_url, stream, settings.rtsp_username, settings.rtsp_password)
+
+    def sync_recorders(self) -> None:
+        """Run one recorder per camera that has an enabled view."""
+        if self.config is None:
+            return
+        wanted = {camera.id: camera for camera in self.config.cameras if any(view.enabled for view in camera.views)}
+        for camera_id in [key for key in self.recorders if key not in wanted]:
+            self.recorders.pop(camera_id).stop()
+        for camera in wanted.values():
+            recorder = self.recorders.get(camera.id)
+            uri = self.uri(camera.stream)
+            if recorder and (recorder.uri != uri or recorder.lenses != camera.lenses):
+                self.recorders.pop(camera.id).stop()
+                recorder = None
+            if recorder is None:
+                recorder = CameraRecorder(
+                    camera.id,
+                    uri,
+                    camera.lenses,
+                    self.settings.buffer_dir / camera.id,
+                    self.settings.buffer_seconds,
+                    self.on_keyframe,
+                )
+                self.recorders[camera.id] = recorder
+                recorder.start()
+
+    def build_plan(self) -> tuple[PipelinePlan | None, tuple | None]:
+        """Work out the pipeline the configuration needs.
+
+        Returns:
+            The plan and its key, or None and None when nothing needs detection.
+        """
+        if self.config is None:
+            return None, None
+        sources = []
+        index = 0
+        for camera in self.config.cameras:
+            views = [view for view in camera.views if view.detects]
+            if not views:
+                continue
+            uri = self.uri(camera.stream)
+            width, height = 0, 0
+            if any(view.lens for view in views):
+                if camera.id not in self.sizes:
+                    size = probe_size(uri)
+                    if size is None:
+                        logger.warning("Camera %s did not answer, its lens views wait for the next try", camera.name)
+                        continue
+                    self.sizes[camera.id] = size
+                width, height = self.sizes[camera.id]
+            plans = []
+            for view in views:
+                plans.append(ViewPlan(index, view.id, view.lens, camera.lenses, view.fps))
+                index += 1
+            sources.append(SourcePlan(camera.id, uri, width, height, tuple(plans)))
+        if not sources:
+            return None, None
+        item = detector(self.settings.detector)
+        plan = PipelinePlan(
+            sources=tuple(sources),
+            detector=item.name,
+            models_dir=str(self.settings.models_dir),
+            engines_dir=str(self.settings.engines_dir),
+            workspace_mb=self.settings.workspace_mb,
+            threshold=0.4,
+            tracker_config=str(self.settings.tracker_config),
+            labels=dict(item.classes),
+            width=self.settings.mux_width,
+            height=self.settings.mux_height,
+            engine_batch=self.settings.engine_batch,
+        )
+        key = (self.config.pipeline_key(), tuple(sorted(self.sizes.items())))
+        return plan, key
+
+    def supervise(self, now: float) -> None:
+        """Start, restart or stop the pipeline process as the configuration and its health require.
+
+        Args:
+            now: Current time.
+        """
+        if self.config is None:
+            return
+        key = self.config.pipeline_key()
+        alive = self.process is not None and self.process.is_alive()
+        if alive and self.plan_key is not None and self.plan_key[0] != key:
+            logger.info("The analysed views changed, restarting the pipeline")
+            self.stop_pipeline()
+            alive = False
+            self.retry_at = 0.0
+        if alive and self.pipeline_started and now - self.pipeline_started > PIPELINE_STALL_SECONDS:
+            last = max((runtime.last_frame_at or 0.0 for runtime in self.views.values()), default=0.0)
+            if self.pipeline_state == "running" and now - last > PIPELINE_STALL_SECONDS:
+                logger.warning("No view delivered frames for %.0f s, restarting the pipeline", now - last)
+                self.stop_pipeline()
+                alive = False
+        if alive:
+            return
+        if self.process is not None:
+            code = self.process.exitcode
+            self.process = None
+            self.pipeline_failures += 1
+            delay = RESTART_DELAYS[min(self.pipeline_failures - 1, len(RESTART_DELAYS) - 1)]
+            self.retry_at = now + delay
+            self.pipeline_state = "restarting"
+            self.pipeline_message = f"The pipeline exited with code {code}, retrying in {delay} s"
+            logger.warning(self.pipeline_message)
+            return
+        if now < self.retry_at:
+            return
+        plan, plan_key = self.build_plan()
+        if plan is None:
+            self.pipeline_state = "idle"
+            self.plan, self.plan_key = None, None
+            return
+        self.start_pipeline(plan, plan_key)
+
+    def start_pipeline(self, plan: PipelinePlan, key: tuple) -> None:
+        """Start the pipeline process.
+
+        Args:
+            plan: What to run.
+            key: The plan key, compared later to detect changes.
+        """
+        from app.pipeline.worker import run
+
+        self.outbox = self.context.Queue(maxsize=200)
+        self.process = self.context.Process(target=run, args=(plan, self.outbox), name="pipeline", daemon=True)
+        self.process.start()
+        self.plan, self.plan_key = plan, key
+        self.pipeline_started = time.time()
+        self.pipeline_restarts += 1
+        self.pipeline_state = "starting"
+        self.pipeline_message = f"Starting {len(plan.views)} views on {len(plan.sources)} cameras"
+        logger.info(self.pipeline_message)
+
+    def stop_pipeline(self) -> None:
+        """Stop the pipeline process."""
+        process, self.process = self.process, None
+        if process is None:
+            return
+        process.terminate()
+        process.join(10)
+        if process.is_alive():
+            process.kill()
+            process.join(5)
+        self.pipeline_state = "stopped"
+
+    def read_loop(self) -> None:
+        """Consume messages from the pipeline process."""
+        while not self.stopping.is_set():
+            outbox = self.outbox
+            if outbox is None:
+                time.sleep(0.2)
+                continue
+            try:
+                message = outbox.get(timeout=0.5)
+            except queue.Empty:
+                continue
+            except (OSError, EOFError, ValueError):
+                time.sleep(0.2)
+                continue
+            try:
+                self.on_message(message)
+            except Exception:
+                logger.exception("Handling a pipeline message failed")
+
+    def on_message(self, message: tuple) -> None:
+        """Handle one message from the pipeline process.
+
+        Args:
+            message: A tuple whose first item names its kind.
+        """
+        kind = message[0]
+        if kind == "frames":
+            _, received, frames, dropped = message
+            self.dropped_batches = dropped
+            if self.pipeline_state != "running":
+                self.pipeline_state = "running"
+                self.pipeline_failures = 0
+                self.pipeline_message = "Running"
+                logger.info("The pipeline delivers frames")
+            self.on_frames(received, frames)
+        elif kind in ("failed", "eos", "stopped"):
+            self.pipeline_message = message[2]
+            logger.warning("Pipeline: %s", message[2])
+        elif kind in ("starting", "preparing"):
+            self.pipeline_message = str(message[2])
+            logger.info("Pipeline: %s", message[2])
+
+    def on_frames(self, received: float, frames: list) -> None:
+        """Run the rules on a batch of tracked frames.
+
+        Args:
+            received: Time the batch left the tracker.
+            frames: Tuples of pad index, frame number, mux time in nanoseconds and objects.
+        """
+        plan = self.plan
+        if plan is None:
+            return
+        views = plan.views
+        for index, _number, ntp, objects in frames:
+            if index >= len(views):
+                continue
+            with self.lock:
+                runtime = self.views.get(views[index].view)
+                if runtime is None:
+                    continue
+                profile = runtime.config.profile
+                runtime.frames += 1
+                runtime.stamps.append(received)
+                runtime.last_frame_at = received
+                if ntp:
+                    runtime.latencies.append(max(0.0, (received - ntp / 1e9) * 1000))
+                detections = tuple(
+                    Detection(track, label, confidence, Box(left, top, right, bottom))
+                    for track, label, confidence, left, top, right, bottom in objects
+                    if label in profile.labels
+                )
+                runtime.objects = [
+                    {
+                        "track": item.track_id,
+                        "label": item.label,
+                        "confidence": item.confidence,
+                        "box": item.box.rounded(),
+                    }
+                    for item in detections
+                ]
+                if runtime.engine is not None:
+                    self.handle(runtime.config, runtime.engine.process(Frame(received, detections)))
+
+    def tick(self, now: float) -> None:
+        """Close episodes of views whose frames stopped.
+
+        Args:
+            now: Current time.
+        """
+        with self.lock:
+            for runtime in self.views.values():
+                if runtime.engine is not None:
+                    self.handle(runtime.config, runtime.engine.tick(now))
+
+    def handle(self, view: ViewConfig, updates: list[Update]) -> None:
+        """Record event changes and schedule their media.
+
+        Args:
+            view: The view the events belong to.
+            updates: Event changes from a rules engine or the tamper watch.
+        """
+        for update in updates:
+            event = update.event.as_dict()
+            event.update({"camera": view.camera, "view_name": view.name, "profile": view.profile.name})
+            event["action"] = update.action
+            runtime = self.views.get(view.id)
+            if update.action in ("open", "instant"):
+                if runtime:
+                    runtime.events += 1
+                self.media_jobs.put(("snapshot", update.event.started_at + SNAPSHOT_DELAY, event, view))
+                start = update.event.started_at - self.settings.clip_before
+                self.pending[event["id"]] = PendingClip(
+                    event, view.camera, view.lens, view.lenses, start, start + self.settings.clip_max
+                )
+            if update.action in ("close", "instant") and event["id"] in self.pending:
+                pending = self.pending[event["id"]]
+                pending.event = event
+                ended = event["ended_at"] or update.event.started_at
+                pending.deadline = min(pending.deadline, ended + self.settings.clip_after)
+            self.publish(event)
+
+    def publish(self, event: dict) -> None:
+        """Log an event change and keep it for the status endpoint.
+
+        Args:
+            event: The event with its action.
+        """
+        self.recent.append(event)
+        logger.info(
+            "Event %s %s %s %s%s%s objects=%s alert=%s",
+            event["action"],
+            event["kind"],
+            event["label"],
+            event["view_name"],
+            f" zone={event['zone_name']}" if event.get("zone_name") else "",
+            f" line={event['line_name']} {event['direction']}" if event.get("line_name") else "",
+            event["objects"],
+            event["alert"],
+        )
+
+    def media_paths(self, event: dict) -> tuple[Path, str]:
+        """Return the folder and relative stem of an event's media.
+
+        Args:
+            event: The event.
+
+        Returns:
+            The absolute folder and the stem relative to the events folder.
+        """
+        started = time.gmtime(event["started_at"])
+        relative = f"analytics/{started.tm_year:04d}/{started.tm_mon:02d}/{started.tm_mday:02d}/{event['id']}"
+        return self.settings.events_dir, relative
+
+    def media_loop(self) -> None:
+        """Cut snapshots when due and clips when their events end or reach the length cap."""
+        waiting: list[tuple[float, dict, ViewConfig]] = []
+        while not self.stopping.is_set():
+            try:
+                while True:
+                    kind, due, event, view = self.media_jobs.get_nowait()
+                    waiting.append((due, event, view))
+            except queue.Empty:
+                pass
+            now = time.time()
+            for job in [job for job in waiting if job[0] <= now]:
+                waiting.remove(job)
+                self.cut_snapshot(job[1], job[2])
+            for event_id, pending in list(self.pending.items()):
+                if now >= pending.deadline:
+                    del self.pending[event_id]
+                    self.cut_clip(pending)
+            self.stopping.wait(0.5)
+
+    def cut_snapshot(self, event: dict, view: ViewConfig) -> None:
+        """Write the snapshot of an event.
+
+        Args:
+            event: The event.
+            view: Its view.
+        """
+        root, stem = self.media_paths(event)
+        folder = self.settings.buffer_dir / view.camera
+        target, thumbnail = root / f"{stem}.jpg", root / f"{stem}.thumb.jpg"
+        try:
+            ok = self.clips.snapshot(folder, event["started_at"], view.lens, view.lenses, target, thumbnail)
+        except (OSError, subprocess.SubprocessError) as exc:
+            logger.warning("Snapshot of event %s failed: %s", event["id"], exc)
+            return
+        if ok:
+            logger.info("Snapshot of event %s written to %s.jpg", event["id"], stem)
+
+    def cut_clip(self, pending: PendingClip) -> None:
+        """Write the clip of an event.
+
+        Args:
+            pending: The pending clip.
+        """
+        root, stem = self.media_paths(pending.event)
+        folder = self.settings.buffer_dir / pending.camera
+        target = root / f"{stem}.mp4"
+        started = time.monotonic()
+        try:
+            ok = self.clips.clip(folder, pending.start, pending.deadline, pending.lens, pending.lenses, target)
+        except (OSError, subprocess.SubprocessError) as exc:
+            logger.warning("Clip of event %s failed: %s", pending.event["id"], exc)
+            return
+        if ok:
+            logger.info(
+                "Clip of event %s written to %s.mp4 with %s in %.1f s",
+                pending.event["id"],
+                stem,
+                self.clips.working,
+                time.monotonic() - started,
+            )
+
+    def on_keyframe(self, camera: str, at: float, data: bytes) -> None:
+        """Feed a keyframe thumbnail to the tamper watch of the camera's views.
+
+        Args:
+            camera: Camera id.
+            at: Time of the keyframe.
+            data: Grey thumbnail bytes.
+        """
+        recorder = self.recorders.get(camera)
+        if recorder is None:
+            return
+        width, height = recorder.thumb_size
+        image = np.frombuffer(data, dtype=np.uint8).reshape(height, width)
+        with self.lock:
+            for runtime in self.views.values():
+                view = runtime.config
+                if view.camera != camera or runtime.tamper is None:
+                    continue
+                started, ended = runtime.tamper.update(lens_band(image, view.lens, view.lenses))
+                updates = []
+                for condition in started:
+                    event = Event(
+                        id=str(uuid.uuid4()),
+                        view=view.id,
+                        kind=EventKind.TAMPER,
+                        label=condition,
+                        started_at=at,
+                        count=1,
+                        alert=self.arm_mode() != ArmMode.DISARMED,
+                    )
+                    self.tamper_events[(view.id, condition)] = event
+                    updates.append(Update("open", event))
+                for condition in ended:
+                    event = self.tamper_events.pop((view.id, condition), None)
+                    if event is not None:
+                        event.ended_at = at
+                        updates.append(Update("close", event))
+                self.handle(view, updates)
+
+    def maintain(self, now: float) -> None:
+        """Prune the buffers and refresh the GPU reading.
+
+        Args:
+            now: Current time.
+        """
+        for camera_id, recorder in list(self.recorders.items()):
+            starts = [pending.start for pending in self.pending.values() if pending.camera == camera_id]
+            recorder.prune(min(starts) if starts else None)
+            recorder.check()
+        if now - self.gpu_polled >= GPU_POLL_SECONDS:
+            self.gpu_polled = now
+            self.gpu = gpu_reading()
+
+    def live_objects(self, view_id: str) -> dict | None:
+        """Return the tracked objects of a view's latest frame.
+
+        Args:
+            view_id: The view.
+
+        Returns:
+            The objects with their frame time, or None for an unknown view.
+        """
+        with self.lock:
+            runtime = self.views.get(view_id)
+            if runtime is None:
+                return None
+            return {"view": view_id, "at": runtime.last_frame_at, "objects": list(runtime.objects)}
+
+    def status(self) -> dict:
+        """Return the full service status.
+
+        Returns:
+            Pipeline, views, recorders, GPU and recent events.
+        """
+        now = time.time()
+        with self.lock:
+            views = []
+            for view_id, runtime in self.views.items():
+                view = runtime.config
+                stalled = view.detects and (
+                    runtime.last_frame_at is None or now - runtime.last_frame_at > STALL_SECONDS
+                )
+                views.append(
+                    {
+                        "id": view_id,
+                        "name": view.name,
+                        "camera": view.camera,
+                        "lens": view.lens,
+                        "profile": view.profile.name,
+                        "enabled": view.enabled,
+                        "analysed": view.detects,
+                        "target_fps": view.fps,
+                        "fps": runtime.fps(now),
+                        "latency": runtime.latency(),
+                        "frames": runtime.frames,
+                        "objects": len(runtime.objects),
+                        "last_frame_at": runtime.last_frame_at,
+                        "state": "disabled" if not view.enabled else ("stalled" if stalled else "live"),
+                        "events": runtime.events,
+                        "rules": runtime.engine.snapshot() if runtime.engine else None,
+                        "tamper": (
+                            {"active": sorted(runtime.tamper.active), **runtime.tamper.last} if runtime.tamper else None
+                        ),
+                        "errors": list(runtime.errors),
+                    }
+                )
+            recorders = {
+                camera_id: {
+                    "running": recorder.running,
+                    "restarts": recorder.restarts,
+                    "last_keyframe": recorder.last_keyframe,
+                    "errors": list(recorder.errors)[-5:],
+                }
+                for camera_id, recorder in self.recorders.items()
+            }
+            return {
+                "uptime_seconds": round(now - self.started_at),
+                "config_version": self.config.version if self.config else None,
+                "arm_mode": self.arm_mode().value,
+                "detector": self.settings.detector,
+                "pipeline": {
+                    "state": self.pipeline_state,
+                    "message": redact(self.pipeline_message),
+                    "restarts": self.pipeline_restarts,
+                    "dropped_batches": self.dropped_batches,
+                },
+                "gpu": self.gpu,
+                "views": views,
+                "recorders": recorders,
+                "clip_encoder": self.clips.working,
+                "pending_clips": len(self.pending),
+                "recent_events": list(self.recent)[-50:],
+            }
+
+
+def gpu_reading() -> dict:
+    """Read the GPU's memory and utilisation with nvidia-smi.
+
+    Returns:
+        Used and total memory in MiB and utilisation in percent, empty when unavailable.
+    """
+    command = ["nvidia-smi", "--query-gpu=memory.used,memory.total,utilization.gpu", "--format=csv,noheader,nounits"]
+    try:
+        result = subprocess.run(command, capture_output=True, text=True, timeout=5, check=False)
+        used, total, utilisation = (int(value.strip()) for value in result.stdout.splitlines()[0].split(","))
+    except (OSError, subprocess.SubprocessError, ValueError, IndexError):
+        return {}
+    return {"memory_used_mb": used, "memory_total_mb": total, "utilization_percent": utilisation}

@@ -1,0 +1,77 @@
+"""Service settings read from the environment."""
+
+from __future__ import annotations
+
+import os
+from dataclasses import dataclass, field
+from pathlib import Path
+
+
+def env(name: str, default: str = "") -> str:
+    """Read an environment variable.
+
+    Args:
+        name: Variable name.
+        default: Value when the variable is unset or empty.
+
+    Returns:
+        The value.
+    """
+    return os.environ.get(name) or default
+
+
+@dataclass(frozen=True)
+class Settings:
+    """Everything the service reads from its environment.
+
+    Attributes:
+        config_file: JSON configuration file used when no backend is set.
+        backend_url: Backend base URL for configuration and events, empty to run from the file.
+        backend_token: Shared token for the backend's internal analytics endpoints.
+        rtsp_url: go2rtc RTSP server the camera streams are read from.
+        rtsp_username: RTSP user go2rtc asks clients from other containers for.
+        rtsp_password: RTSP password.
+        timezone: Time zone of schedules.
+        detector: Name of the shared detector.
+        default_fps: Analysis rate of views that set none.
+        engine_batch: Largest batch the detector engine is built for.
+        workspace_mb: TensorRT builder workspace limit.
+        mux_width: Stream muxer frame width.
+        mux_height: Stream muxer frame height.
+        models_dir: Model layer mount.
+        engines_dir: Writable engine cache.
+        events_dir: Folder for event snapshots and clips, shared with the backend.
+        buffer_dir: Folder of the rolling recording segments.
+        status_port: Port of the status endpoint.
+        clip_encoder: auto, h264_nvenc, libx264 or copy.
+        clip_before: Seconds a clip starts before its event.
+        clip_after: Seconds a clip runs after its event ends.
+        clip_max: Longest clip in seconds.
+        buffer_seconds: Seconds of segments kept per camera.
+        tracker_config: NvDCF tracker configuration file.
+    """
+
+    config_file: Path = field(default_factory=lambda: Path(env("HC_ANALYTICS_CONFIG_FILE", "/config/analytics.json")))
+    backend_url: str = field(default_factory=lambda: env("HC_ANALYTICS_BACKEND_URL").rstrip("/"))
+    backend_token: str = field(default_factory=lambda: env("HC_ANALYTICS_TOKEN"))
+    rtsp_url: str = field(default_factory=lambda: env("HC_ANALYTICS_RTSP_URL", "rtsp://go2rtc:8554").rstrip("/"))
+    rtsp_username: str = field(default_factory=lambda: env("HC_TV_RTSP_USERNAME", "tv"))
+    rtsp_password: str = field(default_factory=lambda: env("HC_TV_RTSP_PASSWORD"))
+    timezone: str = field(default_factory=lambda: env("HC_TIMEZONE", "UTC"))
+    detector: str = field(default_factory=lambda: env("HC_ANALYTICS_DETECTOR", "rfdetr-medium"))
+    default_fps: float = field(default_factory=lambda: float(env("HC_ANALYTICS_FPS", "8")))
+    engine_batch: int = field(default_factory=lambda: int(env("HC_ANALYTICS_ENGINE_BATCH", "8")))
+    workspace_mb: int = field(default_factory=lambda: int(env("HC_ANALYTICS_WORKSPACE_MB", "1024")))
+    mux_width: int = 1920
+    mux_height: int = 1080
+    models_dir: Path = field(default_factory=lambda: Path(env("HC_ANALYTICS_MODELS_DIR", "/models")))
+    engines_dir: Path = field(default_factory=lambda: Path(env("HC_ANALYTICS_ENGINES_DIR", "/engines")))
+    events_dir: Path = field(default_factory=lambda: Path(env("HC_ANALYTICS_EVENTS_DIR", "/data/events")))
+    buffer_dir: Path = field(default_factory=lambda: Path(env("HC_ANALYTICS_BUFFER_DIR", "/buffer")))
+    status_port: int = field(default_factory=lambda: int(env("HC_ANALYTICS_STATUS_PORT", "8080")))
+    clip_encoder: str = field(default_factory=lambda: env("HC_ANALYTICS_CLIP_ENCODER", "auto"))
+    clip_before: float = field(default_factory=lambda: float(env("HC_ANALYTICS_CLIP_BEFORE", "5")))
+    clip_after: float = field(default_factory=lambda: float(env("HC_ANALYTICS_CLIP_AFTER", "5")))
+    clip_max: float = field(default_factory=lambda: float(env("HC_ANALYTICS_CLIP_MAX", "60")))
+    buffer_seconds: float = field(default_factory=lambda: float(env("HC_ANALYTICS_BUFFER_SECONDS", "120")))
+    tracker_config: Path = Path("/opt/analytics/configs/tracker.yml")

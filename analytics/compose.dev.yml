@@ -1,0 +1,48 @@
+name: home-cameras-analytics-dev
+
+services:
+  analytics:
+    build:
+      context: .
+      target: runtime
+    image: home-cameras-analytics:local
+    container_name: home-cameras-analytics-dev
+    restart: "no"
+    env_file: ../.env
+    environment:
+      HC_ANALYTICS_CONFIG_FILE: /config/analytics.json
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility,video
+    deploy:
+      resources:
+        limits:
+          memory: 6g
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu, compute, utility, video]
+    volumes:
+      - ${HC_ANALYTICS_MODELS_DIR:-./models}:/models:ro
+      - engines:/engines
+      - events:/data/events
+      - ./config.local.json:/config/analytics.json:ro
+      - type: tmpfs
+        target: /buffer
+        tmpfs:
+          size: 1073741824
+          mode: 01777
+    ports:
+      - "127.0.0.1:8760:8080"
+    networks: [cams]
+
+volumes:
+  engines:
+    name: home-cameras_analytics-engines
+  events:
+    name: home-cameras_events
+    external: true
+
+networks:
+  cams:
+    name: home-cameras_cams
+    external: true
