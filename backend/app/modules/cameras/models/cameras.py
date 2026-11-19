@@ -1,3 +1,5 @@
+"""Database model of a camera."""
+
 from sqlalchemy import Boolean, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -7,6 +9,26 @@ __all__ = ["Camera"]
 
 
 class Camera(BaseModel):
+    """Camera registered on the wall.
+
+    Attributes:
+        name: Display name.
+        brand: Camera brand value, one of the CameraBrand members.
+        location: Free-text place the camera watches.
+        host: Address the streams are pulled from.
+        device_host: Address of the camera itself when it differs from host, as for a bridged V380.
+        rtsp_port: RTSP port of host.
+        onvif_port: ONVIF port, or None when the camera has none.
+        username: Camera login name.
+        password_encrypted: Encrypted camera password.
+        main_path: RTSP path of the main stream.
+        sub_path: RTSP path of the sub stream, or None when there is none.
+        lenses: Number of lenses the camera has.
+        ptz_enabled: Whether pan, tilt and zoom control is on.
+        position: Place of the camera in the wall order.
+        enabled: Whether the camera is streamed.
+    """
+
     __tablename__ = "cameras"
 
     name: Mapped[str] = mapped_column(String(100), nullable=False)

@@ -1,3 +1,5 @@
+"""Camera registry service."""
+
 from uuid import UUID
 
 from sqlalchemy import func, select
@@ -32,6 +34,13 @@ ONVIF_FIELDS = ("host", "onvif_port", "username", "ptz_enabled")
 
 
 class CameraService(BaseModelService[Camera]):
+    """Camera registry operations that keep the stream server, status probes and ONVIF cache in step.
+
+    Attributes:
+        cameras: Supervisor that syncs streams to the stream server and probes cameras.
+        onvif: Cache of ONVIF connections used for pan, tilt and zoom.
+    """
+
     model = Camera
     not_found_code = "camera_not_found"
 
@@ -42,11 +51,27 @@ class CameraService(BaseModelService[Camera]):
         cameras: CameraSupervisor = supervisor,
         onvif: OnvifCache = onvif_cache,
     ):
+        """Bind the service to a session, the acting user and the streaming collaborators.
+
+        Args:
+            session: Database session the service works in.
+            actor: User making the request, if any.
+            cameras: Supervisor that syncs streams and probes cameras.
+            onvif: Cache of ONVIF connections.
+        """
         super().__init__(session, actor)
         self.cameras = cameras
         self.onvif = onvif
 
     def read(self, camera: Camera) -> CameraRead:
+        """Build the API view of a camera with its last known status.
+
+        Args:
+            camera: Camera row.
+
+        Returns:
+            The camera as the API returns it.
+        """
         status = self.cameras.statuses.get(camera.uuid, camera.host, camera.rtsp_port)
         return CameraRead(
             uuid=camera.uuid,
@@ -75,9 +100,24 @@ class CameraService(BaseModelService[Camera]):
         )
 
     def live(self):
+        """Build a query for cameras that have not been soft-deleted.
+
+        Returns:
+            Select statement over live cameras.
+        """
         return select(Camera).where(Camera.deleted_at.is_(None))
 
     async def list_page(self, page: int, page_size: int, sort: CameraSort) -> CameraList:
+        """List live cameras one page at a time.
+
+        Args:
+            page: Page number, starting at 1.
+            page_size: Number of cameras per page.
+            sort: Wall position first, or newest first.
+
+        Returns:
+            The page with the total number of live cameras.
+        """
         total = await self.session.scalar(select(func.count()).select_from(Camera).where(Camera.deleted_at.is_(None)))
         query = self.live()
         if sort == CameraSort.POSITION:
@@ -93,9 +133,27 @@ class CameraService(BaseModelService[Camera]):
         )
 
     async def detail(self, uuid: UUID) -> CameraRead:
+        """Return one camera.
+
+        Args:
+            uuid: Public id of the camera.
+
+        Returns:
+            The camera.
+        """
         return self.read(await self.get(uuid))
 
     async def ensure_unique(self, host: str, main_path: str, exclude_id: int | None = None) -> None:
+        """Check that no other live camera has the same host and main path.
+
+        Args:
+            host: Host to check.
+            main_path: Main stream path to check.
+            exclude_id: Internal id of a camera to leave out, such as the one being updated.
+
+        Raises:
+            Conflict: Another live camera has that host and main path.
+        """
         query = select(Camera.id).where(
             Camera.deleted_at.is_(None),
             Camera.host == host,
@@ -107,10 +165,30 @@ class CameraService(BaseModelService[Camera]):
             raise Conflict("camera_exists", f"A camera with the host {host} and the path {main_path} already exists")
 
     async def next_position(self) -> int:
+        """Pick the wall position after the last live camera.
+
+        Returns:
+            One more than the highest position in use.
+        """
         highest = await self.session.scalar(select(func.max(Camera.position)).where(Camera.deleted_at.is_(None)))
         return (highest or 0) + 1
 
     async def resolve_onvif(self, values: dict, password: str | None) -> dict:
+        """Fill missing PTZ support and stream settings by asking the camera over ONVIF.
+
+        Settings already present in the values are kept. When the camera does not answer but a main
+        path is already known, the values are returned unchanged.
+
+        Args:
+            values: Camera fields from the request.
+            password: Camera password, if any.
+
+        Returns:
+            Copy of the values with PTZ support, main path, RTSP port and sub path filled in where missing.
+
+        Raises:
+            BadGateway: The camera does not answer and no main path is known, or it reports no stream address.
+        """
         client = OnvifClient(values["host"], values["onvif_port"], values.get("username"), password)
         try:
             profiles = await client.stream_profiles()
@@ -135,6 +213,18 @@ class CameraService(BaseModelService[Camera]):
         return result
 
     async def create(self, payload: CameraCreate) -> CameraRead:
+        """Register a camera, start streaming it and probe it in the background.
+
+        Args:
+            payload: Camera to register.
+
+        Returns:
+            The new camera.
+
+        Raises:
+            Unprocessable: No main stream path is given or found.
+            Conflict: A live camera already has that host and main path.
+        """
         values = payload.model_dump(exclude={"password"})
         values = apply_brand_defaults(payload.brand, values)
         if payload.brand == CameraBrand.ONVIF and (not values.get("main_path") or values.get("ptz_enabled") is None):
@@ -171,6 +261,22 @@ class CameraService(BaseModelService[Camera]):
         return self.read(camera)
 
     async def update(self, uuid: UUID, payload: CameraUpdate) -> CameraRead:
+        """Change a camera and refresh whatever depends on the changed fields.
+
+        Streams are synced only when a stream setting or the password changed, the ONVIF cache is
+        dropped only when an ONVIF setting or the password changed, and the camera is probed again
+        when its host or RTSP port changed.
+
+        Args:
+            uuid: Public id of the camera.
+            payload: Fields to change.
+
+        Returns:
+            The updated camera.
+
+        Raises:
+            Conflict: The new host and main path belong to another live camera.
+        """
         camera = await self.get(uuid)
         changes = payload.model_dump(exclude_unset=True)
         password_given = "password" in changes
@@ -205,6 +311,11 @@ class CameraService(BaseModelService[Camera]):
         return self.read(camera)
 
     async def delete(self, uuid: UUID) -> None:
+        """Soft-delete a camera and remove its streams and cached ONVIF connection.
+
+        Args:
+            uuid: Public id of the camera.
+        """
         camera = await self.get(uuid)
         camera.deleted_at = func.now()
         await self.commit()
@@ -212,6 +323,14 @@ class CameraService(BaseModelService[Camera]):
         await self.cameras.remove(camera.uuid)
 
     async def reorder(self, uuids: list[UUID]) -> None:
+        """Set the wall order, keeping cameras that are not listed after the listed ones.
+
+        Args:
+            uuids: Camera ids in the order they should appear.
+
+        Raises:
+            NotFound: A listed camera does not exist.
+        """
         rows = await self.session.scalars(
             self.live().order_by(Camera.position.asc(), Camera.created_at.desc(), Camera.id.desc())
         )
@@ -228,11 +347,31 @@ class CameraService(BaseModelService[Camera]):
         await self.commit()
 
     async def check(self, uuid: UUID) -> CameraRead:
+        """Probe a camera now.
+
+        Args:
+            uuid: Public id of the camera.
+
+        Returns:
+            The camera with its status after the probe.
+        """
         camera = await self.get(uuid)
         await self.cameras.probe_camera(camera)
         return self.read(camera)
 
     async def ptz_target(self, camera: Camera) -> PtzTarget:
+        """Resolve the ONVIF client, address and profile used to move a camera.
+
+        Args:
+            camera: Camera row.
+
+        Returns:
+            Target for pan, tilt and zoom calls.
+
+        Raises:
+            Conflict: PTZ is off for the camera or it has no ONVIF port.
+            BadGateway: The camera does not answer over ONVIF.
+        """
         if not camera.ptz_enabled:
             raise Conflict("ptz_not_supported", "PTZ is not enabled for this camera")
         if camera.onvif_port is None:
@@ -249,6 +388,17 @@ class CameraService(BaseModelService[Camera]):
             raise BadGateway("onvif_error", str(exc))
 
     async def ptz_move(self, uuid: UUID, move: PtzMove) -> None:
+        """Start a continuous pan, tilt and zoom move.
+
+        The cached ONVIF connection is dropped when the call fails.
+
+        Args:
+            uuid: Public id of the camera.
+            move: Speed on each axis.
+
+        Raises:
+            BadGateway: The camera rejects the move.
+        """
         camera = await self.get(uuid)
         target = await self.ptz_target(camera)
         try:
@@ -258,6 +408,16 @@ class CameraService(BaseModelService[Camera]):
             raise BadGateway("onvif_error", str(exc))
 
     async def ptz_stop(self, uuid: UUID) -> None:
+        """Stop any pan, tilt and zoom move in progress.
+
+        The cached ONVIF connection is dropped when the call fails.
+
+        Args:
+            uuid: Public id of the camera.
+
+        Raises:
+            BadGateway: The camera rejects the stop.
+        """
         camera = await self.get(uuid)
         target = await self.ptz_target(camera)
         try:

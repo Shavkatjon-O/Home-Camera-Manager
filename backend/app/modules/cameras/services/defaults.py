@@ -1,3 +1,5 @@
+"""Per-brand default settings applied when a camera is created."""
+
 from app.core.exceptions import Unprocessable
 from app.modules.cameras.enums import CameraBrand
 
@@ -29,6 +31,18 @@ BRAND_DEFAULTS: dict[CameraBrand, dict[str, object]] = {
 
 
 def apply_brand_defaults(brand: CameraBrand, values: dict) -> dict:
+    """Fill the fields a request left unset with the defaults of its brand.
+
+    Args:
+        brand: Brand of the camera.
+        values: Camera fields from the request; unset ones are None.
+
+    Returns:
+        Copy of the values with brand defaults in place of None.
+
+    Raises:
+        Unprocessable: The brand is plain RTSP and no main stream path is given.
+    """
     result = dict(values)
     for key, value in BRAND_DEFAULTS[brand].items():
         if result.get(key) is None:
