@@ -45,6 +45,8 @@ services:
     container_name: home-cameras-backend
     restart: unless-stopped
     env_file: .env
+    volumes:
+      - events:/data/events
     depends_on:
       postgres:
         condition: service_healthy
@@ -69,6 +71,7 @@ services:
       - --output
       - rtsp
       - --enable-onvif
+      - --enable-api
       - --rtsp-port
       - "8554"
       - --http-port
@@ -92,6 +95,7 @@ services:
       - --output
       - rtsp
       - --enable-onvif
+      - --enable-api
       - --rtsp-port
       - "8554"
       - --http-port
@@ -111,6 +115,7 @@ services:
 
 volumes:
   postgres:
+  events:
 
 networks:
   cams:

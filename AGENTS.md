@@ -43,4 +43,9 @@ alembic revision --autogenerate -m "<message>"
 - Never publish bridge ports, because their RTSP and ONVIF have no authentication.
 - Probe a bridged camera's health on its device address and port 8800, never on the bridge, because the bridge container answers even when the camera is gone.
 - Keep camera links in the health module and read camera fields there without changing the cameras module, because the health page must not touch the registry the wall and the TV depend on.
+- Never open an event from a state a camera reports when a subscription starts, because its start time is unknown and every reconnect would repeat it.
+- Use this computer's clock for event times and keep the camera's time as a field, because camera clocks drift or follow a vendor time zone.
+- Keep SD card playback behind HC_REPLAY_ENABLED and one session per camera, because the cameras reset local playback sessions and go2rtc 1.9.14 keeps redialling a failed source after its stream is removed, which once made a camera restart.
+- Keep the bridges' API on the internal network, because it has no authentication and sounds the siren.
+- Never test reboot, siren or light on the real cameras, and read and restore every camera setting a test changes.
 - No comments, emojis or non-ASCII characters in code, configs or docs.

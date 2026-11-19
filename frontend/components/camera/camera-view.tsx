@@ -10,10 +10,22 @@ import {
   MinimizeIcon,
   PencilIcon,
   RefreshCwIcon,
+  Volume2Icon,
+  VolumeXIcon,
 } from "lucide-react"
 import { toast } from "sonner"
 
 import { CameraDetails } from "@/components/camera/camera-details"
+import { CameraEvents } from "@/components/camera/camera-events"
+import {
+  DeviceSection,
+  ExtrasSection,
+  ImageSection,
+  MotionSection,
+  PresetsSection,
+  RecordingsSection,
+  VideoSection,
+} from "@/components/camera/control-sections"
 import { PtzPad } from "@/components/camera/ptz-pad"
 import { usePtz, usePtzKeyboard } from "@/components/camera/use-ptz"
 import { CameraFormDialog } from "@/components/cameras/camera-form-dialog"
@@ -27,7 +39,7 @@ import { VideoPlaceholder } from "@/components/video/video-placeholder"
 import { VideoStream } from "@/components/video/video-stream"
 import { ApiError, api, errorMessage, isAbort } from "@/lib/api"
 import { toggleFullscreen, useFullscreenElement } from "@/lib/stores"
-import type { Camera } from "@/lib/types"
+import type { Camera, CameraAudio } from "@/lib/types"
 
 const POLL_MS = 10000
 
@@ -53,6 +65,8 @@ function CameraView({ id }: { id: string }) {
   const [checking, setChecking] = React.useState(false)
   const [editing, setEditing] = React.useState(false)
   const [player, setPlayer] = React.useState<HTMLDivElement | null>(null)
+  const [audio, setAudio] = React.useState<CameraAudio | null>(null)
+  const [sound, setSound] = React.useState(false)
   const viewRef = React.useRef<HTMLDivElement>(null)
   const fullscreen = useFullscreenElement()
   const ptz = usePtz(id, speed)
@@ -79,6 +93,15 @@ function CameraView({ id }: { id: string }) {
       window.clearTimeout(timer)
     }
   }, [id, reload])
+
+  React.useEffect(() => {
+    const controller = new AbortController()
+    api
+      .cameraAudio(id, controller.signal)
+      .then(setAudio)
+      .catch(() => undefined)
+    return () => controller.abort()
+  }, [id])
 
   const name = camera?.name
   React.useEffect(() => {
@@ -163,6 +186,16 @@ function CameraView({ id }: { id: string }) {
         />
       ) : null}
       <IconButton
+        label={
+          audio?.supported ? (sound ? "Mute" : "Turn sound on") : (audio?.reason ?? "Sound is not available")
+        }
+        aria-pressed={sound}
+        disabled={!audio?.supported || !camera.enabled}
+        onClick={() => setSound((value) => !value)}
+      >
+        {sound && audio?.supported ? <Volume2Icon /> : <VolumeXIcon />}
+      </IconButton>
+      <IconButton
         label={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
         disabled={!camera.enabled}
         onClick={onFullscreen}
@@ -204,7 +237,8 @@ function CameraView({ id }: { id: string }) {
       </div>
     )
   } else if (stream) {
-    video = <VideoStream key={stream} stream={stream} className="absolute inset-0" />
+    const withSound = sound && Boolean(audio?.supported)
+    video = <VideoStream key={stream} stream={stream} audio={withSound} className="absolute inset-0" />
   }
 
   return (
@@ -250,6 +284,16 @@ function CameraView({ id }: { id: string }) {
               <PtzPad controls={ptz} speed={speed} onSpeedChange={setSpeed} />
             </Section>
           ) : null}
+          {camera.ptz_enabled ? <PresetsSection cameraUuid={camera.uuid} /> : null}
+          {camera.device_host ? <ExtrasSection cameraUuid={camera.uuid} /> : null}
+          <Section title="Events">
+            <CameraEvents cameraUuid={camera.uuid} />
+          </Section>
+          <RecordingsSection cameraUuid={camera.uuid} />
+          <VideoSection cameraUuid={camera.uuid} />
+          <ImageSection cameraUuid={camera.uuid} />
+          <MotionSection cameraUuid={camera.uuid} />
+          <DeviceSection cameraUuid={camera.uuid} />
           <Section title="Details">
             <CameraDetails camera={camera} />
           </Section>

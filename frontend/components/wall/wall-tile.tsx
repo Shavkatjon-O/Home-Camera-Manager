@@ -6,10 +6,12 @@ import { useRouter } from "next/navigation"
 import { ArrowUpRightIcon, MaximizeIcon, MinimizeIcon } from "lucide-react"
 import { toast } from "sonner"
 
+import { useOpenEvents } from "@/components/events/events-provider"
 import { StatusDot } from "@/components/shell/primitives"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { VideoPlaceholder } from "@/components/video/video-placeholder"
 import { VideoStream } from "@/components/video/video-stream"
+import { KIND_LABELS, isActivity } from "@/lib/events"
 import { toggleFullscreen, useFullscreenElement } from "@/lib/stores"
 import type { Camera } from "@/lib/types"
 import { cn } from "@/lib/utils"
@@ -29,6 +31,7 @@ export function WallTile({ camera, lens = null }: { camera: Camera; lens?: numbe
   const stream = camera.streams.sub ?? camera.streams.main
   const href = cameraHref(camera.uuid)
   const offline = camera.status.online === false
+  const activity = useOpenEvents(camera.uuid).find((event) => isActivity(event.kind))
 
   const onFullscreen = async () => {
     const ok = await toggleFullscreen(tile)
@@ -46,6 +49,16 @@ export function WallTile({ camera, lens = null }: { camera: Camera; lens?: numbe
       ) : (
         <VideoStream stream={stream} compact lens={lens} lenses={camera.lenses} className="absolute inset-0" />
       )}
+
+      {activity ? (
+        <div
+          role="status"
+          className="pointer-events-none absolute top-2 left-2 flex items-center gap-1.5 rounded-md bg-status-err px-1.5 py-0.5 text-[11px] font-medium text-white"
+        >
+          <span aria-hidden className="size-1.5 rounded-full bg-white" />
+          {KIND_LABELS[activity.kind]}
+        </div>
+      ) : null}
 
       <div className="pointer-events-none absolute bottom-2 left-2 flex max-w-[calc(100%-1rem)] items-center gap-2 rounded-md bg-black/60 px-2 py-1">
         <StatusDot online={camera.status.online} />

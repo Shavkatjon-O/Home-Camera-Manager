@@ -3,13 +3,25 @@
 import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { ActivityIcon, CctvIcon, LayoutGridIcon, ListIcon, LogOutIcon, RadarIcon, WifiIcon } from "lucide-react"
+import {
+  ActivityIcon,
+  BellOffIcon,
+  BellRingIcon,
+  CctvIcon,
+  LayoutGridIcon,
+  ListIcon,
+  LogOutIcon,
+  RadarIcon,
+  ScanEyeIcon,
+  WifiIcon,
+} from "lucide-react"
 import { toast } from "sonner"
 
 import { IconButton } from "@/components/shell/icon-button"
 import { Chip, StatusDot } from "@/components/shell/primitives"
 import { useSession } from "@/components/shell/session"
 import { LOGIN_PATH, api, errorMessage } from "@/lib/api"
+import { setAlertsMuted, useAlertsMuted } from "@/lib/events"
 import { formatClock } from "@/lib/format"
 import { useClockSeconds } from "@/lib/stores"
 import { cn } from "@/lib/utils"
@@ -17,6 +29,7 @@ import { cn } from "@/lib/utils"
 const TABS = [
   { href: "/", label: "Wall", icon: LayoutGridIcon, match: (path: string) => path === "/" || path.startsWith("/camera/") },
   { href: "/cameras/", label: "Cameras", icon: ListIcon, match: (path: string) => path.startsWith("/cameras/") },
+  { href: "/events/", label: "Events", icon: ScanEyeIcon, match: (path: string) => path.startsWith("/events/") },
   { href: "/discover/", label: "Discover", icon: RadarIcon, match: (path: string) => path.startsWith("/discover/") },
   { href: "/coverage/", label: "Coverage", icon: WifiIcon, match: (path: string) => path.startsWith("/coverage/") },
   { href: "/health/", label: "Health", icon: ActivityIcon, match: (path: string) => path.startsWith("/health/") },
@@ -104,6 +117,19 @@ function OnlineChip() {
   )
 }
 
+function AlertsToggle() {
+  const muted = useAlertsMuted()
+  return (
+    <IconButton
+      label={muted ? "Unmute event alerts" : "Mute event alerts"}
+      aria-pressed={muted}
+      onClick={() => setAlertsMuted(!muted)}
+    >
+      {muted ? <BellOffIcon /> : <BellRingIcon />}
+    </IconButton>
+  )
+}
+
 function SignOutButton() {
   const [busy, setBusy] = React.useState(false)
   const signOut = async () => {
@@ -145,7 +171,11 @@ export function AppFrame({
             <Clock />
           </div>
         </div>
-        <div className="flex items-center gap-1.5">{actions}<SignOutButton /></div>
+        <div className="flex items-center gap-1.5">
+          {actions}
+          <AlertsToggle />
+          <SignOutButton />
+        </div>
       </header>
       <div className="flex min-h-0 flex-1">{children}</div>
     </div>

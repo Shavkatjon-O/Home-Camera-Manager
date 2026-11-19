@@ -1,16 +1,30 @@
 import type {
   Camera,
+  CameraAudio,
+  CameraDevice,
+  CameraExtras,
+  CameraImage,
+  CameraMotion,
+  CameraPresets,
+  CameraRecordings,
+  CameraReplay,
+  CameraVideo,
   CameraCreate,
+  CameraEvent,
+  CameraEventSourceList,
   CameraLink,
   CameraLinkUpdate,
   CameraOrder,
   CameraUpdate,
+  EncoderUpdate,
+  EventQuery,
   FloorPlan,
   FloorPlanCreate,
   FloorPlanSummary,
   FloorPlanUpdate,
   HealthOverview,
   HealthRange,
+  ImageSettings,
   InspectRequest,
   InspectResult,
   NetworkDevice,
@@ -21,8 +35,6 @@ import type {
   PtzVector,
   ScanResult,
   TargetDetail,
-  TvDevice,
-  TvDeviceList,
   User,
 } from "@/lib/types"
 
@@ -138,6 +150,10 @@ function query(params: Record<string, string | number | undefined>): string {
   return text ? `?${text}` : ""
 }
 
+function cameraPath(uuid: string): string {
+  return `/cameras/${encodeURIComponent(uuid)}`
+}
+
 export const api = {
   login: (username: string, password: string) =>
     request<User>("/auth/login", {
@@ -192,11 +208,52 @@ export const api = {
   deleteFloorPlan: (uuid: string) =>
     request<void>(`/floorplans/${encodeURIComponent(uuid)}`, { method: "DELETE" }),
 
-  listTvDevices: (signal?: AbortSignal) => request<TvDeviceList>("/tv/devices", { signal }),
-  approveTvPairing: (code: string) =>
-    request<TvDevice>("/tv/pairings/approve", { method: "POST", body: { code } }),
-  revokeTvDevice: (uuid: string) =>
-    request<void>(`/tv/devices/${encodeURIComponent(uuid)}`, { method: "DELETE" }),
+  cameraDevice: (uuid: string, signal?: AbortSignal) => request<CameraDevice>(`${cameraPath(uuid)}/device`, { signal }),
+  syncCameraTime: (uuid: string) => request<CameraDevice>(`${cameraPath(uuid)}/device/sync-time`, { method: "POST" }),
+  rebootCamera: (uuid: string) => request<void>(`${cameraPath(uuid)}/device/reboot`, { method: "POST" }),
+  cameraVideo: (uuid: string, signal?: AbortSignal) => request<CameraVideo>(`${cameraPath(uuid)}/video`, { signal }),
+  updateEncoder: (uuid: string, token: string, data: EncoderUpdate) =>
+    request<CameraVideo>(`${cameraPath(uuid)}/video/${encodeURIComponent(token)}`, { method: "PUT", body: data }),
+  cameraImage: (uuid: string, signal?: AbortSignal) => request<CameraImage>(`${cameraPath(uuid)}/image`, { signal }),
+  updateImage: (uuid: string, data: Partial<ImageSettings>) =>
+    request<CameraImage>(`${cameraPath(uuid)}/image`, { method: "PATCH", body: data }),
+  cameraMotion: (uuid: string, signal?: AbortSignal) => request<CameraMotion>(`${cameraPath(uuid)}/motion`, { signal }),
+  updateMotion: (uuid: string, data: { sensitivity?: number; enabled?: boolean }) =>
+    request<CameraMotion>(`${cameraPath(uuid)}/motion`, { method: "PATCH", body: data }),
+  cameraPresets: (uuid: string, signal?: AbortSignal) =>
+    request<CameraPresets>(`${cameraPath(uuid)}/presets`, { signal }),
+  savePreset: (uuid: string, name: string) =>
+    request<CameraPresets>(`${cameraPath(uuid)}/presets`, { method: "POST", body: { name } }),
+  renamePreset: (uuid: string, token: string, name: string) =>
+    request<CameraPresets>(`${cameraPath(uuid)}/presets/${encodeURIComponent(token)}`, { method: "PATCH", body: { name } }),
+  removePreset: (uuid: string, token: string) =>
+    request<CameraPresets>(`${cameraPath(uuid)}/presets/${encodeURIComponent(token)}`, { method: "DELETE" }),
+  gotoPreset: (uuid: string, token: string) =>
+    request<void>(`${cameraPath(uuid)}/presets/${encodeURIComponent(token)}/goto`, { method: "POST" }),
+  gotoHome: (uuid: string) => request<void>(`${cameraPath(uuid)}/home/goto`, { method: "POST" }),
+  setHome: (uuid: string) => request<void>(`${cameraPath(uuid)}/home/set`, { method: "POST" }),
+  cameraRecordings: (uuid: string, range: { from?: string; to?: string } = {}, signal?: AbortSignal) =>
+    request<CameraRecordings>(`${cameraPath(uuid)}/recordings${query(range)}`, { signal }),
+  replayStatus: (uuid: string, signal?: AbortSignal) => request<CameraReplay>(`${cameraPath(uuid)}/replay`, { signal }),
+  startReplay: (uuid: string, start: string, session?: string | null) =>
+    request<CameraReplay>(`${cameraPath(uuid)}/replay`, { method: "POST", body: { start, session: session ?? null } }),
+  stopReplay: (uuid: string, session?: string | null) =>
+    request<void>(`${cameraPath(uuid)}/replay${query({ session: session ?? undefined })}`, {
+      method: "DELETE",
+      keepalive: true,
+    }),
+  cameraExtras: (uuid: string, signal?: AbortSignal) => request<CameraExtras>(`${cameraPath(uuid)}/extras`, { signal }),
+  setLight: (uuid: string, mode: "on" | "off" | "auto") =>
+    request<void>(`${cameraPath(uuid)}/extras/light`, { method: "POST", body: { mode } }),
+  setSiren: (uuid: string, seconds: number) =>
+    request<void>(`${cameraPath(uuid)}/extras/siren`, { method: "POST", body: { seconds } }),
+  cameraAudio: (uuid: string, signal?: AbortSignal) => request<CameraAudio>(`${cameraPath(uuid)}/audio`, { signal }),
+
+  listEvents: (params: EventQuery = {}, signal?: AbortSignal) =>
+    request<Page<CameraEvent>>(`/events${query({ ...params })}`, { signal }),
+  getEvent: (uuid: string, signal?: AbortSignal) =>
+    request<CameraEvent>(`/events/${encodeURIComponent(uuid)}`, { signal }),
+  eventSources: (signal?: AbortSignal) => request<CameraEventSourceList>("/events/sources", { signal }),
 
   healthOverview: (range: HealthRange, signal?: AbortSignal) =>
     request<HealthOverview>(`/health/overview${query({ range })}`, { signal }),
@@ -214,4 +271,10 @@ export const api = {
     request<void>(`/health/devices/${encodeURIComponent(uuid)}`, { method: "DELETE" }),
   setCameraLink: (cameraUuid: string, data: CameraLinkUpdate) =>
     request<CameraLink>(`/health/camera-links/${encodeURIComponent(cameraUuid)}`, { method: "PUT", body: data }),
+}
+
+export const EVENT_STREAM_URL = "/api/v1/events/stream"
+
+export function eventImageUrl(uuid: string, thumbnail = false): string {
+  return `/api/v1/events/${encodeURIComponent(uuid)}/${thumbnail ? "thumbnail" : "snapshot"}`
 }

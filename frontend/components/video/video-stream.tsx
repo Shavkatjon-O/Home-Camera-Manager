@@ -27,6 +27,8 @@ export function VideoStream({
   compact = false,
   lens = null,
   lenses = 1,
+  audio = false,
+  retry = true,
   className,
 }: {
   stream: string
@@ -34,6 +36,8 @@ export function VideoStream({
   compact?: boolean
   lens?: number | null
   lenses?: number
+  audio?: boolean
+  retry?: boolean
   className?: string
 }) {
   const holderRef = React.useRef<HTMLDivElement>(null)
@@ -76,6 +80,7 @@ export function VideoStream({
 
     const scheduleRetry = () => {
       window.clearTimeout(retryTimer)
+      if (!retry) return
       retryTimer = window.setTimeout(() => {
         setPhase("connecting")
         setAttempt((value) => value + 1)
@@ -106,12 +111,13 @@ export function VideoStream({
         if (cancelled) return
         element = document.createElement("video-stream") as VideoStreamElement
         element.mode = "mse"
-        element.media = "video"
+        element.media = audio ? "video,audio" : "video"
         element.background = false
         element.src = streamSocketUrl(stream)
         element.addEventListener(STREAM_ERROR_EVENT, onStreamError)
         holder.appendChild(element)
         video = element.video
+        if (video && audio) video.muted = false
         video?.addEventListener("playing", onPlaying)
         video?.addEventListener("emptied", onEmptied)
         video?.addEventListener("loadedmetadata", onMetadata)
@@ -139,7 +145,7 @@ export function VideoStream({
         element.remove()
       }
     }
-  }, [stream, attempt])
+  }, [stream, attempt, audio, retry])
 
   const showPoster = snapshot && poster !== null && phase !== "live"
   const cropped = lenses > 1 && lens !== null
@@ -201,7 +207,7 @@ export function VideoStream({
           <div className="flex max-w-full flex-col items-center gap-1.5 rounded-md bg-black/70 px-3 py-2 text-center">
             <div className="flex items-center gap-1.5 text-[12px] text-white/90">
               <CircleAlertIcon aria-hidden className="size-3.5 text-status-err" />
-              Stream unavailable, retrying
+              {retry ? "Stream unavailable, retrying" : "Stream unavailable"}
             </div>
             {message && !compact ? (
               <div className="line-clamp-2 max-w-md font-mono text-[11px] break-words text-white/50">{message}</div>

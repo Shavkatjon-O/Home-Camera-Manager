@@ -8,6 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api.v1_routers import v1_routers
+from app.camera_events.engine import camera_events
 from app.core.config import APP_NAME, APP_VERSION
 from app.core.database import async_engine, verify_db_connection
 from app.core.exceptions import ServiceError, Unavailable
@@ -29,8 +30,10 @@ async def lifespan(application: FastAPI):
     await seed_admin()
     await supervisor.start()
     await health_prober.start()
+    await camera_events.start()
     logger.info("%s %s started", APP_NAME, APP_VERSION)
     yield
+    await camera_events.stop()
     await health_prober.stop()
     await supervisor.stop()
     await async_engine.dispose()

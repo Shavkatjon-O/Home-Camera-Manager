@@ -1,3 +1,4 @@
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.engine import URL
 
@@ -33,6 +34,15 @@ class Settings(BaseSettings):
 
     health_interval_seconds: int = 10
     health_retention_days: int = 14
+
+    events_dir: str = "/data/events"
+    events_retention_days: int = 30
+
+    replay_enabled: bool = False
+
+    device_onvif_port: int = 8899
+    device_username: str = Field(default="admin", validation_alias=AliasChoices("hc_device_username", "v380_username"))
+    device_password: str = Field(default="", validation_alias=AliasChoices("hc_device_password", "v380_password"))
 
     @property
     def database_url(self) -> str:

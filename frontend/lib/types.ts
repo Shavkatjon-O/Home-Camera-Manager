@@ -207,17 +207,6 @@ export interface FloorPlanUpdate {
   background_opacity?: number
 }
 
-export interface TvDevice {
-  uuid: string
-  name: string
-  created_at: string
-  last_seen_at: string | null
-}
-
-export interface TvDeviceList {
-  items: TvDevice[]
-}
-
 export type DeviceKind = "router" | "access_point" | "repeater" | "switch" | "other"
 
 export type LinkKind = "cable" | "wifi_24" | "wifi_5"
@@ -347,4 +336,223 @@ export interface CameraLink {
   parent_name: string | null
   link: LinkKind | null
   updated_at: string | null
+}
+
+export type EventKind = "motion" | "person" | "vehicle" | "tamper" | "storage" | "reboot"
+
+export type EventSourceState = "connecting" | "live" | "reconnecting" | "unsupported" | "disabled"
+
+export type EventSourceMode = "pullpoint" | "polling" | "none"
+
+export interface CameraEvent {
+  uuid: string
+  camera_uuid: string
+  camera_name: string | null
+  kind: EventKind
+  source_topic: string
+  started_at: string
+  ended_at: string | null
+  ongoing: boolean
+  duration_seconds: number
+  camera_time: string | null
+  has_snapshot: boolean
+  has_thumbnail: boolean
+  details: Record<string, unknown>
+  created_at: string
+  updated_at: string
+}
+
+export interface CameraEventSource {
+  camera_uuid: string
+  camera_name: string
+  state: EventSourceState
+  mode: EventSourceMode
+  endpoint: string | null
+  topics: string[]
+  kinds: EventKind[]
+  conditions: Record<string, boolean>
+  connected_at: string | null
+  last_message_at: string | null
+  error: string | null
+}
+
+export interface CameraEventSourceList {
+  items: CameraEventSource[]
+}
+
+export interface EventStreamHello {
+  sources: CameraEventSource[]
+  open: CameraEvent[]
+}
+
+export interface EventQuery {
+  page?: number
+  page_size?: number
+  camera_uuid?: string
+  kind?: EventKind
+  from?: string
+  to?: string
+}
+
+export interface ValueRange {
+  min: number
+  max: number
+}
+
+export interface CameraClock {
+  camera_utc: string | null
+  server_utc: string
+  offset_seconds: number | null
+  mode: string | null
+  timezone: string | null
+  daylight_savings: boolean | null
+}
+
+export interface CameraDevice {
+  camera_uuid: string
+  supported: boolean
+  reason: string | null
+  endpoint: string | null
+  manufacturer: string | null
+  model: string | null
+  firmware: string | null
+  serial: string | null
+  hardware_id: string | null
+  clock: CameraClock | null
+  can_reboot: boolean
+}
+
+export interface EncoderOptions {
+  encoding: string
+  resolutions: { width: number; height: number }[]
+  fps_values: number[]
+  fps: ValueRange | null
+  bitrate: ValueRange | null
+  gop: ValueRange | null
+  quality: ValueRange | null
+  profiles: string[]
+}
+
+export interface VideoEncoder {
+  token: string
+  name: string
+  profiles: string[]
+  encoding: string | null
+  width: number | null
+  height: number | null
+  fps: number | null
+  bitrate: number | null
+  gop: number | null
+  quality: number | null
+  profile: string | null
+  options: EncoderOptions[]
+}
+
+export interface CameraVideo {
+  camera_uuid: string
+  supported: boolean
+  reason: string | null
+  service: string | null
+  encoders: VideoEncoder[]
+}
+
+export interface EncoderUpdate {
+  encoding?: string
+  width?: number
+  height?: number
+  fps?: number
+  bitrate?: number
+  gop?: number
+  profile?: string
+}
+
+export interface ImageSettings {
+  brightness: number | null
+  contrast: number | null
+  saturation: number | null
+  sharpness: number | null
+  ir_cut_filter: string | null
+  wdr_mode: string | null
+  wdr_level: number | null
+  backlight_mode: string | null
+  backlight_level: number | null
+}
+
+export interface CameraImage {
+  camera_uuid: string
+  supported: boolean
+  reason: string | null
+  source_token: string | null
+  settings: ImageSettings | null
+  options: {
+    levels: Record<string, ValueRange>
+    ir_cut_filter_modes: string[]
+    wdr_modes: string[]
+    wdr_level: ValueRange | null
+    backlight_modes: string[]
+    backlight_level: ValueRange | null
+  } | null
+}
+
+export interface CameraMotion {
+  camera_uuid: string
+  supported: boolean
+  reason: string | null
+  sensitivity: number | null
+  sensitivity_range: ValueRange | null
+  enabled: boolean | null
+  active_cells: number | null
+  cells: number | null
+}
+
+export interface CameraPreset {
+  token: string
+  name: string
+}
+
+export interface CameraPresets {
+  camera_uuid: string
+  supported: boolean
+  reason: string | null
+  endpoint: string | null
+  presets: CameraPreset[]
+  max_presets: number | null
+  home_supported: boolean
+}
+
+export interface CameraRecordings {
+  camera_uuid: string
+  supported: boolean
+  reason: string | null
+  recordings: number | null
+  data_from: string | null
+  data_until: string | null
+  start: string | null
+  end: string | null
+  segments: { start: string; end: string }[]
+  playback: boolean
+  playback_reason: string | null
+}
+
+export interface CameraReplay {
+  active: boolean
+  session: string | null
+  stream: string | null
+  start: string | null
+  failure: string | null
+}
+
+export interface CameraExtras {
+  camera_uuid: string
+  supported: boolean
+  reason: string | null
+  light: boolean
+  siren: boolean
+}
+
+export interface CameraAudio {
+  camera_uuid: string
+  supported: boolean
+  reason: string | null
+  codec: string | null
 }

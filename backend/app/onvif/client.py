@@ -1,6 +1,7 @@
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime, timedelta
 from urllib.parse import urlsplit
+from uuid import uuid4
 from xml.etree.ElementTree import Element
 from xml.sax.saxutils import escape
 
@@ -10,11 +11,13 @@ from app.onvif.digest import security_header
 from app.onvif.soap import (
     OnvifError,
     OnvifFault,
+    OnvifRefused,
     child,
     descendant,
     descendant_text,
     descendants,
     envelope,
+    local_name,
     parse_response,
     text,
 )
@@ -30,6 +33,33 @@ PTZ_PATH = "/onvif/ptz_service"
 
 MEDIA_NAMESPACE = "http://www.onvif.org/ver10/media/wsdl"
 PTZ_NAMESPACE = "http://www.onvif.org/ver20/ptz/wsdl"
+
+SERVICE_NAMESPACES = {
+    "http://www.onvif.org/ver10/device/wsdl": "device",
+    "http://www.onvif.org/ver10/media/wsdl": "media",
+    "http://www.onvif.org/ver20/media/wsdl": "media2",
+    "http://www.onvif.org/ver10/events/wsdl": "events",
+    "http://www.onvif.org/ver20/imaging/wsdl": "imaging",
+    "http://www.onvif.org/ver20/ptz/wsdl": "ptz",
+    "http://www.onvif.org/ver20/analytics/wsdl": "analytics",
+    "http://www.onvif.org/ver10/recording/wsdl": "recording",
+    "http://www.onvif.org/ver10/search/wsdl": "search",
+    "http://www.onvif.org/ver10/replay/wsdl": "replay",
+    "http://www.onvif.org/ver10/deviceIO/wsdl": "deviceio",
+}
+
+CAPABILITY_SERVICES = {
+    "Analytics": "analytics",
+    "Device": "device",
+    "Events": "events",
+    "Imaging": "imaging",
+    "Media": "media",
+    "PTZ": "ptz",
+    "DeviceIO": "deviceio",
+    "Recording": "recording",
+    "Search": "search",
+    "Replay": "replay",
+}
 
 
 @dataclass(frozen=True)
@@ -59,6 +89,14 @@ class Profile:
     @property
     def area(self) -> int:
         return (self.width or 0) * (self.height or 0)
+
+
+def addressing_header(action: str, address: str) -> str:
+    return (
+        f"<wsa:Action>{escape(action)}</wsa:Action>"
+        f"<wsa:MessageID>urn:uuid:{uuid4()}</wsa:MessageID>"
+        f"<wsa:To>{escape(address)}</wsa:To>"
+    )
 
 
 def to_int(value: str | None) -> int | None:
@@ -164,15 +202,28 @@ class OnvifClient:
         path = urlsplit(xaddr).path if xaddr else ""
         return f"{self.base_url}{path or default_path}"
 
-    async def call(self, address: str, body: str, secure: bool = True) -> Element:
+    async def call(
+        self,
+        address: str,
+        body: str,
+        secure: bool = True,
+        action: str | None = None,
+        timeout: float | None = None,
+    ) -> Element:
         header = await self.security() if secure else ""
+        if action:
+            header += addressing_header(action, address)
         try:
-            async with httpx.AsyncClient(timeout=self.timeout) as http:
+            async with httpx.AsyncClient(timeout=timeout or self.timeout) as http:
                 async with http.stream(
                     "POST", address, content=envelope(body, header), headers={"Content-Type": CONTENT_TYPE}
                 ) as response:
                     content = await self.read(response)
                     status_code = response.status_code
+        except httpx.ConnectError as exc:
+            if "refused" in str(exc).lower():
+                raise OnvifRefused(f"The device at {self.host} refuses connections on port {self.port}")
+            raise OnvifError(f"The ONVIF service at {self.host}:{self.port} does not answer")
         except httpx.HTTPError:
             raise OnvifError(f"The ONVIF service at {self.host}:{self.port} does not answer")
         return parse_response(content, status_code)
@@ -242,6 +293,36 @@ class OnvifClient:
             media=self.local_address(media, MEDIA_PATH),
             ptz=self.local_address(ptz, PTZ_PATH),
         )
+
+    async def services(self) -> dict[str, str]:
+        found: dict[str, str] = {}
+        try:
+            body = await self.call(
+                self.device_address,
+                "<tds:GetServices><tds:IncludeCapability>false</tds:IncludeCapability></tds:GetServices>",
+            )
+            for service in descendants(body, "Service"):
+                name = SERVICE_NAMESPACES.get(text(child(service, "Namespace")) or "")
+                xaddr = text(child(service, "XAddr"))
+                if name and xaddr and name not in found:
+                    found[name] = self.local_address(xaddr, DEVICE_PATH)
+        except OnvifFault:
+            pass
+        try:
+            body = await self.call(
+                self.device_address, "<tds:GetCapabilities><tds:Category>All</tds:Category></tds:GetCapabilities>"
+            )
+        except OnvifFault:
+            if found:
+                return found
+            raise
+        capabilities = descendant(body, "Capabilities")
+        for element in capabilities.iter() if capabilities is not None else []:
+            name = CAPABILITY_SERVICES.get(local_name(element.tag))
+            xaddr = text(child(element, "XAddr"))
+            if name and xaddr and name not in found:
+                found[name] = self.local_address(xaddr, DEVICE_PATH)
+        return found
 
     async def profiles(self, media_address: str) -> list[Profile]:
         body = await self.call(media_address, "<trt:GetProfiles/>")

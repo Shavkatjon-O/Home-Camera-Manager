@@ -18,7 +18,9 @@ COPY migrations ./migrations
 COPY app ./app
 
 RUN groupadd --system --gid 10001 cameras \
-    && useradd --system --uid 10001 --gid cameras --no-create-home --shell /usr/sbin/nologin cameras
+    && useradd --system --uid 10001 --gid cameras --no-create-home --shell /usr/sbin/nologin cameras \
+    && mkdir -p /data/events \
+    && chown cameras:cameras /data/events
 
 USER cameras
 
