@@ -9,7 +9,7 @@ from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 import numpy as np
-from sqlalchemy import and_, select
+from sqlalchemy import and_, func, select
 from sqlalchemy.dialects.postgresql import insert
 
 from app.core.base_service import BaseModelService
@@ -131,7 +131,7 @@ class JourneyService(BaseModelService[AnalyticsJourney]):
                     "samples": statement.excluded.samples,
                     "embedding": statement.excluded.embedding,
                     "box": statement.excluded.box,
-                    "journey_uuid": statement.excluded.journey_uuid,
+                    "journey_uuid": func.coalesce(statement.excluded.journey_uuid, AnalyticsAppearance.journey_uuid),
                 },
             )
             await self.session.execute(statement)
