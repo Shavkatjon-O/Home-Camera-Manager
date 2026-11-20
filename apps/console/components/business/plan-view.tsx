@@ -5,7 +5,7 @@ import * as React from "react"
 import { featureLabel, limitLabel, limitText, metricLabel, usageText } from "@/components/business/labels"
 import { PageError, PageLoading, PageRestricted } from "@/components/business/panels"
 import { useCurrentSite } from "@/components/business/use-current-site"
-import { AppFrame } from "@/components/shell/app-frame"
+import { PageContent, PageFrame } from "@/components/shell/page-frame"
 import { Chip } from "@/components/shell/primitives"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { api, errorMessage, isAbort } from "@/lib/api"
@@ -133,7 +133,7 @@ export function PlanView() {
   else if (!plan) content = <PageError title="Cannot load plan" message={error ?? "Unknown error"} />
   else {
     content = (
-      <div className="flex flex-col gap-6 p-3 sm:p-4">
+      <PageContent>
         <div className="flex flex-wrap items-center gap-2">
           <h2 className="text-[15px] text-foreground">{plan.plan.name}</h2>
           <Chip>{site.organisation_name}</Chip>
@@ -188,13 +188,13 @@ export function PlanView() {
             <PageLoading label="Loading usage" />
           )
         ) : null}
-      </div>
+      </PageContent>
     )
   }
 
   return (
-    <AppFrame>
+    <PageFrame contained>
       <main className="@container min-h-0 min-w-0 flex-1 overflow-y-auto">{content}</main>
-    </AppFrame>
+    </PageFrame>
   )
 }

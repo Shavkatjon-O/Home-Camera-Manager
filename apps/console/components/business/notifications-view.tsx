@@ -7,7 +7,7 @@ import { toast } from "sonner"
 import { humanise } from "@/components/business/labels"
 import { PageError, PageLoading, PageRestricted } from "@/components/business/panels"
 import { useCurrentSite } from "@/components/business/use-current-site"
-import { AppFrame } from "@/components/shell/app-frame"
+import { PageContent, PageFrame } from "@/components/shell/page-frame"
 import { Chip, EmptyState } from "@/components/shell/primitives"
 import {
   AlertDialog,
@@ -116,7 +116,7 @@ export function NotificationsView() {
     )
   } else {
     content = (
-      <div className="flex flex-col gap-6 p-3 sm:p-4">
+      <PageContent>
         <section className="flex flex-col gap-3" aria-labelledby="link-title">
           <h2 id="link-title" className="text-xs text-text-3">
             Link a chat
@@ -216,12 +216,12 @@ export function NotificationsView() {
             </Table>
           </div>
         </section>
-      </div>
+      </PageContent>
     )
   }
 
   return (
-    <AppFrame>
+    <PageFrame contained>
       <main className="@container min-h-0 min-w-0 flex-1 overflow-y-auto">{content}</main>
       <AlertDialog open={removing !== null} onOpenChange={(open) => (open ? undefined : setRemoving(null))}>
         <AlertDialogContent>
@@ -241,6 +241,6 @@ export function NotificationsView() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </AppFrame>
+    </PageFrame>
   )
 }

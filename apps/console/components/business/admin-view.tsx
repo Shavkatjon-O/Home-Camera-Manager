@@ -5,7 +5,7 @@ import * as React from "react"
 import { AdminConnectors } from "@/components/business/admin-connectors"
 import { AdminOrganisations } from "@/components/business/admin-organisations"
 import { AuditTable } from "@/components/business/audit-table"
-import { AppFrame } from "@/components/shell/app-frame"
+import { PageFrame } from "@/components/shell/page-frame"
 import { Segmented } from "@/components/shell/segmented"
 import { api } from "@/lib/api"
 import type { AuditQuery } from "@/lib/types"
@@ -32,12 +32,12 @@ function loadAudit(params: AuditQuery, signal: AbortSignal) {
 export function AdminView() {
   const [section, setSection] = React.useState<Section>("organisations")
   return (
-    <AppFrame actions={<Segmented<Section> label="Section" value={section} options={SECTIONS} onChange={setSection} />}>
+    <PageFrame actions={<Segmented<Section> label="Section" value={section} options={SECTIONS} onChange={setSection} />}>
       <main className="@container min-h-0 min-w-0 flex-1 overflow-y-auto">
         {section === "organisations" ? <AdminOrganisations notAdminMessage={NOT_ADMIN} /> : null}
         {section === "connectors" ? <AdminConnectors notAdminMessage={NOT_ADMIN} /> : null}
         {section === "audit" ? <AuditTable load={loadAudit} withOrganisation restrictedMessage={NOT_ADMIN} /> : null}
       </main>
-    </AppFrame>
+    </PageFrame>
   )
 }

@@ -5,7 +5,7 @@ import * as React from "react"
 import { AuditTable } from "@/components/business/audit-table"
 import { PageError, PageLoading, PageRestricted } from "@/components/business/panels"
 import { useCurrentSite } from "@/components/business/use-current-site"
-import { AppFrame } from "@/components/shell/app-frame"
+import { PageFrame } from "@/components/shell/page-frame"
 import { api } from "@/lib/api"
 import type { AuditQuery } from "@/lib/types"
 
@@ -32,8 +32,8 @@ export function ActivityView() {
   }
 
   return (
-    <AppFrame>
+    <PageFrame>
       <main className="@container min-h-0 min-w-0 flex-1 overflow-y-auto">{content}</main>
-    </AppFrame>
+    </PageFrame>
   )
 }
