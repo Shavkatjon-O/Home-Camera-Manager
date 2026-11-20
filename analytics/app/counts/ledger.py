@@ -1,6 +1,7 @@
-"""Hourly ledger of line crossings.
+"""Ledger of line crossings by the minute.
 
-Every crossing counts into the bucket of the hour it happened in, per view, line, direction and label. A report
+Every crossing counts into the bucket of the minute it happened in, per view, line, direction and label; the backend
+adds minutes up into hours and days, and an area's occupancy after a reset at any time of day stays exact. A report
 carries the absolute total of each bucket that changed since the previous report, together with the ledger's boot
 id. The backend stores one row per boot and bucket and replaces its count on every report, so a lost report is
 repaired by the next one and a repeated report never counts twice; totals over boots add up because each boot
@@ -12,22 +13,22 @@ from __future__ import annotations
 import uuid
 from dataclasses import dataclass, field
 
-HOUR_SECONDS = 3600
+BUCKET_SECONDS = 60
 RETENTION_SECONDS = 48 * 3600
 
 DIRECTIONS = ("in", "out")
 
 
-def hour_start(at: float) -> int:
-    """Return the start of the UTC hour that contains a time.
+def bucket_start(at: float) -> int:
+    """Return the start of the minute that contains a time.
 
     Args:
         at: Seconds since the epoch.
 
     Returns:
-        Seconds since the epoch at the start of that hour.
+        Seconds since the epoch at the start of that minute.
     """
-    return int(at // HOUR_SECONDS) * HOUR_SECONDS
+    return int(at // BUCKET_SECONDS) * BUCKET_SECONDS
 
 
 BucketKey = tuple[str, str, int, str, str]
@@ -35,12 +36,12 @@ BucketKey = tuple[str, str, int, str, str]
 
 @dataclass
 class CountLedger:
-    """Crossing counts by hour since the service started.
+    """Crossing counts by minute since the service started.
 
     Attributes:
         retention: Seconds after which a reported bucket is dropped.
         boot: Identifier of this ledger, new on every start of the service.
-        counts: Count per view, line, hour, direction and label.
+        counts: Count per view, line, minute, direction and label.
         changed: Buckets changed since the previous report.
     """
 
@@ -65,7 +66,7 @@ class CountLedger:
         """
         if direction not in DIRECTIONS:
             raise ValueError(f"Direction must be in or out, not {direction!r}")
-        key = (view, line, hour_start(at), direction, label)
+        key = (view, line, bucket_start(at), direction, label)
         self.counts[key] = self.counts.get(key, 0) + count
         self.changed.add(key)
 
@@ -80,19 +81,19 @@ class CountLedger:
         """
         items = []
         for key in sorted(self.changed, key=lambda item: (item[2], item[0], item[1], item[3], item[4])):
-            view, line, hour, direction, label = key
+            view, line, start, direction, label = key
             items.append(
                 {
                     "view": view,
                     "line": line,
-                    "hour": hour,
+                    "start": start,
                     "direction": direction,
                     "label": label,
                     "count": self.counts[key],
                 }
             )
         self.changed.clear()
-        cutoff = hour_start(now) - self.retention
+        cutoff = bucket_start(now) - self.retention
         self.counts = {key: value for key, value in self.counts.items() if key[2] >= cutoff}
         if not items:
             return None
@@ -105,7 +106,7 @@ class CountLedger:
             report: A report this ledger returned.
         """
         for item in report.get("buckets", []):
-            key = (item["view"], item["line"], item["hour"], item["direction"], item["label"])
+            key = (item["view"], item["line"], item["start"], item["direction"], item["label"])
             if key in self.counts:
                 self.changed.add(key)
 
@@ -120,7 +121,7 @@ class CountLedger:
             Direction to label to crossings.
         """
         result: dict[str, dict[str, int]] = {direction: {} for direction in DIRECTIONS}
-        for (key_view, key_line, hour, direction, label), value in self.counts.items():
+        for (key_view, key_line, start, direction, label), value in self.counts.items():
             if key_view == view and key_line == line:
                 result[direction][label] = result[direction].get(label, 0) + value
         return result

@@ -1,13 +1,13 @@
 import pytest
 
-from app.counts.ledger import CountLedger, hour_start
+from app.counts.ledger import CountLedger, bucket_start
 
 HOUR = 1_700_000_000 - 1_700_000_000 % 3600
 
 
-def test_hour_start():
-    assert hour_start(HOUR + 3599.9) == HOUR
-    assert hour_start(HOUR + 3600) == HOUR + 3600
+def test_bucket_start():
+    assert bucket_start(HOUR + 59.9) == HOUR
+    assert bucket_start(HOUR + 3600) == HOUR + 3600
 
 
 def test_report_carries_absolute_totals_of_changed_buckets_once():
@@ -18,13 +18,13 @@ def test_report_carries_absolute_totals_of_changed_buckets_once():
     report = ledger.report(HOUR + 3800)
     assert report["boot"] == ledger.boot
     assert report["buckets"] == [
-        {"view": "v", "line": "gate", "hour": HOUR, "direction": "in", "label": "person", "count": 2},
-        {"view": "v", "line": "gate", "hour": HOUR + 3600, "direction": "out", "label": "dog", "count": 1},
+        {"view": "v", "line": "gate", "start": HOUR, "direction": "in", "label": "person", "count": 2},
+        {"view": "v", "line": "gate", "start": HOUR + 3660, "direction": "out", "label": "dog", "count": 1},
     ]
     assert ledger.report(HOUR + 3900) is None
     ledger.add("v", "gate", "in", "person", HOUR + 30)
     assert ledger.report(HOUR + 4000)["buckets"] == [
-        {"view": "v", "line": "gate", "hour": HOUR, "direction": "in", "label": "person", "count": 3}
+        {"view": "v", "line": "gate", "start": HOUR, "direction": "in", "label": "person", "count": 3}
     ]
 
 
