@@ -5,12 +5,11 @@ sub stream, SCREEN_W and SCREEN_H for the default grid size, and CV_CAMERA_HOSTS
 comma-separated list of camera addresses.
 """
 
-import os
-import sys
-import time
-import math
-import threading
 import argparse
+import math
+import os
+import threading
+import time
 
 os.environ.setdefault("OPENCV_FFMPEG_CAPTURE_OPTIONS", "rtsp_transport;tcp")
 
@@ -18,12 +17,14 @@ import cv2
 import numpy as np
 
 PW = os.environ.get("CAMERA_PASSWORD", "")
-STREAM = os.environ.get("STREAM", "main")            # main -> 101, sub -> 102
+STREAM = os.environ.get("STREAM", "main")
 CH = "101" if STREAM == "main" else "102"
 SCREEN_W = int(os.environ.get("SCREEN_W", "1920"))
 SCREEN_H = int(os.environ.get("SCREEN_H", "1080"))
 
-HOSTS = [host.strip() for host in os.environ.get("CV_CAMERA_HOSTS", "192.168.1.104,192.168.1.106").split(",") if host.strip()]
+HOSTS = [
+    host.strip() for host in os.environ.get("CV_CAMERA_HOSTS", "192.168.1.104,192.168.1.106").split(",") if host.strip()
+]
 
 CAMERAS = [
     (f"Camera {chr(65 + index)}", f"rtsp://admin:{PW}@{host}:554/Streaming/Channels/{CH}")
@@ -126,7 +127,7 @@ def fit(frame, cw, ch):
     canvas = np.empty((ch, cw, 3), np.uint8)
     canvas[:] = BG
     y0, x0 = (ch - nh) // 2, (cw - nw) // 2
-    canvas[y0:y0 + nh, x0:x0 + nw] = resized
+    canvas[y0 : y0 + nh, x0 : x0 + nw] = resized
     return canvas
 
 
@@ -145,8 +146,7 @@ def label(img, text, ok):
     cv2.rectangle(img, (0, h - 34), (w, h), (0, 0, 0), -1)
     color = (80, 220, 120) if ok else (120, 120, 120)
     cv2.circle(img, (18, h - 17), 6, color, -1)
-    cv2.putText(img, text, (34, h - 11), cv2.FONT_HERSHEY_SIMPLEX,
-                0.7, (235, 235, 235), 1, cv2.LINE_AA)
+    cv2.putText(img, text, (34, h - 11), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (235, 235, 235), 1, cv2.LINE_AA)
     return img
 
 
@@ -163,8 +163,7 @@ def blank(cw, ch, text):
     """
     img = np.empty((ch, cw, 3), np.uint8)
     img[:] = BG
-    cv2.putText(img, text, (cw // 2 - 90, ch // 2),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.8, (120, 120, 120), 1, cv2.LINE_AA)
+    cv2.putText(img, text, (cw // 2 - 90, ch // 2), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (120, 120, 120), 1, cv2.LINE_AA)
     return img
 
 
@@ -198,7 +197,7 @@ def compose(cams, total_w, total_h):
         cells.append(label(cell, f"{c.name}    {time.strftime('%H:%M:%S')}", live))
     while len(cells) < rows * cols:
         cells.append(blank(cw, ch, ""))
-    row_imgs = [cv2.hconcat(cells[r * cols:(r + 1) * cols]) for r in range(rows)]
+    row_imgs = [cv2.hconcat(cells[r * cols : (r + 1) * cols]) for r in range(rows)]
     return cv2.vconcat(row_imgs) if rows > 1 else row_imgs[0]
 
 
@@ -210,10 +209,8 @@ def main():
     window ends the viewer.
     """
     ap = argparse.ArgumentParser()
-    ap.add_argument("--snapshot", metavar="PATH",
-                    help="grab one composed frame, save it, and exit")
-    ap.add_argument("--size", default=f"{SCREEN_W}x{SCREEN_H}",
-                    help="total grid size WxH (defaults to the screen)")
+    ap.add_argument("--snapshot", metavar="PATH", help="grab one composed frame, save it, and exit")
+    ap.add_argument("--size", default=f"{SCREEN_W}x{SCREEN_H}", help="total grid size WxH (defaults to the screen)")
     ap.add_argument("--wait", type=float, default=10.0)
     args = ap.parse_args()
 
@@ -245,8 +242,7 @@ def main():
             break
         if k == ord("f"):
             full = not full
-            cv2.setWindowProperty(win, cv2.WND_PROP_FULLSCREEN,
-                                  cv2.WINDOW_FULLSCREEN if full else cv2.WINDOW_NORMAL)
+            cv2.setWindowProperty(win, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN if full else cv2.WINDOW_NORMAL)
         if cv2.getWindowProperty(win, cv2.WND_PROP_VISIBLE) < 1:
             break
     for c in cams:

@@ -15,11 +15,11 @@ The password comes from `../.env` (`CAMERA_PASSWORD=...`) and the camera address
 
 ## Run the window
 
-Open a terminal **on the PC's own screen** (not over SSH) and:
+Open a terminal on the PC's own screen, not over SSH, and run:
 
     cv/run.sh
 
-A window opens with both cameras. Keys:
+A window opens with every camera in CV_CAMERA_HOSTS, sized to the screen. Keys:
 
 - `q` or `Esc` - quit
 - `f` - toggle fullscreen
@@ -41,5 +41,5 @@ Saves one composed grid image and exits, for verifying access without a display:
   Undo later with `xhost -local:` if you want.
 - Each capture runs in its own thread and always shows the newest frame
   (stale frames are dropped), which keeps the view live with low latency.
-- Add or rename cameras by editing `CAMERAS` in `cv_viewer.py`. The third
-  camera joins here once it is on the Wi-Fi.
+- The cameras are the EZVIZ addresses in `CV_CAMERA_HOSTS`, named Camera A,
+  Camera B and so on in that order.
