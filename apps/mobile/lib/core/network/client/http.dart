@@ -56,6 +56,13 @@ class AuthInterceptor extends Interceptor {
   /// The refresh in flight, which concurrent failures wait on.
   Future<bool>? refreshing;
 
+  /// Refreshes the session and forgets it once when the server refuses.
+  Future<bool> renew() async {
+    final ok = await session.refresh();
+    if (!ok) await session.expired();
+    return ok;
+  }
+
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     final token = session.accessToken;
@@ -81,10 +88,9 @@ class AuthInterceptor extends Interceptor {
     if (current != null && sent != 'Bearer $current') {
       renewed = true;
     } else {
-      renewed = await (refreshing ??= session.refresh().whenComplete(() => refreshing = null));
+      renewed = await (refreshing ??= renew().whenComplete(() => refreshing = null));
     }
     if (!renewed) {
-      await session.expired();
       handler.next(err);
       return;
     }
