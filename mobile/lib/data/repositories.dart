@@ -2,10 +2,12 @@ import 'dart:typed_data';
 
 import 'models/account.dart';
 import 'models/analytics.dart';
+import 'models/business.dart';
 import 'models/camera.dart';
 import 'models/event.dart';
 import 'models/insights.dart';
 import 'models/media.dart';
+import 'models/pairing.dart';
 import 'models/people.dart';
 
 class ApiFailure implements Exception {
@@ -47,11 +49,11 @@ abstract interface class AuthRepository {
 
   Future<void> resendVerification(String email);
 
-  Future<User> verifyEmail({required String email, required String code});
+  Future<User> verifyEmail({required String token});
 
   Future<void> requestPasswordReset(String email);
 
-  Future<void> resetPassword({required String email, required String code, required String password});
+  Future<void> resetPassword({required String token, required String password});
 
   Future<void> signOut();
 
@@ -82,7 +84,9 @@ abstract interface class TenancyRepository {
 
   Future<Site> setArmMode(String siteId, ArmMode mode);
 
-  Future<Organisation> setFaces(String organisationId, bool enabled);
+  Future<({String version, String? text})> facesConsent();
+
+  Future<Organisation> setFaces(String organisationId, bool enabled, {String? consentVersion});
 
   Future<List<Member>> members(String organisationId);
 
@@ -106,10 +110,42 @@ abstract interface class TenancyRepository {
   Future<Organisation> acceptInvitation(String token);
 }
 
+abstract interface class PairingRepository {
+  Future<List<PairingCatalogEntry>> catalog(String siteId, {String? label, String? discoveredId});
+
+  Future<Connector> claimConnector({required String siteId, required String code, String? name});
+
+  Future<LabelIdentity> identifyLabel(String siteId, String payload);
+
+  Future<DiscoveredCamera> identifyHost({
+    required String connectorId,
+    required String host,
+    int? port,
+    String? username,
+    String? password,
+  });
+
+  Future<List<NvrChannel>> nvrChannels({
+    required String connectorId,
+    required DiscoveredCamera nvr,
+    String? username,
+    String? password,
+  });
+
+  Future<List<Camera>> addChannels({
+    required String siteId,
+    required String connectorId,
+    required DiscoveredCamera nvr,
+    required List<NvrChannel> channels,
+    String? username,
+    String? password,
+  });
+
+  Future<void> report(PairingReport report);
+}
+
 abstract interface class DeviceRepository {
   Future<List<Connector>> connectors(String siteId);
-
-  Future<Connector> claimConnector({required String siteId, required String code, required String name});
 
   Future<void> removeConnector(String connectorId);
 
@@ -293,6 +329,20 @@ abstract interface class HealthRepository {
   Future<HealthReport> health(String siteId);
 }
 
+abstract interface class BusinessRepository {
+  Future<PlanReport> plan(String organisationId);
+
+  Future<List<TelegramChat>> telegramChats(String organisationId);
+
+  Future<TelegramLink> linkTelegram(String organisationId);
+
+  Future<void> unlinkTelegram(String organisationId, String chatId);
+
+  Future<int> testTelegram(String organisationId);
+
+  Future<AuditPage> audit(String organisationId, {AuditCategory? category, int page = 1, int pageSize = 40});
+}
+
 abstract interface class NotificationRepository {
   Future<NotificationPrefs> prefs(String siteId);
 
@@ -306,6 +356,7 @@ class Backend {
     required this.auth,
     required this.tenancy,
     required this.devices,
+    required this.pairing,
     required this.live,
     required this.events,
     required this.analytics,
@@ -313,6 +364,7 @@ class Backend {
     required this.search,
     required this.health,
     required this.notifications,
+    required this.business,
     required this.demo,
     this.mediaHeaders = _noHeaders,
     this.server,
@@ -322,6 +374,7 @@ class Backend {
   final AuthRepository auth;
   final TenancyRepository tenancy;
   final DeviceRepository devices;
+  final PairingRepository pairing;
   final LiveRepository live;
   final EventRepository events;
   final AnalyticsRepository analytics;
@@ -329,6 +382,7 @@ class Backend {
   final SearchRepository search;
   final HealthRepository health;
   final NotificationRepository notifications;
+  final BusinessRepository business;
   final bool demo;
   final Map<String, String> Function() mediaHeaders;
   final String? Function()? server;

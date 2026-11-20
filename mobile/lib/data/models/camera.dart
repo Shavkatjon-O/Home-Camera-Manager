@@ -40,6 +40,10 @@ abstract class DiscoveredCamera with _$DiscoveredCamera {
     String? model,
     int? onvifPort,
     @Default(false) bool ptz,
+    @Default(false) bool nvr,
+    @Default('probe') String foundBy,
+    int? rtspPort,
+    String? mainPath,
     String? cameraId,
   }) = _DiscoveredCamera;
 }
@@ -58,6 +62,23 @@ abstract class StreamTest with _$StreamTest {
 }
 
 @freezed
+abstract class CameraCapabilities with _$CameraCapabilities {
+  const factory CameraCapabilities({
+    @Default(false) bool ptz,
+    @Default(false) bool zoom,
+    @Default(false) bool presets,
+    @Default(false) bool home,
+    @Default(false) bool light,
+    @Default(false) bool siren,
+    @Default(false) bool audio,
+    @Default(false) bool twoWayAudio,
+    @Default(false) bool playback,
+    @Default(false) bool settings,
+    @Default(false) bool reboot,
+  }) = _CameraCapabilities;
+}
+
+@freezed
 abstract class Camera with _$Camera {
   const Camera._();
 
@@ -69,18 +90,17 @@ abstract class Camera with _$Camera {
     String? connectorId,
     String? model,
     @Default(1) int lenses,
-    @Default(false) bool ptz,
+    @Default(CameraCapabilities()) CameraCapabilities capabilities,
     @Default(true) bool enabled,
     @Default(0) int position,
     bool? online,
     DateTime? checkedAt,
     String? error,
     @Default(true) bool hasSub,
-    @Default(false) bool hasExtras,
     @Default(16 / 9) double aspect,
   }) = _Camera;
 
-  double lensAspect() => aspect * lenses;
+  bool get ptz => capabilities.ptz;
 }
 
 @freezed
@@ -109,11 +129,7 @@ abstract class PtzPreset with _$PtzPreset {
 abstract class CameraControls with _$CameraControls {
   const factory CameraControls({
     @Default(<PtzPreset>[]) List<PtzPreset> presets,
-    @Default(false) bool homeSupported,
-    @Default(false) bool extrasSupported,
     @Default(false) bool light,
-    @Default(false) bool siren,
-    @Default(false) bool audio,
   }) = _CameraControls;
 }
 

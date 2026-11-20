@@ -10,6 +10,8 @@ analyzer:
     - lib/data/api/generated/**
     - lib/l10n/generated/**
     - packages/**
+    - build/**
+    - android/**
   errors:
     invalid_annotation_target: ignore
   language:

@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import '../models/account.dart';
 import '../models/analytics.dart';
+import '../models/business.dart';
 import '../models/camera.dart';
 import '../models/event.dart';
 import '../models/insights.dart';
@@ -39,6 +40,8 @@ class Fixtures {
   final discovered = <String, List<DiscoveredCamera>>{};
   final presets = <String, List<PtzPreset>>{};
   final prefs = <String, NotificationPrefs>{};
+  final telegram = <String, List<TelegramChat>>{};
+  final audit = <String, List<AuditEntry>>{};
 
   static const homeSite = 'site-home';
   static const storeSite = 'site-store';
@@ -119,9 +122,18 @@ class Fixtures {
       name: name,
       brand: brand,
       lenses: lenses,
-      ptz: ptz,
+      capabilities: CameraCapabilities(
+        ptz: ptz,
+        zoom: ptz && brand != CameraBrand.v380,
+        presets: ptz,
+        home: ptz,
+        light: extras,
+        siren: extras,
+        audio: brand == CameraBrand.ezviz,
+        settings: brand != CameraBrand.rtsp,
+        reboot: brand != CameraBrand.rtsp,
+      ),
       online: online,
-      hasExtras: extras,
       position: position,
       model: model,
       aspect: aspect,
@@ -440,6 +452,17 @@ class Fixtures {
         onvifPort: 8899,
         ptz: true,
       ),
+      DiscoveredCamera(
+        id: 'disc-5',
+        host: '192.168.1.60',
+        ports: [80, 554, 8000],
+        brand: CameraBrand.onvif,
+        manufacturer: 'Generic',
+        model: 'NVR 8 channels',
+        onvifPort: 80,
+        nvr: true,
+        foundBy: 'ws-discovery',
+      ),
     ];
     discovered['con-store'] = const [
       DiscoveredCamera(
@@ -456,6 +479,10 @@ class Fixtures {
     for (final site in sites) {
       prefs[site.id] = NotificationPrefs(siteId: site.id, quietFrom: '23:00', quietUntil: '06:30');
     }
+    telegram[demoOrg] = [
+      TelegramChat(id: 'chat-1', title: 'Demo family', group: true, linkedAt: now.subtract(const Duration(days: 4)), linkedBy: user.name),
+    ];
+    buildAudit();
   }
 
   SyntheticMedia face(int seed) => SyntheticMedia(SceneKind.face, seed: seed);
@@ -784,6 +811,34 @@ class Fixtures {
         lastUsedAt: now.subtract(const Duration(days: 2)),
       ),
     ]);
+  }
+
+  void buildAudit() {
+    AuditEntry entry(int minutes, String actor, String action, AuditCategory category, {String? target, String? site}) => AuditEntry(
+      id: 'audit-$minutes-${action.hashCode}',
+      at: now.subtract(Duration(minutes: minutes)),
+      actor: actor,
+      action: action,
+      category: category,
+      target: target,
+      siteName: site,
+    );
+    audit[demoOrg] = [
+      entry(3, user.name, 'live.view', AuditCategory.views, target: 'Porch', site: 'Demo home'),
+      entry(12, user.name, 'clip.view', AuditCategory.views, target: 'Gate line', site: 'Demo home'),
+      entry(26, 'Demo operator', 'arm.change', AuditCategory.arm, target: 'Home', site: 'Demo store'),
+      entry(44, 'Demo admin', 'rules.update', AuditCategory.rules, target: 'Checkout', site: 'Demo store'),
+      entry(70, user.name, 'clip.export', AuditCategory.exports, target: 'Aisle 3', site: 'Demo store'),
+      entry(95, 'Demo admin', 'face.enrol', AuditCategory.faces, target: 'Mira'),
+      entry(130, user.name, 'member.invite', AuditCategory.members, target: 'guard@demo.example'),
+      entry(190, 'Demo operator', 'auth.sign_in', AuditCategory.signIn, target: 'Android'),
+      entry(260, 'Demo admin', 'camera.add', AuditCategory.cameras, target: 'Stock room', site: 'Demo store'),
+      entry(400, user.name, 'member.role', AuditCategory.members, target: 'Demo operator'),
+      entry(520, user.name, 'auth.sign_in', AuditCategory.signIn, target: 'Web'),
+      entry(900, 'Demo admin', 'face.delete', AuditCategory.faces, target: 'Unknown 2'),
+      entry(1300, 'Platform', 'org.plan', AuditCategory.admin, target: 'Internal'),
+      entry(1500, user.name, 'camera.update', AuditCategory.cameras, target: 'Backyard', site: 'Demo home'),
+    ];
   }
 
   CountsReport counts(String siteId, DateTime start, DateTime end, Bucket bucket) {

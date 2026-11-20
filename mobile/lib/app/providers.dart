@@ -62,6 +62,8 @@ class SignedIn extends SessionState {
 
 @Riverpod(keepAlive: true)
 class Session extends _$Session {
+  ({String email, String password})? pending;
+
   @override
   Future<SessionState> build() async {
     final user = await ref.read(backendProvider).auth.restore();
@@ -73,9 +75,11 @@ class Session extends _$Session {
   Future<void> signIn(String email, String password) async {
     try {
       final user = await auth.signIn(email: email, password: password);
+      pending = null;
       state = AsyncData(SignedIn(user));
     } on ApiFailure catch (failure) {
       if (failure.kind == FailureKind.unverified) {
+        pending = (email: email, password: password);
         state = AsyncData(AwaitingVerification(email));
         return;
       }
@@ -85,15 +89,25 @@ class Session extends _$Session {
 
   Future<void> signUp(String name, String email, String password) async {
     final result = await auth.signUp(name: name, email: email, password: password);
+    pending = (email: result.email, password: password);
     state = AsyncData(AwaitingVerification(result.email));
   }
 
-  Future<void> verify(String email, String code) async {
-    final user = await auth.verifyEmail(email: email, code: code);
-    state = AsyncData(SignedIn(user));
+  Future<bool> verify(String token) async {
+    await auth.verifyEmail(token: token);
+    final credentials = pending;
+    if (credentials == null) {
+      state = const AsyncData(SignedOut());
+      return false;
+    }
+    await signIn(credentials.email, credentials.password);
+    return true;
   }
 
-  void cancelVerification() => state = const AsyncData(SignedOut());
+  void cancelVerification() {
+    pending = null;
+    state = const AsyncData(SignedOut());
+  }
 
   void updateUser(User user) => state = AsyncData(SignedIn(user));
 

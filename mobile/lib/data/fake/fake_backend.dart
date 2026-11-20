@@ -5,10 +5,12 @@ import 'dart:ui';
 
 import '../models/account.dart';
 import '../models/analytics.dart';
+import '../models/business.dart';
 import '../models/camera.dart';
 import '../models/event.dart';
 import '../models/insights.dart';
 import '../models/media.dart';
+import '../models/pairing.dart';
 import '../models/people.dart';
 import '../repositories.dart';
 import 'fixtures.dart';
@@ -140,9 +142,8 @@ class FakeAuthRepository implements AuthRepository {
   Future<void> resendVerification(String email) => store.delay(() {});
 
   @override
-  Future<User> verifyEmail({required String email, required String code}) => store.delay(() {
-    if (code.length != 6) throw const ApiFailure(FailureKind.invalid);
-    store.signedIn = true;
+  Future<User> verifyEmail({required String token}) => store.delay(() {
+    if (token.length < 6) throw const ApiFailure(FailureKind.invalid);
     store.data.user = store.data.user.copyWith(verified: true);
     return store.data.user;
   });
@@ -151,10 +152,9 @@ class FakeAuthRepository implements AuthRepository {
   Future<void> requestPasswordReset(String email) => store.delay(() {});
 
   @override
-  Future<void> resetPassword({required String email, required String code, required String password}) =>
-      store.delay(() {
-        if (code.length != 6) throw const ApiFailure(FailureKind.invalid);
-      });
+  Future<void> resetPassword({required String token, required String password}) => store.delay(() {
+    if (token.length < 6) throw const ApiFailure(FailureKind.invalid);
+  });
 
   @override
   Future<void> signOut() => store.delay(() => store.signedIn = false);
@@ -253,7 +253,10 @@ class FakeTenancyRepository implements TenancyRepository {
   });
 
   @override
-  Future<Organisation> setFaces(String organisationId, bool enabled) => store.delay(() {
+  Future<({String version, String? text})> facesConsent() => store.delay(() => (version: 'demo-1', text: null));
+
+  @override
+  Future<Organisation> setFaces(String organisationId, bool enabled, {String? consentVersion}) => store.delay(() {
     final index = store.data.organisations.indexWhere((o) => o.id == organisationId);
     final organisation = store.data.organisations[index].copyWith(facesEnabled: enabled);
     store.data.organisations[index] = organisation;
@@ -335,27 +338,6 @@ class FakeDeviceRepository implements DeviceRepository {
       store.delay(() => store.data.connectors.where((c) => c.siteId == siteId).toList());
 
   @override
-  Future<Connector> claimConnector({required String siteId, required String code, required String name}) =>
-      store.delay(() {
-        final cleaned = code.replaceAll(RegExp(r'[^A-Za-z0-9]'), '');
-        if (cleaned.length != 8) throw const ApiFailure(FailureKind.invalid);
-        if (cleaned.toUpperCase() == 'EXPIRED0') throw const ApiFailure(FailureKind.expired);
-        final connector = Connector(
-          id: 'con-${store.sequence++}',
-          siteId: siteId,
-          name: name,
-          state: ConnectorState.online,
-          version: '0.1.0',
-          lastSeenAt: store.clock(),
-        );
-        store.data.connectors.add(connector);
-        store.data.discovered[connector.id] = List.of(store.data.discovered['con-home']!)
-            .map((d) => d.copyWith(cameraId: null))
-            .toList();
-        return connector;
-      });
-
-  @override
   Future<void> removeConnector(String connectorId) =>
       store.delay(() => store.data.connectors.removeWhere((c) => c.id == connectorId));
 
@@ -405,7 +387,15 @@ class FakeDeviceRepository implements DeviceRepository {
       brand: camera.brand ?? CameraBrand.onvif,
       model: camera.model,
       lenses: lenses,
-      ptz: camera.ptz,
+      capabilities: CameraCapabilities(
+        ptz: camera.ptz,
+        presets: camera.ptz,
+        home: camera.ptz,
+        light: camera.brand == CameraBrand.v380,
+        siren: camera.brand == CameraBrand.v380,
+        settings: camera.brand != CameraBrand.rtsp,
+        reboot: camera.brand != CameraBrand.rtsp,
+      ),
       online: true,
       position: store.data.cameras.where((c) => c.camera.siteId == siteId).length,
       aspect: lenses == 2 ? 16 / 18 : 16 / 9,
@@ -464,15 +454,8 @@ class FakeDeviceRepository implements DeviceRepository {
   });
 
   @override
-  Future<CameraControls> controls(String cameraId) => store.delay(() {
-    final camera = store.data.camera(cameraId).camera;
-    return CameraControls(
-      presets: store.data.presets[cameraId] ?? const [],
-      homeSupported: camera.ptz,
-      extrasSupported: camera.hasExtras,
-      audio: camera.brand == CameraBrand.ezviz,
-    );
-  });
+  Future<CameraControls> controls(String cameraId) =>
+      store.delay(() => CameraControls(presets: store.data.presets[cameraId] ?? const []));
 
   @override
   Future<void> move(String cameraId, {required double pan, required double tilt, required double zoom}) async {}
@@ -539,6 +522,146 @@ class FakeDeviceRepository implements DeviceRepository {
 
   @override
   Future<void> reboot(String cameraId) => store.delay(() {});
+}
+
+class FakePairingRepository implements PairingRepository {
+  FakePairingRepository(this.store, this.devices);
+
+  final FakeStore store;
+  final FakeDeviceRepository devices;
+  final reports = <PairingReport>[];
+
+  @override
+  Future<List<PairingCatalogEntry>> catalog(String siteId, {String? label, String? discoveredId}) => store.delay(() {
+    final connectors = store.data.connectors.where((c) => c.siteId == siteId && c.state == ConnectorState.online);
+    final online = connectors.isNotEmpty;
+    final nvr = online && (store.data.discovered[connectors.first.id] ?? const []).any((d) => d.nvr && d.cameraId == null);
+    return [
+      PairingCatalogEntry(id: 'connector_discovery', rank: 1, available: online, recommended: online),
+      const PairingCatalogEntry(id: 'label_qr', rank: 2),
+      PairingCatalogEntry(id: 'manual_host', rank: 3, available: online),
+      PairingCatalogEntry(id: 'nvr_import', rank: 4, available: nvr),
+      PairingCatalogEntry(id: 'rtsp_url', rank: 5, available: online),
+      const PairingCatalogEntry(id: 'connector_qr', rank: 10, recommended: true),
+      const PairingCatalogEntry(id: 'connector_mdns', rank: 11),
+      const PairingCatalogEntry(id: 'connector_code', rank: 12),
+    ];
+  });
+
+  @override
+  Future<Connector> claimConnector({required String siteId, required String code, String? name}) =>
+      store.delay(() {
+        final cleaned = code.replaceAll(RegExp(r'[^A-Za-z0-9]'), '');
+        if (cleaned.length != 8) throw const ApiFailure(FailureKind.invalid);
+        if (cleaned.toUpperCase() == 'EXPIRED0') throw const ApiFailure(FailureKind.expired);
+        final connector = Connector(
+          id: 'con-${store.sequence++}',
+          siteId: siteId,
+          name: name ?? 'Connector',
+          state: ConnectorState.online,
+          version: '0.1.0',
+          lastSeenAt: store.clock(),
+        );
+        store.data.connectors.add(connector);
+        store.data.discovered[connector.id] = List.of(store.data.discovered['con-home']!)
+            .map((d) => d.copyWith(cameraId: null))
+            .toList();
+        return connector;
+      });
+
+  @override
+  Future<LabelIdentity> identifyLabel(String siteId, String payload) => store.delay(() {
+    final upper = payload.toUpperCase();
+    if (upper.contains('EZVIZ') || upper.startsWith('SN')) {
+      return const LabelIdentity(
+        method: 'connector_discovery',
+        brand: CameraBrand.ezviz,
+        manufacturer: 'EZVIZ',
+        model: 'CS-H3',
+        serial: 'DEMO00001',
+        discoveredId: 'disc-1',
+      );
+    }
+    if (upper.contains('V380')) {
+      return const LabelIdentity(
+        method: 'manual_host',
+        brand: CameraBrand.v380,
+        manufacturer: 'V380',
+        model: 'Dual lens PTZ',
+        port: 8899,
+      );
+    }
+    throw const ApiFailure(FailureKind.notFound, 'unknown_label');
+  });
+
+  @override
+  Future<DiscoveredCamera> identifyHost({
+    required String connectorId,
+    required String host,
+    int? port,
+    String? username,
+    String? password,
+  }) async {
+    if (store.latency > Duration.zero) await Future<void>.delayed(const Duration(milliseconds: 900));
+    return store.delay(() {
+      if (!RegExp(r'^[0-9A-Za-z.-]+$').hasMatch(host)) throw const ApiFailure(FailureKind.invalid, 'host');
+      return DiscoveredCamera(
+        id: 'manual-${host.hashCode}',
+        host: host,
+        ports: [port ?? 80, 554],
+        brand: CameraBrand.onvif,
+        manufacturer: 'Generic',
+        model: 'IP camera',
+        onvifPort: port ?? 80,
+        foundBy: 'manual',
+      );
+    });
+  }
+
+  @override
+  Future<List<NvrChannel>> nvrChannels({
+    required String connectorId,
+    required DiscoveredCamera nvr,
+    String? username,
+    String? password,
+  }) => store.delay(() {
+    if (password == null || password.isEmpty) throw const ApiFailure(FailureKind.unauthorised);
+    return [for (var i = 1; i <= 8; i++) NvrChannel(index: i, name: 'Channel $i', online: i != 6)];
+  });
+
+  @override
+  Future<List<Camera>> addChannels({
+    required String siteId,
+    required String connectorId,
+    required DiscoveredCamera nvr,
+    required List<NvrChannel> channels,
+    String? username,
+    String? password,
+  }) async {
+    final added = <Camera>[];
+    for (final channel in channels) {
+      added.add(
+        await devices.addCamera(
+          siteId: siteId,
+          connectorId: connectorId,
+          camera: nvr.copyWith(id: '${nvr.id}-${channel.index}', nvr: false),
+          name: channel.name,
+          username: username,
+          password: password,
+          lenses: 1,
+        ),
+      );
+    }
+    final list = store.data.discovered[connectorId];
+    if (list != null) {
+      final index = list.indexWhere((d) => d.id == nvr.id);
+      if (index >= 0 && added.isNotEmpty) list[index] = list[index].copyWith(cameraId: added.first.id);
+    }
+    return added;
+  }
+
+  @override
+  Future<void> report(PairingReport report) async => reports.add(report);
 }
 
 class FakeLiveRepository implements LiveRepository {
@@ -1013,12 +1136,82 @@ class FakeNotificationRepository implements NotificationRepository {
   Future<void> registerPushTarget({required String provider, required String token}) => store.delay(() {});
 }
 
+class FakeBusinessRepository implements BusinessRepository {
+  FakeBusinessRepository(this.store);
+
+  final FakeStore store;
+
+  @override
+  Future<PlanReport> plan(String organisationId) => store.delay(() {
+    final internal = organisationId == Fixtures.demoOrg || store.createdOrganisations.contains(organisationId);
+    final sites = store.data.sites.where((s) => s.organisationId == organisationId).map((s) => s.id).toSet();
+    final cameras = store.data.cameras.where((c) => sites.contains(c.camera.siteId)).length;
+    final now = store.clock();
+    final plan = internal
+        ? const Plan(id: 'internal', name: 'Internal', internal: true, features: {...PlanFeature.values})
+        : const Plan(
+            id: 'free',
+            name: 'Free',
+            limits: PlanLimits(sites: 1, cameras: 4, members: 5, eventRetentionDays: 7, clipRetentionDays: 7),
+            features: {PlanFeature.appearance, PlanFeature.journeys, PlanFeature.objects},
+          );
+    return PlanReport(
+      plan: plan,
+      usage: Usage(
+        periodStart: DateTime(now.year, now.month),
+        sites: sites.length,
+        cameras: cameras,
+        members: store.data.members[organisationId]?.length ?? 1,
+        cameraHours: cameras * 24.0 * (now.day - 0.4),
+        analyticsHours: cameras * 21.5 * (now.day - 0.4),
+        events: store.data.events.where((e) => sites.contains(e.siteId)).length * 37,
+        clipBytes: 6800000000,
+        notifications: 212,
+      ),
+    );
+  });
+
+  @override
+  Future<List<TelegramChat>> telegramChats(String organisationId) =>
+      store.delay(() => List.of(store.data.telegram[organisationId] ?? const []));
+
+  @override
+  Future<TelegramLink> linkTelegram(String organisationId) => store.delay(() {
+    final now = store.clock();
+    final list = store.data.telegram[organisationId] ??= [];
+    list.add(TelegramChat(id: 'chat-${store.sequence++}', title: 'Demo night shift', group: true, linkedAt: now, linkedBy: store.data.user.name));
+    return TelegramLink(url: 'https://t.me/demo_bot?start=demo-link', expiresAt: now.add(const Duration(minutes: 15)));
+  });
+
+  @override
+  Future<void> unlinkTelegram(String organisationId, String chatId) =>
+      store.delay(() => store.data.telegram[organisationId]?.removeWhere((c) => c.id == chatId));
+
+  @override
+  Future<int> testTelegram(String organisationId) => store.delay(() => store.data.telegram[organisationId]?.length ?? 0);
+
+  @override
+  Future<AuditPage> audit(String organisationId, {AuditCategory? category, int page = 1, int pageSize = 40}) => store.delay(() {
+    final all = (store.data.audit[organisationId] ?? const <AuditEntry>[])
+        .where((e) => category == null || e.category == category)
+        .toList();
+    final start = (page - 1) * pageSize;
+    return AuditPage(
+      items: start >= all.length ? const [] : all.sublist(start, min(all.length, start + pageSize)),
+      total: all.length,
+      page: page,
+    );
+  });
+}
+
 Backend fakeBackend(FakeStore store) {
   final events = FakeEventRepository(store);
+  final devices = FakeDeviceRepository(store);
   return Backend(
     auth: FakeAuthRepository(store),
     tenancy: FakeTenancyRepository(store),
-    devices: FakeDeviceRepository(store),
+    devices: devices,
+    pairing: FakePairingRepository(store, devices),
     live: FakeLiveRepository(store),
     events: events,
     analytics: FakeAnalyticsRepository(store),
@@ -1026,6 +1219,7 @@ Backend fakeBackend(FakeStore store) {
     search: FakeSearchRepository(store, events),
     health: FakeHealthRepository(store),
     notifications: FakeNotificationRepository(store),
+    business: FakeBusinessRepository(store),
     demo: true,
   );
 }
