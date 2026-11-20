@@ -276,13 +276,13 @@ def test_reader_with_the_text_finder():
 
 
 def test_parse_keeps_the_body_when_the_region_box_is_misread():
-    plate = parse("EDA848HBE")
-    assert plate.text == "A848HB"
-    assert plate.display == "?? A 848 HB"
+    plate = parse("EDA123BCE")
+    assert plate.text == "A123BC"
+    assert plate.display == "?? A 123 BC"
     assert plate.format == "private"
     assert plate.score == pytest.approx(0.75)
-    assert parse("MOA848HB").display == "?? A 848 HB"
-    whole = parse("10A848HBE")
-    assert whole.text == "10A848HB"
+    assert parse("MOA123BC").display == "?? A 123 BC"
+    whole = parse("10A123BCE")
+    assert whole.text == "10A123BC"
     assert whole.score == pytest.approx(0.95)
     assert parse("01A123BCUZ").score == pytest.approx(1.0)
