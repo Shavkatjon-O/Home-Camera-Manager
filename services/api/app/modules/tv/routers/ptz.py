@@ -4,8 +4,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Response, status
 
-from app.modules.cameras.schemas import PtzMove
-from app.modules.cameras.services import CameraService
+from app.modules.devices.schemas import PtzMove
+from app.modules.devices.services import CameraService
 from app.modules.tv.deps import get_tv_camera_service
 
 router = APIRouter()

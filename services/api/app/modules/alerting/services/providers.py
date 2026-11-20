@@ -10,7 +10,7 @@ import httpx
 import jwt
 
 from app.core.config import settings
-from app.modules.push.enums import PushProvider
+from app.modules.alerting.enums import PushProvider
 
 __all__ = [
     "Delivery",

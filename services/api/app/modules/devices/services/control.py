@@ -13,7 +13,7 @@ from app.core.base_service import BaseModelService
 from app.core.config import settings
 from app.core.exceptions import BadGateway, Conflict, NotFound, Unprocessable
 from app.models import Camera
-from app.modules.control.schemas import (
+from app.modules.devices.schemas import (
     AudioRead,
     ClockRead,
     DeviceRead,

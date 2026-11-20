@@ -8,8 +8,8 @@ from app.analytics.observations import observations
 from app.core.database import get_db
 from app.models import AnalyticsView
 from app.modules.analytics.schemas import AnalyticsStatus
-from app.tenancy.access import SiteAccess
-from app.tenancy.dependencies import get_site_access
+from app.modules.tenancy.deps import get_site_access
+from app.modules.tenancy.services.access import SiteAccess
 
 router = APIRouter()
 

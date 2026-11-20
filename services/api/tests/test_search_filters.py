@@ -8,8 +8,8 @@ from sqlalchemy.dialects import postgresql
 
 from app.core.exceptions import Unprocessable
 from app.models import Event
-from app.modules.search.schemas import EventFilters
-from app.modules.search.services import analytics_filters, event_filters
+from app.modules.investigation.schemas import EventFilters
+from app.modules.investigation.services import analytics_filters, event_filters
 
 START = datetime(2026, 11, 19, tzinfo=UTC)
 END = datetime(2026, 11, 20, tzinfo=UTC)

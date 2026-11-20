@@ -14,8 +14,8 @@ from app.core.mail import link
 from app.core.rate_limit import RateLimiter
 from app.core.security import encrypt_secret, hash_token, new_token
 from app.models import Connector, ConnectorPairing, Organisation, Site
-from app.modules.connectors.enums import DEVICE_GRANT, DeviceGrantError, PairingStatus
-from app.modules.connectors.schemas import (
+from app.modules.devices.enums import DEVICE_GRANT, ConnectorPairingStatus, DeviceGrantError
+from app.modules.devices.schemas import (
     ConnectorToken,
     DeviceAuthorization,
     DeviceCodeRequest,
@@ -88,7 +88,7 @@ def format_user_code(code: str) -> str:
     return f"{code[:4]}-{code[4:]}"
 
 
-def pairing_status(pairing: ConnectorPairing, now: datetime) -> PairingStatus:
+def pairing_status(pairing: ConnectorPairing, now: datetime) -> ConnectorPairingStatus:
     """Tell the state of a pairing.
 
     Args:
@@ -99,12 +99,12 @@ def pairing_status(pairing: ConnectorPairing, now: datetime) -> PairingStatus:
         delivered, claimed, expired or pending.
     """
     if pairing.delivered_at is not None:
-        return PairingStatus.DELIVERED
+        return ConnectorPairingStatus.DELIVERED
     if pairing.expires_at <= now:
-        return PairingStatus.EXPIRED
+        return ConnectorPairingStatus.EXPIRED
     if pairing.claimed_at is not None:
-        return PairingStatus.CLAIMED
-    return PairingStatus.PENDING
+        return ConnectorPairingStatus.CLAIMED
+    return ConnectorPairingStatus.PENDING
 
 
 class PairingService:

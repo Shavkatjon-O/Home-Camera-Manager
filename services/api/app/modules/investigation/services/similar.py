@@ -7,13 +7,12 @@ from app.auth.context import UserContext
 from app.core.base_service import BaseModelService
 from app.core.exceptions import NotFound, Unavailable, Unprocessable
 from app.models import FaceSample, Person, UnknownCluster
-from app.modules.events.services.events import camera_names
-from app.modules.people.analytics import AnalyticsClient
-from app.modules.people.embeddings import EMBEDDING_BYTES, rank, stack, to_vector
-from app.modules.people.enums import SampleSource
-from app.modules.people.photos import PhotoRejected, choose_face, decode_photo
-from app.modules.people.services import cluster_label
-from app.modules.search.schemas import SimilarPage, SimilarQuery, SimilarRead
+from app.modules.investigation.analytics import AnalyticsClient
+from app.modules.investigation.embeddings import EMBEDDING_BYTES, rank, stack, to_vector
+from app.modules.investigation.enums import SampleSource
+from app.modules.investigation.photos import PhotoRejected, choose_face, decode_photo
+from app.modules.investigation.schemas import SimilarPage, SimilarQuery, SimilarRead
+from app.modules.investigation.services.shared import camera_names, cluster_label
 
 __all__ = ["SimilarService", "rank_samples"]
 

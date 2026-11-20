@@ -5,7 +5,7 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from app.modules.health.enums import TargetKind
+from app.modules.operations.enums import TargetKind
 
 __all__ = ["OutageList", "OutageRead"]
 

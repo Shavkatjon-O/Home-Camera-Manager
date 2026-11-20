@@ -13,8 +13,8 @@ from app.core.exceptions import NotFound
 from app.health.stats import BucketCounts, Window, availability, bucket_window, fill_buckets, latency_summary
 from app.health.targets import Target, camera_address, depth_order
 from app.models import Camera, CameraLink, HealthSample, NetworkDevice, Outage
-from app.modules.health.enums import DeviceKind, HealthRange, LinkKind, TargetKind, TargetStatus
-from app.modules.health.schemas import (
+from app.modules.operations.enums import DeviceKind, HealthRange, LinkKind, TargetKind, TargetStatus
+from app.modules.operations.schemas import (
     HealthBucket,
     HealthOverview,
     LatencyStats,

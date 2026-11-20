@@ -2,7 +2,7 @@ from types import SimpleNamespace
 from uuid import uuid4
 
 from app.models import Camera, Person
-from app.tenancy.scope import (
+from app.modules.tenancy.services.scope import (
     ORGANISATION_SCOPED,
     SITE_SCOPED,
     Scope,

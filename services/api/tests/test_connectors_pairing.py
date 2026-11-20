@@ -3,8 +3,8 @@ from datetime import UTC, datetime, timedelta
 import pytest
 
 from app.models import ConnectorPairing
-from app.modules.connectors.enums import DEVICE_GRANT, DeviceGrantError
-from app.modules.connectors.services.pairing import SLOW_DOWN_STEP, DeviceGrantRefusal, PairingService
+from app.modules.devices.enums import DEVICE_GRANT, DeviceGrantError
+from app.modules.devices.services.connector_pairing import SLOW_DOWN_STEP, DeviceGrantRefusal, PairingService
 
 
 class FakeSession:

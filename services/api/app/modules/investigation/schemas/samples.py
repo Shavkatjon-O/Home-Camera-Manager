@@ -5,7 +5,7 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from app.modules.people.enums import SampleSource
+from app.modules.investigation.enums import SampleSource
 
 __all__ = ["SampleRead", "SightingRead"]
 

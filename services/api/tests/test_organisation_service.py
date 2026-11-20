@@ -3,11 +3,11 @@ from types import SimpleNamespace
 import pytest
 
 from app.core.exceptions import Unprocessable
-from app.modules.organisations.enums import Role
-from app.modules.organisations.schemas import OrganisationUpdate
-from app.modules.organisations.services import organisations as module
-from app.modules.organisations.services.organisations import FACES_CONSENT, OrganisationService
-from app.tenancy.access import OrganisationAccess
+from app.modules.tenancy.enums import Role
+from app.modules.tenancy.schemas import OrganisationUpdate
+from app.modules.tenancy.services import organisations as module
+from app.modules.tenancy.services.access import OrganisationAccess
+from app.modules.tenancy.services.organisations import FACES_CONSENT, OrganisationService
 from tests.fakes import site_access
 
 

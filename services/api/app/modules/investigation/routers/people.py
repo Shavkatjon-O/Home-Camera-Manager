@@ -8,8 +8,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Response, status
 
-from app.modules.people.deps import get_person_service, get_sample_service
-from app.modules.people.schemas import (
+from app.modules.investigation.deps import get_person_service, get_sample_service
+from app.modules.investigation.schemas import (
     PersonCreate,
     PersonList,
     PersonMerge,
@@ -18,8 +18,8 @@ from app.modules.people.schemas import (
     PhotoUploadRequest,
     PhotoUploadResult,
 )
-from app.modules.people.services import PersonService, SampleService
-from app.tenancy.dependencies import require_admin
+from app.modules.investigation.services import PersonService, SampleService
+from app.modules.tenancy.deps import require_admin
 
 from .clusters import router as clusters_router
 from .samples import router as samples_router

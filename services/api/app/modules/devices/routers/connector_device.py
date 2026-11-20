@@ -3,8 +3,8 @@
 from fastapi import APIRouter, Depends, Request, Response, status
 from fastapi.responses import JSONResponse
 
-from app.modules.connectors.deps import get_device_service, get_pairing_service
-from app.modules.connectors.schemas import (
+from app.modules.devices.deps import get_connector_device_service, get_connector_pairing_service
+from app.modules.devices.schemas import (
     ConnectorConfig,
     ConnectorToken,
     DeviceAuthorization,
@@ -15,7 +15,7 @@ from app.modules.connectors.schemas import (
     HeartbeatAck,
     HeartbeatIn,
 )
-from app.modules.connectors.services import ConnectorDeviceService, DeviceGrantRefusal, PairingService
+from app.modules.devices.services import ConnectorDeviceService, DeviceGrantRefusal, PairingService
 
 router = APIRouter()
 
@@ -34,7 +34,7 @@ def client_address(request: Request) -> str:
 
 @router.post("/device-code", response_model=DeviceAuthorization)
 async def create_device_code(
-    payload: DeviceCodeRequest, request: Request, service: PairingService = Depends(get_pairing_service)
+    payload: DeviceCodeRequest, request: Request, service: PairingService = Depends(get_connector_pairing_service)
 ) -> DeviceAuthorization:
     """Open a pairing: the connector shows the user code and its QR code and polls with the device code.
 
@@ -55,7 +55,7 @@ async def create_device_code(
     responses={400: {"model": DeviceGrantErrorBody, "description": "RFC 8628 error, such as authorization_pending"}},
 )
 async def poll_device_token(
-    payload: DeviceTokenRequest, service: PairingService = Depends(get_pairing_service)
+    payload: DeviceTokenRequest, service: PairingService = Depends(get_connector_pairing_service)
 ) -> ConnectorToken | JSONResponse:
     """Poll for the connector's credentials, which arrive once a member claimed the code.
 
@@ -77,7 +77,7 @@ async def poll_device_token(
 
 @router.post("/heartbeat", response_model=HeartbeatAck)
 async def send_heartbeat(
-    payload: HeartbeatIn, request: Request, service: ConnectorDeviceService = Depends(get_device_service)
+    payload: HeartbeatIn, request: Request, service: ConnectorDeviceService = Depends(get_connector_device_service)
 ) -> HeartbeatAck:
     """Report the connector's version, address, health and camera reachability.
 
@@ -94,7 +94,7 @@ async def send_heartbeat(
 
 @router.post("/discovery", status_code=status.HTTP_204_NO_CONTENT, response_class=Response)
 async def report_discovery(
-    payload: DiscoveryReport, service: ConnectorDeviceService = Depends(get_device_service)
+    payload: DiscoveryReport, service: ConnectorDeviceService = Depends(get_connector_device_service)
 ) -> Response:
     """Report the cameras a discovery run found.
 
@@ -110,7 +110,9 @@ async def report_discovery(
 
 
 @router.get("/config", response_model=ConnectorConfig)
-async def get_connector_config(service: ConnectorDeviceService = Depends(get_device_service)) -> ConnectorConfig:
+async def get_connector_config(
+    service: ConnectorDeviceService = Depends(get_connector_device_service),
+) -> ConnectorConfig:
     """Return the connector's camera list, without credentials, which the connector keeps itself.
 
     Args:

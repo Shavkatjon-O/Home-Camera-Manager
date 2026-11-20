@@ -4,7 +4,7 @@ import math
 import numpy as np
 import pytest
 
-from app.modules.people.embeddings import (
+from app.modules.investigation.embeddings import (
     EMBEDDING_BYTES,
     EMBEDDING_SIZE,
     decode_embedding,

@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import AnalyticsView
-from app.tenancy.scope import UNSCOPED_OPTION
+from app.modules.tenancy.services.scope import UNSCOPED_OPTION
 
 __all__ = ["view_owners"]
 

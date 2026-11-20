@@ -7,7 +7,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from app.modules.floorplans.enums import AccessPointPreset, Band, WallMaterial
+from app.modules.operations.enums import AccessPointPreset, Band, WallMaterial
 
 __all__ = [
     "AccessPoint",

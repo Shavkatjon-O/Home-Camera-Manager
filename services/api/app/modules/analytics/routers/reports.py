@@ -2,11 +2,12 @@
 
 from fastapi import APIRouter, Depends, Response, status
 
-from app.modules.analytics.deps import get_count_ingest_service, get_journey_ingest_service
-from app.modules.analytics.schemas.counts import CountReportIn
-from app.modules.analytics.schemas.journeys import JourneyReportIn
-from app.modules.analytics.services.counts import CountService
-from app.modules.analytics.services.journeys import JourneyService
+from app.modules.insights.deps import get_count_ingest_service
+from app.modules.insights.schemas.counts import CountReportIn
+from app.modules.insights.services.counts import CountService
+from app.modules.investigation.deps import get_journey_ingest_service
+from app.modules.investigation.schemas.journeys import JourneyReportIn
+from app.modules.investigation.services.journeys import JourneyService
 
 router = APIRouter()
 

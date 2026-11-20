@@ -4,9 +4,9 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 
-from app.modules.health.deps import get_outage_service
-from app.modules.health.schemas import OutageList
-from app.modules.health.services import OutageService
+from app.modules.operations.deps import get_outage_service
+from app.modules.operations.schemas import OutageList
+from app.modules.operations.services import OutageService
 
 router = APIRouter()
 

@@ -14,7 +14,7 @@ from uuid import UUID
 
 from app.core.exceptions import BadGateway, Conflict
 from app.models import Camera
-from app.modules.control.services import CameraControlService, NotOffered
+from app.modules.devices.services import CameraControlService, NotOffered
 from app.onvif.endpoints import Connection, bridge_endpoint, device_endpoint
 from camera_adapters.onvif import media, ptz
 from camera_adapters.onvif.soap import OnvifError

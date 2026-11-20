@@ -5,8 +5,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field, field_validator
 
-from app.modules.organisations.enums import Role
-from app.modules.organisations.schemas.sites import SiteCreate, SiteRead
+from app.modules.tenancy.enums import Role
+from app.modules.tenancy.schemas.sites import SiteCreate, SiteRead
 
 __all__ = [
     "FacesConsent",

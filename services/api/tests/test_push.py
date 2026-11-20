@@ -8,10 +8,10 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 
 from app.models import PushTarget
-from app.modules.push.enums import PushProvider
-from app.modules.push.services.dispatcher import PushDispatcher, alert_payload
-from app.modules.push.services.providers import Delivery, FcmProvider, NtfyProvider, Provider
-from app.modules.push.services.targets import DISABLE_AFTER_FAILURES, deliver
+from app.modules.alerting.enums import PushProvider
+from app.modules.alerting.services.dispatcher import PushDispatcher, alert_payload
+from app.modules.alerting.services.providers import Delivery, FcmProvider, NtfyProvider, Provider
+from app.modules.alerting.services.targets import DISABLE_AFTER_FAILURES, deliver
 
 BASE = "https://ntfy.example.org"
 TOPIC = f"{BASE}/abcdefghijklmnop"

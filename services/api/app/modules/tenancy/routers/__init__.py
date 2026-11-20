@@ -1,4 +1,4 @@
-"""HTTP routers of the organisations module."""
+"""HTTP routers of the tenancy module."""
 
 from .invitations import router as invitations_router
 from .members import router as members_router

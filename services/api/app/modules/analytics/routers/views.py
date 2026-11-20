@@ -9,7 +9,7 @@ from app.analytics import client
 from app.modules.analytics.deps import get_view_service
 from app.modules.analytics.schemas import LiveObjects, RulesUpdate, ViewList, ViewRead, ViewUpdate
 from app.modules.analytics.services import AnalyticsViewService
-from app.tenancy.dependencies import require_admin
+from app.modules.tenancy.deps import require_admin
 
 router = APIRouter()
 

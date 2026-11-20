@@ -10,9 +10,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.context import UserContext
 from app.core.exceptions import Conflict, NotFound, Unprocessable
 from app.models import PushTarget
-from app.modules.push.enums import PushProvider
-from app.modules.push.schemas import PushProviders, PushTargetCreate, PushTargetList, PushTargetRead, PushTestResult
-from app.modules.push.services.providers import Provider, providers
+from app.modules.alerting.enums import PushProvider
+from app.modules.alerting.schemas import PushProviders, PushTargetCreate, PushTargetList, PushTargetRead, PushTestResult
+from app.modules.alerting.services.providers import Provider, providers
 
 __all__ = ["DISABLE_AFTER_FAILURES", "PushTargetService", "deliver"]
 

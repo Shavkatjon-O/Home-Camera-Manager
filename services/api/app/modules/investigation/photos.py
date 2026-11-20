@@ -3,7 +3,7 @@
 import base64
 import binascii
 
-from app.modules.people.schemas import DetectedFace
+from app.modules.investigation.schemas import DetectedFace
 
 PHOTO_TYPES = ("image/jpeg", "image/png", "image/webp")
 PHOTO_MAX_BYTES = 12 * 1024 * 1024

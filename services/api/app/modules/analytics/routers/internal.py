@@ -4,9 +4,10 @@ from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.modules.analytics.deps import get_ingest_service, require_analytics_token
+from app.modules.analytics.deps import get_ingest_service
 from app.modules.analytics.schemas import AnalyticsEventIn, ObservationReport
 from app.modules.analytics.services import AnalyticsIngestService, service_config
+from app.modules.investigation.deps import require_analytics_token
 
 router = APIRouter()
 

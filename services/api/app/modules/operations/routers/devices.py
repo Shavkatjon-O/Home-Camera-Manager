@@ -4,10 +4,15 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Response, status
 
-from app.modules.health.deps import get_network_device_service
-from app.modules.health.schemas import NetworkDeviceCreate, NetworkDeviceList, NetworkDeviceRead, NetworkDeviceUpdate
-from app.modules.health.services import NetworkDeviceService
-from app.tenancy.dependencies import require_admin
+from app.modules.operations.deps import get_network_device_service
+from app.modules.operations.schemas import (
+    NetworkDeviceCreate,
+    NetworkDeviceList,
+    NetworkDeviceRead,
+    NetworkDeviceUpdate,
+)
+from app.modules.operations.services import NetworkDeviceService
+from app.modules.tenancy.deps import require_admin
 
 router = APIRouter()
 

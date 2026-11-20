@@ -13,7 +13,7 @@ from app.core.exceptions import NotFound, Unauthorized
 from app.core.security import hash_token, new_token
 from app.core.tokens import create_access_token
 from app.models import AuthSession, PushTarget, RefreshToken, User
-from app.modules.users.schemas import SessionList, SessionRead, TokenPair
+from app.modules.identity.schemas import SessionList, SessionRead, TokenPair
 
 __all__ = ["REVOKE_REASONS", "TokenService", "revoke_user_sessions"]
 

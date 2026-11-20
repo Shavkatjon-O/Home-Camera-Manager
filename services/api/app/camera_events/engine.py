@@ -22,7 +22,7 @@ from app.models import Camera, Event
 from app.modules.analytics.retention import purge_expired_counts, purge_expired_journeys
 from app.modules.events.enums import EventKind, SourceState
 from app.modules.events.schemas import EventRead, EventSourceRead, event_read
-from app.modules.people.services import purge_expired_samples
+from app.modules.investigation.services.retention import purge_expired_samples
 from app.onvif.endpoints import device_endpoint, endpoint_key
 from app.streaming.names import MAIN, SUB, stream_name
 from camera_adapters.onvif.notifications import Notification, parse_time

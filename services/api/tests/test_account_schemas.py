@@ -6,10 +6,10 @@ import pytest
 from pydantic import ValidationError
 
 from app.models import Invitation
-from app.modules.organisations.enums import Role
-from app.modules.organisations.schemas import InvitationCreate, InvitationStatus, SiteCreate, check_timezone
-from app.modules.organisations.services.invitations import display_name, invitation_status
-from app.modules.users.schemas.auth import AccountRegister, TokenRequest, clean_email
+from app.modules.identity.schemas.auth import AccountRegister, TokenRequest, clean_email
+from app.modules.tenancy.enums import Role
+from app.modules.tenancy.schemas import InvitationCreate, InvitationStatus, SiteCreate, check_timezone
+from app.modules.tenancy.services.invitations import display_name, invitation_status
 
 NOW = datetime(2026, 11, 20, 12, 0, tzinfo=UTC)
 

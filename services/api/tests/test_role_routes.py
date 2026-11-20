@@ -8,10 +8,10 @@ from fastapi.responses import JSONResponse
 from app.api.v1_routers import v1_routers
 from app.core.database import get_db
 from app.core.exceptions import ServiceError
-from app.modules.organisations.enums import Role
-from app.modules.people import deps as people_deps
-from app.modules.people.schemas import PersonList
-from app.tenancy.dependencies import get_site_access
+from app.modules.investigation import deps as people_deps
+from app.modules.investigation.schemas import PersonList
+from app.modules.tenancy.deps import get_site_access
+from app.modules.tenancy.enums import Role
 from tests.fakes import site_access
 
 UUID = uuid4()

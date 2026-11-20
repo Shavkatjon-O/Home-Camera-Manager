@@ -6,9 +6,9 @@ from fastapi import APIRouter, Depends
 
 from app.auth.context import UserContext
 from app.auth.dependencies import get_current_user
-from app.modules.live.deps import get_live_service
-from app.modules.live.schemas import IceServerList, WebrtcAnswer, WebrtcOffer
-from app.modules.live.services import LiveService, ice_servers
+from app.modules.media.deps import get_live_service
+from app.modules.media.schemas import IceServerList, WebrtcAnswer, WebrtcOffer
+from app.modules.media.services import LiveService, ice_servers
 
 router = APIRouter()
 

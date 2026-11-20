@@ -4,8 +4,8 @@ from typing import Annotated
 
 from pydantic import BaseModel, BeforeValidator, ConfigDict, Field
 
-from app.modules.people.crops import decode_crop
-from app.modules.people.embeddings import decode_embedding
+from app.modules.investigation.crops import decode_crop
+from app.modules.investigation.embeddings import decode_embedding
 
 __all__ = ["DetectedFace", "Embedding", "EmbedResponse", "JpegCrop"]
 

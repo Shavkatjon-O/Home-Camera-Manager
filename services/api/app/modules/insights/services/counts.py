@@ -13,7 +13,8 @@ from app.core.base_service import BaseModelService
 from app.core.config import settings
 from app.core.exceptions import Conflict, Unprocessable
 from app.models import AnalyticsArea, AnalyticsCount, AnalyticsLine, AnalyticsView
-from app.modules.analytics.schemas.counts import (
+from app.modules.events.services.events import camera_names
+from app.modules.insights.schemas.counts import (
     AreaCreate,
     AreaLineInput,
     AreaLineRead,
@@ -27,8 +28,7 @@ from app.modules.analytics.schemas.counts import (
     CountsRead,
     CountTotalRead,
 )
-from app.modules.events.services.events import camera_names
-from app.tenancy.owners import view_owners
+from app.modules.tenancy.services.owners import view_owners
 
 __all__ = ["AreaService", "CountService", "aggregate", "local_bucket", "occupancy", "occupancy_start"]
 

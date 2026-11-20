@@ -5,7 +5,7 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from app.modules.health.enums import DeviceKind, HealthRange, LinkKind, TargetKind, TargetStatus
+from app.modules.operations.enums import DeviceKind, HealthRange, LinkKind, TargetKind, TargetStatus
 
 __all__ = ["HealthBucket", "HealthOverview", "LatencyStats", "OutageBrief", "TargetDetail", "TargetHealth"]
 

@@ -7,8 +7,8 @@ from sqlalchemy import func, select
 from app.core.base_service import BaseModelService
 from app.core.exceptions import NotFound, Unprocessable
 from app.models import Camera, CameraLink, NetworkDevice
-from app.modules.health.enums import LinkKind
-from app.modules.health.schemas import CameraLinkRead, CameraLinkUpdate
+from app.modules.operations.enums import LinkKind
+from app.modules.operations.schemas import CameraLinkRead, CameraLinkUpdate
 
 __all__ = ["CameraLinkService"]
 

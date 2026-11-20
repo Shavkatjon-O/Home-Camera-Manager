@@ -11,7 +11,7 @@ from app.core.config import settings
 from app.core.database import async_session_maker
 from app.core.security import decrypt_secret
 from app.models import Camera, Connector
-from app.modules.connectors.agent import agent_address
+from app.modules.devices.agent import agent_address
 from app.streaming.go2rtc import Go2rtcClient, Go2rtcError
 from app.streaming.names import MAIN, SUB, belongs_to, camera_streams, is_managed, stream_name
 from app.streaming.status import ProbeResult, StatusStore, probe

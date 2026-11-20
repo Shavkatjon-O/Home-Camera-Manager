@@ -6,8 +6,8 @@ from sqlalchemy.dialects import postgresql
 
 from app.models import AnalyticsLine, AnalyticsView, AnalyticsZone, Event
 from app.modules.events.schemas import event_read
-from app.modules.search.schemas import EventFilters
-from app.modules.search.services import EventSearchService, FacetService, result_fields
+from app.modules.investigation.schemas import EventFilters
+from app.modules.investigation.services import EventSearchService, FacetService, result_fields
 
 NOW = datetime(2026, 11, 20, 5, 0, tzinfo=UTC)
 CAMERA = uuid4()

@@ -12,9 +12,9 @@ from app.core.exceptions import Conflict, Forbidden, NotFound, Unauthorized, Unp
 from app.core.mail import Mailer, mailer, reset_mail, verify_mail
 from app.core.security import hash_password, hash_token, new_token, verify_password
 from app.models import EmailToken, User
-from app.modules.organisations.services.memberships import release_memberships
-from app.modules.users.schemas import AccountRead, AccountRegister
-from app.modules.users.services.tokens import revoke_user_sessions
+from app.modules.identity.schemas import AccountRead, AccountRegister
+from app.modules.identity.services.tokens import revoke_user_sessions
+from app.modules.tenancy.services.memberships import release_memberships
 
 __all__ = ["VERIFY", "RESET", "AccountService", "account_read"]
 

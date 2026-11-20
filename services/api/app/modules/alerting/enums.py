@@ -1,4 +1,4 @@
-"""Enumerations of the push module."""
+"""Enumerations of the alerting module."""
 
 from enum import StrEnum
 

@@ -4,9 +4,9 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Response, status
 
-from app.modules.organisations.deps import get_site_service
-from app.modules.organisations.schemas import SiteCreate, SiteList, SiteRead, SiteUpdate
-from app.modules.organisations.services import SiteService
+from app.modules.tenancy.deps import get_site_service
+from app.modules.tenancy.schemas import SiteCreate, SiteList, SiteRead, SiteUpdate
+from app.modules.tenancy.services import SiteService
 
 router = APIRouter()
 

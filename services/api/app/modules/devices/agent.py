@@ -7,7 +7,7 @@ import httpx
 from app.core.exceptions import BadGateway, Conflict
 from app.core.security import decrypt_secret
 from app.models import Connector
-from app.modules.connectors.enums import ConnectorMode
+from app.modules.devices.enums import ConnectorMode
 
 __all__ = ["AgentClient", "agent_address"]
 

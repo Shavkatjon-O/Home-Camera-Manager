@@ -6,8 +6,8 @@ from app.core.config import settings
 from app.core.exceptions import BadGateway, Conflict, NotFound
 from app.models import Camera
 from app.modules.analytics.enums import ViewStream
-from app.modules.live.schemas import WebrtcOffer
-from app.modules.live.services.webrtc import LiveService, ice_servers
+from app.modules.media.schemas import WebrtcOffer
+from app.modules.media.services.webrtc import LiveService, ice_servers
 from app.streaming.go2rtc import Go2rtcError
 from app.streaming.names import MAIN, SUB, stream_name
 

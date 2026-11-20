@@ -21132,7 +21132,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/app__modules__tv__schemas__pairings__PairingStatus"
+                  "$ref": "#/components/schemas/PairingStatus"
                 }
               }
             }
@@ -23731,6 +23731,17 @@
         ],
         "title": "ConnectorMode",
         "description": "How central reaches a connector: at an address on its network or a public one, or through the tunnel."
+      },
+      "ConnectorPairingStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "claimed",
+          "delivered",
+          "expired"
+        ],
+        "title": "ConnectorPairingStatus",
+        "description": "State of a pairing request."
       },
       "ConnectorRead": {
         "properties": {
@@ -28573,7 +28584,7 @@
             "title": "Name"
           },
           "status": {
-            "$ref": "#/components/schemas/app__modules__connectors__enums__PairingStatus"
+            "$ref": "#/components/schemas/ConnectorPairingStatus"
           },
           "expires_at": {
             "type": "string",
@@ -28613,6 +28624,30 @@
         ],
         "title": "PairingState",
         "description": "Progress of a TV pairing request, as reported to the TV."
+      },
+      "PairingStatus": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/PairingState"
+          },
+          "token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "PairingStatus",
+        "description": "Status of a pairing as seen by the TV.\n\nAttributes:\n    status: Progress of the pairing.\n    token: Device token, present only in the response that hands it over."
       },
       "PasswordChange": {
         "properties": {
@@ -32296,41 +32331,6 @@
         ],
         "title": "ZoneRead",
         "description": "A stored zone.\n\nAttributes:\n    uuid: Zone id.\n    name: Display name.\n    polygon: Vertices.\n    whole_view: Covers the whole picture.\n    labels: Labels and label groups.\n    min_dwell: Seconds before an intrusion.\n    loiter_seconds: Seconds before loitering, 0 for off.\n    crowd_count: Crowd size, 0 for off.\n    schedule: When the zone produces events.\n    alert: Alert policy.\n    enabled: Whether the zone produces events.\n    reference: Snapshot the zone was drawn on.\n    suspended: True while a moving lens no longer shows that scene.\n    left_seconds: Seconds before a carried object counts as left, 0 for off.\n    taken_seconds: Seconds of presence before a disappearance counts as taken, 0 for off.\n    object_labels: Labels watched for left and taken.\n    background: Also finds unclassed objects by comparing with the empty scene.\n    animals: What dogs, cats and birds do in the zone."
-      },
-      "app__modules__connectors__enums__PairingStatus": {
-        "type": "string",
-        "enum": [
-          "pending",
-          "claimed",
-          "delivered",
-          "expired"
-        ],
-        "title": "PairingStatus",
-        "description": "State of a pairing request."
-      },
-      "app__modules__tv__schemas__pairings__PairingStatus": {
-        "properties": {
-          "status": {
-            "$ref": "#/components/schemas/PairingState"
-          },
-          "token": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Token"
-          }
-        },
-        "type": "object",
-        "required": [
-          "status"
-        ],
-        "title": "PairingStatus",
-        "description": "Status of a pairing as seen by the TV.\n\nAttributes:\n    status: Progress of the pairing.\n    token: Device token, present only in the response that hands it over."
       }
     },
     "securitySchemes": {

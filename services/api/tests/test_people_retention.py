@@ -7,9 +7,9 @@ import numpy as np
 from sqlalchemy.dialects import postgresql
 
 from app.models import UnknownCluster
-from app.modules.people.embeddings import EMBEDDING_SIZE, to_bytes
-from app.modules.people.services import expired_samples, purge_expired_samples
-from app.modules.people.services import retention as retention_module
+from app.modules.investigation.embeddings import EMBEDDING_SIZE, to_bytes
+from app.modules.investigation.services import expired_samples, purge_expired_samples
+from app.modules.investigation.services import retention as retention_module
 
 NOW = datetime(2026, 11, 20, 5, 0, tzinfo=UTC)
 Expired = namedtuple("Expired", "id crop_path event_uuid cluster_id")

@@ -1,22 +1,24 @@
-"""Aggregator of every module's router under /api/v1, each with its stable tag."""
+"""Aggregator of every domain's routers under /api/v1, each at its stable prefix and tag."""
 
 from fastapi import APIRouter
 
+from app.modules.alerting.routers import arm_router, push_router
 from app.modules.analytics.routers import analytics_router
-from app.modules.cameras.routers import cameras_router
-from app.modules.connectors.routers import connector_device_router, connectors_router
-from app.modules.control.routers import control_router
-from app.modules.discovery.routers import discovery_router
+from app.modules.devices.routers import (
+    cameras_router,
+    connector_device_router,
+    connectors_router,
+    control_router,
+    discovery_router,
+)
 from app.modules.events.routers import events_router
-from app.modules.floorplans.routers import floorplans_router
-from app.modules.health.routers import health_router
-from app.modules.live.routers import live_router
-from app.modules.organisations.routers import invitations_router, members_router, organisations_router, sites_router
-from app.modules.people.routers import people_router
-from app.modules.push.routers import push_router
-from app.modules.search.routers import search_router
+from app.modules.identity.routers import auth_router
+from app.modules.insights.routers import counts_router
+from app.modules.investigation.routers import journeys_router, people_router, search_router
+from app.modules.media.routers import live_router
+from app.modules.operations.routers import floorplans_router, health_router
+from app.modules.tenancy.routers import invitations_router, members_router, organisations_router, sites_router
 from app.modules.tv.routers import tv_router
-from app.modules.users.routers import auth_router
 
 v1_routers = APIRouter()
 v1_routers.include_router(auth_router, prefix="/auth", tags=["auth"])
@@ -24,7 +26,10 @@ v1_routers.include_router(organisations_router, prefix="/organisations", tags=["
 v1_routers.include_router(members_router, prefix="/organisations", tags=["members"])
 v1_routers.include_router(sites_router, tags=["sites"])
 v1_routers.include_router(invitations_router, tags=["invitations"])
+v1_routers.include_router(arm_router, prefix="/analytics", tags=["analytics"])
 v1_routers.include_router(analytics_router, prefix="/analytics", tags=["analytics"])
+v1_routers.include_router(counts_router, prefix="/analytics", tags=["analytics"])
+v1_routers.include_router(journeys_router, prefix="/analytics", tags=["analytics"])
 v1_routers.include_router(cameras_router, prefix="/cameras", tags=["cameras"])
 v1_routers.include_router(control_router, prefix="/cameras", tags=["control"])
 v1_routers.include_router(live_router, tags=["live"])

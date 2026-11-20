@@ -10,10 +10,9 @@ from app.core.base_service import BaseModelService
 from app.core.config import settings
 from app.core.exceptions import BadGateway, Conflict
 from app.models import Camera, Connector, DiscoveredCamera
-from app.modules.cameras.enums import CameraBrand
-from app.modules.connectors.agent import AgentClient, agent_address
-from app.modules.connectors.enums import ConnectorMode, FoundBy
-from app.modules.connectors.schemas import (
+from app.modules.devices.agent import AgentClient, agent_address
+from app.modules.devices.enums import CameraBrand, ConnectorMode, FoundBy
+from app.modules.devices.schemas import (
     ConnectorList,
     ConnectorRead,
     ConnectorUpdate,

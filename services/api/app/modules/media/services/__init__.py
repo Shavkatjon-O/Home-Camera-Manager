@@ -1,3 +1,3 @@
-"""Services of the live module."""
+"""Services of the media module."""
 
 from .webrtc import *

@@ -1,1 +1,1 @@
-"""Network health module: network devices, camera links, outages and the health overview."""
+"""Operations module: network health, outages and floor plans."""

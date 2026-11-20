@@ -5,9 +5,9 @@ from uuid import uuid4
 import numpy as np
 from sqlalchemy.dialects import postgresql
 
-from app.modules.people.embeddings import EMBEDDING_SIZE, to_bytes
-from app.modules.people.schemas import GalleryCluster, GalleryPerson
-from app.modules.people.services import GalleryService, gallery_version
+from app.modules.investigation.embeddings import EMBEDDING_SIZE, to_bytes
+from app.modules.investigation.schemas import GalleryCluster, GalleryPerson
+from app.modules.investigation.services import GalleryService, gallery_version
 
 CASTS = re.compile(r"::(?:TIMESTAMP WITH TIME ZONE|VARCHAR|INTEGER|BIGINT|UUID|JSONB|TEXT|BOOLEAN|FLOAT)")
 

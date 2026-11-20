@@ -20,12 +20,12 @@ from app.core.logging import setup_logging
 from app.core.security import require_secret_key
 from app.core.seed import seed_admin
 from app.health.prober import health_prober
+from app.modules.alerting.services import PushDispatcher
 from app.modules.analytics.routers import analytics_internal_router
-from app.modules.people.routers import people_internal_router
-from app.modules.push.services import PushDispatcher
+from app.modules.investigation.routers import people_internal_router
+from app.modules.tenancy.services.bootstrap import run_bootstrap
 from app.modules.tv.routers import tv_internal_router
 from app.streaming.supervisor import supervisor
-from app.tenancy.bootstrap import run_bootstrap
 
 setup_logging()
 logger = logging.getLogger(__name__)

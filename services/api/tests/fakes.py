@@ -1,8 +1,8 @@
 from uuid import uuid4
 
 from app.auth.context import UserContext
-from app.modules.organisations.enums import Role
-from app.tenancy.access import SiteAccess
+from app.modules.tenancy.enums import Role
+from app.modules.tenancy.services.access import SiteAccess
 
 
 def site_access(role: Role = Role.OWNER, faces: bool = True) -> SiteAccess:

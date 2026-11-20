@@ -5,10 +5,10 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 
-from app.modules.search.deps import get_event_search_service, get_facet_service, get_similar_service
-from app.modules.search.schemas import EventFilters, Facets, ResultPage, SimilarPage, SimilarQuery
-from app.modules.search.services import EventSearchService, FacetService, SimilarService
-from app.tenancy.dependencies import require_admin
+from app.modules.investigation.deps import get_event_search_service, get_facet_service, get_similar_service
+from app.modules.investigation.schemas import EventFilters, Facets, ResultPage, SimilarPage, SimilarQuery
+from app.modules.investigation.services import EventSearchService, FacetService, SimilarService
+from app.modules.tenancy.deps import require_admin
 
 router = APIRouter()
 

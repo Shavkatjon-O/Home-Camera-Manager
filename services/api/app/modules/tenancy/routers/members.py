@@ -4,9 +4,9 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Response, status
 
-from app.modules.organisations.deps import get_member_service
-from app.modules.organisations.schemas import MemberList, MemberRead, MemberUpdate
-from app.modules.organisations.services import MemberService
+from app.modules.tenancy.deps import get_member_service
+from app.modules.tenancy.schemas import MemberList, MemberRead, MemberUpdate
+from app.modules.tenancy.services import MemberService
 
 router = APIRouter()
 

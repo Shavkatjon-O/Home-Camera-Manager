@@ -16,9 +16,9 @@ from app.modules.events.deps import get_event_service
 from app.modules.events.enums import EventKind, EventSource
 from app.modules.events.schemas import EventCounts, EventList, EventRead, EventSourceList
 from app.modules.events.services import EventFilters, EventService, stream_hello
-from app.tenancy.access import SiteAccess
-from app.tenancy.dependencies import get_stream_site_access, require_operator, site_scope
-from app.tenancy.scope import Scope, install_scope
+from app.modules.tenancy.deps import get_stream_site_access, require_operator, site_scope
+from app.modules.tenancy.services.access import SiteAccess
+from app.modules.tenancy.services.scope import Scope, install_scope
 
 router = APIRouter()
 

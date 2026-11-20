@@ -2,10 +2,10 @@
 
 from fastapi import APIRouter, Depends
 
-from app.modules.analytics.deps import get_settings_service
-from app.modules.analytics.schemas import AnalyticsSettingsRead, AnalyticsSettingsUpdate
-from app.modules.analytics.services import AnalyticsSettingsService
-from app.tenancy.dependencies import require_operator
+from app.modules.alerting.deps import get_settings_service
+from app.modules.alerting.schemas import AnalyticsSettingsRead, AnalyticsSettingsUpdate
+from app.modules.alerting.services import AnalyticsSettingsService
+from app.modules.tenancy.deps import require_operator
 
 router = APIRouter()
 

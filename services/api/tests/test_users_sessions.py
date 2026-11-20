@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 from uuid import uuid4
 
 from app.models import AuthSession
-from app.modules.users.services.tokens import session_read
+from app.modules.identity.services.tokens import session_read
 
 NOW = datetime(2026, 11, 20, 12, 0, tzinfo=UTC)
 

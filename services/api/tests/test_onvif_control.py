@@ -4,8 +4,8 @@ from xml.etree import ElementTree
 import pytest
 
 from app.core.exceptions import Unprocessable
-from app.modules.control.schemas import EncoderUpdate
-from app.modules.control.services.control import CameraControlService, with_credentials, with_start
+from app.modules.devices.schemas import EncoderUpdate
+from app.modules.devices.services.control import CameraControlService, with_credentials, with_start
 from camera_adapters.onvif import analytics, imaging, media, ptz, recordings, system
 from camera_adapters.onvif.soap import descendant, envelope, parse_response
 

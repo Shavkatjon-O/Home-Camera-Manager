@@ -6,7 +6,7 @@ from uuid import UUID
 from pydantic import BaseModel
 
 from app.modules.events.enums import EventKind, EventSource
-from app.modules.people.schemas.faces import FaceRead
+from app.modules.investigation.schemas.faces import FaceRead
 
 __all__ = ["EventCounts", "EventList", "EventRead", "event_read"]
 

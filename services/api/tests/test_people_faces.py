@@ -11,9 +11,9 @@ from sqlalchemy.dialects import postgresql
 
 from app.core.exceptions import NotFound
 from app.models import Event, FaceSample, Person, UnknownCluster
-from app.modules.people.embeddings import EMBEDDING_SIZE, mean_embedding, to_bytes
-from app.modules.people.schemas import FaceResult
-from app.modules.people.services import FaceResultService, face_summaries
+from app.modules.investigation.embeddings import EMBEDDING_SIZE, mean_embedding, to_bytes
+from app.modules.investigation.schemas import FaceResult
+from app.modules.investigation.services import FaceResultService, face_summaries
 
 NOW = datetime(2026, 11, 20, 5, 0, tzinfo=UTC)
 STARTED = 1763600000.25

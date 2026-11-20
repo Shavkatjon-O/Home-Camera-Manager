@@ -6,7 +6,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from app.modules.cameras.enums import CameraBrand
+from app.modules.devices.enums import CameraBrand
 
 __all__ = [
     "CameraCreate",

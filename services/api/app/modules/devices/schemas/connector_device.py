@@ -5,8 +5,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-from app.modules.cameras.enums import CameraBrand
-from app.modules.connectors.enums import DEVICE_GRANT, DeviceGrantError, FoundBy
+from app.modules.devices.enums import DEVICE_GRANT, CameraBrand, DeviceGrantError, FoundBy
 
 __all__ = [
     "ConnectorCameraConfig",

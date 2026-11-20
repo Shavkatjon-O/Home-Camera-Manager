@@ -5,8 +5,8 @@ from zoneinfo import ZoneInfo
 import pytest
 from pydantic import ValidationError
 
-from app.modules.analytics.schemas.counts import AreaCreate, AreaUpdate, CountReportIn
-from app.modules.analytics.services.counts import aggregate, local_bucket, occupancy, occupancy_start
+from app.modules.insights.schemas.counts import AreaCreate, AreaUpdate, CountReportIn
+from app.modules.insights.services.counts import aggregate, local_bucket, occupancy, occupancy_start
 
 ZONE = ZoneInfo("Asia/Tashkent")
 

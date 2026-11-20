@@ -1,8 +1,8 @@
 import pytest
 from pydantic import ValidationError
 
-from app.modules.floorplans.enums import AccessPointPreset, Band, WallMaterial
-from app.modules.floorplans.schemas import (
+from app.modules.operations.enums import AccessPointPreset, Band, WallMaterial
+from app.modules.operations.schemas import (
     AccessPoint,
     Device,
     FloorPlanCreate,

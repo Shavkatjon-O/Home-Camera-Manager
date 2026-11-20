@@ -1,4 +1,4 @@
-"""Enumerations of the organisations module."""
+"""Enumerations of the tenancy module."""
 
 from enum import StrEnum
 

@@ -5,8 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.modules.events.services import EventService
-from app.tenancy.access import SiteAccess
-from app.tenancy.dependencies import get_site_access
+from app.modules.tenancy.deps import get_site_access
+from app.modules.tenancy.services.access import SiteAccess
 
 
 def get_event_service(

@@ -15,8 +15,8 @@ from app.core.exceptions import NotFound, Unprocessable
 from app.models import Camera, Event
 from app.modules.events.enums import EventKind, EventSource
 from app.modules.events.schemas import EventCounts, EventList, EventRead, EventSourceList, event_read
-from app.modules.people.services.faces import face_summaries
-from app.tenancy.scope import Scope, install_scope
+from app.modules.investigation.services.faces import face_summaries
+from app.modules.tenancy.services.scope import Scope, install_scope
 
 __all__ = ["EventFilters", "EventService", "camera_names", "stream_hello"]
 

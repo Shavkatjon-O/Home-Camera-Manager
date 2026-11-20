@@ -9,10 +9,9 @@ from sqlalchemy.dialects import postgresql
 
 from app.core.exceptions import NotFound, Unprocessable
 from app.models import FaceSample
-from app.modules.people.embeddings import EMBEDDING_SIZE, to_bytes
-from app.modules.people.schemas import DetectedFace
-from app.modules.search.schemas import SimilarQuery
-from app.modules.search.services import SimilarService, rank_samples
+from app.modules.investigation.embeddings import EMBEDDING_SIZE, to_bytes
+from app.modules.investigation.schemas import DetectedFace, SimilarQuery
+from app.modules.investigation.services import SimilarService, rank_samples
 
 NOW = datetime(2026, 11, 20, 5, 0, tzinfo=UTC)
 CAMERA = uuid4()

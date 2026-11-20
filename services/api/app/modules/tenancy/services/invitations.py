@@ -12,16 +12,16 @@ from app.core.exceptions import Conflict, Forbidden, NotFound, Unprocessable
 from app.core.mail import Mailer, invitation_mail, mailer
 from app.core.security import hash_token, new_token
 from app.models import Invitation, Membership, Organisation, Site, User
-from app.modules.organisations.enums import Role
-from app.modules.organisations.schemas import (
+from app.modules.tenancy.enums import Role
+from app.modules.tenancy.schemas import (
     InvitationCreate,
     InvitationList,
     InvitationPreview,
     InvitationRead,
     InvitationStatus,
 )
-from app.modules.organisations.services.memberships import set_membership_sites
-from app.tenancy.access import resolve_organisation_access
+from app.modules.tenancy.services.access import resolve_organisation_access
+from app.modules.tenancy.services.memberships import set_membership_sites
 
 __all__ = ["InvitationService", "invitation_status"]
 

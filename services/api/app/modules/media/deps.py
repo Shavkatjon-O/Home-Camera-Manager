@@ -1,12 +1,12 @@
-"""FastAPI dependencies of the live module."""
+"""FastAPI dependencies of the media module."""
 
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.modules.live.services import LiveService
-from app.tenancy.access import SiteAccess
-from app.tenancy.dependencies import get_site_access
+from app.modules.media.services import LiveService
+from app.modules.tenancy.deps import get_site_access
+from app.modules.tenancy.services.access import SiteAccess
 
 
 def get_live_service(

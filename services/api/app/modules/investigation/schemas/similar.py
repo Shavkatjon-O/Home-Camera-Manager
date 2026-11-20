@@ -5,8 +5,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from app.modules.people.enums import SampleSource
-from app.modules.people.schemas.people import PHOTO_DATA_MAX_CHARS
+from app.modules.investigation.enums import SampleSource
+from app.modules.investigation.schemas.people import PHOTO_DATA_MAX_CHARS
 
 __all__ = ["SimilarPage", "SimilarQuery", "SimilarRead"]
 

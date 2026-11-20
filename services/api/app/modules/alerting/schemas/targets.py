@@ -5,7 +5,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-from app.modules.push.enums import PushProvider
+from app.modules.alerting.enums import PushProvider
 
 __all__ = ["PushProviders", "PushTargetCreate", "PushTargetList", "PushTargetRead", "PushTestResult"]
 

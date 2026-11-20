@@ -4,10 +4,10 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends
 
-from app.modules.health.deps import get_camera_link_service
-from app.modules.health.schemas import CameraLinkRead, CameraLinkUpdate
-from app.modules.health.services import CameraLinkService
-from app.tenancy.dependencies import require_admin
+from app.modules.operations.deps import get_camera_link_service
+from app.modules.operations.schemas import CameraLinkRead, CameraLinkUpdate
+from app.modules.operations.services import CameraLinkService
+from app.modules.tenancy.deps import require_admin
 
 router = APIRouter()
 

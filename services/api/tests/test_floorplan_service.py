@@ -6,8 +6,8 @@ from sqlalchemy.dialects import postgresql
 
 from app.core.exceptions import NotFound, Unprocessable
 from app.models import FloorPlan
-from app.modules.floorplans.schemas import FloorPlanCreate, FloorPlanUpdate
-from app.modules.floorplans.services import FloorPlanService
+from app.modules.operations.schemas import FloorPlanCreate, FloorPlanUpdate
+from app.modules.operations.services import FloorPlanService
 
 NOW = datetime(2026, 11, 19, 12, 0, tzinfo=UTC)
 IMAGE = "data:image/png;base64,iVBORw0KGgo="

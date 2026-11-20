@@ -10,9 +10,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.exceptions import Unauthorized
 from app.core.security import hash_token
 from app.models import Camera, Connector, DiscoveredCamera
-from app.modules.cameras.enums import CameraBrand
-from app.modules.connectors.enums import FoundBy
-from app.modules.connectors.schemas import (
+from app.modules.devices.enums import CameraBrand, FoundBy
+from app.modules.devices.schemas import (
     ConnectorCameraConfig,
     ConnectorConfig,
     DiscoveryReport,

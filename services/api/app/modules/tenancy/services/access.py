@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.context import UserContext
 from app.core.exceptions import Forbidden, NotFound
 from app.models import Membership, MembershipSite, Organisation, Site
-from app.modules.organisations.enums import Role, role_rank
+from app.modules.tenancy.enums import Role, role_rank
 
 __all__ = [
     "OrganisationAccess",

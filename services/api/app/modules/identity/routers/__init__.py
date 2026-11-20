@@ -1,4 +1,4 @@
-"""HTTP routers of the users module."""
+"""HTTP routers of the identity module."""
 
 from .auth import router as auth_router
 

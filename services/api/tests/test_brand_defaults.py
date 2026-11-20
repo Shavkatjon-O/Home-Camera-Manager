@@ -2,9 +2,9 @@ import pytest
 from pydantic import ValidationError
 
 from app.core.exceptions import Unprocessable
-from app.modules.cameras.enums import CameraBrand
-from app.modules.cameras.schemas import CameraCreate, CameraUpdate
-from app.modules.cameras.services.defaults import apply_brand_defaults
+from app.modules.devices.enums import CameraBrand
+from app.modules.devices.schemas import CameraCreate, CameraUpdate
+from app.modules.devices.services.defaults import apply_brand_defaults
 
 
 def create_values(**fields) -> dict:

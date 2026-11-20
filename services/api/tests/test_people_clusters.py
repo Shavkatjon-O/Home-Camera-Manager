@@ -9,9 +9,9 @@ from sqlalchemy.dialects import postgresql
 
 from app.core.exceptions import NotFound, Unprocessable
 from app.models import FaceSample, Person, UnknownCluster
-from app.modules.people.embeddings import EMBEDDING_SIZE, mean_embedding, to_bytes, to_vector
-from app.modules.people.schemas import ClusterName
-from app.modules.people.services import ClusterService, recompute_centroid
+from app.modules.investigation.embeddings import EMBEDDING_SIZE, mean_embedding, to_bytes, to_vector
+from app.modules.investigation.schemas import ClusterName
+from app.modules.investigation.services import ClusterService, recompute_centroid
 
 NOW = datetime(2026, 11, 20, 5, 0, tzinfo=UTC)
 CAMERA = uuid4()

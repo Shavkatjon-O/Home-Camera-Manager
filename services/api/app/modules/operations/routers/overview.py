@@ -4,10 +4,10 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 
-from app.modules.health.deps import get_health_overview_service
-from app.modules.health.enums import HealthRange
-from app.modules.health.schemas import HealthOverview, TargetDetail
-from app.modules.health.services import HealthOverviewService
+from app.modules.operations.deps import get_health_overview_service
+from app.modules.operations.enums import HealthRange
+from app.modules.operations.schemas import HealthOverview, TargetDetail
+from app.modules.operations.services import HealthOverviewService
 
 router = APIRouter()
 

@@ -1,3 +1,3 @@
-"""Request and response schemas of the users module."""
+"""Request and response schemas of the identity module."""
 
 from .auth import *

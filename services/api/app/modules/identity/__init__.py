@@ -1,1 +1,1 @@
-"""Users module: sign in and sign out."""
+"""Identity module: accounts, sign-in, device sessions, email confirmation and account deletion."""

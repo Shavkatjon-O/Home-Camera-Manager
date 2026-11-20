@@ -4,8 +4,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from app.modules.people.crops import is_relative_inside
-from app.modules.people.enums import FaceAction, FaceStatus
+from app.modules.investigation.crops import is_relative_inside
+from app.modules.investigation.enums import FaceAction, FaceStatus
 
 from .analytics import Embedding
 

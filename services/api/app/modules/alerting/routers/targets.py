@@ -4,9 +4,9 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Response, status
 
-from app.modules.push.deps import get_push_service
-from app.modules.push.schemas import PushProviders, PushTargetCreate, PushTargetList, PushTargetRead, PushTestResult
-from app.modules.push.services import PushTargetService
+from app.modules.alerting.deps import get_push_service
+from app.modules.alerting.schemas import PushProviders, PushTargetCreate, PushTargetList, PushTargetRead, PushTestResult
+from app.modules.alerting.services import PushTargetService
 
 router = APIRouter()
 

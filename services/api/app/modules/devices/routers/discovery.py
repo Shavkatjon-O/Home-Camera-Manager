@@ -2,10 +2,10 @@
 
 from fastapi import APIRouter, Depends
 
-from app.modules.discovery.deps import get_discovery_service
-from app.modules.discovery.schemas import InspectRequest, InspectResult, ScanRequest, ScanResult
-from app.modules.discovery.services import DiscoveryService
-from app.tenancy.dependencies import require_admin
+from app.modules.devices.deps import get_discovery_service
+from app.modules.devices.schemas import InspectRequest, InspectResult, ScanRequest, ScanResult
+from app.modules.devices.services import DiscoveryService
+from app.modules.tenancy.deps import require_admin
 
 router = APIRouter()
 

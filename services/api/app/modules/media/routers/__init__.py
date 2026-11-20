@@ -1,4 +1,4 @@
-"""HTTP routers of the live module."""
+"""HTTP routers of the media module."""
 
 from .webrtc import router as live_router
 

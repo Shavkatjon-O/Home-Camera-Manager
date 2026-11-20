@@ -6,8 +6,8 @@ import httpx
 from pydantic import ValidationError
 
 from app.core.exceptions import BadGateway, Unavailable
-from app.modules.people.photos import UNREADABLE, PhotoRejected
-from app.modules.people.schemas import DetectedFace, EmbedResponse
+from app.modules.investigation.photos import UNREADABLE, PhotoRejected
+from app.modules.investigation.schemas import DetectedFace, EmbedResponse
 
 logger = logging.getLogger(__name__)
 

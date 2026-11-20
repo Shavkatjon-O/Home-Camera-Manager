@@ -11,8 +11,9 @@ from app.core.base_service import BaseModelService
 from app.core.exceptions import BadGateway, Conflict, NotFound, Unprocessable
 from app.core.security import decrypt_secret, encrypt_secret
 from app.models import Camera, Connector
-from app.modules.cameras.enums import CameraBrand, CameraSort
-from app.modules.cameras.schemas import (
+from app.modules.devices.agent import AgentClient
+from app.modules.devices.enums import CameraBrand, CameraSort
+from app.modules.devices.schemas import (
     CameraCreate,
     CameraList,
     CameraRead,
@@ -21,8 +22,7 @@ from app.modules.cameras.schemas import (
     CameraUpdate,
     PtzMove,
 )
-from app.modules.cameras.services.defaults import DEFAULT_RTSP_PORT, apply_brand_defaults
-from app.modules.connectors.agent import AgentClient
+from app.modules.devices.services.defaults import DEFAULT_RTSP_PORT, apply_brand_defaults
 from app.streaming.names import MAIN, SUB, stream_name
 from app.streaming.supervisor import CameraSupervisor, supervisor
 from camera_adapters.onvif.cache import OnvifCache, PtzTarget, onvif_cache

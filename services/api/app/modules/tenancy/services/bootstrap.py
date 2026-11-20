@@ -16,8 +16,8 @@ from app.core.config import settings
 from app.core.database import async_session_maker
 from app.models import FaceSample, Membership, Organisation, Site, User
 from app.models.ownership import SiteOwned
-from app.modules.organisations.enums import Role, SiteKind
-from app.tenancy.scope import ORGANISATION_SCOPED, SITE_SCOPED
+from app.modules.tenancy.enums import Role, SiteKind
+from app.modules.tenancy.services.scope import ORGANISATION_SCOPED, SITE_SCOPED
 
 __all__ = ["BOOTSTRAP_CONSENT_VERSION", "BootstrapReport", "bootstrap", "run_bootstrap"]
 

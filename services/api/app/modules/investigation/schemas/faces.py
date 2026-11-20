@@ -4,7 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from app.modules.people.enums import FaceStatus
+from app.modules.investigation.enums import FaceStatus
 
 __all__ = ["FaceRead"]
 

@@ -6,8 +6,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from app.modules.organisations.enums import Role
-from app.modules.users.schemas.auth import clean_email
+from app.modules.identity.schemas.auth import clean_email
+from app.modules.tenancy.enums import Role
 
 __all__ = ["InvitationCreate", "InvitationList", "InvitationPreview", "InvitationRead", "InvitationStatus"]
 

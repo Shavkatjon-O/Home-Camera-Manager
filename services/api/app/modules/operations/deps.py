@@ -4,9 +4,15 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.modules.health.services import CameraLinkService, HealthOverviewService, NetworkDeviceService, OutageService
-from app.tenancy.access import SiteAccess
-from app.tenancy.dependencies import get_site_access
+from app.modules.operations.services import (
+    CameraLinkService,
+    FloorPlanService,
+    HealthOverviewService,
+    NetworkDeviceService,
+    OutageService,
+)
+from app.modules.tenancy.deps import get_site_access
+from app.modules.tenancy.services.access import SiteAccess
 
 
 def get_network_device_service(
@@ -71,3 +77,19 @@ def get_outage_service(
         The service bound to the session and user.
     """
     return OutageService(session, access.user)
+
+
+def get_floor_plan_service(
+    session: AsyncSession = Depends(get_db),
+    access: SiteAccess = Depends(get_site_access),
+) -> FloorPlanService:
+    """Build the floor plan service for a signed-in user.
+
+    Args:
+        session: Database session for the request.
+        access: Access of the signed-in member to the request's site.
+
+    Returns:
+        Floor plan service acting for the user.
+    """
+    return FloorPlanService(session, access.user)

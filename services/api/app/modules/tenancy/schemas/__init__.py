@@ -1,4 +1,4 @@
-"""Request and response schemas of the organisations module."""
+"""Request and response schemas of the tenancy module."""
 
 from .invitations import *
 from .members import *

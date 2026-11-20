@@ -16,7 +16,7 @@ from app.health.probe import ProbeOutcome, tcp_probe
 from app.health.targets import Target, camera_address
 from app.health.tracker import OutageRecord, OutageTracker
 from app.models import Camera, CameraLink, HealthSample, NetworkDevice, Outage
-from app.modules.health.enums import TargetKind
+from app.modules.operations.enums import TargetKind
 
 logger = logging.getLogger(__name__)
 

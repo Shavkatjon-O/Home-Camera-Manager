@@ -6,10 +6,10 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Response, status
 
-from app.modules.analytics.deps import get_area_service, get_count_service
-from app.modules.analytics.schemas.counts import AreaCreate, AreaList, AreaRead, AreaReset, AreaUpdate, CountsRead
-from app.modules.analytics.services.counts import AreaService, CountService
-from app.tenancy.dependencies import require_admin, require_operator
+from app.modules.insights.deps import get_area_service, get_count_service
+from app.modules.insights.schemas.counts import AreaCreate, AreaList, AreaRead, AreaReset, AreaUpdate, CountsRead
+from app.modules.insights.services.counts import AreaService, CountService
+from app.modules.tenancy.deps import require_admin, require_operator
 
 router = APIRouter()
 

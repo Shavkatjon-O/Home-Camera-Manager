@@ -4,8 +4,8 @@ import numpy as np
 import pytest
 from pydantic import ValidationError
 
-from app.modules.analytics.schemas.journeys import JourneyReportIn, SimilarAppearanceQuery
-from app.modules.analytics.services.journeys import centred_scores, describe, unit
+from app.modules.investigation.schemas.journeys import JourneyReportIn, SimilarAppearanceQuery
+from app.modules.investigation.services.journeys import centred_scores, describe, unit
 
 
 def test_describe_merges_repeated_views():

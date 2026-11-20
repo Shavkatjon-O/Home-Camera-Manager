@@ -11,8 +11,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.camera_events.broker import EventBroker
 from app.core.database import async_session_maker
 from app.models import AuthSession, Camera, Membership, MembershipSite, PushTarget, Site
-from app.modules.push.services.providers import providers
-from app.modules.push.services.targets import deliver
+from app.modules.alerting.services.providers import providers
+from app.modules.alerting.services.targets import deliver
 
 __all__ = ["PushDispatcher", "alert_payload", "recipients"]
 

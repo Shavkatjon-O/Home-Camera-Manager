@@ -1,4 +1,4 @@
-"""FastAPI dependencies of the users module."""
+"""FastAPI dependencies of the identity module."""
 
 from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -8,7 +8,7 @@ from app.auth.dependencies import get_current_user
 from app.core.database import get_db
 from app.core.exceptions import TooManyRequests
 from app.core.rate_limit import RateLimiter
-from app.modules.users.services import AccountService, TokenService, UserService
+from app.modules.identity.services import AccountService, TokenService, UserService
 
 CREDENTIAL_ATTEMPTS = 20
 MAIL_ATTEMPTS = 5

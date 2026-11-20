@@ -4,11 +4,11 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Response, status
 
-from app.modules.cameras.deps import get_camera_service
-from app.modules.cameras.enums import CameraSort
-from app.modules.cameras.schemas import CameraCreate, CameraList, CameraOrder, CameraRead, CameraUpdate, PtzMove
-from app.modules.cameras.services import CameraService
-from app.tenancy.dependencies import require_admin, require_operator
+from app.modules.devices.deps import get_camera_service
+from app.modules.devices.enums import CameraSort
+from app.modules.devices.schemas import CameraCreate, CameraList, CameraOrder, CameraRead, CameraUpdate, PtzMove
+from app.modules.devices.services import CameraService
+from app.modules.tenancy.deps import require_admin, require_operator
 
 router = APIRouter()
 

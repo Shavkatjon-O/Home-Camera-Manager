@@ -7,9 +7,9 @@ from sqlalchemy import func, select
 
 from app.core.base_service import BaseModelService
 from app.models import Camera, NetworkDevice, Outage
-from app.modules.health.enums import TargetKind
-from app.modules.health.schemas import OutageList, OutageRead
-from app.modules.health.services.overview import duration_seconds
+from app.modules.operations.enums import TargetKind
+from app.modules.operations.schemas import OutageList, OutageRead
+from app.modules.operations.services.overview import duration_seconds
 
 __all__ = ["OutageService"]
 

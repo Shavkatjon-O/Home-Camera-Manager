@@ -8,9 +8,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.models import Event, FaceSample, UnknownCluster
-from app.modules.people.crops import CropStore
-from app.modules.people.embeddings import mean_embedding
-from app.modules.people.enums import FACE_KINDS, SampleSource
+from app.modules.investigation.crops import CropStore
+from app.modules.investigation.embeddings import mean_embedding
+from app.modules.investigation.enums import FACE_KINDS, SampleSource
 
 from .shared import BULK, lock_faces, strip_event_crops
 

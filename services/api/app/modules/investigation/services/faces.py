@@ -10,8 +10,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import Camera, Event, FaceSample, Person, UnknownCluster
 from app.modules.events.enums import EventSource
 from app.modules.events.schemas import event_read
-from app.modules.people.enums import FACE_KINDS, FACE_KNOWN, FACE_UNKNOWN, FaceStatus, SampleSource
-from app.modules.people.schemas import FaceRead, FaceResult, FaceResultAck
+from app.modules.investigation.enums import FACE_KINDS, FACE_KNOWN, FACE_UNKNOWN, FaceStatus, SampleSource
+from app.modules.investigation.schemas import FaceRead, FaceResult, FaceResultAck
 
 from .people import missing_person
 from .shared import cluster_label, lock_faces, recompute_centroid

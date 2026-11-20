@@ -1,4 +1,4 @@
-"""FastAPI dependencies of the people module."""
+"""FastAPI dependencies of the investigation module."""
 
 import hmac
 
@@ -10,17 +10,21 @@ from app.camera_events.engine import camera_events
 from app.core.config import settings
 from app.core.database import get_db
 from app.core.exceptions import Unauthorized
-from app.modules.people.analytics import AnalyticsClient
-from app.modules.people.crops import CropStore
-from app.modules.people.services import (
+from app.modules.investigation.analytics import AnalyticsClient
+from app.modules.investigation.crops import CropStore
+from app.modules.investigation.services import (
     ClusterService,
+    EventSearchService,
     FaceResultService,
+    FacetService,
     GalleryService,
     PersonService,
     SampleService,
+    SimilarService,
 )
-from app.tenancy.access import SiteAccess
-from app.tenancy.dependencies import get_site_access
+from app.modules.investigation.services.journeys import JourneyService
+from app.modules.tenancy.deps import get_site_access
+from app.modules.tenancy.services.access import SiteAccess
 
 analytics_bearer = HTTPBearer(auto_error=False)
 
@@ -146,3 +150,85 @@ def get_gallery_service(session: AsyncSession = Depends(get_db)) -> GalleryServi
         Gallery service.
     """
     return GalleryService(session)
+
+
+def get_event_search_service(
+    session: AsyncSession = Depends(get_db),
+    access: SiteAccess = Depends(get_site_access),
+) -> EventSearchService:
+    """Build the event search service for a signed-in user.
+
+    Args:
+        session: Database session for the request.
+        access: Access of the signed-in member to the request's site.
+
+    Returns:
+        Event search service acting for the user.
+    """
+    return EventSearchService(session, access.user)
+
+
+def get_facet_service(
+    session: AsyncSession = Depends(get_db),
+    access: SiteAccess = Depends(get_site_access),
+) -> FacetService:
+    """Build the facet service for a signed-in user.
+
+    Args:
+        session: Database session for the request.
+        access: Access of the signed-in member to the request's site.
+
+    Returns:
+        Facet service acting for the user.
+    """
+    return FacetService(session, access.user)
+
+
+def get_similar_service(
+    session: AsyncSession = Depends(get_db),
+    access: SiteAccess = Depends(get_site_access),
+    analytics: AnalyticsClient = Depends(get_analytics_client),
+) -> SimilarService:
+    """Build the similarity search service for a signed-in user.
+
+    Args:
+        session: Database session for the request.
+        access: Access of the signed-in member to the request's site.
+        analytics: Client of the analytics enrollment endpoint for photo queries.
+
+    Returns:
+        Similarity search service acting for the user.
+    """
+    return SimilarService(session, access.user, analytics)
+
+
+def get_journey_service(
+    session: AsyncSession = Depends(get_db),
+    access: SiteAccess = Depends(get_site_access),
+) -> JourneyService:
+    """Build the journey service for a signed-in request.
+
+    Args:
+        session: Request-scoped database session.
+        access: Access of the signed-in member to the request's site.
+
+    Returns:
+        The service.
+    """
+    return JourneyService(session, access.user)
+
+
+def get_journey_ingest_service(
+    session: AsyncSession = Depends(get_db),
+    authorized: None = Depends(require_analytics_token),
+) -> JourneyService:
+    """Build the journey service for a report of the analytics service.
+
+    Args:
+        session: Request-scoped database session.
+        authorized: Result of the token check.
+
+    Returns:
+        The service.
+    """
+    return JourneyService(session)

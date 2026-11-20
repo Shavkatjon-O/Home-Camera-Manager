@@ -1,4 +1,4 @@
-"""Services of the users module."""
+"""Services of the identity module."""
 
 from .accounts import *
 from .tokens import *

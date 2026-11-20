@@ -3,7 +3,7 @@ from uuid import uuid4
 
 import pytest
 
-from app.modules.people.crops import CropStore, decode_crop, enrolled_crop_path, is_relative_inside
+from app.modules.investigation.crops import CropStore, decode_crop, enrolled_crop_path, is_relative_inside
 
 JPEG = b"\xff\xd8\xff\xe0" + b"\x00" * 60
 

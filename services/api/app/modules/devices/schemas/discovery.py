@@ -5,8 +5,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field, field_validator
 
-from app.modules.cameras.enums import CameraBrand
-from app.modules.cameras.schemas import clean_host, clean_text
+from app.modules.devices.enums import CameraBrand
+from app.modules.devices.schemas.cameras import clean_host, clean_text
 
 __all__ = [
     "InspectProfile",

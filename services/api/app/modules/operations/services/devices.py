@@ -7,8 +7,8 @@ from sqlalchemy import func, select
 from app.core.base_service import BaseModelService
 from app.core.exceptions import Conflict, Unprocessable
 from app.models import Camera, CameraLink, NetworkDevice
-from app.modules.health.enums import DeviceKind, LinkKind
-from app.modules.health.schemas import (
+from app.modules.operations.enums import DeviceKind, LinkKind
+from app.modules.operations.schemas import (
     NetworkDeviceCreate,
     NetworkDeviceList,
     NetworkDeviceRead,

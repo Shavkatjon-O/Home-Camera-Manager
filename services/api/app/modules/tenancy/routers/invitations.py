@@ -4,19 +4,19 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Response, status
 
-from app.modules.organisations.deps import (
+from app.modules.tenancy.deps import (
     get_invitation_service,
     get_organisation_service,
     get_public_invitation_service,
 )
-from app.modules.organisations.schemas import (
+from app.modules.tenancy.schemas import (
     InvitationCreate,
     InvitationList,
     InvitationPreview,
     InvitationRead,
     OrganisationRead,
 )
-from app.modules.organisations.services import InvitationService, OrganisationService
+from app.modules.tenancy.services import InvitationService, OrganisationService
 
 router = APIRouter()
 

@@ -4,10 +4,10 @@ from sqlalchemy import func, select
 
 from app.core.base_service import BaseModelService
 from app.models import Event, Person, UnknownCluster
-from app.modules.people.services import cluster_label
-from app.modules.search.schemas import ClusterFacet, Facets, PersonFacet
+from app.modules.investigation.schemas import ClusterFacet, Facets, PersonFacet
+from app.modules.investigation.services.shared import cluster_label
 
-from .analytics import label_facets, rule_facets
+from .search_analytics import label_facets, rule_facets
 
 __all__ = ["FacetService"]
 

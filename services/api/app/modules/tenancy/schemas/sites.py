@@ -6,7 +6,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import BaseModel, Field, field_validator
 
-from app.modules.organisations.enums import Role, SiteKind
+from app.modules.tenancy.enums import Role, SiteKind
 
 __all__ = ["SiteCreate", "SiteList", "SiteRead", "SiteUpdate", "check_timezone"]
 

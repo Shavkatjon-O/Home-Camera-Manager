@@ -1,4 +1,4 @@
-"""Database models of the organisations module."""
+"""Database models of the tenancy module."""
 
 from .invitations import *
 from .memberships import *

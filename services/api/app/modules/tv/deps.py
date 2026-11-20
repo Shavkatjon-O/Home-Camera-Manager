@@ -6,11 +6,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.context import TvDeviceContext
 from app.core.database import get_db
-from app.modules.cameras.services import CameraService
+from app.modules.devices.services import CameraService
+from app.modules.tenancy.deps import get_site_access
+from app.modules.tenancy.services.access import SiteAccess
+from app.modules.tenancy.services.scope import Scope, install_scope
 from app.modules.tv.services import TvConfigService, TvDeviceService, TvPairingService
-from app.tenancy.access import SiteAccess
-from app.tenancy.dependencies import get_site_access
-from app.tenancy.scope import Scope, install_scope
 
 device_bearer = HTTPBearer(auto_error=False)
 

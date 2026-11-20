@@ -9,11 +9,11 @@ import pytest
 
 from app.core.exceptions import BadGateway, Unavailable
 from app.models import FaceSample, Person
-from app.modules.people import photos
-from app.modules.people.analytics import AnalyticsClient
-from app.modules.people.crops import CropStore
-from app.modules.people.embeddings import EMBEDDING_SIZE, to_bytes
-from app.modules.people.photos import (
+from app.modules.investigation import photos
+from app.modules.investigation.analytics import AnalyticsClient
+from app.modules.investigation.crops import CropStore
+from app.modules.investigation.embeddings import EMBEDDING_SIZE, to_bytes
+from app.modules.investigation.photos import (
     NO_FACE,
     SMALL_FACE,
     UNREADABLE,
@@ -21,8 +21,8 @@ from app.modules.people.photos import (
     choose_face,
     decode_photo,
 )
-from app.modules.people.schemas import DetectedFace, PhotoUploadRequest
-from app.modules.people.services import PersonService
+from app.modules.investigation.schemas import DetectedFace, PhotoUploadRequest
+from app.modules.investigation.services import PersonService
 
 NOW = datetime(2026, 11, 20, 5, 0, tzinfo=UTC)
 JPEG = b"\xff\xd8\xff\xe0" + b"\x00" * 60

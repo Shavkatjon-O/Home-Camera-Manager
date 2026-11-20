@@ -5,14 +5,14 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 
-from app.modules.analytics.deps import get_journey_service
-from app.modules.analytics.schemas.journeys import (
+from app.modules.investigation.deps import get_journey_service
+from app.modules.investigation.schemas.journeys import (
     JourneyList,
     JourneyRead,
     SimilarAppearanceQuery,
     SimilarAppearances,
 )
-from app.modules.analytics.services.journeys import JourneyService
+from app.modules.investigation.services.journeys import JourneyService
 
 router = APIRouter()
 

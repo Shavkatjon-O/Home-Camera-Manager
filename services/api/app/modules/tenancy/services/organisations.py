@@ -9,17 +9,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.context import UserContext
 from app.core.exceptions import NotFound, Unprocessable
 from app.models import Membership, Organisation, Site
-from app.modules.organisations.enums import Role
-from app.modules.organisations.schemas import (
+from app.modules.tenancy.enums import Role
+from app.modules.tenancy.schemas import (
     FacesConsent,
     OrganisationCreate,
     OrganisationList,
     OrganisationRead,
     OrganisationUpdate,
 )
-from app.modules.organisations.services.memberships import delete_organisation_rows
-from app.modules.organisations.services.sites import site_reads
-from app.tenancy.access import accessible_sites, resolve_organisation_access
+from app.modules.tenancy.services.access import accessible_sites, resolve_organisation_access
+from app.modules.tenancy.services.memberships import delete_organisation_rows
+from app.modules.tenancy.services.sites import site_reads
 
 __all__ = ["FACES_CONSENT", "OrganisationService"]
 

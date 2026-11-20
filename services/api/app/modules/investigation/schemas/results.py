@@ -5,7 +5,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-from app.modules.people.schemas import FaceRead
+from app.modules.investigation.schemas.faces import FaceRead
 
 __all__ = ["EventFilters", "ResultPage", "SearchResult"]
 

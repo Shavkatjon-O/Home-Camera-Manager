@@ -11,7 +11,7 @@ from app.auth.context import UserContext
 from app.core.config import settings
 from app.core.exceptions import BadGateway, Unprocessable
 from app.models import Camera
-from app.modules.discovery.schemas import (
+from app.modules.devices.schemas import (
     InspectProfile,
     InspectRequest,
     InspectResult,

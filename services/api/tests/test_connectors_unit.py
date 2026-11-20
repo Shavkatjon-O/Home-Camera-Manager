@@ -8,13 +8,17 @@ from pydantic import ValidationError
 from app.core.exceptions import BadGateway, Conflict
 from app.core.security import encrypt_secret
 from app.models import Connector, ConnectorPairing
-from app.modules.cameras.enums import CameraBrand
-from app.modules.connectors.agent import AgentClient, agent_address
-from app.modules.connectors.enums import PairingStatus
-from app.modules.connectors.schemas import ConnectorCameraConfig
-from app.modules.connectors.schemas.connectors import ConnectorClaim, clean_user_code
-from app.modules.connectors.services.device import config_version
-from app.modules.connectors.services.pairing import CODE_ALPHABET, format_user_code, new_user_code, pairing_status
+from app.modules.devices.agent import AgentClient, agent_address
+from app.modules.devices.enums import CameraBrand, ConnectorPairingStatus
+from app.modules.devices.schemas import ConnectorCameraConfig
+from app.modules.devices.schemas.connectors import ConnectorClaim, clean_user_code
+from app.modules.devices.services.connector_device import config_version
+from app.modules.devices.services.connector_pairing import (
+    CODE_ALPHABET,
+    format_user_code,
+    new_user_code,
+    pairing_status,
+)
 
 NOW = datetime(2026, 11, 20, 12, 0, tzinfo=UTC)
 
@@ -57,20 +61,20 @@ def pairing(**fields):
 
 
 def test_pairing_pending():
-    assert pairing_status(pairing(), NOW) == PairingStatus.PENDING
+    assert pairing_status(pairing(), NOW) == ConnectorPairingStatus.PENDING
 
 
 def test_pairing_claimed():
-    assert pairing_status(pairing(claimed_at=NOW), NOW) == PairingStatus.CLAIMED
+    assert pairing_status(pairing(claimed_at=NOW), NOW) == ConnectorPairingStatus.CLAIMED
 
 
 def test_pairing_expired():
-    assert pairing_status(pairing(expires_at=NOW), NOW) == PairingStatus.EXPIRED
+    assert pairing_status(pairing(expires_at=NOW), NOW) == ConnectorPairingStatus.EXPIRED
 
 
 def test_pairing_delivered_wins_over_expiry():
     found = pairing(delivered_at=NOW, expires_at=NOW - timedelta(minutes=1))
-    assert pairing_status(found, NOW) == PairingStatus.DELIVERED
+    assert pairing_status(found, NOW) == ConnectorPairingStatus.DELIVERED
 
 
 def connector(**fields):

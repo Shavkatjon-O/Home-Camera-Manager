@@ -4,11 +4,11 @@ import pytest
 from starlette.requests import Request
 
 from app.core.exceptions import Forbidden
-from app.modules.organisations.enums import Role, role_rank
-from app.tenancy import dependencies
-from app.tenancy.access import OrganisationAccess, check_role
-from app.tenancy.bootstrap import BootstrapReport
-from app.tenancy.scope import Scope
+from app.modules.tenancy import deps as dependencies
+from app.modules.tenancy.enums import Role, role_rank
+from app.modules.tenancy.services.access import OrganisationAccess, check_role
+from app.modules.tenancy.services.bootstrap import BootstrapReport
+from app.modules.tenancy.services.scope import Scope
 from tests.fakes import site_access
 
 

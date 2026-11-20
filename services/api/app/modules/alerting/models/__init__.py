@@ -1,3 +1,4 @@
-"""Database models of the push module."""
+"""Models of the alerting module."""
 
+from .settings import *
 from .targets import *

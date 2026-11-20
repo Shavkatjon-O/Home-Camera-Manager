@@ -4,8 +4,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Response, status
 
-from app.modules.organisations.deps import get_organisation_service
-from app.modules.organisations.schemas import (
+from app.modules.tenancy.deps import get_organisation_service
+from app.modules.tenancy.schemas import (
     FacesConsent,
     OrganisationCreate,
     OrganisationList,
@@ -13,7 +13,7 @@ from app.modules.organisations.schemas import (
     OrganisationUpdate,
     OwnershipTransfer,
 )
-from app.modules.organisations.services import FACES_CONSENT, OrganisationService
+from app.modules.tenancy.services import FACES_CONSENT, OrganisationService
 
 router = APIRouter()
 

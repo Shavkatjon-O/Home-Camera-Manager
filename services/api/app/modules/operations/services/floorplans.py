@@ -8,7 +8,7 @@ from sqlalchemy.orm import defer
 from app.core.base_service import BaseModelService
 from app.core.exceptions import Unprocessable
 from app.models import FloorPlan
-from app.modules.floorplans.schemas import (
+from app.modules.operations.schemas import (
     AccessPoint,
     Device,
     FloorPlanCreate,

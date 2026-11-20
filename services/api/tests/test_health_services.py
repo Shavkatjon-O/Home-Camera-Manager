@@ -10,9 +10,9 @@ from app.health.prober import build_targets
 from app.health.stats import bucket_window
 from app.health.targets import BRIDGED_DEVICE_PORT, Target, camera_address, depth_order
 from app.models import Camera, CameraLink, NetworkDevice
-from app.modules.health.enums import TargetStatus
-from app.modules.health.schemas import CameraLinkUpdate, NetworkDeviceCreate, NetworkDeviceUpdate
-from app.modules.health.services import (
+from app.modules.operations.enums import TargetStatus
+from app.modules.operations.schemas import CameraLinkUpdate, NetworkDeviceCreate, NetworkDeviceUpdate
+from app.modules.operations.services import (
     HealthOverviewService,
     Latest,
     NetworkDeviceService,

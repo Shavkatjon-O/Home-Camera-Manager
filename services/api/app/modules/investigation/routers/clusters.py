@@ -4,10 +4,10 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Response, status
 
-from app.modules.people.deps import get_cluster_service
-from app.modules.people.schemas import ClusterList, ClusterMerge, ClusterName, ClusterRead, PersonRead
-from app.modules.people.services import ClusterService
-from app.tenancy.dependencies import require_admin
+from app.modules.investigation.deps import get_cluster_service
+from app.modules.investigation.schemas import ClusterList, ClusterMerge, ClusterName, ClusterRead, PersonRead
+from app.modules.investigation.services import ClusterService
+from app.modules.tenancy.deps import require_admin
 
 router = APIRouter()
 

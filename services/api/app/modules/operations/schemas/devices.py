@@ -5,8 +5,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from app.modules.cameras.schemas import clean_host, clean_text
-from app.modules.health.enums import DeviceKind, LinkKind
+from app.modules.devices.schemas import clean_host, clean_text
+from app.modules.operations.enums import DeviceKind, LinkKind
 
 __all__ = ["NetworkDeviceCreate", "NetworkDeviceList", "NetworkDeviceRead", "NetworkDeviceUpdate"]
 

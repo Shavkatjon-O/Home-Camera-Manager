@@ -4,8 +4,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import AnalyticsSettings
+from app.modules.alerting.schemas import AnalyticsSettingsRead, AnalyticsSettingsUpdate
 from app.modules.analytics.enums import ArmMode
-from app.modules.analytics.schemas import AnalyticsSettingsRead, AnalyticsSettingsUpdate
 
 __all__ = ["AnalyticsSettingsService", "load_settings"]
 

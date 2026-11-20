@@ -1,1 +1,1 @@
-"""Push module: the push targets of signed-in devices and the dispatch of alert notifications."""
+"""Alerting module: arm modes, notification channels and the dispatch of alerts."""

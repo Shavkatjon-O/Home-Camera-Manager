@@ -9,10 +9,10 @@ from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials
 
 from app.core.exceptions import ServiceError, Unauthorized
-from app.modules.people import deps
-from app.modules.people.routers import people_internal_router, people_router
-from app.modules.people.schemas import ClusterList, FaceResultAck, Gallery, PersonRead
-from app.tenancy.dependencies import get_site_access
+from app.modules.investigation import deps
+from app.modules.investigation.routers import people_internal_router, people_router
+from app.modules.investigation.schemas import ClusterList, FaceResultAck, Gallery, PersonRead
+from app.modules.tenancy.deps import get_site_access
 from tests.fakes import site_access
 
 NOW = datetime(2026, 11, 20, 5, 0, tzinfo=UTC)

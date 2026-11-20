@@ -4,10 +4,10 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Response, status
 
+from app.modules.tenancy.deps import require_admin
 from app.modules.tv.deps import get_device_service
 from app.modules.tv.schemas import TvDeviceList
 from app.modules.tv.services import TvDeviceService
-from app.tenancy.dependencies import require_admin
 
 router = APIRouter()
 

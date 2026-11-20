@@ -11,7 +11,7 @@ from sqlalchemy import ColumnElement, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import AnalyticsLine, AnalyticsView, AnalyticsZone, Event
-from app.modules.search.schemas import LineFacet, ViewFacet, ZoneFacet
+from app.modules.investigation.schemas import LineFacet, ViewFacet, ZoneFacet
 
 __all__ = ["analytics_filters", "label_facets", "rule_facets"]
 

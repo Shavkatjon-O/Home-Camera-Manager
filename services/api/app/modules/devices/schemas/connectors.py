@@ -5,8 +5,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field, field_validator
 
-from app.modules.cameras.enums import CameraBrand
-from app.modules.connectors.enums import ConnectorMode, FoundBy, PairingStatus
+from app.modules.devices.enums import CameraBrand, ConnectorMode, ConnectorPairingStatus, FoundBy
 
 __all__ = [
     "ConnectorClaim",
@@ -83,7 +82,7 @@ class PairingRead(BaseModel):
 
     uuid: UUID
     name: str
-    status: PairingStatus
+    status: ConnectorPairingStatus
     expires_at: datetime
     connector: UUID | None
 

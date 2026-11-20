@@ -8,8 +8,8 @@ from sqlalchemy.dialects import postgresql
 
 from app.core.exceptions import NotFound, Unprocessable
 from app.models import FaceSample, Person
-from app.modules.people.schemas import PersonCreate, PersonUpdate
-from app.modules.people.services import PersonService, SampleService
+from app.modules.investigation.schemas import PersonCreate, PersonUpdate
+from app.modules.investigation.services import PersonService, SampleService
 
 NOW = datetime(2026, 11, 20, 5, 0, tzinfo=UTC)
 CAMERA = uuid4()

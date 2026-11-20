@@ -8,10 +8,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.context import UserContext
 from app.core.exceptions import Forbidden, NotFound
 from app.models import Membership, User
-from app.modules.organisations.enums import Role
-from app.modules.organisations.schemas import MemberList, MemberRead, MemberUpdate
-from app.modules.organisations.services.memberships import membership_site_uuids, set_membership_sites
-from app.tenancy.access import OrganisationAccess, check_role, resolve_organisation_access
+from app.modules.tenancy.enums import Role
+from app.modules.tenancy.schemas import MemberList, MemberRead, MemberUpdate
+from app.modules.tenancy.services.access import OrganisationAccess, check_role, resolve_organisation_access
+from app.modules.tenancy.services.memberships import membership_site_uuids, set_membership_sites
 
 __all__ = ["MemberService"]
 

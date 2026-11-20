@@ -4,8 +4,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Response, status
 
-from app.modules.connectors.deps import get_connector_service, get_pairing_admin_service
-from app.modules.connectors.schemas import (
+from app.modules.devices.deps import get_connector_pairing_admin_service, get_connector_service
+from app.modules.devices.schemas import (
     ConnectorClaim,
     ConnectorList,
     ConnectorRead,
@@ -15,9 +15,9 @@ from app.modules.connectors.schemas import (
     StreamTest,
     StreamTestResult,
 )
-from app.modules.connectors.services import ConnectorService, PairingService
-from app.tenancy.access import SiteAccess
-from app.tenancy.dependencies import require_admin
+from app.modules.devices.services import ConnectorService, PairingService
+from app.modules.tenancy.deps import require_admin
+from app.modules.tenancy.services.access import SiteAccess
 
 router = APIRouter()
 
@@ -39,7 +39,7 @@ async def list_connectors(service: ConnectorService = Depends(get_connector_serv
 async def claim_connector(
     payload: ConnectorClaim,
     access: SiteAccess = Depends(require_admin),
-    service: PairingService = Depends(get_pairing_admin_service),
+    service: PairingService = Depends(get_connector_pairing_admin_service),
 ) -> PairingRead:
     """Pair the connector that shows a code to the site; admins and owners only.
 
@@ -60,7 +60,7 @@ async def claim_connector(
 async def get_pairing(
     uuid: UUID,
     access: SiteAccess = Depends(require_admin),
-    service: PairingService = Depends(get_pairing_admin_service),
+    service: PairingService = Depends(get_connector_pairing_admin_service),
 ) -> PairingRead:
     """Follow a claimed pairing until the connector picked up its token; admins and owners only.
 

@@ -7,7 +7,7 @@ from pydantic import ValidationError
 from app.core.rate_limit import RateLimiter
 from app.core.security import hash_token, new_token
 from app.models import Camera, TvPairing
-from app.modules.discovery.services import index_hosts
+from app.modules.devices.services import index_hosts
 from app.modules.tv.enums import PairingState
 from app.modules.tv.schemas import PairingApprove, PairingCreate, clean_device_name
 from app.modules.tv.services import build_config, new_code, pairing_state, tile_label

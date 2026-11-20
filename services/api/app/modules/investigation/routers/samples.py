@@ -5,8 +5,8 @@ from uuid import UUID
 from fastapi import APIRouter, Depends
 from fastapi.responses import FileResponse
 
-from app.modules.people.deps import get_sample_service
-from app.modules.people.services import SampleService
+from app.modules.investigation.deps import get_sample_service
+from app.modules.investigation.services import SampleService
 
 router = APIRouter()
 

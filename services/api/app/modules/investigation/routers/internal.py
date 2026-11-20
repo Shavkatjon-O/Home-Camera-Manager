@@ -2,9 +2,9 @@
 
 from fastapi import APIRouter, Depends
 
-from app.modules.people.deps import get_face_result_service, get_gallery_service, require_analytics_token
-from app.modules.people.schemas import FaceResult, FaceResultAck, Gallery
-from app.modules.people.services import FaceResultService, GalleryService
+from app.modules.investigation.deps import get_face_result_service, get_gallery_service, require_analytics_token
+from app.modules.investigation.schemas import FaceResult, FaceResultAck, Gallery
+from app.modules.investigation.services import FaceResultService, GalleryService
 
 router = APIRouter(dependencies=[Depends(require_analytics_token)])
 

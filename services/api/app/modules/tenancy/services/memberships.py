@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import Conflict, Unprocessable
 from app.models import Camera, Connector, Invitation, Membership, MembershipSite, Organisation, Site
-from app.modules.organisations.enums import Role
+from app.modules.tenancy.enums import Role
 
 __all__ = [
     "delete_organisation_rows",

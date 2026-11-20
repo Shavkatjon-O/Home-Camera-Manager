@@ -9,10 +9,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.context import UserContext
 from app.core.exceptions import Forbidden
 from app.models import Camera, Connector, Membership, Organisation, Site
-from app.modules.organisations.enums import Role, SiteKind
-from app.modules.organisations.schemas import SiteCreate, SiteList, SiteRead, SiteUpdate
-from app.modules.organisations.services.memberships import delete_site_rows
-from app.tenancy.access import accessible_sites, check_role, resolve_organisation_access, resolve_site_access
+from app.modules.tenancy.enums import Role, SiteKind
+from app.modules.tenancy.schemas import SiteCreate, SiteList, SiteRead, SiteUpdate
+from app.modules.tenancy.services.access import (
+    accessible_sites,
+    check_role,
+    resolve_organisation_access,
+    resolve_site_access,
+)
+from app.modules.tenancy.services.memberships import delete_site_rows
 
 __all__ = ["SiteService", "site_counts", "site_reads"]
 

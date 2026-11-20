@@ -5,7 +5,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-from app.modules.organisations.enums import Role
+from app.modules.tenancy.enums import Role
 
 __all__ = ["MemberList", "MemberRead", "MemberUpdate"]
 

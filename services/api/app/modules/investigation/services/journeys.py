@@ -15,7 +15,8 @@ from sqlalchemy.dialects.postgresql import insert
 from app.core.base_service import BaseModelService
 from app.core.exceptions import NotFound
 from app.models import AnalyticsAppearance, AnalyticsJourney, AnalyticsView, Event
-from app.modules.analytics.schemas.journeys import (
+from app.modules.investigation.embeddings import to_bytes, to_vector
+from app.modules.investigation.schemas.journeys import (
     AppearanceMatch,
     JourneyList,
     JourneyRead,
@@ -24,9 +25,8 @@ from app.modules.analytics.schemas.journeys import (
     SimilarAppearanceQuery,
     SimilarAppearances,
 )
-from app.modules.events.services.events import camera_names
-from app.modules.people.embeddings import to_bytes, to_vector
-from app.tenancy.owners import view_owners
+from app.modules.investigation.services.shared import camera_names
+from app.modules.tenancy.services.owners import view_owners
 
 __all__ = ["JourneyService", "centred_scores", "describe", "unit"]
 

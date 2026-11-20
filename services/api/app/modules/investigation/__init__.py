@@ -1,1 +1,1 @@
-"""People module: known people, unknown face clusters, face samples and the face results of the analytics service."""
+"""Investigation module: search, people and faces, appearances and journeys."""

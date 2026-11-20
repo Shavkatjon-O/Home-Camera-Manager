@@ -1,7 +1,7 @@
 """Per-brand default settings applied when a camera is created."""
 
 from app.core.exceptions import Unprocessable
-from app.modules.cameras.enums import CameraBrand
+from app.modules.devices.enums import CameraBrand
 
 __all__ = ["BRAND_DEFAULTS", "DEFAULT_RTSP_PORT", "apply_brand_defaults"]
 

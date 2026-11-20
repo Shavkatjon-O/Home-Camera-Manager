@@ -8,11 +8,11 @@ from app.core.base_service import BaseModelService
 from app.core.exceptions import Unprocessable
 from app.models import Event, FaceSample, Person, UnknownCluster
 from app.modules.events.schemas import event_read
-from app.modules.events.services.events import camera_names
-from app.modules.people.services import face_summaries
-from app.modules.search.schemas import EventFilters, ResultPage, SearchResult
+from app.modules.investigation.schemas import EventFilters, ResultPage, SearchResult
+from app.modules.investigation.services.faces import face_summaries
+from app.modules.investigation.services.shared import camera_names
 
-from .analytics import analytics_filters
+from .search_analytics import analytics_filters
 
 __all__ = ["EventSearchService", "event_filters", "result_fields"]
 

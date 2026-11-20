@@ -5,8 +5,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Response, status
 
-from app.modules.control.deps import get_control_service
-from app.modules.control.schemas import (
+from app.modules.devices.deps import get_control_service
+from app.modules.devices.schemas import (
     AudioRead,
     DeviceRead,
     EncoderUpdate,
@@ -24,8 +24,8 @@ from app.modules.control.schemas import (
     SirenRequest,
     VideoRead,
 )
-from app.modules.control.services import CameraControlService
-from app.tenancy.dependencies import require_admin, require_operator
+from app.modules.devices.services import CameraControlService
+from app.modules.tenancy.deps import require_admin, require_operator
 
 router = APIRouter()
 

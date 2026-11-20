@@ -14,7 +14,7 @@ from app.core.exceptions import Forbidden
 from app.core.security import clear_session_cookie, create_session_token, set_session_cookie
 from app.core.tokens import jwks
 from app.models import Camera
-from app.modules.users.deps import (
+from app.modules.identity.deps import (
     get_account_service,
     get_public_account_service,
     get_session_service,
@@ -23,7 +23,7 @@ from app.modules.users.deps import (
     limit_credentials,
     limit_mail,
 )
-from app.modules.users.schemas import (
+from app.modules.identity.schemas import (
     AccountDelete,
     AccountRead,
     AccountRegister,
@@ -40,9 +40,9 @@ from app.modules.users.schemas import (
     TokenRequest,
     VerifyEmail,
 )
-from app.modules.users.services import AccountService, TokenService, UserService
+from app.modules.identity.services import AccountService, TokenService, UserService
+from app.modules.tenancy.services.access import accessible_sites
 from app.streaming.names import is_managed
-from app.tenancy.access import accessible_sites
 
 router = APIRouter()
 

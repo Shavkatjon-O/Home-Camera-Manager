@@ -1,4 +1,4 @@
-"""Enumerations and fixed values of the people module."""
+"""Enumerations and fixed values of the investigation module."""
 
 from enum import StrEnum
 

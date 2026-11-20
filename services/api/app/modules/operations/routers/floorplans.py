@@ -4,10 +4,10 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Response, status
 
-from app.modules.floorplans.deps import get_floor_plan_service
-from app.modules.floorplans.schemas import FloorPlanCreate, FloorPlanList, FloorPlanRead, FloorPlanUpdate
-from app.modules.floorplans.services import FloorPlanService
-from app.tenancy.dependencies import require_admin
+from app.modules.operations.deps import get_floor_plan_service
+from app.modules.operations.schemas import FloorPlanCreate, FloorPlanList, FloorPlanRead, FloorPlanUpdate
+from app.modules.operations.services import FloorPlanService
+from app.modules.tenancy.deps import require_admin
 
 router = APIRouter()
 

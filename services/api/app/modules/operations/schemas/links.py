@@ -5,7 +5,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, model_validator
 
-from app.modules.health.enums import LinkKind
+from app.modules.operations.enums import LinkKind
 
 __all__ = ["CameraLinkRead", "CameraLinkUpdate"]
 
