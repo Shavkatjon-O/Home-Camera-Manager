@@ -1,11 +1,17 @@
 /**
- * Escape text for a Markdown paragraph or table cell, so names such as regular expressions stay plain text.
+ * Escape text for a Markdown paragraph or table cell, so names such as regular expressions stay plain text and
+ * addresses such as container defaults do not turn into links.
  *
  * @param text The text.
  * @returns The escaped text.
  */
 export function escape(text: string): string {
-  return text.replace(/[\\`*_[\]<>|{}#]/g, (character) => `\\${character}`).replace(/\s+/g, " ").trim()
+  return text
+    .replace(/[\\`*_[\]<>|{}#]/g, (character) => `\\${character}`)
+    .replace(/:\/\//g, "\\://")
+    .replace(/\bwww\./g, "www\\.")
+    .replace(/\s+/g, " ")
+    .trim()
 }
 
 /**
