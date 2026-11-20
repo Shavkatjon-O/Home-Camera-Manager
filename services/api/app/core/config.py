@@ -84,6 +84,7 @@ class Settings(BaseSettings):
         telegram_bot_username: Username of that bot, read from Telegram at start when empty.
         telegram_api_url: Base address of the Telegram Bot API, replaced by a fake in tests and the kit.
         telegram_webhook_secret: Secret Telegram sends with every webhook call, required for webhook mode.
+        telegram_webhook_url: Address Telegram delivers updates to; empty uses the public address.
         telegram_polling: Whether to poll Telegram for updates instead of receiving them by webhook.
         telegram_link_minutes: Minutes a chat link stays valid.
     """
@@ -184,6 +185,7 @@ class Settings(BaseSettings):
     telegram_bot_username: str = ""
     telegram_api_url: str = "https://api.telegram.org"
     telegram_webhook_secret: str = ""
+    telegram_webhook_url: str = ""
     telegram_polling: bool = False
     telegram_link_minutes: int = 30
 

@@ -35769,6 +35769,28 @@
             "type": "integer",
             "title": "Connector Count"
           },
+          "event_retention_days": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Retention Days"
+          },
+          "effective_event_retention_days": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Event Retention Days"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -35796,7 +35818,7 @@
           "updated_at"
         ],
         "title": "SiteRead",
-        "description": "A site the member may reach.\n\nAttributes:\n    uuid: Public id of the site.\n    organisation: Public id of its organisation.\n    organisation_name: Name of its organisation.\n    name: Display name.\n    kind: Kind of place.\n    timezone: IANA time zone.\n    position: Order within the organisation.\n    role: The member's role there.\n    camera_count: Cameras registered at the site.\n    connector_count: Connectors paired to the site.\n    created_at: When the site was added.\n    updated_at: When it last changed."
+        "description": "A site the member may reach.\n\nAttributes:\n    uuid: Public id of the site.\n    organisation: Public id of its organisation.\n    organisation_name: Name of its organisation.\n    name: Display name.\n    kind: Kind of place.\n    timezone: IANA time zone.\n    position: Order within the organisation.\n    role: The member's role there.\n    camera_count: Cameras registered at the site.\n    connector_count: Connectors paired to the site.\n    event_retention_days: Days the site keeps its events by its own setting, None when it has none.\n    effective_event_retention_days: Days its events are actually kept: the shortest of its own setting, the\n        plan's limit and the server's retention.\n    created_at: When the site was added.\n    updated_at: When it last changed."
       },
       "SiteUpdate": {
         "properties": {
@@ -35847,11 +35869,24 @@
               }
             ],
             "title": "Position"
+          },
+          "event_retention_days": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 3650.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Retention Days"
           }
         },
         "type": "object",
         "title": "SiteUpdate",
-        "description": "Request to change a site; only the fields sent change.\n\nAttributes:\n    name: Display name.\n    kind: Kind of place.\n    timezone: IANA time zone.\n    position: Order within the organisation."
+        "description": "Request to change a site; only the fields sent change.\n\nAttributes:\n    name: Display name.\n    kind: Kind of place.\n    timezone: IANA time zone.\n    position: Order within the organisation.\n    event_retention_days: Days to keep the site's events, up to the plan's limit; 0 goes back to the longest\n        the plan and the server allow."
       },
       "SourceMode": {
         "type": "string",

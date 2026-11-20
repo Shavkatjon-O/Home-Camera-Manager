@@ -155,6 +155,20 @@ services:
       store-lan:
         ipv4_address: 172.31.252.11
 
+  telegram:
+    <<: *dev-hardening
+    build: ./tools/devkit/telegram
+    image: smart-surveillance-dev-telegram:local
+    container_name: smart-surveillance-dev-telegram
+    profiles: [devkit]
+    read_only: true
+    mem_limit: 128m
+    environment:
+      FAKE_TELEGRAM_TOKEN: ${SSS_TELEGRAM_BOT_TOKEN:-devkit-fake-token}
+    ports:
+      - "127.0.0.1:${SSS_DEV_TELEGRAM_PORT:-18781}:8081"
+    networks: [cams]
+
   connector:
     <<: *dev-hardening
     build:

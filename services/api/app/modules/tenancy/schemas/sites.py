@@ -85,12 +85,15 @@ class SiteUpdate(BaseModel):
         kind: Kind of place.
         timezone: IANA time zone.
         position: Order within the organisation.
+        event_retention_days: Days to keep the site's events, up to the plan's limit; 0 goes back to the longest
+            the plan and the server allow.
     """
 
     name: str | None = Field(default=None, min_length=1, max_length=100)
     kind: SiteKind | None = None
     timezone: str | None = Field(default=None, min_length=1, max_length=64)
     position: int | None = Field(default=None, ge=0)
+    event_retention_days: int | None = Field(default=None, ge=0, le=3650)
 
     @field_validator("timezone")
     @classmethod
@@ -120,6 +123,9 @@ class SiteRead(BaseModel):
         role: The member's role there.
         camera_count: Cameras registered at the site.
         connector_count: Connectors paired to the site.
+        event_retention_days: Days the site keeps its events by its own setting, None when it has none.
+        effective_event_retention_days: Days its events are actually kept: the shortest of its own setting, the
+            plan's limit and the server's retention.
         created_at: When the site was added.
         updated_at: When it last changed.
     """
@@ -134,6 +140,8 @@ class SiteRead(BaseModel):
     role: Role
     camera_count: int
     connector_count: int
+    event_retention_days: int | None = None
+    effective_event_retention_days: int | None = None
     created_at: datetime
     updated_at: datetime
 

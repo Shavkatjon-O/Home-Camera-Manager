@@ -17,6 +17,7 @@ class Site(BaseModel):
         kind: Site kind, one of the SiteKind members.
         timezone: IANA time zone of schedules, counts and area resets at the site.
         position: Order of the site within its organisation.
+        event_retention_days: Days the site keeps its events, None for as long as the plan and the server allow.
     """
 
     __tablename__ = "sites"
@@ -26,3 +27,4 @@ class Site(BaseModel):
     kind: Mapped[str] = mapped_column(String(20), nullable=False, default="home")
     timezone: Mapped[str] = mapped_column(String(64), nullable=False, default="UTC")
     position: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
+    event_retention_days: Mapped[int | None] = mapped_column(Integer, nullable=True)
