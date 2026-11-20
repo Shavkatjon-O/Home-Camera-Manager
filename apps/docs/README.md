@@ -55,5 +55,6 @@ English pages live in content/docs/en. Russian and Uzbek join by adding ru and u
 | DOCS_BASE_PATH | empty | Path prefix the site is served under, such as /Smart-Surveillance-System on GitHub Pages |
 | DOCS_REPO_ROOT | ../.. | Repository root the generators read |
 | DOCS_OPTIONAL | empty | Sources whose pages may be left out when missing |
+| DOCS_BUILD_CPUS | empty | Number of build workers, to keep the build's memory down on a small machine; empty lets Next.js choose |
 
 The source path variables are listed under Content sources.
