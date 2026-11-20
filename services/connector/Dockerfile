@@ -13,13 +13,16 @@ COPY pyproject.toml uv.lock ./
 COPY services/api/pyproject.toml services/api/
 COPY packages/camera-adapters packages/camera-adapters
 COPY services/connector services/connector
-RUN uv sync --frozen --no-dev --no-editable --package smart-surveillance-connector
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev --no-editable --package smart-surveillance-connector
 
 FROM python:3.13.11-slim-bookworm
 
+ARG REVISION=unknown
 LABEL org.opencontainers.image.title="smart-surveillance-connector" \
       org.opencontainers.image.description="Connector agent: pairs with the backend and serves a site's cameras" \
-      org.opencontainers.image.source="https://github.com/Shavkatjon-O/Smart-Surveillance-System"
+      org.opencontainers.image.source="https://github.com/Shavkatjon-O/Smart-Surveillance-System" \
+      org.opencontainers.image.revision="${REVISION}"
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \

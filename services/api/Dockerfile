@@ -1,19 +1,32 @@
-FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim
+FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim AS build
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    UV_COMPILE_BYTECODE=1 \
+ENV UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \
     UV_PYTHON_DOWNLOADS=never \
-    UV_PROJECT_ENVIRONMENT=/opt/venv \
-    PATH="/opt/venv/bin:${PATH}"
+    UV_PROJECT_ENVIRONMENT=/opt/venv
 
 WORKDIR /workspace
 
 COPY pyproject.toml uv.lock ./
 COPY services/api/pyproject.toml services/api/
+COPY services/connector/pyproject.toml services/connector/
 COPY packages/camera-adapters packages/camera-adapters
-RUN uv sync --frozen --no-dev --no-editable --package smart-surveillance-backend --no-install-project
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev --no-editable --package smart-surveillance-backend --no-install-project
+
+FROM python:3.13.11-slim-bookworm
+
+ARG REVISION=unknown
+LABEL org.opencontainers.image.title="smart-surveillance-api" \
+      org.opencontainers.image.description="Platform API of Smart Surveillance System" \
+      org.opencontainers.image.source="https://github.com/Shavkatjon-O/Smart-Surveillance-System" \
+      org.opencontainers.image.revision="${REVISION}"
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH="/opt/venv/bin:${PATH}"
+
+COPY --from=build /opt/venv /opt/venv
 
 WORKDIR /app
 
