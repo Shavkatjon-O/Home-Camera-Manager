@@ -21,6 +21,21 @@ docker run --rm -u $(id -u):$(id -g) -e RUFF_CACHE_DIR=/tmp/ruff-cache -v $PWD/s
 docker run --rm -u $(id -u):$(id -g) -e HOME=/tmp -e COREPACK_HOME=/tmp/corepack -e PATH=/tmp/bin:/usr/local/bin:/usr/bin:/bin -v $PWD/apps/console:/app -w /app node:24 sh -c "mkdir -p /tmp/bin && corepack enable --install-directory /tmp/bin && pnpm install --frozen-lockfile && pnpm lint && pnpm typecheck && pnpm build"
 ```
 
+Run the connector agent's and the camera adapters' checks the same way, with -w /repo/services/connector or -w /repo/packages/camera-adapters in place of the API folder. Write the OpenAPI document after changing a route or schema, because the API tests compare it with the app:
+
+```
+scripts/export-openapi.sh
+```
+
+Run the development kit, the compose project smart-surveillance-dev with a simulated site, from the repository root; tools/devkit/README.md describes it:
+
+```
+scripts/devkit.sh init
+scripts/devkit.sh up
+scripts/devkit.sh seed
+scripts/devkit.sh logs -f backend
+```
+
 The TV app builds and tests with the Android Studio JDK and SDK, as apps/tv/README.md describes:
 
 ```
@@ -52,6 +67,15 @@ alembic revision --autogenerate -m "<message>"
 - Serve /internal only from the backend, never through nginx, and require SSS_ANALYTICS_TOKEN on the internal analytics routes, because they write events, faces and the gallery without a user session.
 - Keep camera links in the health module and read camera fields there without changing the cameras module, because the health page must not touch the registry the wall and the TV depend on.
 - Delete person appearances and journeys with the event retention and keep line counts on their own longer retention, because Find this person must never offer a sighting whose event is gone, while counts are small and serve comparisons over months.
+
+### Platform
+
+- Resolve every route's site with get_site_access, or its organisation with resolve_organisation_access, and check the role there before anything else, because the request's session is limited to that site only after the access is resolved, and every query relies on that scope; read past it only with the unscoped execution option in jobs and platform admin code.
+- Check plan limits and features only through the billing entitlements, require_capacity and require_feature, and apply the same entitlements in the analytics configuration, because a feature a plan leaves out must be neither offered nor run.
+- Add audit records, never update or delete them outside the retention pruner, and record an action only after it succeeded, because the activity log is the organisation's evidence of who did what.
+- Keep camera passwords of connector cameras on the connector, and let connector discovery sweep only site LAN interfaces, never Docker, container, Kubernetes or VPN interfaces unless SSS_CONNECTOR_INTERFACES lists them, because a sweep of a VPN or bridge network probes networks that are not the site's.
+- Test Telegram alerts only against the fake Bot API in tools/devkit/telegram or a mock transport, never with a real bot token, because a second poller of a live bot takes its updates away from the service that owns it.
+- Show only the simulated site in screenshots, demos and seed data, because the repository is public.
 
 ### Streaming
 

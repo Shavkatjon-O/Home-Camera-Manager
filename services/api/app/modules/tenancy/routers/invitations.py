@@ -103,7 +103,6 @@ async def preview_invitation(
 @router.post(
     "/invitations/{token}/accept",
     response_model=OrganisationRead,
-    dependencies=[Depends(audited_account(AuditAction.INVITATION_ACCEPT, "invitation", target=None))],
 )
 async def accept_invitation(
     token: str,

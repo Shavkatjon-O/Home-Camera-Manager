@@ -37,7 +37,6 @@ async def list_organisations(service: OrganisationService = Depends(get_organisa
     "",
     response_model=OrganisationRead,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(audited_account(AuditAction.ORGANISATION_CREATE, "organisation", target="organisation"))],
 )
 async def create_organisation(
     payload: OrganisationCreate, service: OrganisationService = Depends(get_organisation_service)

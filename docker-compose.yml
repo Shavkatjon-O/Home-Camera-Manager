@@ -80,11 +80,15 @@ services:
     environment:
       SSS_TV_RTSP_USERNAME: ${SSS_TV_RTSP_USERNAME:-tv}
       SSS_TV_RTSP_PASSWORD: ${SSS_TV_RTSP_PASSWORD:?set SSS_TV_RTSP_PASSWORD}
+
+      SSS_LAN_BIND: ${SSS_LAN_BIND:?set SSS_LAN_BIND to this machine LAN address}
     volumes:
       - ./deploy/go2rtc/go2rtc.yaml:/config/go2rtc.yaml:ro
       - ./deploy/go2rtc/go2rtc-tv.sh:/config/tv.sh:ro
     ports:
       - "${SSS_LAN_BIND:?set SSS_LAN_BIND to this machine LAN address}:8554:8554"
+      - "${SSS_LAN_BIND:?set SSS_LAN_BIND to this machine LAN address}:8555:8555/tcp"
+      - "${SSS_LAN_BIND:?set SSS_LAN_BIND to this machine LAN address}:8555:8555/udp"
     healthcheck:
       test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:1984/api"]
       interval: 15s
