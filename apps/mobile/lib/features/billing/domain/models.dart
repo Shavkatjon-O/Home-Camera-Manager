@@ -64,6 +64,9 @@ abstract class Plan with _$Plan {
 @freezed
 abstract class Usage with _$Usage {
   /// Creates usage for the period starting at [periodStart].
+  ///
+  /// [metered] is false when the member may not read the metered usage, so
+  /// only the counts of sites, cameras and members are known.
   const factory Usage({
     required DateTime periodStart,
     @Default(0) int sites,
@@ -74,12 +77,18 @@ abstract class Usage with _$Usage {
     @Default(0) int events,
     @Default(0) int clipBytes,
     @Default(0) int notifications,
+    @Default(true) bool metered,
   }) = _Usage;
 }
 
 /// A plan together with the usage measured against it.
 @freezed
 abstract class PlanReport with _$PlanReport {
-  /// Creates a report of [plan] and [usage].
-  const factory PlanReport({required Plan plan, required Usage usage}) = _PlanReport;
+  /// Creates a report of [plan] and [usage]; [suspended] is set when a platform
+  /// admin suspended the organisation.
+  const factory PlanReport({
+    required Plan plan,
+    required Usage usage,
+    @Default(false) bool suspended,
+  }) = _PlanReport;
 }

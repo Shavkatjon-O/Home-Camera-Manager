@@ -591,7 +591,7 @@ $PlanLimitsCopyWith<$Res> get limits {
 /// @nodoc
 mixin _$Usage {
 
- DateTime get periodStart; int get sites; int get cameras; int get members; double get cameraHours; double get analyticsHours; int get events; int get clipBytes; int get notifications;
+ DateTime get periodStart; int get sites; int get cameras; int get members; double get cameraHours; double get analyticsHours; int get events; int get clipBytes; int get notifications; bool get metered;
 /// Create a copy of Usage
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -603,20 +603,20 @@ $UsageCopyWith<Usage> get copyWith => _$UsageCopyWithImpl<Usage>(this as Usage, 
 @override
 bool operator ==(Object other) {
   final _this = this as Usage;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Usage&&(identical(other.periodStart, _this.periodStart) || other.periodStart == _this.periodStart)&&(identical(other.sites, _this.sites) || other.sites == _this.sites)&&(identical(other.cameras, _this.cameras) || other.cameras == _this.cameras)&&(identical(other.members, _this.members) || other.members == _this.members)&&(identical(other.cameraHours, _this.cameraHours) || other.cameraHours == _this.cameraHours)&&(identical(other.analyticsHours, _this.analyticsHours) || other.analyticsHours == _this.analyticsHours)&&(identical(other.events, _this.events) || other.events == _this.events)&&(identical(other.clipBytes, _this.clipBytes) || other.clipBytes == _this.clipBytes)&&(identical(other.notifications, _this.notifications) || other.notifications == _this.notifications));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Usage&&(identical(other.periodStart, _this.periodStart) || other.periodStart == _this.periodStart)&&(identical(other.sites, _this.sites) || other.sites == _this.sites)&&(identical(other.cameras, _this.cameras) || other.cameras == _this.cameras)&&(identical(other.members, _this.members) || other.members == _this.members)&&(identical(other.cameraHours, _this.cameraHours) || other.cameraHours == _this.cameraHours)&&(identical(other.analyticsHours, _this.analyticsHours) || other.analyticsHours == _this.analyticsHours)&&(identical(other.events, _this.events) || other.events == _this.events)&&(identical(other.clipBytes, _this.clipBytes) || other.clipBytes == _this.clipBytes)&&(identical(other.notifications, _this.notifications) || other.notifications == _this.notifications)&&(identical(other.metered, _this.metered) || other.metered == _this.metered));
 }
 
 
 @override
 int get hashCode {
   final _this = this as Usage;
-  return Object.hash(runtimeType,_this.periodStart,_this.sites,_this.cameras,_this.members,_this.cameraHours,_this.analyticsHours,_this.events,_this.clipBytes,_this.notifications);
+  return Object.hash(runtimeType,_this.periodStart,_this.sites,_this.cameras,_this.members,_this.cameraHours,_this.analyticsHours,_this.events,_this.clipBytes,_this.notifications,_this.metered);
 }
 
 @override
 String toString() {
   final _this = this as Usage;
-  return 'Usage(periodStart: ${_this.periodStart}, sites: ${_this.sites}, cameras: ${_this.cameras}, members: ${_this.members}, cameraHours: ${_this.cameraHours}, analyticsHours: ${_this.analyticsHours}, events: ${_this.events}, clipBytes: ${_this.clipBytes}, notifications: ${_this.notifications})';
+  return 'Usage(periodStart: ${_this.periodStart}, sites: ${_this.sites}, cameras: ${_this.cameras}, members: ${_this.members}, cameraHours: ${_this.cameraHours}, analyticsHours: ${_this.analyticsHours}, events: ${_this.events}, clipBytes: ${_this.clipBytes}, notifications: ${_this.notifications}, metered: ${_this.metered})';
 }
 
 
@@ -627,7 +627,7 @@ abstract mixin class $UsageCopyWith<$Res>  {
   factory $UsageCopyWith(Usage value, $Res Function(Usage) _then) = _$UsageCopyWithImpl;
 @useResult
 $Res call({
- DateTime periodStart, int sites, int cameras, int members, double cameraHours, double analyticsHours, int events, int clipBytes, int notifications
+ DateTime periodStart, int sites, int cameras, int members, double cameraHours, double analyticsHours, int events, int clipBytes, int notifications, bool metered
 });
 
 
@@ -644,7 +644,7 @@ class _$UsageCopyWithImpl<$Res>
 
 /// Create a copy of Usage
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? periodStart = null,Object? sites = null,Object? cameras = null,Object? members = null,Object? cameraHours = null,Object? analyticsHours = null,Object? events = null,Object? clipBytes = null,Object? notifications = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? periodStart = null,Object? sites = null,Object? cameras = null,Object? members = null,Object? cameraHours = null,Object? analyticsHours = null,Object? events = null,Object? clipBytes = null,Object? notifications = null,Object? metered = null,}) {
   return _then(Usage(
 periodStart: null == periodStart ? _self.periodStart : periodStart // ignore: cast_nullable_to_non_nullable
 as DateTime,sites: null == sites ? _self.sites : sites // ignore: cast_nullable_to_non_nullable
@@ -655,7 +655,8 @@ as double,analyticsHours: null == analyticsHours ? _self.analyticsHours : analyt
 as double,events: null == events ? _self.events : events // ignore: cast_nullable_to_non_nullable
 as int,clipBytes: null == clipBytes ? _self.clipBytes : clipBytes // ignore: cast_nullable_to_non_nullable
 as int,notifications: null == notifications ? _self.notifications : notifications // ignore: cast_nullable_to_non_nullable
-as int,
+as int,metered: null == metered ? _self.metered : metered // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -740,10 +741,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( DateTime periodStart,  int sites,  int cameras,  int members,  double cameraHours,  double analyticsHours,  int events,  int clipBytes,  int notifications)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( DateTime periodStart,  int sites,  int cameras,  int members,  double cameraHours,  double analyticsHours,  int events,  int clipBytes,  int notifications,  bool metered)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Usage() when $default != null:
-return $default(_that.periodStart,_that.sites,_that.cameras,_that.members,_that.cameraHours,_that.analyticsHours,_that.events,_that.clipBytes,_that.notifications);case _:
+return $default(_that.periodStart,_that.sites,_that.cameras,_that.members,_that.cameraHours,_that.analyticsHours,_that.events,_that.clipBytes,_that.notifications,_that.metered);case _:
   return orElse();
 
 }
@@ -761,10 +762,10 @@ return $default(_that.periodStart,_that.sites,_that.cameras,_that.members,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( DateTime periodStart,  int sites,  int cameras,  int members,  double cameraHours,  double analyticsHours,  int events,  int clipBytes,  int notifications)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( DateTime periodStart,  int sites,  int cameras,  int members,  double cameraHours,  double analyticsHours,  int events,  int clipBytes,  int notifications,  bool metered)  $default,) {final _that = this;
 switch (_that) {
 case _Usage():
-return $default(_that.periodStart,_that.sites,_that.cameras,_that.members,_that.cameraHours,_that.analyticsHours,_that.events,_that.clipBytes,_that.notifications);case _:
+return $default(_that.periodStart,_that.sites,_that.cameras,_that.members,_that.cameraHours,_that.analyticsHours,_that.events,_that.clipBytes,_that.notifications,_that.metered);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -781,10 +782,10 @@ return $default(_that.periodStart,_that.sites,_that.cameras,_that.members,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( DateTime periodStart,  int sites,  int cameras,  int members,  double cameraHours,  double analyticsHours,  int events,  int clipBytes,  int notifications)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( DateTime periodStart,  int sites,  int cameras,  int members,  double cameraHours,  double analyticsHours,  int events,  int clipBytes,  int notifications,  bool metered)?  $default,) {final _that = this;
 switch (_that) {
 case _Usage() when $default != null:
-return $default(_that.periodStart,_that.sites,_that.cameras,_that.members,_that.cameraHours,_that.analyticsHours,_that.events,_that.clipBytes,_that.notifications);case _:
+return $default(_that.periodStart,_that.sites,_that.cameras,_that.members,_that.cameraHours,_that.analyticsHours,_that.events,_that.clipBytes,_that.notifications,_that.metered);case _:
   return null;
 
 }
@@ -796,7 +797,7 @@ return $default(_that.periodStart,_that.sites,_that.cameras,_that.members,_that.
 
 
 class _Usage implements Usage {
-  const _Usage({required this.periodStart, this.sites = 0, this.cameras = 0, this.members = 0, this.cameraHours = 0, this.analyticsHours = 0, this.events = 0, this.clipBytes = 0, this.notifications = 0});
+  const _Usage({required this.periodStart, this.sites = 0, this.cameras = 0, this.members = 0, this.cameraHours = 0, this.analyticsHours = 0, this.events = 0, this.clipBytes = 0, this.notifications = 0, this.metered = true});
   
 
 @override final  DateTime periodStart;
@@ -808,6 +809,7 @@ class _Usage implements Usage {
 @override@JsonKey() final  int events;
 @override@JsonKey() final  int clipBytes;
 @override@JsonKey() final  int notifications;
+@override@JsonKey() final  bool metered;
 
 /// Create a copy of Usage
 /// with the given fields replaced by the non-null parameter values.
@@ -819,18 +821,18 @@ _$UsageCopyWith<_Usage> get copyWith => __$UsageCopyWithImpl<_Usage>(this, _$ide
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Usage&&(identical(other.periodStart, periodStart) || other.periodStart == periodStart)&&(identical(other.sites, sites) || other.sites == sites)&&(identical(other.cameras, cameras) || other.cameras == cameras)&&(identical(other.members, members) || other.members == members)&&(identical(other.cameraHours, cameraHours) || other.cameraHours == cameraHours)&&(identical(other.analyticsHours, analyticsHours) || other.analyticsHours == analyticsHours)&&(identical(other.events, events) || other.events == events)&&(identical(other.clipBytes, clipBytes) || other.clipBytes == clipBytes)&&(identical(other.notifications, notifications) || other.notifications == notifications));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Usage&&(identical(other.periodStart, periodStart) || other.periodStart == periodStart)&&(identical(other.sites, sites) || other.sites == sites)&&(identical(other.cameras, cameras) || other.cameras == cameras)&&(identical(other.members, members) || other.members == members)&&(identical(other.cameraHours, cameraHours) || other.cameraHours == cameraHours)&&(identical(other.analyticsHours, analyticsHours) || other.analyticsHours == analyticsHours)&&(identical(other.events, events) || other.events == events)&&(identical(other.clipBytes, clipBytes) || other.clipBytes == clipBytes)&&(identical(other.notifications, notifications) || other.notifications == notifications)&&(identical(other.metered, metered) || other.metered == metered));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,periodStart,sites,cameras,members,cameraHours,analyticsHours,events,clipBytes,notifications);
+    return Object.hash(runtimeType,periodStart,sites,cameras,members,cameraHours,analyticsHours,events,clipBytes,notifications,metered);
 }
 
 @override
 String toString() {
-    return 'Usage(periodStart: $periodStart, sites: $sites, cameras: $cameras, members: $members, cameraHours: $cameraHours, analyticsHours: $analyticsHours, events: $events, clipBytes: $clipBytes, notifications: $notifications)';
+    return 'Usage(periodStart: $periodStart, sites: $sites, cameras: $cameras, members: $members, cameraHours: $cameraHours, analyticsHours: $analyticsHours, events: $events, clipBytes: $clipBytes, notifications: $notifications, metered: $metered)';
 }
 
 
@@ -841,7 +843,7 @@ abstract mixin class _$UsageCopyWith<$Res> implements $UsageCopyWith<$Res> {
   factory _$UsageCopyWith(_Usage value, $Res Function(_Usage) _then) = __$UsageCopyWithImpl;
 @override @useResult
 $Res call({
- DateTime periodStart, int sites, int cameras, int members, double cameraHours, double analyticsHours, int events, int clipBytes, int notifications
+ DateTime periodStart, int sites, int cameras, int members, double cameraHours, double analyticsHours, int events, int clipBytes, int notifications, bool metered
 });
 
 
@@ -858,7 +860,7 @@ class __$UsageCopyWithImpl<$Res>
 
 /// Create a copy of Usage
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? periodStart = null,Object? sites = null,Object? cameras = null,Object? members = null,Object? cameraHours = null,Object? analyticsHours = null,Object? events = null,Object? clipBytes = null,Object? notifications = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? periodStart = null,Object? sites = null,Object? cameras = null,Object? members = null,Object? cameraHours = null,Object? analyticsHours = null,Object? events = null,Object? clipBytes = null,Object? notifications = null,Object? metered = null,}) {
   return _then(_Usage(
 periodStart: null == periodStart ? _self.periodStart : periodStart // ignore: cast_nullable_to_non_nullable
 as DateTime,sites: null == sites ? _self.sites : sites // ignore: cast_nullable_to_non_nullable
@@ -869,7 +871,8 @@ as double,analyticsHours: null == analyticsHours ? _self.analyticsHours : analyt
 as double,events: null == events ? _self.events : events // ignore: cast_nullable_to_non_nullable
 as int,clipBytes: null == clipBytes ? _self.clipBytes : clipBytes // ignore: cast_nullable_to_non_nullable
 as int,notifications: null == notifications ? _self.notifications : notifications // ignore: cast_nullable_to_non_nullable
-as int,
+as int,metered: null == metered ? _self.metered : metered // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -879,7 +882,7 @@ as int,
 /// @nodoc
 mixin _$PlanReport {
 
- Plan get plan; Usage get usage;
+ Plan get plan; Usage get usage; bool get suspended;
 /// Create a copy of PlanReport
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -891,20 +894,20 @@ $PlanReportCopyWith<PlanReport> get copyWith => _$PlanReportCopyWithImpl<PlanRep
 @override
 bool operator ==(Object other) {
   final _this = this as PlanReport;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PlanReport&&(identical(other.plan, _this.plan) || other.plan == _this.plan)&&(identical(other.usage, _this.usage) || other.usage == _this.usage));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PlanReport&&(identical(other.plan, _this.plan) || other.plan == _this.plan)&&(identical(other.usage, _this.usage) || other.usage == _this.usage)&&(identical(other.suspended, _this.suspended) || other.suspended == _this.suspended));
 }
 
 
 @override
 int get hashCode {
   final _this = this as PlanReport;
-  return Object.hash(runtimeType,_this.plan,_this.usage);
+  return Object.hash(runtimeType,_this.plan,_this.usage,_this.suspended);
 }
 
 @override
 String toString() {
   final _this = this as PlanReport;
-  return 'PlanReport(plan: ${_this.plan}, usage: ${_this.usage})';
+  return 'PlanReport(plan: ${_this.plan}, usage: ${_this.usage}, suspended: ${_this.suspended})';
 }
 
 
@@ -915,7 +918,7 @@ abstract mixin class $PlanReportCopyWith<$Res>  {
   factory $PlanReportCopyWith(PlanReport value, $Res Function(PlanReport) _then) = _$PlanReportCopyWithImpl;
 @useResult
 $Res call({
- Plan plan, Usage usage
+ Plan plan, Usage usage, bool suspended
 });
 
 
@@ -932,11 +935,12 @@ class _$PlanReportCopyWithImpl<$Res>
 
 /// Create a copy of PlanReport
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? plan = null,Object? usage = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? plan = null,Object? usage = null,Object? suspended = null,}) {
   return _then(PlanReport(
 plan: null == plan ? _self.plan : plan // ignore: cast_nullable_to_non_nullable
 as Plan,usage: null == usage ? _self.usage : usage // ignore: cast_nullable_to_non_nullable
-as Usage,
+as Usage,suspended: null == suspended ? _self.suspended : suspended // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 /// Create a copy of PlanReport
@@ -1039,10 +1043,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Plan plan,  Usage usage)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Plan plan,  Usage usage,  bool suspended)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PlanReport() when $default != null:
-return $default(_that.plan,_that.usage);case _:
+return $default(_that.plan,_that.usage,_that.suspended);case _:
   return orElse();
 
 }
@@ -1060,10 +1064,10 @@ return $default(_that.plan,_that.usage);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Plan plan,  Usage usage)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Plan plan,  Usage usage,  bool suspended)  $default,) {final _that = this;
 switch (_that) {
 case _PlanReport():
-return $default(_that.plan,_that.usage);case _:
+return $default(_that.plan,_that.usage,_that.suspended);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1080,10 +1084,10 @@ return $default(_that.plan,_that.usage);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Plan plan,  Usage usage)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Plan plan,  Usage usage,  bool suspended)?  $default,) {final _that = this;
 switch (_that) {
 case _PlanReport() when $default != null:
-return $default(_that.plan,_that.usage);case _:
+return $default(_that.plan,_that.usage,_that.suspended);case _:
   return null;
 
 }
@@ -1095,11 +1099,12 @@ return $default(_that.plan,_that.usage);case _:
 
 
 class _PlanReport implements PlanReport {
-  const _PlanReport({required this.plan, required this.usage});
+  const _PlanReport({required this.plan, required this.usage, this.suspended = false});
   
 
 @override final  Plan plan;
 @override final  Usage usage;
+@override@JsonKey() final  bool suspended;
 
 /// Create a copy of PlanReport
 /// with the given fields replaced by the non-null parameter values.
@@ -1111,18 +1116,18 @@ _$PlanReportCopyWith<_PlanReport> get copyWith => __$PlanReportCopyWithImpl<_Pla
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _PlanReport&&(identical(other.plan, plan) || other.plan == plan)&&(identical(other.usage, usage) || other.usage == usage));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _PlanReport&&(identical(other.plan, plan) || other.plan == plan)&&(identical(other.usage, usage) || other.usage == usage)&&(identical(other.suspended, suspended) || other.suspended == suspended));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,plan,usage);
+    return Object.hash(runtimeType,plan,usage,suspended);
 }
 
 @override
 String toString() {
-    return 'PlanReport(plan: $plan, usage: $usage)';
+    return 'PlanReport(plan: $plan, usage: $usage, suspended: $suspended)';
 }
 
 
@@ -1133,7 +1138,7 @@ abstract mixin class _$PlanReportCopyWith<$Res> implements $PlanReportCopyWith<$
   factory _$PlanReportCopyWith(_PlanReport value, $Res Function(_PlanReport) _then) = __$PlanReportCopyWithImpl;
 @override @useResult
 $Res call({
- Plan plan, Usage usage
+ Plan plan, Usage usage, bool suspended
 });
 
 
@@ -1150,11 +1155,12 @@ class __$PlanReportCopyWithImpl<$Res>
 
 /// Create a copy of PlanReport
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? plan = null,Object? usage = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? plan = null,Object? usage = null,Object? suspended = null,}) {
   return _then(_PlanReport(
 plan: null == plan ? _self.plan : plan // ignore: cast_nullable_to_non_nullable
 as Plan,usage: null == usage ? _self.usage : usage // ignore: cast_nullable_to_non_nullable
-as Usage,
+as Usage,suspended: null == suspended ? _self.suspended : suspended // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

@@ -4905,6 +4905,198 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Enter the login the camera uses for its video. The server keeps it encrypted and uses it only to reach the camera.'**
   String get onboardingCameraBodyDirect;
+
+  /// No description provided for @actionSignOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed out'**
+  String get actionSignOut;
+
+  /// No description provided for @actionAccountDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted the account'**
+  String get actionAccountDelete;
+
+  /// No description provided for @actionPasswordChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Changed the password'**
+  String get actionPasswordChange;
+
+  /// No description provided for @actionOrganisationCreate.
+  ///
+  /// In en, this message translates to:
+  /// **'Created the organisation'**
+  String get actionOrganisationCreate;
+
+  /// No description provided for @actionOrganisationUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Changed the organisation'**
+  String get actionOrganisationUpdate;
+
+  /// No description provided for @actionOrganisationDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted the organisation'**
+  String get actionOrganisationDelete;
+
+  /// No description provided for @actionOwnershipTransfer.
+  ///
+  /// In en, this message translates to:
+  /// **'Handed over ownership'**
+  String get actionOwnershipTransfer;
+
+  /// No description provided for @actionSiteCreate.
+  ///
+  /// In en, this message translates to:
+  /// **'Added a site'**
+  String get actionSiteCreate;
+
+  /// No description provided for @actionSiteUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Changed a site'**
+  String get actionSiteUpdate;
+
+  /// No description provided for @actionSiteDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted a site'**
+  String get actionSiteDelete;
+
+  /// No description provided for @actionInvitationRevoke.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrew an invitation'**
+  String get actionInvitationRevoke;
+
+  /// No description provided for @actionInvitationAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'Joined the organisation'**
+  String get actionInvitationAccept;
+
+  /// No description provided for @actionDevicePair.
+  ///
+  /// In en, this message translates to:
+  /// **'Paired a device'**
+  String get actionDevicePair;
+
+  /// No description provided for @actionConnectorClaim.
+  ///
+  /// In en, this message translates to:
+  /// **'Paired a connector'**
+  String get actionConnectorClaim;
+
+  /// No description provided for @actionConnectorUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Changed a connector'**
+  String get actionConnectorUpdate;
+
+  /// No description provided for @actionConnectorRevoke.
+  ///
+  /// In en, this message translates to:
+  /// **'Removed a connector'**
+  String get actionConnectorRevoke;
+
+  /// No description provided for @actionCameraControl.
+  ///
+  /// In en, this message translates to:
+  /// **'Controlled a camera'**
+  String get actionCameraControl;
+
+  /// No description provided for @actionAlertChannelLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Linked a Telegram chat'**
+  String get actionAlertChannelLink;
+
+  /// No description provided for @actionAlertChannelRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlinked a Telegram chat'**
+  String get actionAlertChannelRemove;
+
+  /// No description provided for @actionFacesConsent.
+  ///
+  /// In en, this message translates to:
+  /// **'Turned on face recognition'**
+  String get actionFacesConsent;
+
+  /// No description provided for @actionAdminSuspend.
+  ///
+  /// In en, this message translates to:
+  /// **'Suspended the organisation'**
+  String get actionAdminSuspend;
+
+  /// No description provided for @actionAdminRestore.
+  ///
+  /// In en, this message translates to:
+  /// **'Restored the organisation'**
+  String get actionAdminRestore;
+
+  /// No description provided for @telegramLinkPrivate.
+  ///
+  /// In en, this message translates to:
+  /// **'A private chat'**
+  String get telegramLinkPrivate;
+
+  /// No description provided for @telegramLinkPrivateBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Alerts go to your own chat with the bot'**
+  String get telegramLinkPrivateBody;
+
+  /// No description provided for @telegramLinkGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'A group'**
+  String get telegramLinkGroup;
+
+  /// No description provided for @telegramLinkGroupBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Add the bot to a group and everyone in it gets the alerts'**
+  String get telegramLinkGroupBody;
+
+  /// No description provided for @telegramBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'The bot is blocked in this chat. Unblock it in Telegram or link the chat again.'**
+  String get telegramBlocked;
+
+  /// No description provided for @errorPlanFeature.
+  ///
+  /// In en, this message translates to:
+  /// **'Your plan does not include this. The organisation\'s owner can change the plan.'**
+  String get errorPlanFeature;
+
+  /// No description provided for @errorPlanLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'This goes beyond what your plan allows. Remove something or ask the owner to change the plan.'**
+  String get errorPlanLimit;
+
+  /// No description provided for @errorSuspended.
+  ///
+  /// In en, this message translates to:
+  /// **'This organisation is suspended. Contact the service to restore it.'**
+  String get errorSuspended;
+
+  /// No description provided for @planSuspended.
+  ///
+  /// In en, this message translates to:
+  /// **'This organisation is suspended. Cameras, alerts and changes are paused until the service restores it.'**
+  String get planSuspended;
+
+  /// No description provided for @siteRetentionPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Your plan keeps events for up to {days} days.'**
+  String siteRetentionPlan(int days);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

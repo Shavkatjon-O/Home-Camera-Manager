@@ -9,6 +9,7 @@ import 'package:smart_surveillance/core/network/client/http.dart';
 import 'package:smart_surveillance/core/storage/preferences.dart';
 import 'package:smart_surveillance/features/alerting/data/api_notification_repository.dart';
 import 'package:smart_surveillance/features/analytics/data/api_analytics_repository.dart';
+import 'package:smart_surveillance/features/billing/data/api_business_repository.dart';
 import 'package:smart_surveillance/features/devices/data/api_device_repository.dart';
 import 'package:smart_surveillance/features/devices/data/api_pairing_repository.dart';
 import 'package:smart_surveillance/features/events/data/api_event_repository.dart';
@@ -25,9 +26,6 @@ Future<Backend> createBackend(AppConfig config, Preferences preferences) async =
     config.mode == BackendMode.fake ? fakeBackend(FakeStore()) : apiBackend(config, preferences);
 
 /// Builds the backend that talks to the server at the saved address or [AppConfig.apiUrl].
-///
-/// Plans, Telegram and the activity log are not in the contract yet, so they
-/// stay on the simulated store.
 Backend apiBackend(AppConfig config, Preferences preferences) {
   final auth = ApiAuthRepository(
     store: TokenStore(),
@@ -39,7 +37,6 @@ Backend apiBackend(AppConfig config, Preferences preferences) {
   auth.client = client;
   String base() => dio.options.baseUrl;
   final devices = ApiDeviceRepository(client);
-  final business = fakeBackend(FakeStore()).business;
   return Backend(
     auth: auth,
     tenancy: ApiTenancyRepository(client),
@@ -52,7 +49,7 @@ Backend apiBackend(AppConfig config, Preferences preferences) {
     search: ApiSearchRepository(client, base),
     health: ApiHealthRepository(client),
     notifications: ApiNotificationRepository(client, preferences),
-    business: business,
+    business: ApiBusinessRepository(client),
     demo: false,
     mediaHeaders: () => {
       if (auth.accessToken != null) 'Authorization': 'Bearer ${auth.accessToken}',

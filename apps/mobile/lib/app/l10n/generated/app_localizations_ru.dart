@@ -2828,4 +2828,107 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get onboardingCameraBodyDirect =>
       'Введите логин, который камера использует для видео. Сервер хранит его в зашифрованном виде и использует только для подключения к камере.';
+
+  @override
+  String get actionSignOut => 'Вышел из аккаунта';
+
+  @override
+  String get actionAccountDelete => 'Удалил аккаунт';
+
+  @override
+  String get actionPasswordChange => 'Сменил пароль';
+
+  @override
+  String get actionOrganisationCreate => 'Создал организацию';
+
+  @override
+  String get actionOrganisationUpdate => 'Изменил организацию';
+
+  @override
+  String get actionOrganisationDelete => 'Удалил организацию';
+
+  @override
+  String get actionOwnershipTransfer => 'Передал владение';
+
+  @override
+  String get actionSiteCreate => 'Добавил объект';
+
+  @override
+  String get actionSiteUpdate => 'Изменил объект';
+
+  @override
+  String get actionSiteDelete => 'Удалил объект';
+
+  @override
+  String get actionInvitationRevoke => 'Отозвал приглашение';
+
+  @override
+  String get actionInvitationAccept => 'Вступил в организацию';
+
+  @override
+  String get actionDevicePair => 'Подключил устройство';
+
+  @override
+  String get actionConnectorClaim => 'Подключил коннектор';
+
+  @override
+  String get actionConnectorUpdate => 'Изменил коннектор';
+
+  @override
+  String get actionConnectorRevoke => 'Удалил коннектор';
+
+  @override
+  String get actionCameraControl => 'Управлял камерой';
+
+  @override
+  String get actionAlertChannelLink => 'Подключил чат Telegram';
+
+  @override
+  String get actionAlertChannelRemove => 'Отключил чат Telegram';
+
+  @override
+  String get actionFacesConsent => 'Включил распознавание лиц';
+
+  @override
+  String get actionAdminSuspend => 'Приостановил организацию';
+
+  @override
+  String get actionAdminRestore => 'Восстановил организацию';
+
+  @override
+  String get telegramLinkPrivate => 'Личный чат';
+
+  @override
+  String get telegramLinkPrivateBody => 'Тревоги приходят в ваш чат с ботом';
+
+  @override
+  String get telegramLinkGroup => 'Группа';
+
+  @override
+  String get telegramLinkGroupBody => 'Добавьте бота в группу, и тревоги получат все её участники';
+
+  @override
+  String get telegramBlocked =>
+      'Бот заблокирован в этом чате. Разблокируйте его в Telegram или подключите чат заново.';
+
+  @override
+  String get errorPlanFeature =>
+      'Ваш тариф этого не включает. Сменить тариф может владелец организации.';
+
+  @override
+  String get errorPlanLimit =>
+      'Это выходит за пределы тарифа. Удалите что-нибудь или попросите владельца сменить тариф.';
+
+  @override
+  String get errorSuspended =>
+      'Организация приостановлена. Обратитесь в сервис, чтобы её восстановить.';
+
+  @override
+  String get planSuspended =>
+      'Организация приостановлена. Камеры, тревоги и изменения на паузе, пока сервис её не восстановит.';
+
+  @override
+  String siteRetentionPlan(int days) {
+    return 'Ваш тариф хранит события до $days дней.';
+  }
 }

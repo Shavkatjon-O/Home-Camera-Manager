@@ -8,6 +8,7 @@ import 'package:smart_surveillance/core/widgets/flow_scaffold.dart';
 import 'package:smart_surveillance/core/widgets/states.dart';
 import 'package:smart_surveillance/core/widgets/surfaces.dart';
 import 'package:smart_surveillance/features/alerting/presentation/labels.dart';
+import 'package:smart_surveillance/features/billing/presentation/plan_screen.dart';
 import 'package:smart_surveillance/features/tenancy/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/site_setup_screen.dart';
@@ -62,6 +63,12 @@ class _SiteSettingsScreenState extends ConsumerState<SiteSettingsScreen> {
     }
     final site = draft!;
     const retention = [7, 14, 30, 60, 90];
+    final limit = ref
+        .watch(planProvider(current.organisation.id))
+        .value
+        ?.plan
+        .limits
+        .eventRetentionDays;
     return Scaffold(
       appBar: AppBar(title: Text(l10n.siteSettingsTitle)),
       bottomNavigationBar: SafeArea(
@@ -89,23 +96,25 @@ class _SiteSettingsScreenState extends ConsumerState<SiteSettingsScreen> {
             value: site.timezone,
             onChanged: (zone) => setState(() => draft = site.copyWith(timezone: zone)),
           ),
-          // The server keeps events for a fixed time, so only the simulated site offers a choice.
-          if (ref.read(backendProvider).demo) ...[
-            const SizedBox(height: Gaps.lg),
-            Text(l10n.siteRetention, style: context.text.titleSmall?.copyWith(color: p.text2)),
-            const SizedBox(height: Gaps.sm),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final days in retention)
+          const SizedBox(height: Gaps.lg),
+          Text(l10n.siteRetention, style: context.text.titleSmall?.copyWith(color: p.text2)),
+          const SizedBox(height: Gaps.sm),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final days in retention)
+                if (limit == null || days <= limit || days == site.retentionDays)
                   ChoiceChip(
                     label: Text(l10n.siteRetentionDays(days)),
                     selected: site.retentionDays == days,
                     onSelected: (_) => setState(() => draft = site.copyWith(retentionDays: days)),
                   ),
-              ],
-            ),
+            ],
+          ),
+          if (limit != null) ...[
+            const SizedBox(height: Gaps.sm),
+            Text(l10n.siteRetentionPlan(limit), style: context.text.bodySmall),
           ],
           const SizedBox(height: Gaps.xl),
           Panel(

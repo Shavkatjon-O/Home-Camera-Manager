@@ -120,12 +120,19 @@ ApiFailure failureOf(DioException error) {
   if (response == null) return ApiFailure(FailureKind.network, error.message);
   final (code, message) = errorDetail(response.data);
   final kind = switch (response.statusCode ?? 0) {
+    422 when code == 'retention_over_plan' => FailureKind.planLimit,
     400 || 422 => FailureKind.invalid,
     401 =>
       code == 'refresh_token_reused' || code == 'token_expired'
           ? FailureKind.expired
           : FailureKind.unauthorised,
-    403 => code == 'email_not_verified' ? FailureKind.unverified : FailureKind.forbidden,
+    403 => switch (code) {
+      'email_not_verified' => FailureKind.unverified,
+      'feature_not_in_plan' => FailureKind.planFeature,
+      'plan_limit_reached' => FailureKind.planLimit,
+      'organisation_suspended' => FailureKind.suspended,
+      _ => FailureKind.forbidden,
+    },
     404 => FailureKind.notFound,
     409 => FailureKind.conflict,
     410 => FailureKind.expired,

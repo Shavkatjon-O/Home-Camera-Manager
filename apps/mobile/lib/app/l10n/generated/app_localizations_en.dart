@@ -2774,4 +2774,106 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get onboardingCameraBodyDirect =>
       'Enter the login the camera uses for its video. The server keeps it encrypted and uses it only to reach the camera.';
+
+  @override
+  String get actionSignOut => 'Signed out';
+
+  @override
+  String get actionAccountDelete => 'Deleted the account';
+
+  @override
+  String get actionPasswordChange => 'Changed the password';
+
+  @override
+  String get actionOrganisationCreate => 'Created the organisation';
+
+  @override
+  String get actionOrganisationUpdate => 'Changed the organisation';
+
+  @override
+  String get actionOrganisationDelete => 'Deleted the organisation';
+
+  @override
+  String get actionOwnershipTransfer => 'Handed over ownership';
+
+  @override
+  String get actionSiteCreate => 'Added a site';
+
+  @override
+  String get actionSiteUpdate => 'Changed a site';
+
+  @override
+  String get actionSiteDelete => 'Deleted a site';
+
+  @override
+  String get actionInvitationRevoke => 'Withdrew an invitation';
+
+  @override
+  String get actionInvitationAccept => 'Joined the organisation';
+
+  @override
+  String get actionDevicePair => 'Paired a device';
+
+  @override
+  String get actionConnectorClaim => 'Paired a connector';
+
+  @override
+  String get actionConnectorUpdate => 'Changed a connector';
+
+  @override
+  String get actionConnectorRevoke => 'Removed a connector';
+
+  @override
+  String get actionCameraControl => 'Controlled a camera';
+
+  @override
+  String get actionAlertChannelLink => 'Linked a Telegram chat';
+
+  @override
+  String get actionAlertChannelRemove => 'Unlinked a Telegram chat';
+
+  @override
+  String get actionFacesConsent => 'Turned on face recognition';
+
+  @override
+  String get actionAdminSuspend => 'Suspended the organisation';
+
+  @override
+  String get actionAdminRestore => 'Restored the organisation';
+
+  @override
+  String get telegramLinkPrivate => 'A private chat';
+
+  @override
+  String get telegramLinkPrivateBody => 'Alerts go to your own chat with the bot';
+
+  @override
+  String get telegramLinkGroup => 'A group';
+
+  @override
+  String get telegramLinkGroupBody => 'Add the bot to a group and everyone in it gets the alerts';
+
+  @override
+  String get telegramBlocked =>
+      'The bot is blocked in this chat. Unblock it in Telegram or link the chat again.';
+
+  @override
+  String get errorPlanFeature =>
+      'Your plan does not include this. The organisation\'s owner can change the plan.';
+
+  @override
+  String get errorPlanLimit =>
+      'This goes beyond what your plan allows. Remove something or ask the owner to change the plan.';
+
+  @override
+  String get errorSuspended => 'This organisation is suspended. Contact the service to restore it.';
+
+  @override
+  String get planSuspended =>
+      'This organisation is suspended. Cameras, alerts and changes are paused until the service restores it.';
+
+  @override
+  String siteRetentionPlan(int days) {
+    return 'Your plan keeps events for up to $days days.';
+  }
 }

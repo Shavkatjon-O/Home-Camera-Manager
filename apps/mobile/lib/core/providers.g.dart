@@ -15,7 +15,8 @@ final configProvider = ConfigProvider._();
 
 /// The provider of the app configuration; it is overridden at start-up.
 
-final class ConfigProvider extends $FunctionalProvider<AppConfig, AppConfig, AppConfig>
+final class ConfigProvider
+    extends $FunctionalProvider<AppConfig, AppConfig, AppConfig>
     with $Provider<AppConfig> {
   /// The provider of the app configuration; it is overridden at start-up.
   ConfigProvider._()
@@ -34,7 +35,8 @@ final class ConfigProvider extends $FunctionalProvider<AppConfig, AppConfig, App
 
   @$internal
   @override
-  $ProviderElement<AppConfig> $createElement($ProviderPointer pointer) => $ProviderElement(pointer);
+  $ProviderElement<AppConfig> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
 
   @override
   AppConfig create(Ref ref) {
@@ -43,7 +45,10 @@ final class ConfigProvider extends $FunctionalProvider<AppConfig, AppConfig, App
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(AppConfig value) {
-    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<AppConfig>(value));
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AppConfig>(value),
+    );
   }
 }
 
@@ -56,7 +61,8 @@ final preferencesProvider = PreferencesProvider._();
 
 /// The provider of the stored preferences; it is overridden at start-up.
 
-final class PreferencesProvider extends $FunctionalProvider<Preferences, Preferences, Preferences>
+final class PreferencesProvider
+    extends $FunctionalProvider<Preferences, Preferences, Preferences>
     with $Provider<Preferences> {
   /// The provider of the stored preferences; it is overridden at start-up.
   PreferencesProvider._()
@@ -102,7 +108,12 @@ final clockProvider = ClockProvider._();
 /// The provider of the current time, replaceable in tests.
 
 final class ClockProvider
-    extends $FunctionalProvider<DateTime Function(), DateTime Function(), DateTime Function()>
+    extends
+        $FunctionalProvider<
+          DateTime Function(),
+          DateTime Function(),
+          DateTime Function()
+        >
     with $Provider<DateTime Function()> {
   /// The provider of the current time, replaceable in tests.
   ClockProvider._()
@@ -121,8 +132,9 @@ final class ClockProvider
 
   @$internal
   @override
-  $ProviderElement<DateTime Function()> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
+  $ProviderElement<DateTime Function()> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
 
   @override
   DateTime Function() create(Ref ref) {

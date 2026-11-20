@@ -15,7 +15,8 @@ final alertCenterProvider = AlertCenterProvider._();
 
 /// Provides the alert center for the signed-in backend.
 
-final class AlertCenterProvider extends $FunctionalProvider<AlertCenter, AlertCenter, AlertCenter>
+final class AlertCenterProvider
+    extends $FunctionalProvider<AlertCenter, AlertCenter, AlertCenter>
     with $Provider<AlertCenter> {
   /// Provides the alert center for the signed-in backend.
   AlertCenterProvider._()
@@ -60,7 +61,8 @@ final notificationsEnabledProvider = NotificationsEnabledProvider._();
 
 /// Provides whether notifications are enabled.
 
-final class NotificationsEnabledProvider extends $FunctionalProvider<bool, bool, bool>
+final class NotificationsEnabledProvider
+    extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
   /// Provides whether notifications are enabled.
   NotificationsEnabledProvider._()
@@ -79,7 +81,8 @@ final class NotificationsEnabledProvider extends $FunctionalProvider<bool, bool,
 
   @$internal
   @override
-  $ProviderElement<bool> $createElement($ProviderPointer pointer) => $ProviderElement(pointer);
+  $ProviderElement<bool> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
 
   @override
   bool create(Ref ref) {
@@ -88,8 +91,12 @@ final class NotificationsEnabledProvider extends $FunctionalProvider<bool, bool,
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(bool value) {
-    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<bool>(value));
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
   }
 }
 
-String _$notificationsEnabledHash() => r'b7a5fd60d33ebdf3347ee2503e5933fe10c618ba';
+String _$notificationsEnabledHash() =>
+    r'b7a5fd60d33ebdf3347ee2503e5933fe10c618ba';

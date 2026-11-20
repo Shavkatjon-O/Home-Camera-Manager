@@ -62,8 +62,8 @@ class FakeBusinessRepository implements BusinessRepository {
   });
 
   @override
-  Future<List<TelegramChat>> telegramChats(String organisationId) =>
-      store.delay(() => List.of(store.data.telegram[organisationId] ?? const []));
+  Future<TelegramChats> telegramChats(String organisationId) =>
+      store.delay(() => TelegramChats(List.of(store.data.telegram[organisationId] ?? const [])));
 
   @override
   Future<TelegramLink> linkTelegram(String organisationId) => store.delay(() {

@@ -15,7 +15,11 @@ final appearanceSettingsProvider = AppearanceSettingsProvider._();
 
 /// The notifier holding the chosen theme mode and language, persisted in preferences.
 final class AppearanceSettingsProvider
-    extends $NotifierProvider<AppearanceSettings, ({Locale? locale, ThemeMode theme})> {
+    extends
+        $NotifierProvider<
+          AppearanceSettings,
+          ({Locale? locale, ThemeMode theme})
+        > {
   /// The notifier holding the chosen theme mode and language, persisted in preferences.
   AppearanceSettingsProvider._()
     : super(
@@ -39,26 +43,37 @@ final class AppearanceSettingsProvider
   Override overrideWithValue(({Locale? locale, ThemeMode theme}) value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<({Locale? locale, ThemeMode theme})>(value),
+      providerOverride: $SyncValueProvider<({Locale? locale, ThemeMode theme})>(
+        value,
+      ),
     );
   }
 }
 
-String _$appearanceSettingsHash() => r'23d5f4601fbe10a14a736b7b754f3a62648e1d9d';
+String _$appearanceSettingsHash() =>
+    r'23d5f4601fbe10a14a736b7b754f3a62648e1d9d';
 
 /// The notifier holding the chosen theme mode and language, persisted in preferences.
 
-abstract class _$AppearanceSettings extends $Notifier<({Locale? locale, ThemeMode theme})> {
+abstract class _$AppearanceSettings
+    extends $Notifier<({Locale? locale, ThemeMode theme})> {
   ({Locale? locale, ThemeMode theme}) build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
     final ref =
-        this.ref as $Ref<({Locale? locale, ThemeMode theme}), ({Locale? locale, ThemeMode theme})>;
+        this.ref
+            as $Ref<
+              ({Locale? locale, ThemeMode theme}),
+              ({Locale? locale, ThemeMode theme})
+            >;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<({Locale? locale, ThemeMode theme}), ({Locale? locale, ThemeMode theme})>,
+              AnyNotifier<
+                ({Locale? locale, ThemeMode theme}),
+                ({Locale? locale, ThemeMode theme})
+              >,
               ({Locale? locale, ThemeMode theme}),
               Object?,
               Object?

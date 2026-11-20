@@ -41,12 +41,28 @@ abstract class TelegramChat with _$TelegramChat {
     @Default(false) bool group,
     required DateTime linkedAt,
     String? linkedBy,
+    @Default(false) bool blocked,
   }) = _TelegramChat;
+}
+
+/// The Telegram chats of an organisation and whether the server has a bot.
+class TelegramChats {
+  /// Creates the list of [items]; [available] is false when the server has no
+  /// Telegram bot configured.
+  const TelegramChats(this.items, {this.available = true});
+
+  /// The linked chats.
+  final List<TelegramChat> items;
+
+  /// Whether Telegram alerts can be used on this server.
+  final bool available;
 }
 
 /// A one-time link that connects a Telegram chat to a site.
 @freezed
 abstract class TelegramLink with _$TelegramLink {
-  /// Creates a link that opens at [url] and stops working at [expiresAt].
-  const factory TelegramLink({required String url, required DateTime expiresAt}) = _TelegramLink;
+  /// Creates a link that opens a private chat at [url], or adds the bot to a
+  /// group at [groupUrl], and stops working at [expiresAt].
+  const factory TelegramLink({required String url, String? groupUrl, required DateTime expiresAt}) =
+      _TelegramLink;
 }

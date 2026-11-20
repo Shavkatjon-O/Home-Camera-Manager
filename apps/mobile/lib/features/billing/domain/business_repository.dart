@@ -8,7 +8,7 @@ abstract interface class BusinessRepository {
   Future<PlanReport> plan(String organisationId);
 
   /// Returns the Telegram chats linked to the organisation [organisationId].
-  Future<List<TelegramChat>> telegramChats(String organisationId);
+  Future<TelegramChats> telegramChats(String organisationId);
 
   /// Creates a one-time link for connecting a Telegram chat to [organisationId].
   Future<TelegramLink> linkTelegram(String organisationId);

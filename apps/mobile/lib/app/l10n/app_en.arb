@@ -1568,5 +1568,44 @@
   "onboardingCameraBodyDirect": "Enter the login the camera uses for its video. The server keeps it encrypted and uses it only to reach the camera.",
   "@onboardingCameraBodyDirect": {
     "description": "Subtitle of the camera login step on a site the server reaches without a connector."
+  },
+  "actionSignOut": "Signed out",
+  "actionAccountDelete": "Deleted the account",
+  "actionPasswordChange": "Changed the password",
+  "actionOrganisationCreate": "Created the organisation",
+  "actionOrganisationUpdate": "Changed the organisation",
+  "actionOrganisationDelete": "Deleted the organisation",
+  "actionOwnershipTransfer": "Handed over ownership",
+  "actionSiteCreate": "Added a site",
+  "actionSiteUpdate": "Changed a site",
+  "actionSiteDelete": "Deleted a site",
+  "actionInvitationRevoke": "Withdrew an invitation",
+  "actionInvitationAccept": "Joined the organisation",
+  "actionDevicePair": "Paired a device",
+  "actionConnectorClaim": "Paired a connector",
+  "actionConnectorUpdate": "Changed a connector",
+  "actionConnectorRevoke": "Removed a connector",
+  "actionCameraControl": "Controlled a camera",
+  "actionAlertChannelLink": "Linked a Telegram chat",
+  "actionAlertChannelRemove": "Unlinked a Telegram chat",
+  "actionFacesConsent": "Turned on face recognition",
+  "actionAdminSuspend": "Suspended the organisation",
+  "actionAdminRestore": "Restored the organisation",
+  "telegramLinkPrivate": "A private chat",
+  "telegramLinkPrivateBody": "Alerts go to your own chat with the bot",
+  "telegramLinkGroup": "A group",
+  "telegramLinkGroupBody": "Add the bot to a group and everyone in it gets the alerts",
+  "telegramBlocked": "The bot is blocked in this chat. Unblock it in Telegram or link the chat again.",
+  "errorPlanFeature": "Your plan does not include this. The organisation's owner can change the plan.",
+  "errorPlanLimit": "This goes beyond what your plan allows. Remove something or ask the owner to change the plan.",
+  "errorSuspended": "This organisation is suspended. Contact the service to restore it.",
+  "planSuspended": "This organisation is suspended. Cameras, alerts and changes are paused until the service restores it.",
+  "siteRetentionPlan": "Your plan keeps events for up to {days} days.",
+  "@siteRetentionPlan": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
   }
 }

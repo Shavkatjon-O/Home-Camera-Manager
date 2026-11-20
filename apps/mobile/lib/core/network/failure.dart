@@ -42,6 +42,15 @@ enum FailureKind {
   /// The server refused because too many attempts came too quickly.
   tooMany,
 
+  /// The organisation's plan does not include the feature.
+  planFeature,
+
+  /// The change would go beyond a limit of the organisation's plan.
+  planLimit,
+
+  /// A platform admin suspended the organisation.
+  suspended,
+
   /// The server failed to handle the request.
   server,
 

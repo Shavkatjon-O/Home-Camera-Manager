@@ -32,6 +32,26 @@ enum AuditCategory {
   admin,
 }
 
+/// The category an audit [action] code of the server belongs to.
+AuditCategory auditCategoryOf(String action) => switch (action) {
+  'sign_in' || 'sign_out' || 'account_delete' || 'password_change' => AuditCategory.signIn,
+  'camera_create' ||
+  'camera_update' ||
+  'camera_delete' ||
+  'device_pair' ||
+  'connector_claim' ||
+  'connector_update' ||
+  'connector_revoke' ||
+  'camera_control' => AuditCategory.cameras,
+  'rules_update' => AuditCategory.rules,
+  'arm_mode_change' || 'alert_channel_link' || 'alert_channel_remove' => AuditCategory.arm,
+  'live_view' || 'clip_view' => AuditCategory.views,
+  'export' => AuditCategory.exports,
+  'face_enrol' || 'face_delete' || 'faces_consent' => AuditCategory.faces,
+  _ when action.startsWith('admin_') => AuditCategory.admin,
+  _ => AuditCategory.members,
+};
+
 /// One recorded action in the audit log.
 @freezed
 abstract class AuditEntry with _$AuditEntry {

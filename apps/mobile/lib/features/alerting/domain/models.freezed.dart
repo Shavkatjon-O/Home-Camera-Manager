@@ -300,7 +300,7 @@ as String?,
 /// @nodoc
 mixin _$TelegramChat {
 
- String get id; String get title; bool get group; DateTime get linkedAt; String? get linkedBy;
+ String get id; String get title; bool get group; DateTime get linkedAt; String? get linkedBy; bool get blocked;
 /// Create a copy of TelegramChat
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -312,20 +312,20 @@ $TelegramChatCopyWith<TelegramChat> get copyWith => _$TelegramChatCopyWithImpl<T
 @override
 bool operator ==(Object other) {
   final _this = this as TelegramChat;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is TelegramChat&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.title, _this.title) || other.title == _this.title)&&(identical(other.group, _this.group) || other.group == _this.group)&&(identical(other.linkedAt, _this.linkedAt) || other.linkedAt == _this.linkedAt)&&(identical(other.linkedBy, _this.linkedBy) || other.linkedBy == _this.linkedBy));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TelegramChat&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.title, _this.title) || other.title == _this.title)&&(identical(other.group, _this.group) || other.group == _this.group)&&(identical(other.linkedAt, _this.linkedAt) || other.linkedAt == _this.linkedAt)&&(identical(other.linkedBy, _this.linkedBy) || other.linkedBy == _this.linkedBy)&&(identical(other.blocked, _this.blocked) || other.blocked == _this.blocked));
 }
 
 
 @override
 int get hashCode {
   final _this = this as TelegramChat;
-  return Object.hash(runtimeType,_this.id,_this.title,_this.group,_this.linkedAt,_this.linkedBy);
+  return Object.hash(runtimeType,_this.id,_this.title,_this.group,_this.linkedAt,_this.linkedBy,_this.blocked);
 }
 
 @override
 String toString() {
   final _this = this as TelegramChat;
-  return 'TelegramChat(id: ${_this.id}, title: ${_this.title}, group: ${_this.group}, linkedAt: ${_this.linkedAt}, linkedBy: ${_this.linkedBy})';
+  return 'TelegramChat(id: ${_this.id}, title: ${_this.title}, group: ${_this.group}, linkedAt: ${_this.linkedAt}, linkedBy: ${_this.linkedBy}, blocked: ${_this.blocked})';
 }
 
 
@@ -336,7 +336,7 @@ abstract mixin class $TelegramChatCopyWith<$Res>  {
   factory $TelegramChatCopyWith(TelegramChat value, $Res Function(TelegramChat) _then) = _$TelegramChatCopyWithImpl;
 @useResult
 $Res call({
- String id, String title, bool group, DateTime linkedAt, String? linkedBy
+ String id, String title, bool group, DateTime linkedAt, String? linkedBy, bool blocked
 });
 
 
@@ -353,14 +353,15 @@ class _$TelegramChatCopyWithImpl<$Res>
 
 /// Create a copy of TelegramChat
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? group = null,Object? linkedAt = null,Object? linkedBy = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? group = null,Object? linkedAt = null,Object? linkedBy = freezed,Object? blocked = null,}) {
   return _then(TelegramChat(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,group: null == group ? _self.group : group // ignore: cast_nullable_to_non_nullable
 as bool,linkedAt: null == linkedAt ? _self.linkedAt : linkedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,linkedBy: freezed == linkedBy ? _self.linkedBy : linkedBy // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,blocked: null == blocked ? _self.blocked : blocked // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -445,10 +446,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title,  bool group,  DateTime linkedAt,  String? linkedBy)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title,  bool group,  DateTime linkedAt,  String? linkedBy,  bool blocked)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _TelegramChat() when $default != null:
-return $default(_that.id,_that.title,_that.group,_that.linkedAt,_that.linkedBy);case _:
+return $default(_that.id,_that.title,_that.group,_that.linkedAt,_that.linkedBy,_that.blocked);case _:
   return orElse();
 
 }
@@ -466,10 +467,10 @@ return $default(_that.id,_that.title,_that.group,_that.linkedAt,_that.linkedBy);
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title,  bool group,  DateTime linkedAt,  String? linkedBy)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title,  bool group,  DateTime linkedAt,  String? linkedBy,  bool blocked)  $default,) {final _that = this;
 switch (_that) {
 case _TelegramChat():
-return $default(_that.id,_that.title,_that.group,_that.linkedAt,_that.linkedBy);case _:
+return $default(_that.id,_that.title,_that.group,_that.linkedAt,_that.linkedBy,_that.blocked);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -486,10 +487,10 @@ return $default(_that.id,_that.title,_that.group,_that.linkedAt,_that.linkedBy);
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title,  bool group,  DateTime linkedAt,  String? linkedBy)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title,  bool group,  DateTime linkedAt,  String? linkedBy,  bool blocked)?  $default,) {final _that = this;
 switch (_that) {
 case _TelegramChat() when $default != null:
-return $default(_that.id,_that.title,_that.group,_that.linkedAt,_that.linkedBy);case _:
+return $default(_that.id,_that.title,_that.group,_that.linkedAt,_that.linkedBy,_that.blocked);case _:
   return null;
 
 }
@@ -501,7 +502,7 @@ return $default(_that.id,_that.title,_that.group,_that.linkedAt,_that.linkedBy);
 
 
 class _TelegramChat implements TelegramChat {
-  const _TelegramChat({required this.id, required this.title, this.group = false, required this.linkedAt, this.linkedBy});
+  const _TelegramChat({required this.id, required this.title, this.group = false, required this.linkedAt, this.linkedBy, this.blocked = false});
   
 
 @override final  String id;
@@ -509,6 +510,7 @@ class _TelegramChat implements TelegramChat {
 @override@JsonKey() final  bool group;
 @override final  DateTime linkedAt;
 @override final  String? linkedBy;
+@override@JsonKey() final  bool blocked;
 
 /// Create a copy of TelegramChat
 /// with the given fields replaced by the non-null parameter values.
@@ -520,18 +522,18 @@ _$TelegramChatCopyWith<_TelegramChat> get copyWith => __$TelegramChatCopyWithImp
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _TelegramChat&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.group, group) || other.group == group)&&(identical(other.linkedAt, linkedAt) || other.linkedAt == linkedAt)&&(identical(other.linkedBy, linkedBy) || other.linkedBy == linkedBy));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _TelegramChat&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.group, group) || other.group == group)&&(identical(other.linkedAt, linkedAt) || other.linkedAt == linkedAt)&&(identical(other.linkedBy, linkedBy) || other.linkedBy == linkedBy)&&(identical(other.blocked, blocked) || other.blocked == blocked));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,title,group,linkedAt,linkedBy);
+    return Object.hash(runtimeType,id,title,group,linkedAt,linkedBy,blocked);
 }
 
 @override
 String toString() {
-    return 'TelegramChat(id: $id, title: $title, group: $group, linkedAt: $linkedAt, linkedBy: $linkedBy)';
+    return 'TelegramChat(id: $id, title: $title, group: $group, linkedAt: $linkedAt, linkedBy: $linkedBy, blocked: $blocked)';
 }
 
 
@@ -542,7 +544,7 @@ abstract mixin class _$TelegramChatCopyWith<$Res> implements $TelegramChatCopyWi
   factory _$TelegramChatCopyWith(_TelegramChat value, $Res Function(_TelegramChat) _then) = __$TelegramChatCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String title, bool group, DateTime linkedAt, String? linkedBy
+ String id, String title, bool group, DateTime linkedAt, String? linkedBy, bool blocked
 });
 
 
@@ -559,14 +561,15 @@ class __$TelegramChatCopyWithImpl<$Res>
 
 /// Create a copy of TelegramChat
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? group = null,Object? linkedAt = null,Object? linkedBy = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? group = null,Object? linkedAt = null,Object? linkedBy = freezed,Object? blocked = null,}) {
   return _then(_TelegramChat(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,group: null == group ? _self.group : group // ignore: cast_nullable_to_non_nullable
 as bool,linkedAt: null == linkedAt ? _self.linkedAt : linkedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,linkedBy: freezed == linkedBy ? _self.linkedBy : linkedBy // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,blocked: null == blocked ? _self.blocked : blocked // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -576,7 +579,7 @@ as String?,
 /// @nodoc
 mixin _$TelegramLink {
 
- String get url; DateTime get expiresAt;
+ String get url; String? get groupUrl; DateTime get expiresAt;
 /// Create a copy of TelegramLink
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -588,20 +591,20 @@ $TelegramLinkCopyWith<TelegramLink> get copyWith => _$TelegramLinkCopyWithImpl<T
 @override
 bool operator ==(Object other) {
   final _this = this as TelegramLink;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is TelegramLink&&(identical(other.url, _this.url) || other.url == _this.url)&&(identical(other.expiresAt, _this.expiresAt) || other.expiresAt == _this.expiresAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TelegramLink&&(identical(other.url, _this.url) || other.url == _this.url)&&(identical(other.groupUrl, _this.groupUrl) || other.groupUrl == _this.groupUrl)&&(identical(other.expiresAt, _this.expiresAt) || other.expiresAt == _this.expiresAt));
 }
 
 
 @override
 int get hashCode {
   final _this = this as TelegramLink;
-  return Object.hash(runtimeType,_this.url,_this.expiresAt);
+  return Object.hash(runtimeType,_this.url,_this.groupUrl,_this.expiresAt);
 }
 
 @override
 String toString() {
   final _this = this as TelegramLink;
-  return 'TelegramLink(url: ${_this.url}, expiresAt: ${_this.expiresAt})';
+  return 'TelegramLink(url: ${_this.url}, groupUrl: ${_this.groupUrl}, expiresAt: ${_this.expiresAt})';
 }
 
 
@@ -612,7 +615,7 @@ abstract mixin class $TelegramLinkCopyWith<$Res>  {
   factory $TelegramLinkCopyWith(TelegramLink value, $Res Function(TelegramLink) _then) = _$TelegramLinkCopyWithImpl;
 @useResult
 $Res call({
- String url, DateTime expiresAt
+ String url, String? groupUrl, DateTime expiresAt
 });
 
 
@@ -629,10 +632,11 @@ class _$TelegramLinkCopyWithImpl<$Res>
 
 /// Create a copy of TelegramLink
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? url = null,Object? expiresAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? url = null,Object? groupUrl = freezed,Object? expiresAt = null,}) {
   return _then(TelegramLink(
 url: null == url ? _self.url : url // ignore: cast_nullable_to_non_nullable
-as String,expiresAt: null == expiresAt ? _self.expiresAt : expiresAt // ignore: cast_nullable_to_non_nullable
+as String,groupUrl: freezed == groupUrl ? _self.groupUrl : groupUrl // ignore: cast_nullable_to_non_nullable
+as String?,expiresAt: null == expiresAt ? _self.expiresAt : expiresAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));
 }
@@ -718,10 +722,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String url,  DateTime expiresAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String url,  String? groupUrl,  DateTime expiresAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _TelegramLink() when $default != null:
-return $default(_that.url,_that.expiresAt);case _:
+return $default(_that.url,_that.groupUrl,_that.expiresAt);case _:
   return orElse();
 
 }
@@ -739,10 +743,10 @@ return $default(_that.url,_that.expiresAt);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String url,  DateTime expiresAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String url,  String? groupUrl,  DateTime expiresAt)  $default,) {final _that = this;
 switch (_that) {
 case _TelegramLink():
-return $default(_that.url,_that.expiresAt);case _:
+return $default(_that.url,_that.groupUrl,_that.expiresAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -759,10 +763,10 @@ return $default(_that.url,_that.expiresAt);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String url,  DateTime expiresAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String url,  String? groupUrl,  DateTime expiresAt)?  $default,) {final _that = this;
 switch (_that) {
 case _TelegramLink() when $default != null:
-return $default(_that.url,_that.expiresAt);case _:
+return $default(_that.url,_that.groupUrl,_that.expiresAt);case _:
   return null;
 
 }
@@ -774,10 +778,11 @@ return $default(_that.url,_that.expiresAt);case _:
 
 
 class _TelegramLink implements TelegramLink {
-  const _TelegramLink({required this.url, required this.expiresAt});
+  const _TelegramLink({required this.url, this.groupUrl, required this.expiresAt});
   
 
 @override final  String url;
+@override final  String? groupUrl;
 @override final  DateTime expiresAt;
 
 /// Create a copy of TelegramLink
@@ -790,18 +795,18 @@ _$TelegramLinkCopyWith<_TelegramLink> get copyWith => __$TelegramLinkCopyWithImp
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _TelegramLink&&(identical(other.url, url) || other.url == url)&&(identical(other.expiresAt, expiresAt) || other.expiresAt == expiresAt));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _TelegramLink&&(identical(other.url, url) || other.url == url)&&(identical(other.groupUrl, groupUrl) || other.groupUrl == groupUrl)&&(identical(other.expiresAt, expiresAt) || other.expiresAt == expiresAt));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,url,expiresAt);
+    return Object.hash(runtimeType,url,groupUrl,expiresAt);
 }
 
 @override
 String toString() {
-    return 'TelegramLink(url: $url, expiresAt: $expiresAt)';
+    return 'TelegramLink(url: $url, groupUrl: $groupUrl, expiresAt: $expiresAt)';
 }
 
 
@@ -812,7 +817,7 @@ abstract mixin class _$TelegramLinkCopyWith<$Res> implements $TelegramLinkCopyWi
   factory _$TelegramLinkCopyWith(_TelegramLink value, $Res Function(_TelegramLink) _then) = __$TelegramLinkCopyWithImpl;
 @override @useResult
 $Res call({
- String url, DateTime expiresAt
+ String url, String? groupUrl, DateTime expiresAt
 });
 
 
@@ -829,10 +834,11 @@ class __$TelegramLinkCopyWithImpl<$Res>
 
 /// Create a copy of TelegramLink
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? url = null,Object? expiresAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? url = null,Object? groupUrl = freezed,Object? expiresAt = null,}) {
   return _then(_TelegramLink(
 url: null == url ? _self.url : url // ignore: cast_nullable_to_non_nullable
-as String,expiresAt: null == expiresAt ? _self.expiresAt : expiresAt // ignore: cast_nullable_to_non_nullable
+as String,groupUrl: freezed == groupUrl ? _self.groupUrl : groupUrl // ignore: cast_nullable_to_non_nullable
+as String?,expiresAt: null == expiresAt ? _self.expiresAt : expiresAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));
 }

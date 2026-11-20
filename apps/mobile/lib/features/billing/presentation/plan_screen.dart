@@ -98,6 +98,21 @@ class PlanScreen extends ConsumerWidget {
             child: ListView(
               padding: const EdgeInsets.only(bottom: Gaps.xxl),
               children: [
+                if (report.suspended)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(Gaps.page, 0, Gaps.page, Gaps.md),
+                    child: Panel(
+                      color: p.error.withValues(alpha: 0.07),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(Icons.pause_circle_outline_rounded, color: p.error),
+                          const SizedBox(width: Gaps.md),
+                          Expanded(child: Text(l10n.planSuspended)),
+                        ],
+                      ),
+                    ),
+                  ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: Gaps.page),
                   child: Panel(
@@ -137,47 +152,51 @@ class PlanScreen extends ConsumerWidget {
                     ),
                   ],
                 ),
-                SectionHeader(
-                  '${l10n.planUsage}, ${l10n.planSince(format.date(usage.periodStart))}',
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: Gaps.page),
-                  child: GridView.count(
-                    crossAxisCount: 2,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    mainAxisSpacing: 10,
-                    crossAxisSpacing: 10,
-                    childAspectRatio: 1.6,
-                    children: [
-                      MetricTile(
-                        label: l10n.planCameraHours,
-                        value: format.number(usage.cameraHours),
-                        icon: Icons.videocam_outlined,
-                      ),
-                      MetricTile(
-                        label: l10n.planAnalyticsHours,
-                        value: format.number(usage.analyticsHours),
-                        icon: Icons.auto_awesome_outlined,
-                      ),
-                      MetricTile(
-                        label: l10n.planEvents,
-                        value: format.number(usage.events),
-                        icon: Icons.list_alt_rounded,
-                      ),
-                      MetricTile(
-                        label: l10n.planClipStorage,
-                        value: l10n.planGigabytes(format.number(usage.clipBytes / 1e9, digits: 1)),
-                        icon: Icons.sd_storage_outlined,
-                      ),
-                      MetricTile(
-                        label: l10n.planNotifications,
-                        value: format.number(usage.notifications),
-                        icon: Icons.notifications_outlined,
-                      ),
-                    ],
+                if (usage.metered) ...[
+                  SectionHeader(
+                    '${l10n.planUsage}, ${l10n.planSince(format.date(usage.periodStart))}',
                   ),
-                ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: Gaps.page),
+                    child: GridView.count(
+                      crossAxisCount: 2,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      mainAxisSpacing: 10,
+                      crossAxisSpacing: 10,
+                      childAspectRatio: 1.6,
+                      children: [
+                        MetricTile(
+                          label: l10n.planCameraHours,
+                          value: format.number(usage.cameraHours),
+                          icon: Icons.videocam_outlined,
+                        ),
+                        MetricTile(
+                          label: l10n.planAnalyticsHours,
+                          value: format.number(usage.analyticsHours),
+                          icon: Icons.auto_awesome_outlined,
+                        ),
+                        MetricTile(
+                          label: l10n.planEvents,
+                          value: format.number(usage.events),
+                          icon: Icons.list_alt_rounded,
+                        ),
+                        MetricTile(
+                          label: l10n.planClipStorage,
+                          value: l10n.planGigabytes(
+                            format.number(usage.clipBytes / 1e9, digits: 1),
+                          ),
+                          icon: Icons.sd_storage_outlined,
+                        ),
+                        MetricTile(
+                          label: l10n.planNotifications,
+                          value: format.number(usage.notifications),
+                          icon: Icons.notifications_outlined,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
                 SectionHeader(l10n.planFeatures),
                 TileGroup(
                   children: [

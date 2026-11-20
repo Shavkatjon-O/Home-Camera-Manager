@@ -35,6 +35,7 @@ class ApiTenancyRepository implements TenancyRepository {
     kind: SiteKind.values.asNameMap()[site.kind.toJson()] ?? SiteKind.other,
     timezone: site.timezone,
     armMode: armMode,
+    retentionDays: site.effectiveEventRetentionDays ?? site.eventRetentionDays ?? 30,
   );
 
   /// Reads the arm mode of [siteId], or schedule when the analytics settings cannot be read.
@@ -100,6 +101,7 @@ class ApiTenancyRepository implements TenancyRepository {
           name: site.name,
           kind: api.SiteKind.fromJson(site.kind.name),
           timezone: site.timezone,
+          eventRetentionDays: site.retentionDays,
         ),
       ),
     );

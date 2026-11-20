@@ -2751,4 +2751,107 @@ class AppLocalizationsUz extends AppLocalizations {
   @override
   String get onboardingCameraBodyDirect =>
       'Kamera video uchun ishlatadigan loginni kiriting. Server uni shifrlangan holda saqlaydi va faqat kameraga ulanish uchun ishlatadi.';
+
+  @override
+  String get actionSignOut => 'Hisobdan chiqdi';
+
+  @override
+  String get actionAccountDelete => 'Hisobni oʻchirdi';
+
+  @override
+  String get actionPasswordChange => 'Parolni oʻzgartirdi';
+
+  @override
+  String get actionOrganisationCreate => 'Tashkilot yaratdi';
+
+  @override
+  String get actionOrganisationUpdate => 'Tashkilotni oʻzgartirdi';
+
+  @override
+  String get actionOrganisationDelete => 'Tashkilotni oʻchirdi';
+
+  @override
+  String get actionOwnershipTransfer => 'Egalikni topshirdi';
+
+  @override
+  String get actionSiteCreate => 'Obyekt qoʻshdi';
+
+  @override
+  String get actionSiteUpdate => 'Obyektni oʻzgartirdi';
+
+  @override
+  String get actionSiteDelete => 'Obyektni oʻchirdi';
+
+  @override
+  String get actionInvitationRevoke => 'Taklifni bekor qildi';
+
+  @override
+  String get actionInvitationAccept => 'Tashkilotga qoʻshildi';
+
+  @override
+  String get actionDevicePair => 'Qurilmani uladi';
+
+  @override
+  String get actionConnectorClaim => 'Konnektorni uladi';
+
+  @override
+  String get actionConnectorUpdate => 'Konnektorni oʻzgartirdi';
+
+  @override
+  String get actionConnectorRevoke => 'Konnektorni olib tashladi';
+
+  @override
+  String get actionCameraControl => 'Kamerani boshqardi';
+
+  @override
+  String get actionAlertChannelLink => 'Telegram chatini uladi';
+
+  @override
+  String get actionAlertChannelRemove => 'Telegram chatini uzdi';
+
+  @override
+  String get actionFacesConsent => 'Yuzni tanishni yoqdi';
+
+  @override
+  String get actionAdminSuspend => 'Tashkilotni toʻxtatdi';
+
+  @override
+  String get actionAdminRestore => 'Tashkilotni tikladi';
+
+  @override
+  String get telegramLinkPrivate => 'Shaxsiy chat';
+
+  @override
+  String get telegramLinkPrivateBody => 'Signallar bot bilan oʻzingizning chatingizga keladi';
+
+  @override
+  String get telegramLinkGroup => 'Guruh';
+
+  @override
+  String get telegramLinkGroupBody => 'Botni guruhga qoʻshing, signallarni undagi hamma oladi';
+
+  @override
+  String get telegramBlocked =>
+      'Bot bu chatda bloklangan. Uni Telegramda blokdan chiqaring yoki chatni qayta ulang.';
+
+  @override
+  String get errorPlanFeature =>
+      'Tarifingizga bu kirmaydi. Tarifni tashkilot egasi oʻzgartira oladi.';
+
+  @override
+  String get errorPlanLimit =>
+      'Bu tarifingiz chegarasidan oshadi. Biror narsani olib tashlang yoki egadan tarifni oʻzgartirishni soʻrang.';
+
+  @override
+  String get errorSuspended =>
+      'Tashkilot toʻxtatilgan. Uni tiklash uchun xizmatga murojaat qiling.';
+
+  @override
+  String get planSuspended =>
+      'Tashkilot toʻxtatilgan. Xizmat uni tiklamaguncha kameralar, signallar va oʻzgarishlar toʻxtab turadi.';
+
+  @override
+  String siteRetentionPlan(int days) {
+    return 'Tarifingiz voqealarni $days kungacha saqlaydi.';
+  }
 }

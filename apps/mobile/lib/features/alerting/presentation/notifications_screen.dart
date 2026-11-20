@@ -30,7 +30,7 @@ final notificationPermissionProvider = FutureProvider.autoDispose<PermissionStat
 );
 
 /// The Telegram chats an organisation sends alerts to.
-final telegramChatsProvider = FutureProvider.autoDispose.family<List<TelegramChat>, String>(
+final telegramChatsProvider = FutureProvider.autoDispose.family<TelegramChats, String>(
   (ref, organisationId) => ref.read(backendProvider).business.telegramChats(organisationId),
 );
 
@@ -243,9 +243,13 @@ class _TelegramSectionState extends ConsumerState<TelegramSection> with WidgetsB
     setState(() => busy = true);
     try {
       final link = await ref.read(backendProvider).business.linkTelegram(organisationId);
+      if (!mounted) return;
+      final group = link.groupUrl;
+      final url = group == null ? link.url : await chooseChat(link.url, group);
+      if (url == null || !mounted) return;
       final opened =
           ref.read(backendProvider).demo ||
-          await launchUrl(Uri.parse(link.url), mode: LaunchMode.externalApplication);
+          await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
       if (!mounted) return;
       showMessage(context, opened ? l10n.telegramOpened : l10n.telegramCannotOpen);
       ref.invalidate(telegramChatsProvider(organisationId));
@@ -254,6 +258,36 @@ class _TelegramSectionState extends ConsumerState<TelegramSection> with WidgetsB
     } finally {
       if (mounted) setState(() => busy = false);
     }
+  }
+
+  /// Asks whether to link a private chat at [private] or a group at [group] and
+  /// returns the chosen link, or null when the sheet is closed.
+  Future<String?> chooseChat(String private, String group) {
+    final l10n = context.l10n;
+    return showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.person_outline_rounded),
+              title: Text(l10n.telegramLinkPrivate),
+              subtitle: Text(l10n.telegramLinkPrivateBody),
+              onTap: () => Navigator.of(context).pop(private),
+            ),
+            ListTile(
+              leading: const Icon(Icons.groups_outlined),
+              title: Text(l10n.telegramLinkGroup),
+              subtitle: Text(l10n.telegramLinkGroupBody),
+              onTap: () => Navigator.of(context).pop(group),
+            ),
+            const SizedBox(height: Gaps.md),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> test() async {
@@ -290,6 +324,8 @@ class _TelegramSectionState extends ConsumerState<TelegramSection> with WidgetsB
     final plan = ref.watch(planProvider(organisationId)).value?.plan;
     final format = Formats(context, ref.read(clockProvider)());
     final admin = widget.site.can(Role.admin);
+    // The server shows and changes Telegram chats to admins and owners only.
+    if (!admin) return const SizedBox.shrink();
     final header = SectionHeader(l10n.telegramTitle);
     if (plan != null && !plan.has(PlanFeature.telegram)) {
       return Column(
@@ -309,6 +345,7 @@ class _TelegramSectionState extends ConsumerState<TelegramSection> with WidgetsB
       );
     }
     final chats = ref.watch(telegramChatsProvider(organisationId));
+    if (chats.value?.available == false) return const SizedBox.shrink();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -327,61 +364,61 @@ class _TelegramSectionState extends ConsumerState<TelegramSection> with WidgetsB
             compact: true,
             onRetry: () => ref.invalidate(telegramChatsProvider(organisationId)),
           ),
-          data: (list) => TileGroup(
+          data: (value) => TileGroup(
             children: [
-              if (list.isEmpty)
+              if (value.items.isEmpty)
                 ListTile(
                   leading: Icon(Icons.send_outlined, color: p.text3),
                   title: Text(l10n.telegramNone, style: TextStyle(color: p.text2)),
                 ),
-              for (final chat in list)
+              for (final chat in value.items)
                 ListTile(
                   leading: Icon(chat.group ? Icons.groups_outlined : Icons.person_outline_rounded),
                   title: Text(chat.title),
                   subtitle: Text(
-                    '${chat.group ? l10n.telegramGroup : l10n.telegramPrivate}, ${l10n.telegramLinked(format.ago(chat.linkedAt))}',
+                    chat.blocked
+                        ? l10n.telegramBlocked
+                        : '${chat.group ? l10n.telegramGroup : l10n.telegramPrivate}, ${l10n.telegramLinked(format.ago(chat.linkedAt))}',
+                    style: chat.blocked ? TextStyle(color: p.error) : null,
                   ),
-                  trailing: admin
-                      ? IconButton(
-                          tooltip: l10n.telegramUnlink,
-                          onPressed: () => unlink(chat),
-                          icon: const Icon(Icons.link_off_rounded),
-                        )
-                      : null,
+                  trailing: IconButton(
+                    tooltip: l10n.telegramUnlink,
+                    onPressed: () => unlink(chat),
+                    icon: const Icon(Icons.link_off_rounded),
+                  ),
                 ),
             ],
           ),
         ),
-        if (admin)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(Gaps.page, Gaps.md, Gaps.page, 0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: FilledButton.icon(
-                        onPressed: busy ? null : link,
-                        icon: const Icon(Icons.add_link_rounded, size: 18),
-                        label: Text(l10n.telegramLink),
-                      ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(Gaps.page, Gaps.md, Gaps.page, 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: FilledButton.icon(
+                      onPressed: busy ? null : link,
+                      icon: const Icon(Icons.add_link_rounded, size: 18),
+                      label: Text(l10n.telegramLink),
                     ),
-                    const SizedBox(width: Gaps.sm),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: (chats.value?.isEmpty ?? true) ? null : test,
-                        icon: const Icon(Icons.send_rounded, size: 18),
-                        label: Text(l10n.telegramTest),
-                      ),
+                  ),
+                  const SizedBox(width: Gaps.sm),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: (chats.value?.items.isEmpty ?? true) ? null : test,
+                      icon: const Icon(Icons.send_rounded, size: 18),
+                      label: Text(l10n.telegramTest),
                     ),
-                  ],
-                ),
-                const SizedBox(height: Gaps.sm),
-                Text(l10n.telegramLinkBody, style: context.text.bodySmall),
-              ],
-            ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: Gaps.sm),
+              Text(l10n.telegramLinkBody, style: context.text.bodySmall),
+            ],
           ),
+        ),
       ],
     );
   }
