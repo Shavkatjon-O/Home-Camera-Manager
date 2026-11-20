@@ -1,0 +1,17 @@
+swagger_parser:
+  schema_path: ../../packages/contracts/openapi.json
+  output_directory: lib/core/network/api
+  generation:
+    root_api_class_name: SurveillanceApi
+    http_client: retrofit
+    serializer: freezed
+    unknown_enum_values: preserve
+    generate_docs: true
+    page_width: 100
+    prune_unused_models: true
+    operation_filters:
+      exclude_tags:
+        - connector-device
+        - tv
+        - floorplans
+        - discovery
