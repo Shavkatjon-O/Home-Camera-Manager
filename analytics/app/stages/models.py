@@ -78,6 +78,16 @@ PLATE_DETECTOR = StageModel(
     licence="NVIDIA AI Enterprise EULA, commercial use stated on the model card",
 )
 
+PLATE_TEXT = StageModel(
+    name="ppocr-v4-det",
+    family="paddleocr",
+    onnx="ch_PP-OCRv4_det_mobile.onnx",
+    sha256="d2a7720d45a54257208b1e13e36a8479894cb74155a5efe29462512d42f49da9",
+    input_shape=(3, 480, 640),
+    batch=1,
+    licence="Apache-2.0",
+)
+
 PLATE_READER = StageModel(
     name="ppocr-v4-en",
     family="paddleocr",
@@ -91,4 +101,5 @@ PLATE_READER = StageModel(
 PLATE_DICTIONARY = "en_dict.txt"
 PLATE_DICTIONARY_SHA256 = "5662df9d2d03f0e8ca0d3b0649d6acbab904b6a14b3d3521463c71c37c668ce3"
 
-MODELS = {model.name: model for model in (REID, POSE, PLATE_DETECTOR, PLATE_READER)}
+MODELS = {model.name: model for model in (REID, POSE, PLATE_TEXT, PLATE_DETECTOR, PLATE_READER)}
+OPTIONAL = frozenset({PLATE_DETECTOR.name})

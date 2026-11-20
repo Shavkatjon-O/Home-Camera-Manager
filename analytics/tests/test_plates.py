@@ -2,10 +2,11 @@ import numpy as np
 import pytest
 
 from app.plates.ctc import greedy, load_characters
-from app.plates.detect import BOX_NORM, STRIDE, decode
+from app.plates.detect import BOX_NORM, STRIDE, LpdFinder, PlateBox, decode
 from app.plates.frames import box_filter, parse_ppm
 from app.plates.reader import INFRARED, NO_PLATE, READ, PlateRead, PlateReader, PlateSettings, PlateVotes
 from app.plates.text import parse
+from app.plates.textboxes import TextFinder, plate_likeness, text_boxes, text_input
 from app.plates.watch import PlateJob, PlateWatch
 from app.rules.model import Box
 
@@ -126,7 +127,7 @@ def detector_with(box):
             ]
         return {"output_cov/Sigmoid:0": coverage, "output_bbox/BiasAdd:0": boxes}
 
-    return Runner(["input_1:0"], ["output_cov/Sigmoid:0", "output_bbox/BiasAdd:0"], make)
+    return LpdFinder(Runner(["input_1:0"], ["output_cov/Sigmoid:0", "output_bbox/BiasAdd:0"], make))
 
 
 def recogniser_with(text):
@@ -156,7 +157,7 @@ def test_reader_refuses_infrared_and_reports_missing_plates():
     reader = PlateReader(detector, recogniser_with("01A123BC"), CHARACTERS, PlateSettings())
     grey = np.full((480, 640, 3), 120, np.uint8)
     assert reader.read(grey).status == INFRARED
-    assert detector.calls == 0
+    assert detector.runner.calls == 0
     empty = PlateReader(detector_with(None), recogniser_with("01A123BC"), CHARACTERS, PlateSettings())
     assert empty.read(colour_picture()).status == NO_PLATE
 
@@ -215,3 +216,60 @@ def test_parse_ppm_and_box_filter():
     assert parse_ppm(b"P6\n3 2\n255\n" + bytes(5)) is None
     assert box_filter((0.1, 0.2, 0.3, 0.4), 0.0) == "crop=iw*0.20000:ih*0.20000:iw*0.10000:ih*0.20000"
     assert box_filter((0.0, 0.0, 1.0, 1.0), 0.5) == "crop=iw*1.00000:ih*1.00000:iw*0.00000:ih*0.00000"
+
+
+def test_text_boxes_grow_the_core_and_drop_weak_regions():
+    probabilities = np.zeros((48, 64), np.float32)
+    probabilities[10:16, 8:40] = 0.9
+    probabilities[30:33, 50:53] = 0.4
+    probabilities[40:42, 2:4] = 0.95
+    boxes = text_boxes(probabilities)
+    assert len(boxes) == 1
+    box = boxes[0]
+    grow = 32 * 6 * 1.5 / (2 * 38)
+    assert box.left == pytest.approx(8 - grow)
+    assert box.right == pytest.approx(40 + grow)
+    assert box.score == pytest.approx(0.9)
+
+
+def test_plate_likeness_prefers_plate_lines():
+    assert plate_likeness(PlateBox(0, 0, 80, 20, 1.0)) == pytest.approx(1.0)
+    assert plate_likeness(PlateBox(0, 0, 20, 20, 1.0)) == 0.0
+    assert plate_likeness(PlateBox(0, 0, 200, 20, 1.0)) == 0.0
+    assert 0 < plate_likeness(PlateBox(0, 0, 40, 20, 1.0)) < 1
+
+
+def test_text_input_letterboxes():
+    array, scale = text_input(np.full((240, 640, 3), 255, np.uint8))
+    assert array.shape == (3, 480, 640)
+    assert scale == pytest.approx(1.0)
+    assert array[:, 300:, :].max() == 0
+    assert array[:, :240, :].min() > 1.5
+
+
+def test_text_finder_maps_boxes_back_and_ranks_plates():
+    def make(batch):
+        output = np.zeros((1, 1, 480, 640), np.float32)
+        output[0, 0, 200:212, 100:150] = 0.9
+        output[0, 0, 50:90, 300:330] = 0.95
+        return {"maps": output}
+
+    finder = TextFinder(Runner(["x"], ["maps"], make))
+    found = finder.find(np.zeros((960, 1280, 3), np.uint8))
+    assert len(found) == 1
+    assert found[0].left < 200 < 300 < found[0].right
+    assert found[0].top < 400 < 424 < found[0].bottom
+
+
+def test_reader_with_the_text_finder():
+    def make(batch):
+        output = np.zeros((1, 1, 480, 640), np.float32)
+        output[0, 0, 304:326, 256:384] = 0.9
+        return {"maps": output}
+
+    reader = PlateReader(
+        TextFinder(Runner(["x"], ["maps"], make)), recogniser_with("01A123BC"), CHARACTERS, PlateSettings()
+    )
+    read = reader.read(colour_picture())
+    assert read.status == READ
+    assert read.plate.text == "01A123BC"

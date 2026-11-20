@@ -1,23 +1,25 @@
 """Reading the plate of one vehicle picture, and voting over the reads of one vehicle event.
 
 The vehicle picture is a full-resolution crop around the vehicle box. A grey picture is infrared night vision, which
-glares on the plate, so it is not read. Otherwise the plate detector looks at the whole crop stretched to its input,
-the best plate boxes are widened a little and cut from the full-resolution crop, and the text recogniser reads each
-one; the read that fits a plate format best wins.
+glares on the plate, so it is not read. Otherwise a plate finder looks at the whole crop: by default PaddleOCR's DB
+text detector, which finds plate-shaped lines of text, or NVIDIA's LPDNet where its licence suits. The best boxes are
+widened a little and cut from the full-resolution crop, and the text recogniser reads each one; the read that fits a
+plate format best wins.
 """
 
 from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass, field
+from typing import Protocol
 
 import numpy as np
 
 from app.plates.ctc import greedy
-from app.plates.detect import BOX_OUTPUT, COVERAGE_OUTPUT, PlateBox, decode
+from app.plates.detect import PlateBox
 from app.plates.text import PlateText, parse
-from app.stages.crops import is_grey, resize, text_line
-from app.stages.models import PLATE_DETECTOR, PLATE_READER
+from app.stages.crops import is_grey, text_line
+from app.stages.models import PLATE_READER
 from app.stages.runner import Runner
 
 READ = "read"
@@ -28,13 +30,38 @@ UNREADABLE = "unreadable"
 
 STATUS_ORDER = (READ, UNREADABLE, TOO_SMALL, NO_PLATE, INFRARED)
 
+TEXT_FINDER = "text"
+LPD_FINDER = "lpdnet"
+
+
+class Finder(Protocol):
+    """What the reader needs from a plate finder.
+
+    Attributes:
+        kind: text or lpdnet.
+    """
+
+    kind: str
+
+    def find(self, picture: np.ndarray, threshold: float) -> list[PlateBox]:
+        """Find plate boxes in a vehicle picture.
+
+        Args:
+            picture: Height by width by 3 RGB pixels.
+            threshold: Lowest box score kept.
+
+        Returns:
+            Plate boxes in the picture's pixels, best first.
+        """
+
 
 @dataclass(frozen=True)
 class PlateSettings:
     """Thresholds of plate reading.
 
     Attributes:
-        detect_threshold: Lowest plate detector coverage kept.
+        detect_threshold: Lowest LPDNet coverage kept.
+        text_threshold: Lowest mean text probability of a DB text box kept.
         boxes: Plate boxes read per picture, best first.
         min_height: Smallest plate height in full-resolution pixels worth reading.
         widen_x: Share of the plate width added on each side before reading.
@@ -44,7 +71,8 @@ class PlateSettings:
     """
 
     detect_threshold: float = 0.3
-    boxes: int = 2
+    text_threshold: float = 0.6
+    boxes: int = 3
     min_height: float = 12.0
     widen_x: float = 0.06
     widen_y: float = 0.2
@@ -88,19 +116,6 @@ class PlateRead:
     box: tuple[float, float, float, float] | None = None
 
 
-def detector_input(picture: np.ndarray) -> np.ndarray:
-    """Stretch a vehicle picture to the plate detector's input, RGB scaled to 0 to 1.
-
-    Args:
-        picture: Height by width by 3 RGB pixels.
-
-    Returns:
-        A 3 by 480 by 640 float32 array.
-    """
-    _, height, width = PLATE_DETECTOR.input_shape
-    return (resize(picture, width, height) / 255.0).transpose(2, 0, 1).astype(np.float32)
-
-
 def widen(box: PlateBox, settings: PlateSettings, width: int, height: int) -> tuple[int, int, int, int]:
     """Widen a plate box and clip it to the picture.
 
@@ -126,28 +141,28 @@ class PlateReader:
     """Finds and reads the plate of vehicle pictures.
 
     Attributes:
-        detector: Runner of the plate detector engine.
+        finder: The plate finder.
         recogniser: Runner of the text recogniser engine.
         characters: Class index to character of the recogniser.
         settings: Reading settings.
     """
 
-    def __init__(self, detector: Runner, recogniser: Runner, characters: list[str], settings: PlateSettings):
+    def __init__(self, finder: Finder, recogniser: Runner, characters: list[str], settings: PlateSettings):
         """Create the reader.
 
         Args:
-            detector: Runner of the plate detector engine.
+            finder: The plate finder.
             recogniser: Runner of the text recogniser engine.
             characters: Class index to character of the recogniser.
             settings: Reading settings.
         """
-        self.detector = detector
+        self.finder = finder
         self.recogniser = recogniser
         self.characters = characters
         self.settings = settings
 
     def find(self, picture: np.ndarray) -> list[PlateBox]:
-        """Find plate boxes in a vehicle picture.
+        """Find plate boxes in a vehicle picture with the reader's finder and threshold.
 
         Args:
             picture: Height by width by 3 RGB pixels.
@@ -155,11 +170,8 @@ class PlateReader:
         Returns:
             Plate boxes in the picture's pixels, best first.
         """
-        outputs = self.detector.run({self.detector.inputs[0]: detector_input(picture)[None]})
-        found = decode(outputs[COVERAGE_OUTPUT][0], outputs[BOX_OUTPUT][0], self.settings.detect_threshold)
-        _, input_height, input_width = PLATE_DETECTOR.input_shape
-        height, width = picture.shape[:2]
-        return [box.scaled(width / input_width, height / input_height) for box in found]
+        threshold = self.settings.text_threshold if self.finder.kind == TEXT_FINDER else self.settings.detect_threshold
+        return self.finder.find(picture, threshold)
 
     def read(self, picture: np.ndarray) -> PlateRead:
         """Read the plate of one vehicle picture.

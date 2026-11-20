@@ -1,4 +1,4 @@
-"""Plate boxes from the plate detector's grid outputs.
+"""Plate boxes from NVIDIA's LPDNet plate detector, the optional plate finder.
 
 LPDNet is a DetectNet_v2 network: for every cell of a 16-pixel grid over its 640 by 480 input it outputs a coverage
 score and four box distances from the cell centre, scaled by 35. Cells above the threshold give candidate boxes,
@@ -12,6 +12,9 @@ from dataclasses import dataclass
 import numpy as np
 
 from app.rules.geometry import iou
+from app.stages.crops import resize
+from app.stages.models import PLATE_DETECTOR
+from app.stages.runner import Runner
 
 STRIDE = 16
 BOX_NORM = 35.0
@@ -84,3 +87,51 @@ def decode(coverage: np.ndarray, boxes: np.ndarray, threshold: float, nms_iou: f
         if all(iou(box, (item.left, item.top, item.right, item.bottom)) <= nms_iou for item in kept):
             kept.append(candidate)
     return kept
+
+
+def detector_input(picture: np.ndarray) -> np.ndarray:
+    """Stretch a vehicle picture to the plate detector's input, RGB scaled to 0 to 1.
+
+    Args:
+        picture: Height by width by 3 RGB pixels.
+
+    Returns:
+        A 3 by 480 by 640 float32 array.
+    """
+    _, height, width = PLATE_DETECTOR.input_shape
+    return (resize(picture, width, height) / 255.0).transpose(2, 0, 1).astype(np.float32)
+
+
+class LpdFinder:
+    """Finds plates with LPDNet.
+
+    Attributes:
+        runner: Runner of the plate detector engine.
+        kind: Name of the finder in settings.
+    """
+
+    kind = "lpdnet"
+
+    def __init__(self, runner: Runner):
+        """Wrap an engine runner.
+
+        Args:
+            runner: Runner of the plate detector engine.
+        """
+        self.runner = runner
+
+    def find(self, picture: np.ndarray, threshold: float) -> list[PlateBox]:
+        """Find plate boxes in a vehicle picture.
+
+        Args:
+            picture: Height by width by 3 RGB pixels.
+            threshold: Lowest coverage kept.
+
+        Returns:
+            Plate boxes in the picture's pixels, best first.
+        """
+        outputs = self.runner.run({self.runner.inputs[0]: detector_input(picture)[None]})
+        found = decode(outputs[COVERAGE_OUTPUT][0], outputs[BOX_OUTPUT][0], threshold)
+        _, input_height, input_width = PLATE_DETECTOR.input_shape
+        height, width = picture.shape[:2]
+        return [box.scaled(width / input_width, height / input_height) for box in found]
