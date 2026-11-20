@@ -30,3 +30,4 @@ test/**/failures/
 integration_test/screenshots/
 patrol_test/test_bundle.dart
 .patrol.env
+test/**/goldens/
