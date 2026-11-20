@@ -18,16 +18,20 @@ PairingRead _$PairingReadFromJson(Map<String, dynamic> json) {
     status: PairingRead._read_status(json['status']),
     expiresAt: PairingRead._read_expiresAt(json['expires_at']),
     connector: json['connector'] as String?,
-    additionalProperties: PairingRead._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        PairingRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : PairingRead._readExtras(PairingRead._extras(json, 'additionalProperties')),
+        : PairingRead._readExtras(
+            PairingRead._extras(json, 'additionalProperties'),
+          ),
   );
 }
 
-Map<String, dynamic> _$PairingReadToJson(PairingRead instance) => <String, dynamic>{
-  'uuid': instance.uuid,
-  'name': instance.name,
-  'status': ?PairingRead._write_status(instance.status),
-  'expires_at': ?PairingRead._write_expiresAt(instance.expiresAt),
-  'connector': instance.connector,
-};
+Map<String, dynamic> _$PairingReadToJson(PairingRead instance) =>
+    <String, dynamic>{
+      'uuid': instance.uuid,
+      'name': instance.name,
+      'status': ?PairingRead._write_status(instance.status),
+      'expires_at': ?PairingRead._write_expiresAt(instance.expiresAt),
+      'connector': instance.connector,
+    };

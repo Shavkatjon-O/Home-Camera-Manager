@@ -2,8 +2,8 @@
 
 import 'package:dio/dio.dart' show Dio, Options, ResponseType, CancelToken;
 
-import '../control/models/device_read.dart' as models show DeviceRead;
 import 'models/device_list.dart' as models show DeviceList;
+import 'models/device_read.dart' as models show DeviceRead;
 
 class DevicesClient {
   DevicesClient(this._transport);

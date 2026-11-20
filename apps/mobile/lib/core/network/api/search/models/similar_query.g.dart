@@ -18,17 +18,22 @@ SimilarQuery _$SimilarQueryFromJson(Map<String, dynamic> json) {
     photo: json['photo'] as String?,
     page: SimilarQuery._presentValue(json, 'page') == null
         ? 1
-        : SimilarQuery._read_page(SimilarQuery._presentValue(json, 'page') as Object),
+        : SimilarQuery._read_page(
+            SimilarQuery._presentValue(json, 'page') as Object,
+          ),
     pageSize: SimilarQuery._presentValue(json, 'page_size') == null
         ? 50
-        : SimilarQuery._read_pageSize(SimilarQuery._presentValue(json, 'page_size') as Object),
+        : SimilarQuery._read_pageSize(
+            SimilarQuery._presentValue(json, 'page_size') as Object,
+          ),
   );
 }
 
-Map<String, dynamic> _$SimilarQueryToJson(SimilarQuery instance) => <String, dynamic>{
-  'sample': ?instance.sample,
-  'event': ?instance.event,
-  'photo': ?instance.photo,
-  'page': ?SimilarQuery._write_page(instance.page),
-  'page_size': ?SimilarQuery._write_pageSize(instance.pageSize),
-};
+Map<String, dynamic> _$SimilarQueryToJson(SimilarQuery instance) =>
+    <String, dynamic>{
+      'sample': ?instance.sample,
+      'event': ?instance.event,
+      'photo': ?instance.photo,
+      'page': ?SimilarQuery._write_page(instance.page),
+      'page_size': ?SimilarQuery._write_pageSize(instance.pageSize),
+    };

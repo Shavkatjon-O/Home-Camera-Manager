@@ -15,8 +15,9 @@ ClusterName _$ClusterNameFromJson(Map<String, dynamic> json) {
   );
 }
 
-Map<String, dynamic> _$ClusterNameToJson(ClusterName instance) => <String, dynamic>{
-  'person': ?instance.person,
-  'name': ?instance.name,
-  'color': ?instance.color,
-};
+Map<String, dynamic> _$ClusterNameToJson(ClusterName instance) =>
+    <String, dynamic>{
+      'person': ?instance.person,
+      'name': ?instance.name,
+      'color': ?instance.color,
+    };

@@ -16,9 +16,12 @@ ZoneFacet _$ZoneFacetFromJson(Map<String, dynamic> json) {
     id: json['id'] as String,
     name: json['name'] as String,
     view: json['view'] as String,
-    additionalProperties: ZoneFacet._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        ZoneFacet._extras(json, 'additionalProperties') == null
         ? const {}
-        : ZoneFacet._readExtras(ZoneFacet._extras(json, 'additionalProperties')),
+        : ZoneFacet._readExtras(
+            ZoneFacet._extras(json, 'additionalProperties'),
+          ),
   );
 }
 

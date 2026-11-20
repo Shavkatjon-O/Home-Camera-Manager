@@ -370,9 +370,12 @@ class ApiDeviceRepository implements DeviceRepository {
     final settings = image?.settings;
     return CameraSettings(
       device: CameraDevice(
-        manufacturer: device?.vendor,
+        manufacturer: device?.manufacturer,
         model: device?.model,
-        canReboot: device?.capabilities.maintenance.reboot ?? false,
+        firmware: device?.firmware,
+        clockOffsetSeconds: device?.clock?.offsetSeconds?.toDouble(),
+        timezone: device?.clock?.timezone,
+        canReboot: device?.canReboot ?? false,
       ),
       encoders: [
         if (video != null && video.supported)

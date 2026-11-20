@@ -16,17 +16,24 @@ final areasProvider = AreasFamily._();
 /// Loads the counted areas of the site [siteId].
 
 final class AreasProvider
-    extends $FunctionalProvider<AsyncValue<List<Area>>, List<Area>, FutureOr<List<Area>>>
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<Area>>,
+          List<Area>,
+          FutureOr<List<Area>>
+        >
     with $FutureModifier<List<Area>>, $FutureProvider<List<Area>> {
   /// Loads the counted areas of the site [siteId].
-  AreasProvider._({required AreasFamily super.from, required String super.argument})
-    : super(
-        retry: null,
-        name: r'areasProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
+  AreasProvider._({
+    required AreasFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'areasProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
   String debugGetCreateSourceHash() => _$areasHash();
@@ -77,7 +84,8 @@ final class AreasFamily extends $Family
 
   /// Loads the counted areas of the site [siteId].
 
-  AreasProvider call(String siteId) => AreasProvider._(argument: siteId, from: this);
+  AreasProvider call(String siteId) =>
+      AreasProvider._(argument: siteId, from: this);
 
   @override
   String toString() => r'areasProvider';
@@ -91,17 +99,24 @@ final todayReportProvider = TodayReportFamily._();
 /// Loads today's line crossing counts for the site [siteId], grouped by hour.
 
 final class TodayReportProvider
-    extends $FunctionalProvider<AsyncValue<CountsReport>, CountsReport, FutureOr<CountsReport>>
+    extends
+        $FunctionalProvider<
+          AsyncValue<CountsReport>,
+          CountsReport,
+          FutureOr<CountsReport>
+        >
     with $FutureModifier<CountsReport>, $FutureProvider<CountsReport> {
   /// Loads today's line crossing counts for the site [siteId], grouped by hour.
-  TodayReportProvider._({required TodayReportFamily super.from, required String super.argument})
-    : super(
-        retry: null,
-        name: r'todayReportProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
+  TodayReportProvider._({
+    required TodayReportFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'todayReportProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
   String debugGetCreateSourceHash() => _$todayReportHash();
@@ -115,8 +130,9 @@ final class TodayReportProvider
 
   @$internal
   @override
-  $FutureProviderElement<CountsReport> $createElement($ProviderPointer pointer) =>
-      $FutureProviderElement(pointer);
+  $FutureProviderElement<CountsReport> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
 
   @override
   FutureOr<CountsReport> create(Ref ref) {
@@ -152,7 +168,8 @@ final class TodayReportFamily extends $Family
 
   /// Loads today's line crossing counts for the site [siteId], grouped by hour.
 
-  TodayReportProvider call(String siteId) => TodayReportProvider._(argument: siteId, from: this);
+  TodayReportProvider call(String siteId) =>
+      TodayReportProvider._(argument: siteId, from: this);
 
   @override
   String toString() => r'todayReportProvider';

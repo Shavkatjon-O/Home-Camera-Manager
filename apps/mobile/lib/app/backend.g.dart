@@ -15,7 +15,8 @@ final backendProvider = BackendProvider._();
 
 /// The provider exposing the active [Backend]; it is overridden at start-up.
 
-final class BackendProvider extends $FunctionalProvider<Backend, Backend, Backend>
+final class BackendProvider
+    extends $FunctionalProvider<Backend, Backend, Backend>
     with $Provider<Backend> {
   /// The provider exposing the active [Backend]; it is overridden at start-up.
   BackendProvider._()
@@ -34,7 +35,8 @@ final class BackendProvider extends $FunctionalProvider<Backend, Backend, Backen
 
   @$internal
   @override
-  $ProviderElement<Backend> $createElement($ProviderPointer pointer) => $ProviderElement(pointer);
+  $ProviderElement<Backend> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
 
   @override
   Backend create(Ref ref) {
@@ -43,7 +45,10 @@ final class BackendProvider extends $FunctionalProvider<Backend, Backend, Backen
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(Backend value) {
-    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<Backend>(value));
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<Backend>(value),
+    );
   }
 }
 

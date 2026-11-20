@@ -34,17 +34,27 @@ ZoneInput _$ZoneInputFromJson(Map<String, dynamic> json) {
     polygon: ZoneInput._read_polygon(json['polygon']),
     wholeView: ZoneInput._presentValue(json, 'whole_view') == null
         ? false
-        : ZoneInput._read_wholeView(ZoneInput._presentValue(json, 'whole_view') as Object),
-    labels: (json['labels'] as List<dynamic>?)?.map((e) => e as String).toList(),
+        : ZoneInput._read_wholeView(
+            ZoneInput._presentValue(json, 'whole_view') as Object,
+          ),
+    labels: (json['labels'] as List<dynamic>?)
+        ?.map((e) => e as String)
+        .toList(),
     minDwell: ZoneInput._presentValue(json, 'min_dwell') == null
         ? 1.0
-        : ZoneInput._read_minDwell(ZoneInput._presentValue(json, 'min_dwell') as Object),
+        : ZoneInput._read_minDwell(
+            ZoneInput._presentValue(json, 'min_dwell') as Object,
+          ),
     loiterSeconds: ZoneInput._presentValue(json, 'loiter_seconds') == null
         ? 0.0
-        : ZoneInput._read_loiterSeconds(ZoneInput._presentValue(json, 'loiter_seconds') as Object),
+        : ZoneInput._read_loiterSeconds(
+            ZoneInput._presentValue(json, 'loiter_seconds') as Object,
+          ),
     crowdCount: ZoneInput._presentValue(json, 'crowd_count') == null
         ? 0
-        : ZoneInput._read_crowdCount(ZoneInput._presentValue(json, 'crowd_count') as Object),
+        : ZoneInput._read_crowdCount(
+            ZoneInput._presentValue(json, 'crowd_count') as Object,
+          ),
     schedule: (json['schedule'] as List<dynamic>?)
         ?.map((e) => Window.fromJson(e as Map<String, dynamic>))
         .toList(),
@@ -53,24 +63,39 @@ ZoneInput _$ZoneInputFromJson(Map<String, dynamic> json) {
         : AlertPolicy.fromJson(json['alert'] as Map<String, dynamic>),
     enabled: ZoneInput._presentValue(json, 'enabled') == null
         ? true
-        : ZoneInput._read_enabled(ZoneInput._presentValue(json, 'enabled') as Object),
+        : ZoneInput._read_enabled(
+            ZoneInput._presentValue(json, 'enabled') as Object,
+          ),
     reference: json['reference'] as String?,
     leftSeconds: ZoneInput._presentValue(json, 'left_seconds') == null
         ? 0.0
-        : ZoneInput._read_leftSeconds(ZoneInput._presentValue(json, 'left_seconds') as Object),
+        : ZoneInput._read_leftSeconds(
+            ZoneInput._presentValue(json, 'left_seconds') as Object,
+          ),
     takenSeconds: ZoneInput._presentValue(json, 'taken_seconds') == null
         ? 0.0
-        : ZoneInput._read_takenSeconds(ZoneInput._presentValue(json, 'taken_seconds') as Object),
-    objectLabels: (json['object_labels'] as List<dynamic>?)?.map((e) => e as String).toList(),
+        : ZoneInput._read_takenSeconds(
+            ZoneInput._presentValue(json, 'taken_seconds') as Object,
+          ),
+    objectLabels: (json['object_labels'] as List<dynamic>?)
+        ?.map((e) => e as String)
+        .toList(),
     background: ZoneInput._presentValue(json, 'background') == null
         ? false
-        : ZoneInput._read_background(ZoneInput._presentValue(json, 'background') as Object),
+        : ZoneInput._read_background(
+            ZoneInput._presentValue(json, 'background') as Object,
+          ),
     animals: ZoneInput._presentValue(json, 'animals') == null
         ? AnimalMode.record
-        : ZoneInput._read_animals(ZoneInput._presentValue(json, 'animals') as Object),
-    additionalProperties: ZoneInput._extras(json, 'additionalProperties') == null
+        : ZoneInput._read_animals(
+            ZoneInput._presentValue(json, 'animals') as Object,
+          ),
+    additionalProperties:
+        ZoneInput._extras(json, 'additionalProperties') == null
         ? const {}
-        : ZoneInput._readExtras(ZoneInput._extras(json, 'additionalProperties')),
+        : ZoneInput._readExtras(
+            ZoneInput._extras(json, 'additionalProperties'),
+          ),
   );
 }
 

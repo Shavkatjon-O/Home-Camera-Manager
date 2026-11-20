@@ -16,14 +16,18 @@ UsagePoint _$UsagePointFromJson(Map<String, dynamic> json) {
     at: UsagePoint._read_at(json['at']),
     metric: json['metric'] as String,
     value: json['value'] as num,
-    additionalProperties: UsagePoint._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        UsagePoint._extras(json, 'additionalProperties') == null
         ? const {}
-        : UsagePoint._readExtras(UsagePoint._extras(json, 'additionalProperties')),
+        : UsagePoint._readExtras(
+            UsagePoint._extras(json, 'additionalProperties'),
+          ),
   );
 }
 
-Map<String, dynamic> _$UsagePointToJson(UsagePoint instance) => <String, dynamic>{
-  'at': ?UsagePoint._write_at(instance.at),
-  'metric': instance.metric,
-  'value': instance.value,
-};
+Map<String, dynamic> _$UsagePointToJson(UsagePoint instance) =>
+    <String, dynamic>{
+      'at': ?UsagePoint._write_at(instance.at),
+      'metric': instance.metric,
+      'value': instance.value,
+    };

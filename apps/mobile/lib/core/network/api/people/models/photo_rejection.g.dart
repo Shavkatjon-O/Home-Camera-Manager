@@ -15,13 +15,14 @@ PhotoRejection _$PhotoRejectionFromJson(Map<String, dynamic> json) {
   return PhotoRejection(
     name: json['name'] as String,
     reason: json['reason'] as String,
-    additionalProperties: PhotoRejection._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        PhotoRejection._extras(json, 'additionalProperties') == null
         ? const {}
-        : PhotoRejection._readExtras(PhotoRejection._extras(json, 'additionalProperties')),
+        : PhotoRejection._readExtras(
+            PhotoRejection._extras(json, 'additionalProperties'),
+          ),
   );
 }
 
-Map<String, dynamic> _$PhotoRejectionToJson(PhotoRejection instance) => <String, dynamic>{
-  'name': instance.name,
-  'reason': instance.reason,
-};
+Map<String, dynamic> _$PhotoRejectionToJson(PhotoRejection instance) =>
+    <String, dynamic>{'name': instance.name, 'reason': instance.reason};

@@ -19,7 +19,8 @@ PlaybackCapabilities _$PlaybackCapabilitiesFromJson(Map<String, dynamic> json) {
         : PlaybackCapabilities._read_replay(
             PlaybackCapabilities._presentValue(json, 'replay') as Object,
           ),
-    additionalProperties: PlaybackCapabilities._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        PlaybackCapabilities._extras(json, 'additionalProperties') == null
         ? const {}
         : PlaybackCapabilities._readExtras(
             PlaybackCapabilities._extras(json, 'additionalProperties'),
@@ -27,8 +28,9 @@ PlaybackCapabilities _$PlaybackCapabilitiesFromJson(Map<String, dynamic> json) {
   );
 }
 
-Map<String, dynamic> _$PlaybackCapabilitiesToJson(PlaybackCapabilities instance) =>
-    <String, dynamic>{
-      'recordings': ?PlaybackCapabilities._write_recordings(instance.recordings),
-      'replay': ?PlaybackCapabilities._write_replay(instance.replay),
-    };
+Map<String, dynamic> _$PlaybackCapabilitiesToJson(
+  PlaybackCapabilities instance,
+) => <String, dynamic>{
+  'recordings': ?PlaybackCapabilities._write_recordings(instance.recordings),
+  'replay': ?PlaybackCapabilities._write_replay(instance.replay),
+};

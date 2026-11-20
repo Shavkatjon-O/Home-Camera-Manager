@@ -16,7 +16,9 @@ PlanRead _$PlanReadFromJson(Map<String, dynamic> json) {
     key: json['key'] as String,
     name: json['name'] as String,
     limits: PlanRead._read_limits(json['limits']),
-    features: (json['features'] as List<dynamic>).map((e) => e as String).toList(),
+    features: (json['features'] as List<dynamic>)
+        .map((e) => e as String)
+        .toList(),
     additionalProperties: PlanRead._extras(json, 'additionalProperties') == null
         ? const {}
         : PlanRead._readExtras(PlanRead._extras(json, 'additionalProperties')),

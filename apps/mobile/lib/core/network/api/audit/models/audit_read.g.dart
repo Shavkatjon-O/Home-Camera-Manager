@@ -34,9 +34,12 @@ AuditRead _$AuditReadFromJson(Map<String, dynamic> json) {
     targetUuid: json['target_uuid'] as String?,
     details: json['details'] as Map<String, dynamic>,
     ip: json['ip'] as String?,
-    additionalProperties: AuditRead._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        AuditRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : AuditRead._readExtras(AuditRead._extras(json, 'additionalProperties')),
+        : AuditRead._readExtras(
+            AuditRead._extras(json, 'additionalProperties'),
+          ),
   );
 }
 

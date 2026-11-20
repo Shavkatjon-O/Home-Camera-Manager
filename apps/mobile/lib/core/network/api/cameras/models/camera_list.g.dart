@@ -19,15 +19,19 @@ CameraList _$CameraListFromJson(Map<String, dynamic> json) {
     total: CameraList._read_total(json['total']),
     page: CameraList._read_page(json['page']),
     pageSize: CameraList._read_pageSize(json['page_size']),
-    additionalProperties: CameraList._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        CameraList._extras(json, 'additionalProperties') == null
         ? const {}
-        : CameraList._readExtras(CameraList._extras(json, 'additionalProperties')),
+        : CameraList._readExtras(
+            CameraList._extras(json, 'additionalProperties'),
+          ),
   );
 }
 
-Map<String, dynamic> _$CameraListToJson(CameraList instance) => <String, dynamic>{
-  'items': instance.items.map((e) => e.toJson()).toList(),
-  'total': ?CameraList._write_total(instance.total),
-  'page': ?CameraList._write_page(instance.page),
-  'page_size': ?CameraList._write_pageSize(instance.pageSize),
-};
+Map<String, dynamic> _$CameraListToJson(CameraList instance) =>
+    <String, dynamic>{
+      'items': instance.items.map((e) => e.toJson()).toList(),
+      'total': ?CameraList._write_total(instance.total),
+      'page': ?CameraList._write_page(instance.page),
+      'page_size': ?CameraList._write_pageSize(instance.pageSize),
+    };

@@ -7,15 +7,21 @@ part of 'camera_order.dart';
 // **************************************************************************
 
 CameraOrder _$CameraOrderFromJson(Map<String, dynamic> json) {
-  $checkKeys(json, requiredKeys: const ['uuids'], disallowNullValues: const ['uuids']);
+  $checkKeys(
+    json,
+    requiredKeys: const ['uuids'],
+    disallowNullValues: const ['uuids'],
+  );
   return CameraOrder(
     uuids: (json['uuids'] as List<dynamic>).map((e) => e as String).toList(),
-    additionalProperties: CameraOrder._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        CameraOrder._extras(json, 'additionalProperties') == null
         ? const {}
-        : CameraOrder._readExtras(CameraOrder._extras(json, 'additionalProperties')),
+        : CameraOrder._readExtras(
+            CameraOrder._extras(json, 'additionalProperties'),
+          ),
   );
 }
 
-Map<String, dynamic> _$CameraOrderToJson(CameraOrder instance) => <String, dynamic>{
-  'uuids': instance.uuids,
-};
+Map<String, dynamic> _$CameraOrderToJson(CameraOrder instance) =>
+    <String, dynamic>{'uuids': instance.uuids};

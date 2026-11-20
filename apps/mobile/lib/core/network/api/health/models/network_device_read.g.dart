@@ -47,23 +47,27 @@ NetworkDeviceRead _$NetworkDeviceReadFromJson(Map<String, dynamic> json) {
     enabled: json['enabled'] as bool,
     createdAt: NetworkDeviceRead._read_createdAt(json['created_at']),
     updatedAt: NetworkDeviceRead._read_updatedAt(json['updated_at']),
-    additionalProperties: NetworkDeviceRead._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        NetworkDeviceRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : NetworkDeviceRead._readExtras(NetworkDeviceRead._extras(json, 'additionalProperties')),
+        : NetworkDeviceRead._readExtras(
+            NetworkDeviceRead._extras(json, 'additionalProperties'),
+          ),
   );
 }
 
-Map<String, dynamic> _$NetworkDeviceReadToJson(NetworkDeviceRead instance) => <String, dynamic>{
-  'uuid': instance.uuid,
-  'name': instance.name,
-  'kind': ?NetworkDeviceRead._write_kind(instance.kind),
-  'host': instance.host,
-  'probe_port': ?NetworkDeviceRead._write_probePort(instance.probePort),
-  'parent_uuid': instance.parentUuid,
-  'parent_name': instance.parentName,
-  'link': NetworkDeviceRead._write_link(instance.link),
-  'notes': instance.notes,
-  'enabled': instance.enabled,
-  'created_at': ?NetworkDeviceRead._write_createdAt(instance.createdAt),
-  'updated_at': ?NetworkDeviceRead._write_updatedAt(instance.updatedAt),
-};
+Map<String, dynamic> _$NetworkDeviceReadToJson(NetworkDeviceRead instance) =>
+    <String, dynamic>{
+      'uuid': instance.uuid,
+      'name': instance.name,
+      'kind': ?NetworkDeviceRead._write_kind(instance.kind),
+      'host': instance.host,
+      'probe_port': ?NetworkDeviceRead._write_probePort(instance.probePort),
+      'parent_uuid': instance.parentUuid,
+      'parent_name': instance.parentName,
+      'link': NetworkDeviceRead._write_link(instance.link),
+      'notes': instance.notes,
+      'enabled': instance.enabled,
+      'created_at': ?NetworkDeviceRead._write_createdAt(instance.createdAt),
+      'updated_at': ?NetworkDeviceRead._write_updatedAt(instance.updatedAt),
+    };

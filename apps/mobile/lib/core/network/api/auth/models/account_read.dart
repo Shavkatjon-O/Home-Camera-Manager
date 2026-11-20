@@ -13,6 +13,7 @@ part 'account_read.g.dart';
 ///     email: Email address, if the account has one.
 ///     name: Display name, if given.
 ///     email_verified: Whether the email address is confirmed.
+///     is_platform_admin: Whether the account administers the whole platform.
 ///     created_at: When the account was created.
 @Freezed(fromJson: false, toJson: false)
 @JsonSerializable(explicitToJson: true, includeIfNull: true, disallowUnrecognizedKeys: false)
@@ -27,6 +28,15 @@ class const AccountRead({
 
   @JsonKey(name: "email_verified", required: true, disallowNullValue: true)
   required final bool emailVerified,
+
+  @JsonKey(
+    name: "is_platform_admin",
+    disallowNullValue: true,
+    readValue: AccountRead._presentValue,
+    fromJson: AccountRead._read_isPlatformAdmin,
+    toJson: AccountRead._write_isPlatformAdmin,
+  )
+  final bool isPlatformAdmin = false,
 
   @JsonKey(
     name: "created_at",
@@ -46,13 +56,22 @@ class const AccountRead({
     "email",
     "name",
     "email_verified",
+    "is_platform_admin",
     "created_at",
   };
 
   factory AccountRead.fromJson(Map<String, Object?> json) => _$AccountReadFromJson(json);
 
+  static bool _read_isPlatformAdmin(Object value) {
+    final data = (value as ({Object? value})).value;
+    return data as bool;
+  }
+
+  static Object? _write_isPlatformAdmin(bool value) => value;
   static DateTime _read_createdAt(Object? value) => DateTime.parse(value as String).toUtc();
   static Object? _write_createdAt(DateTime value) => value.toUtc().toIso8601String();
+  static Object? _presentValue(Map json, String key) =>
+      json.containsKey(key) ? (value: json[key]) : null;
   static Object? _extras(Map map, String _) => {
     for (final entry in map.entries)
       if (!_knownKeys.contains(entry.key)) entry.key as String: entry.value,

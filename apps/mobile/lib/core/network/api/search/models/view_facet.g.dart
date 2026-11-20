@@ -16,9 +16,12 @@ ViewFacet _$ViewFacetFromJson(Map<String, dynamic> json) {
     id: json['id'] as String,
     name: json['name'] as String,
     cameraUuid: json['camera_uuid'] as String,
-    additionalProperties: ViewFacet._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        ViewFacet._extras(json, 'additionalProperties') == null
         ? const {}
-        : ViewFacet._readExtras(ViewFacet._extras(json, 'additionalProperties')),
+        : ViewFacet._readExtras(
+            ViewFacet._extras(json, 'additionalProperties'),
+          ),
   );
 }
 

@@ -15,8 +15,9 @@ PersonUpdate _$PersonUpdateFromJson(Map<String, dynamic> json) {
   );
 }
 
-Map<String, dynamic> _$PersonUpdateToJson(PersonUpdate instance) => <String, dynamic>{
-  'name': ?instance.name,
-  'notes': ?instance.notes,
-  'color': ?instance.color,
-};
+Map<String, dynamic> _$PersonUpdateToJson(PersonUpdate instance) =>
+    <String, dynamic>{
+      'name': ?instance.name,
+      'notes': ?instance.notes,
+      'color': ?instance.color,
+    };

@@ -23,19 +23,23 @@ MotionRead _$MotionReadFromJson(Map<String, dynamic> json) {
     enabled: json['enabled'] as bool?,
     activeCells: MotionRead._read_activeCells(json['active_cells']),
     cells: MotionRead._read_cells(json['cells']),
-    additionalProperties: MotionRead._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        MotionRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : MotionRead._readExtras(MotionRead._extras(json, 'additionalProperties')),
+        : MotionRead._readExtras(
+            MotionRead._extras(json, 'additionalProperties'),
+          ),
   );
 }
 
-Map<String, dynamic> _$MotionReadToJson(MotionRead instance) => <String, dynamic>{
-  'camera_uuid': instance.cameraUuid,
-  'supported': instance.supported,
-  'reason': ?instance.reason,
-  'sensitivity': ?MotionRead._write_sensitivity(instance.sensitivity),
-  'sensitivity_range': ?instance.sensitivityRange?.toJson(),
-  'enabled': ?instance.enabled,
-  'active_cells': ?MotionRead._write_activeCells(instance.activeCells),
-  'cells': ?MotionRead._write_cells(instance.cells),
-};
+Map<String, dynamic> _$MotionReadToJson(MotionRead instance) =>
+    <String, dynamic>{
+      'camera_uuid': instance.cameraUuid,
+      'supported': instance.supported,
+      'reason': ?instance.reason,
+      'sensitivity': ?MotionRead._write_sensitivity(instance.sensitivity),
+      'sensitivity_range': ?instance.sensitivityRange?.toJson(),
+      'enabled': ?instance.enabled,
+      'active_cells': ?MotionRead._write_activeCells(instance.activeCells),
+      'cells': ?MotionRead._write_cells(instance.cells),
+    };

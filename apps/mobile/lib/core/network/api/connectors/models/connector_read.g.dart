@@ -42,29 +42,35 @@ ConnectorRead _$ConnectorReadFromJson(Map<String, dynamic> json) {
     online: json['online'] as bool,
     lastSeenAt: ConnectorRead._read_lastSeenAt(json['last_seen_at']),
     cameraCount: ConnectorRead._read_cameraCount(json['camera_count']),
-    discoveryRequestedAt: ConnectorRead._read_discoveryRequestedAt(json['discovery_requested_at']),
+    discoveryRequestedAt: ConnectorRead._read_discoveryRequestedAt(
+      json['discovery_requested_at'],
+    ),
     discoveredAt: ConnectorRead._read_discoveredAt(json['discovered_at']),
     health: json['health'] as Map<String, dynamic>,
     createdAt: ConnectorRead._read_createdAt(json['created_at']),
-    additionalProperties: ConnectorRead._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        ConnectorRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : ConnectorRead._readExtras(ConnectorRead._extras(json, 'additionalProperties')),
+        : ConnectorRead._readExtras(
+            ConnectorRead._extras(json, 'additionalProperties'),
+          ),
   );
 }
 
-Map<String, dynamic> _$ConnectorReadToJson(ConnectorRead instance) => <String, dynamic>{
-  'uuid': instance.uuid,
-  'name': instance.name,
-  'version': instance.version,
-  'mode': ?ConnectorRead._write_mode(instance.mode),
-  'address': instance.address,
-  'online': instance.online,
-  'last_seen_at': ConnectorRead._write_lastSeenAt(instance.lastSeenAt),
-  'camera_count': ?ConnectorRead._write_cameraCount(instance.cameraCount),
-  'discovery_requested_at': ConnectorRead._write_discoveryRequestedAt(
-    instance.discoveryRequestedAt,
-  ),
-  'discovered_at': ConnectorRead._write_discoveredAt(instance.discoveredAt),
-  'health': instance.health,
-  'created_at': ?ConnectorRead._write_createdAt(instance.createdAt),
-};
+Map<String, dynamic> _$ConnectorReadToJson(ConnectorRead instance) =>
+    <String, dynamic>{
+      'uuid': instance.uuid,
+      'name': instance.name,
+      'version': instance.version,
+      'mode': ?ConnectorRead._write_mode(instance.mode),
+      'address': instance.address,
+      'online': instance.online,
+      'last_seen_at': ConnectorRead._write_lastSeenAt(instance.lastSeenAt),
+      'camera_count': ?ConnectorRead._write_cameraCount(instance.cameraCount),
+      'discovery_requested_at': ConnectorRead._write_discoveryRequestedAt(
+        instance.discoveryRequestedAt,
+      ),
+      'discovered_at': ConnectorRead._write_discoveredAt(instance.discoveredAt),
+      'health': instance.health,
+      'created_at': ?ConnectorRead._write_createdAt(instance.createdAt),
+    };

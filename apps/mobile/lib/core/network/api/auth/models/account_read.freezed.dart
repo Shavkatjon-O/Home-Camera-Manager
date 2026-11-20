@@ -27,20 +27,20 @@ $AccountReadCopyWith<AccountRead> get copyWith => _$AccountReadCopyWithImpl<Acco
 @override
 bool operator ==(Object other) {
   final _this = this as AccountRead;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AccountRead&&(identical(other.uuid, _this.uuid) || other.uuid == _this.uuid)&&(identical(other.username, _this.username) || other.username == _this.username)&&(identical(other.email, _this.email) || other.email == _this.email)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.emailVerified, _this.emailVerified) || other.emailVerified == _this.emailVerified)&&(identical(other.createdAt, _this.createdAt) || other.createdAt == _this.createdAt)&&const DeepCollectionEquality().equals(other.additionalProperties, _this.additionalProperties));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AccountRead&&(identical(other.uuid, _this.uuid) || other.uuid == _this.uuid)&&(identical(other.username, _this.username) || other.username == _this.username)&&(identical(other.email, _this.email) || other.email == _this.email)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.emailVerified, _this.emailVerified) || other.emailVerified == _this.emailVerified)&&(identical(other.isPlatformAdmin, _this.isPlatformAdmin) || other.isPlatformAdmin == _this.isPlatformAdmin)&&(identical(other.createdAt, _this.createdAt) || other.createdAt == _this.createdAt)&&const DeepCollectionEquality().equals(other.additionalProperties, _this.additionalProperties));
 }
 
 
 @override
 int get hashCode {
   final _this = this as AccountRead;
-  return Object.hash(runtimeType,_this.uuid,_this.username,_this.email,_this.name,_this.emailVerified,_this.createdAt,const DeepCollectionEquality().hash(_this.additionalProperties));
+  return Object.hash(runtimeType,_this.uuid,_this.username,_this.email,_this.name,_this.emailVerified,_this.isPlatformAdmin,_this.createdAt,const DeepCollectionEquality().hash(_this.additionalProperties));
 }
 
 @override
 String toString() {
   final _this = this as AccountRead;
-  return 'AccountRead(uuid: ${_this.uuid}, username: ${_this.username}, email: ${_this.email}, name: ${_this.name}, emailVerified: ${_this.emailVerified}, createdAt: ${_this.createdAt}, additionalProperties: ${_this.additionalProperties})';
+  return 'AccountRead(uuid: ${_this.uuid}, username: ${_this.username}, email: ${_this.email}, name: ${_this.name}, emailVerified: ${_this.emailVerified}, isPlatformAdmin: ${_this.isPlatformAdmin}, createdAt: ${_this.createdAt}, additionalProperties: ${_this.additionalProperties})';
 }
 
 
@@ -51,7 +51,7 @@ abstract mixin class $AccountReadCopyWith<$Res>  {
   factory $AccountReadCopyWith(AccountRead value, $Res Function(AccountRead) _then) = _$AccountReadCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(required: true, disallowNullValue: true) String uuid,@JsonKey(required: true, disallowNullValue: true) String username,@JsonKey(required: true) String? email,@JsonKey(required: true) String? name,@JsonKey(name: "email_verified", required: true, disallowNullValue: true) bool emailVerified,@JsonKey(name: "created_at", required: true, disallowNullValue: true, fromJson: AccountRead._read_createdAt, toJson: AccountRead._write_createdAt) DateTime createdAt,@JsonKey(readValue: AccountRead._extras, fromJson: AccountRead._readExtras, includeToJson: false) Map<String, Object?> additionalProperties
+@JsonKey(required: true, disallowNullValue: true) String uuid,@JsonKey(required: true, disallowNullValue: true) String username,@JsonKey(required: true) String? email,@JsonKey(required: true) String? name,@JsonKey(name: "email_verified", required: true, disallowNullValue: true) bool emailVerified,@JsonKey(name: "is_platform_admin", disallowNullValue: true, readValue: AccountRead._presentValue, fromJson: AccountRead._read_isPlatformAdmin, toJson: AccountRead._write_isPlatformAdmin) bool isPlatformAdmin,@JsonKey(name: "created_at", required: true, disallowNullValue: true, fromJson: AccountRead._read_createdAt, toJson: AccountRead._write_createdAt) DateTime createdAt,@JsonKey(readValue: AccountRead._extras, fromJson: AccountRead._readExtras, includeToJson: false) Map<String, Object?> additionalProperties
 });
 
 
@@ -68,13 +68,14 @@ class _$AccountReadCopyWithImpl<$Res>
 
 /// Create a copy of AccountRead
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? uuid = null,Object? username = null,Object? email = freezed,Object? name = freezed,Object? emailVerified = null,Object? createdAt = null,Object? additionalProperties = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? uuid = null,Object? username = null,Object? email = freezed,Object? name = freezed,Object? emailVerified = null,Object? isPlatformAdmin = null,Object? createdAt = null,Object? additionalProperties = null,}) {
   return _then(AccountRead(
 uuid: null == uuid ? _self.uuid : uuid // ignore: cast_nullable_to_non_nullable
 as String,username: null == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
 as String,email: freezed == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String?,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String?,emailVerified: null == emailVerified ? _self.emailVerified : emailVerified // ignore: cast_nullable_to_non_nullable
+as bool,isPlatformAdmin: null == isPlatformAdmin ? _self.isPlatformAdmin : isPlatformAdmin // ignore: cast_nullable_to_non_nullable
 as bool,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,additionalProperties: null == additionalProperties ? _self.additionalProperties : additionalProperties // ignore: cast_nullable_to_non_nullable
 as Map<String, Object?>,

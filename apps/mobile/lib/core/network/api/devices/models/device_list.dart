@@ -2,7 +2,7 @@
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-import '../../control/models/device_read.dart';
+import 'device_read.dart';
 
 part 'device_list.freezed.dart';
 part 'device_list.g.dart';

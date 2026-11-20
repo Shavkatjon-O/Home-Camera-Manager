@@ -30,19 +30,23 @@ ChannelRead _$ChannelReadFromJson(Map<String, dynamic> json) {
     height: ChannelRead._read_height(json['height']),
     encoding: json['encoding'] as String?,
     ptz: json['ptz'] as bool,
-    additionalProperties: ChannelRead._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        ChannelRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : ChannelRead._readExtras(ChannelRead._extras(json, 'additionalProperties')),
+        : ChannelRead._readExtras(
+            ChannelRead._extras(json, 'additionalProperties'),
+          ),
   );
 }
 
-Map<String, dynamic> _$ChannelReadToJson(ChannelRead instance) => <String, dynamic>{
-  'index': ?ChannelRead._write_index(instance.index),
-  'name': instance.name,
-  'main_path': instance.mainPath,
-  'sub_path': instance.subPath,
-  'width': ChannelRead._write_width(instance.width),
-  'height': ChannelRead._write_height(instance.height),
-  'encoding': instance.encoding,
-  'ptz': instance.ptz,
-};
+Map<String, dynamic> _$ChannelReadToJson(ChannelRead instance) =>
+    <String, dynamic>{
+      'index': ?ChannelRead._write_index(instance.index),
+      'name': instance.name,
+      'main_path': instance.mainPath,
+      'sub_path': instance.subPath,
+      'width': ChannelRead._write_width(instance.width),
+      'height': ChannelRead._write_height(instance.height),
+      'encoding': instance.encoding,
+      'ptz': instance.ptz,
+    };

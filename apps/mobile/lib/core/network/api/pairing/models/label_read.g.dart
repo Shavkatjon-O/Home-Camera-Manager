@@ -24,7 +24,13 @@ LabelRead _$LabelReadFromJson(Map<String, dynamic> json) {
       'url',
       'methods',
     ],
-    disallowNullValues: const ['adapter', 'format', 'confirmed', 'kind', 'methods'],
+    disallowNullValues: const [
+      'adapter',
+      'format',
+      'confirmed',
+      'kind',
+      'methods',
+    ],
   );
   return LabelRead(
     adapter: json['adapter'] as String,
@@ -40,9 +46,12 @@ LabelRead _$LabelReadFromJson(Map<String, dynamic> json) {
     port: LabelRead._read_port(json['port']),
     url: json['url'] as String?,
     methods: LabelRead._read_methods(json['methods']),
-    additionalProperties: LabelRead._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        LabelRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : LabelRead._readExtras(LabelRead._extras(json, 'additionalProperties')),
+        : LabelRead._readExtras(
+            LabelRead._extras(json, 'additionalProperties'),
+          ),
   );
 }
 

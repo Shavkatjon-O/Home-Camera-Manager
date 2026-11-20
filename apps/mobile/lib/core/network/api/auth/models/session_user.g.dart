@@ -15,13 +15,14 @@ SessionUser _$SessionUserFromJson(Map<String, dynamic> json) {
   return SessionUser(
     uuid: json['uuid'] as String,
     username: json['username'] as String,
-    additionalProperties: SessionUser._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        SessionUser._extras(json, 'additionalProperties') == null
         ? const {}
-        : SessionUser._readExtras(SessionUser._extras(json, 'additionalProperties')),
+        : SessionUser._readExtras(
+            SessionUser._extras(json, 'additionalProperties'),
+          ),
   );
 }
 
-Map<String, dynamic> _$SessionUserToJson(SessionUser instance) => <String, dynamic>{
-  'uuid': instance.uuid,
-  'username': instance.username,
-};
+Map<String, dynamic> _$SessionUserToJson(SessionUser instance) =>
+    <String, dynamic>{'uuid': instance.uuid, 'username': instance.username};

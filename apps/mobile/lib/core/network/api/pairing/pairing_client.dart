@@ -4,7 +4,7 @@ import 'dart:convert' as convert;
 
 import 'package:dio/dio.dart' show Dio, Options, ResponseType, CancelToken;
 
-import '../control/models/device_read.dart' as models show DeviceRead;
+import '../devices/models/device_read.dart' as models show DeviceRead;
 import 'models/identify_request.dart' as models show IdentifyRequest;
 import 'models/identify_result.dart' as models show IdentifyResult;
 import 'models/label_read.dart' as models show LabelRead;

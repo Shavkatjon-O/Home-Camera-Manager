@@ -19,15 +19,19 @@ ClusterList _$ClusterListFromJson(Map<String, dynamic> json) {
     total: ClusterList._read_total(json['total']),
     page: ClusterList._read_page(json['page']),
     pageSize: ClusterList._read_pageSize(json['page_size']),
-    additionalProperties: ClusterList._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        ClusterList._extras(json, 'additionalProperties') == null
         ? const {}
-        : ClusterList._readExtras(ClusterList._extras(json, 'additionalProperties')),
+        : ClusterList._readExtras(
+            ClusterList._extras(json, 'additionalProperties'),
+          ),
   );
 }
 
-Map<String, dynamic> _$ClusterListToJson(ClusterList instance) => <String, dynamic>{
-  'items': instance.items.map((e) => e.toJson()).toList(),
-  'total': ?ClusterList._write_total(instance.total),
-  'page': ?ClusterList._write_page(instance.page),
-  'page_size': ?ClusterList._write_pageSize(instance.pageSize),
-};
+Map<String, dynamic> _$ClusterListToJson(ClusterList instance) =>
+    <String, dynamic>{
+      'items': instance.items.map((e) => e.toJson()).toList(),
+      'total': ?ClusterList._write_total(instance.total),
+      'page': ?ClusterList._write_page(instance.page),
+      'page_size': ?ClusterList._write_pageSize(instance.pageSize),
+    };

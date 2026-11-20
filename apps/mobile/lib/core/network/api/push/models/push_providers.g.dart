@@ -16,14 +16,18 @@ PushProviders _$PushProvidersFromJson(Map<String, dynamic> json) {
     fcm: json['fcm'] as bool,
     ntfy: json['ntfy'] as bool,
     ntfyUrl: json['ntfy_url'] as String?,
-    additionalProperties: PushProviders._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        PushProviders._extras(json, 'additionalProperties') == null
         ? const {}
-        : PushProviders._readExtras(PushProviders._extras(json, 'additionalProperties')),
+        : PushProviders._readExtras(
+            PushProviders._extras(json, 'additionalProperties'),
+          ),
   );
 }
 
-Map<String, dynamic> _$PushProvidersToJson(PushProviders instance) => <String, dynamic>{
-  'fcm': instance.fcm,
-  'ntfy': instance.ntfy,
-  'ntfy_url': instance.ntfyUrl,
-};
+Map<String, dynamic> _$PushProvidersToJson(PushProviders instance) =>
+    <String, dynamic>{
+      'fcm': instance.fcm,
+      'ntfy': instance.ntfy,
+      'ntfy_url': instance.ntfyUrl,
+    };

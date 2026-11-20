@@ -15,13 +15,14 @@ TelegramWebhookAck _$TelegramWebhookAckFromJson(Map<String, dynamic> json) {
   return TelegramWebhookAck(
     ok: json['ok'] as bool,
     result: json['result'] as String,
-    additionalProperties: TelegramWebhookAck._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        TelegramWebhookAck._extras(json, 'additionalProperties') == null
         ? const {}
-        : TelegramWebhookAck._readExtras(TelegramWebhookAck._extras(json, 'additionalProperties')),
+        : TelegramWebhookAck._readExtras(
+            TelegramWebhookAck._extras(json, 'additionalProperties'),
+          ),
   );
 }
 
-Map<String, dynamic> _$TelegramWebhookAckToJson(TelegramWebhookAck instance) => <String, dynamic>{
-  'ok': instance.ok,
-  'result': instance.result,
-};
+Map<String, dynamic> _$TelegramWebhookAckToJson(TelegramWebhookAck instance) =>
+    <String, dynamic>{'ok': instance.ok, 'result': instance.result};

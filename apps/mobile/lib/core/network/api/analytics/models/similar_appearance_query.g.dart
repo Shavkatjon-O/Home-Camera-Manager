@@ -6,7 +6,9 @@ part of 'similar_appearance_query.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-SimilarAppearanceQuery _$SimilarAppearanceQueryFromJson(Map<String, dynamic> json) {
+SimilarAppearanceQuery _$SimilarAppearanceQueryFromJson(
+  Map<String, dynamic> json,
+) {
   $checkKeys(json, disallowNullValues: const ['limit']);
   return SimilarAppearanceQuery(
     eventUuid: json['event_uuid'] as String?,
@@ -18,7 +20,8 @@ SimilarAppearanceQuery _$SimilarAppearanceQueryFromJson(Map<String, dynamic> jso
         : SimilarAppearanceQuery._read_limit(
             SimilarAppearanceQuery._presentValue(json, 'limit') as Object,
           ),
-    additionalProperties: SimilarAppearanceQuery._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        SimilarAppearanceQuery._extras(json, 'additionalProperties') == null
         ? const {}
         : SimilarAppearanceQuery._readExtras(
             SimilarAppearanceQuery._extras(json, 'additionalProperties'),
@@ -26,11 +29,12 @@ SimilarAppearanceQuery _$SimilarAppearanceQueryFromJson(Map<String, dynamic> jso
   );
 }
 
-Map<String, dynamic> _$SimilarAppearanceQueryToJson(SimilarAppearanceQuery instance) =>
-    <String, dynamic>{
-      'event_uuid': ?instance.eventUuid,
-      'appearance_uuid': ?instance.appearanceUuid,
-      'start': ?SimilarAppearanceQuery._write_start(instance.start),
-      'end': ?SimilarAppearanceQuery._write_end(instance.end),
-      'limit': ?SimilarAppearanceQuery._write_limit(instance.limit),
-    };
+Map<String, dynamic> _$SimilarAppearanceQueryToJson(
+  SimilarAppearanceQuery instance,
+) => <String, dynamic>{
+  'event_uuid': ?instance.eventUuid,
+  'appearance_uuid': ?instance.appearanceUuid,
+  'start': ?SimilarAppearanceQuery._write_start(instance.start),
+  'end': ?SimilarAppearanceQuery._write_end(instance.end),
+  'limit': ?SimilarAppearanceQuery._write_limit(instance.limit),
+};

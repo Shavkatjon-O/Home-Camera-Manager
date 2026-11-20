@@ -16,6 +16,5 @@ PersonMerge _$PersonMergeFromJson(Map<String, dynamic> json) {
   return PersonMerge(into: json['into'] as String);
 }
 
-Map<String, dynamic> _$PersonMergeToJson(PersonMerge instance) => <String, dynamic>{
-  'into': instance.into,
-};
+Map<String, dynamic> _$PersonMergeToJson(PersonMerge instance) =>
+    <String, dynamic>{'into': instance.into};

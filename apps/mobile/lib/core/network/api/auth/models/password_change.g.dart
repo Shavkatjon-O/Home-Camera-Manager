@@ -15,13 +15,17 @@ PasswordChange _$PasswordChangeFromJson(Map<String, dynamic> json) {
   return PasswordChange(
     currentPassword: json['current_password'] as String,
     newPassword: json['new_password'] as String,
-    additionalProperties: PasswordChange._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        PasswordChange._extras(json, 'additionalProperties') == null
         ? const {}
-        : PasswordChange._readExtras(PasswordChange._extras(json, 'additionalProperties')),
+        : PasswordChange._readExtras(
+            PasswordChange._extras(json, 'additionalProperties'),
+          ),
   );
 }
 
-Map<String, dynamic> _$PasswordChangeToJson(PasswordChange instance) => <String, dynamic>{
-  'current_password': instance.currentPassword,
-  'new_password': instance.newPassword,
-};
+Map<String, dynamic> _$PasswordChangeToJson(PasswordChange instance) =>
+    <String, dynamic>{
+      'current_password': instance.currentPassword,
+      'new_password': instance.newPassword,
+    };

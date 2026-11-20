@@ -17,15 +17,19 @@ EventCounts _$EventCountsFromJson(Map<String, dynamic> json) {
     kinds: EventCounts._read_kinds(json['kinds']),
     labels: EventCounts._read_labels(json['labels']),
     alerts: EventCounts._read_alerts(json['alerts']),
-    additionalProperties: EventCounts._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        EventCounts._extras(json, 'additionalProperties') == null
         ? const {}
-        : EventCounts._readExtras(EventCounts._extras(json, 'additionalProperties')),
+        : EventCounts._readExtras(
+            EventCounts._extras(json, 'additionalProperties'),
+          ),
   );
 }
 
-Map<String, dynamic> _$EventCountsToJson(EventCounts instance) => <String, dynamic>{
-  'total': ?EventCounts._write_total(instance.total),
-  'kinds': ?EventCounts._write_kinds(instance.kinds),
-  'labels': ?EventCounts._write_labels(instance.labels),
-  'alerts': ?EventCounts._write_alerts(instance.alerts),
-};
+Map<String, dynamic> _$EventCountsToJson(EventCounts instance) =>
+    <String, dynamic>{
+      'total': ?EventCounts._write_total(instance.total),
+      'kinds': ?EventCounts._write_kinds(instance.kinds),
+      'labels': ?EventCounts._write_labels(instance.labels),
+      'alerts': ?EventCounts._write_alerts(instance.alerts),
+    };

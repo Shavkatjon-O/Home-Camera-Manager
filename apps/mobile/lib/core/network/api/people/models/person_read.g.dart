@@ -50,22 +50,26 @@ PersonRead _$PersonReadFromJson(Map<String, dynamic> json) {
         .toList(),
     createdAt: PersonRead._read_createdAt(json['created_at']),
     updatedAt: PersonRead._read_updatedAt(json['updated_at']),
-    additionalProperties: PersonRead._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        PersonRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : PersonRead._readExtras(PersonRead._extras(json, 'additionalProperties')),
+        : PersonRead._readExtras(
+            PersonRead._extras(json, 'additionalProperties'),
+          ),
   );
 }
 
-Map<String, dynamic> _$PersonReadToJson(PersonRead instance) => <String, dynamic>{
-  'uuid': instance.uuid,
-  'name': instance.name,
-  'notes': instance.notes,
-  'color': instance.color,
-  'sample_count': ?PersonRead._write_sampleCount(instance.sampleCount),
-  'upload_count': ?PersonRead._write_uploadCount(instance.uploadCount),
-  'samples': instance.samples.map((e) => e.toJson()).toList(),
-  'last_seen_at': PersonRead._write_lastSeenAt(instance.lastSeenAt),
-  'sightings': instance.sightings.map((e) => e.toJson()).toList(),
-  'created_at': ?PersonRead._write_createdAt(instance.createdAt),
-  'updated_at': ?PersonRead._write_updatedAt(instance.updatedAt),
-};
+Map<String, dynamic> _$PersonReadToJson(PersonRead instance) =>
+    <String, dynamic>{
+      'uuid': instance.uuid,
+      'name': instance.name,
+      'notes': instance.notes,
+      'color': instance.color,
+      'sample_count': ?PersonRead._write_sampleCount(instance.sampleCount),
+      'upload_count': ?PersonRead._write_uploadCount(instance.uploadCount),
+      'samples': instance.samples.map((e) => e.toJson()).toList(),
+      'last_seen_at': PersonRead._write_lastSeenAt(instance.lastSeenAt),
+      'sightings': instance.sightings.map((e) => e.toJson()).toList(),
+      'created_at': ?PersonRead._write_createdAt(instance.createdAt),
+      'updated_at': ?PersonRead._write_updatedAt(instance.updatedAt),
+    };

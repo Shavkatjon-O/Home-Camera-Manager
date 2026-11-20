@@ -16,14 +16,18 @@ EntitlementsRead _$EntitlementsReadFromJson(Map<String, dynamic> json) {
     plan: PlanRead.fromJson(json['plan'] as Map<String, dynamic>),
     usage: EntitlementsRead._read_usage(json['usage']),
     suspended: json['suspended'] as bool,
-    additionalProperties: EntitlementsRead._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        EntitlementsRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : EntitlementsRead._readExtras(EntitlementsRead._extras(json, 'additionalProperties')),
+        : EntitlementsRead._readExtras(
+            EntitlementsRead._extras(json, 'additionalProperties'),
+          ),
   );
 }
 
-Map<String, dynamic> _$EntitlementsReadToJson(EntitlementsRead instance) => <String, dynamic>{
-  'plan': instance.plan.toJson(),
-  'usage': ?EntitlementsRead._write_usage(instance.usage),
-  'suspended': instance.suspended,
-};
+Map<String, dynamic> _$EntitlementsReadToJson(EntitlementsRead instance) =>
+    <String, dynamic>{
+      'plan': instance.plan.toJson(),
+      'usage': ?EntitlementsRead._write_usage(instance.usage),
+      'suspended': instance.suspended,
+    };

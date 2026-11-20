@@ -7,13 +7,20 @@ part of 'range_read.dart';
 // **************************************************************************
 
 RangeRead _$RangeReadFromJson(Map<String, dynamic> json) {
-  $checkKeys(json, requiredKeys: const ['min', 'max'], disallowNullValues: const ['min', 'max']);
+  $checkKeys(
+    json,
+    requiredKeys: const ['min', 'max'],
+    disallowNullValues: const ['min', 'max'],
+  );
   return RangeRead(
     min: json['min'] as num,
     max: json['max'] as num,
-    additionalProperties: RangeRead._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        RangeRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : RangeRead._readExtras(RangeRead._extras(json, 'additionalProperties')),
+        : RangeRead._readExtras(
+            RangeRead._extras(json, 'additionalProperties'),
+          ),
   );
 }
 

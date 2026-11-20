@@ -17,13 +17,17 @@ SimilarAppearances _$SimilarAppearancesFromJson(Map<String, dynamic> json) {
     items: (json['items'] as List<dynamic>)
         .map((e) => AppearanceMatch.fromJson(e as Map<String, dynamic>))
         .toList(),
-    additionalProperties: SimilarAppearances._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        SimilarAppearances._extras(json, 'additionalProperties') == null
         ? const {}
-        : SimilarAppearances._readExtras(SimilarAppearances._extras(json, 'additionalProperties')),
+        : SimilarAppearances._readExtras(
+            SimilarAppearances._extras(json, 'additionalProperties'),
+          ),
   );
 }
 
-Map<String, dynamic> _$SimilarAppearancesToJson(SimilarAppearances instance) => <String, dynamic>{
-  'query_uuid': instance.queryUuid,
-  'items': instance.items.map((e) => e.toJson()).toList(),
-};
+Map<String, dynamic> _$SimilarAppearancesToJson(SimilarAppearances instance) =>
+    <String, dynamic>{
+      'query_uuid': instance.queryUuid,
+      'items': instance.items.map((e) => e.toJson()).toList(),
+    };

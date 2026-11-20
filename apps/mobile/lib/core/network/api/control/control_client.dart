@@ -5,7 +5,7 @@ import 'dart:convert' as convert;
 import 'package:dio/dio.dart' show Dio, Options, ResponseType, CancelToken;
 
 import 'models/audio_read.dart' as models show AudioRead;
-import 'models/device_read.dart' as models show DeviceRead;
+import 'models/camera_device_read.dart' as models show CameraDeviceRead;
 import 'models/encoder_update.dart' as models show EncoderUpdate;
 import 'models/extras_read.dart' as models show ExtrasRead;
 import 'models/image_read.dart' as models show ImageRead;
@@ -28,8 +28,8 @@ class ControlClient {
 
   /// Get Camera Device
   ///
-  /// Return the camera's ONVIF device details and clock.
-  Future<models.DeviceRead> getCameraDevice({
+  /// Return the camera's ONVIF device details and clock; viewers do not see the serial number and hardware id.
+  Future<models.CameraDeviceRead> getCameraDevice({
     Map<String, Object?> extra = const {
       "openapi.security": [
         {"APIKeyCookie": []},
@@ -66,13 +66,13 @@ class ControlClient {
       options: _options,
       cancelToken: cancelToken,
     );
-    return models.DeviceRead.fromJson(response.data as Map<String, Object?>);
+    return models.CameraDeviceRead.fromJson(response.data as Map<String, Object?>);
   }
 
   /// Sync Camera Time
   ///
   /// Set the camera's clock to this server's time.
-  Future<models.DeviceRead> syncCameraTime({
+  Future<models.CameraDeviceRead> syncCameraTime({
     Map<String, Object?> extra = const {
       "openapi.security": [
         {"APIKeyCookie": []},
@@ -109,7 +109,7 @@ class ControlClient {
       options: _options,
       cancelToken: cancelToken,
     );
-    return models.DeviceRead.fromJson(response.data as Map<String, Object?>);
+    return models.CameraDeviceRead.fromJson(response.data as Map<String, Object?>);
   }
 
   /// Reboot Camera

@@ -15,9 +15,12 @@ StatCount _$StatCountFromJson(Map<String, dynamic> json) {
   return StatCount(
     value: json['value'] as String,
     count: StatCount._read_count(json['count']),
-    additionalProperties: StatCount._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        StatCount._extras(json, 'additionalProperties') == null
         ? const {}
-        : StatCount._readExtras(StatCount._extras(json, 'additionalProperties')),
+        : StatCount._readExtras(
+            StatCount._extras(json, 'additionalProperties'),
+          ),
   );
 }
 

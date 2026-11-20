@@ -43,21 +43,25 @@ InvitationRead _$InvitationReadFromJson(Map<String, dynamic> json) {
     invitedBy: json['invited_by'] as String?,
     createdAt: InvitationRead._read_createdAt(json['created_at']),
     acceptedAt: InvitationRead._read_acceptedAt(json['accepted_at']),
-    additionalProperties: InvitationRead._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        InvitationRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : InvitationRead._readExtras(InvitationRead._extras(json, 'additionalProperties')),
+        : InvitationRead._readExtras(
+            InvitationRead._extras(json, 'additionalProperties'),
+          ),
   );
 }
 
-Map<String, dynamic> _$InvitationReadToJson(InvitationRead instance) => <String, dynamic>{
-  'uuid': instance.uuid,
-  'email': instance.email,
-  'role': ?InvitationRead._write_role(instance.role),
-  'all_sites': instance.allSites,
-  'sites': instance.sites,
-  'status': ?InvitationRead._write_status(instance.status),
-  'expires_at': ?InvitationRead._write_expiresAt(instance.expiresAt),
-  'invited_by': instance.invitedBy,
-  'created_at': ?InvitationRead._write_createdAt(instance.createdAt),
-  'accepted_at': InvitationRead._write_acceptedAt(instance.acceptedAt),
-};
+Map<String, dynamic> _$InvitationReadToJson(InvitationRead instance) =>
+    <String, dynamic>{
+      'uuid': instance.uuid,
+      'email': instance.email,
+      'role': ?InvitationRead._write_role(instance.role),
+      'all_sites': instance.allSites,
+      'sites': instance.sites,
+      'status': ?InvitationRead._write_status(instance.status),
+      'expires_at': ?InvitationRead._write_expiresAt(instance.expiresAt),
+      'invited_by': instance.invitedBy,
+      'created_at': ?InvitationRead._write_createdAt(instance.createdAt),
+      'accepted_at': InvitationRead._write_acceptedAt(instance.acceptedAt),
+    };

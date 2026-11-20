@@ -16,12 +16,15 @@ PhotoUpload _$PhotoUploadFromJson(Map<String, dynamic> json) {
   return PhotoUpload(
     name: PhotoUpload._presentValue(json, 'name') == null
         ? ""
-        : PhotoUpload._read_name(PhotoUpload._presentValue(json, 'name') as Object),
+        : PhotoUpload._read_name(
+            PhotoUpload._presentValue(json, 'name') as Object,
+          ),
     data: json['data'] as String,
   );
 }
 
-Map<String, dynamic> _$PhotoUploadToJson(PhotoUpload instance) => <String, dynamic>{
-  'name': ?PhotoUpload._write_name(instance.name),
-  'data': instance.data,
-};
+Map<String, dynamic> _$PhotoUploadToJson(PhotoUpload instance) =>
+    <String, dynamic>{
+      'name': ?PhotoUpload._write_name(instance.name),
+      'data': instance.data,
+    };

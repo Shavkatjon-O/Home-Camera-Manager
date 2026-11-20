@@ -36,18 +36,22 @@ SessionRead _$SessionReadFromJson(Map<String, dynamic> json) {
     lastUsedAt: SessionRead._read_lastUsedAt(json['last_used_at']),
     expiresAt: SessionRead._read_expiresAt(json['expires_at']),
     current: json['current'] as bool,
-    additionalProperties: SessionRead._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        SessionRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : SessionRead._readExtras(SessionRead._extras(json, 'additionalProperties')),
+        : SessionRead._readExtras(
+            SessionRead._extras(json, 'additionalProperties'),
+          ),
   );
 }
 
-Map<String, dynamic> _$SessionReadToJson(SessionRead instance) => <String, dynamic>{
-  'uuid': instance.uuid,
-  'name': instance.name,
-  'platform': instance.platform,
-  'created_at': ?SessionRead._write_createdAt(instance.createdAt),
-  'last_used_at': ?SessionRead._write_lastUsedAt(instance.lastUsedAt),
-  'expires_at': ?SessionRead._write_expiresAt(instance.expiresAt),
-  'current': instance.current,
-};
+Map<String, dynamic> _$SessionReadToJson(SessionRead instance) =>
+    <String, dynamic>{
+      'uuid': instance.uuid,
+      'name': instance.name,
+      'platform': instance.platform,
+      'created_at': ?SessionRead._write_createdAt(instance.createdAt),
+      'last_used_at': ?SessionRead._write_lastUsedAt(instance.lastUsedAt),
+      'expires_at': ?SessionRead._write_expiresAt(instance.expiresAt),
+      'current': instance.current,
+    };

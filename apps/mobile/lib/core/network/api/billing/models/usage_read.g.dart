@@ -21,9 +21,12 @@ UsageRead _$UsageReadFromJson(Map<String, dynamic> json) {
     series: (json['series'] as List<dynamic>)
         .map((e) => UsagePoint.fromJson(e as Map<String, dynamic>))
         .toList(),
-    additionalProperties: UsageRead._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        UsageRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : UsageRead._readExtras(UsageRead._extras(json, 'additionalProperties')),
+        : UsageRead._readExtras(
+            UsageRead._extras(json, 'additionalProperties'),
+          ),
   );
 }
 

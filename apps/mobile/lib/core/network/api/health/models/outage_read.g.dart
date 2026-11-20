@@ -50,13 +50,18 @@ OutageRead _$OutageReadFromJson(Map<String, dynamic> json) {
     upstreamName: json['upstream_name'] as String?,
     createdAt: OutageRead._read_createdAt(json['created_at']),
     updatedAt: OutageRead._read_updatedAt(json['updated_at']),
-    additionalProperties: OutageRead._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        OutageRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : OutageRead._readExtras(OutageRead._extras(json, 'additionalProperties')),
+        : OutageRead._readExtras(
+            OutageRead._extras(json, 'additionalProperties'),
+          ),
   );
 }
 
-Map<String, dynamic> _$OutageReadToJson(OutageRead instance) => <String, dynamic>{
+Map<String, dynamic> _$OutageReadToJson(
+  OutageRead instance,
+) => <String, dynamic>{
   'uuid': instance.uuid,
   'target_kind': ?OutageRead._write_targetKind(instance.targetKind),
   'target_uuid': instance.targetUuid,
