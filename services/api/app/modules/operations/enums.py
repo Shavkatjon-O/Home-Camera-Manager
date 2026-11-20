@@ -81,3 +81,51 @@ class Band(StrEnum):
 
     BAND_24 = "2.4"
     BAND_5 = "5"
+
+
+class AuditAction(StrEnum):
+    """Actions the audit log records."""
+
+    SIGN_IN = "sign_in"
+    SIGN_OUT = "sign_out"
+    ACCOUNT_DELETE = "account_delete"
+    PASSWORD_CHANGE = "password_change"
+
+    ORGANISATION_CREATE = "organisation_create"
+    ORGANISATION_UPDATE = "organisation_update"
+    ORGANISATION_DELETE = "organisation_delete"
+    OWNERSHIP_TRANSFER = "ownership_transfer"
+    SITE_CREATE = "site_create"
+    SITE_UPDATE = "site_update"
+    SITE_DELETE = "site_delete"
+    MEMBER_UPDATE = "member_update"
+    MEMBER_REMOVE = "member_remove"
+    INVITATION_CREATE = "invitation_create"
+    INVITATION_REVOKE = "invitation_revoke"
+    INVITATION_ACCEPT = "invitation_accept"
+
+    CAMERA_CREATE = "camera_create"
+    CAMERA_UPDATE = "camera_update"
+    CAMERA_DELETE = "camera_delete"
+    DEVICE_PAIR = "device_pair"
+    CONNECTOR_CLAIM = "connector_claim"
+    CONNECTOR_UPDATE = "connector_update"
+    CONNECTOR_REVOKE = "connector_revoke"
+    CAMERA_CONTROL = "camera_control"
+
+    RULES_UPDATE = "rules_update"
+    ARM_MODE_CHANGE = "arm_mode_change"
+    ALERT_CHANNEL_LINK = "alert_channel_link"
+    ALERT_CHANNEL_REMOVE = "alert_channel_remove"
+
+    LIVE_VIEW = "live_view"
+    CLIP_VIEW = "clip_view"
+    EXPORT = "export"
+
+    FACE_ENROL = "face_enrol"
+    FACE_DELETE = "face_delete"
+    FACES_CONSENT = "faces_consent"
+
+    ADMIN_PLAN_CHANGE = "admin_plan_change"
+    ADMIN_SUSPEND = "admin_suspend"
+    ADMIN_RESTORE = "admin_restore"

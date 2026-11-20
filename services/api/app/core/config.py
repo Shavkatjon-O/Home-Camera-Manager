@@ -77,6 +77,13 @@ class Settings(BaseSettings):
         device_username: Device login of bridged V380 cameras.
         device_password: Device password of bridged V380 cameras.
         device_onvif_port: ONVIF port of bridged V380 cameras on their own address.
+        audit_retention_days: Days audit records are kept.
+        telegram_bot_token: Token of the Telegram bot that sends alerts; empty turns Telegram alerts off.
+        telegram_bot_username: Username of that bot, read from Telegram at start when empty.
+        telegram_api_url: Base address of the Telegram Bot API, replaced by a fake in tests and the kit.
+        telegram_webhook_secret: Secret Telegram sends with every webhook call, required for webhook mode.
+        telegram_polling: Whether to poll Telegram for updates instead of receiving them by webhook.
+        telegram_link_minutes: Minutes a chat link stays valid.
     """
 
     model_config = SettingsConfigDict(
@@ -165,6 +172,15 @@ class Settings(BaseSettings):
     device_username: str = Field(default="admin", validation_alias=AliasChoices("sss_device_username", "v380_username"))
     device_password: str = Field(default="", validation_alias=AliasChoices("sss_device_password", "v380_password"))
     device_onvif_port: int = 8899
+
+    audit_retention_days: int = 365
+
+    telegram_bot_token: str = ""
+    telegram_bot_username: str = ""
+    telegram_api_url: str = "https://api.telegram.org"
+    telegram_webhook_secret: str = ""
+    telegram_polling: bool = False
+    telegram_link_minutes: int = 30
 
     @property
     def database_url(self) -> str:

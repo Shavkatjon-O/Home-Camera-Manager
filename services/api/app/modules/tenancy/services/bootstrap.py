@@ -14,8 +14,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.database import async_session_maker
-from app.models import Camera, Device, FaceSample, Membership, Organisation, Site, User
+from app.models import Camera, Device, FaceSample, Membership, Organisation, Plan, Site, User
 from app.models.ownership import SiteOwned
+from app.modules.billing.services.catalog import INTERNAL_PLAN
 from app.modules.devices.services.manifests import camera_manifest
 from app.modules.tenancy.enums import Role, SiteKind
 from app.modules.tenancy.services.scope import ORGANISATION_SCOPED, SITE_SCOPED
@@ -38,6 +39,8 @@ class BootstrapReport:
         membership_created: Whether it made the admin the owner.
         assigned: Rows assigned per table.
         devices: Devices created for cameras registered before devices existed.
+        platform_admin: Whether the admin of the settings became the first platform admin.
+        internal_plan: Whether the admin's own organisation moved to the internal plan.
     """
 
     organisation_created: bool = False
@@ -45,6 +48,8 @@ class BootstrapReport:
     membership_created: bool = False
     assigned: dict[str, int] = field(default_factory=dict)
     devices: int = 0
+    platform_admin: bool = False
+    internal_plan: bool = False
 
     @property
     def changed(self) -> bool:
@@ -55,6 +60,8 @@ class BootstrapReport:
             or self.membership_created
             or any(self.assigned.values())
             or bool(self.devices)
+            or self.platform_admin
+            or self.internal_plan
         )
 
 
@@ -208,6 +215,35 @@ async def backfill_devices(session: AsyncSession, report: BootstrapReport) -> No
         report.devices += 1
 
 
+async def promote_admin(session: AsyncSession, admin: User, report: BootstrapReport) -> None:
+    """Make the admin of the settings the first platform admin and put its own organisation on the internal plan.
+
+    Nothing changes once any platform admin exists, or once the organisation has a plan of its own.
+
+    Args:
+        session: Database session without a scope.
+        admin: The admin user of the settings.
+        report: Report to note the changes in.
+    """
+    exists = await session.scalar(select(User.id).where(User.is_platform_admin.is_(True)).limit(1))
+    if exists is None:
+        admin.is_platform_admin = True
+        report.platform_admin = True
+    organisation = await session.scalar(
+        select(Organisation)
+        .join(Membership, Membership.organisation_id == Organisation.id)
+        .where(Membership.user_id == admin.id, Membership.role == "owner", Organisation.deleted_at.is_(None))
+        .order_by(Organisation.created_at, Organisation.id)
+        .limit(1)
+    )
+    if organisation is None or organisation.plan_id is not None:
+        return
+    plan = await session.scalar(select(Plan.id).where(Plan.key == INTERNAL_PLAN))
+    if plan is not None:
+        organisation.plan_id = plan
+        report.internal_plan = True
+
+
 async def bootstrap(session: AsyncSession) -> BootstrapReport:
     """Run the bootstrap in a session and commit it.
 
@@ -233,6 +269,7 @@ async def bootstrap(session: AsyncSession) -> BootstrapReport:
         if pending or not memberships:
             organisation, site = await owner_target(session, admin, report)
             await assign_rows(session, organisation, site, report)
+        await promote_admin(session, admin, report)
     await backfill_devices(session, report)
     if report.changed:
         await session.commit()
@@ -251,10 +288,13 @@ async def run_bootstrap() -> BootstrapReport:
         report = await bootstrap(session)
     if report.changed:
         logger.info(
-            "Bootstrap: organisation created %s, site created %s, rows assigned %s, devices created %s",
+            "Bootstrap: organisation created %s, site created %s, rows assigned %s, devices created %s, "
+            "platform admin %s, internal plan %s",
             report.organisation_created,
             report.site_created,
             report.assigned,
             report.devices,
+            report.platform_admin,
+            report.internal_plan,
         )
     return report

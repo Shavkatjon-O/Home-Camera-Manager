@@ -34,8 +34,11 @@ from app.models import (
     Outage,
     PairingAttempt,
     Person,
+    TelegramChat,
+    TelegramLink,
     TvDevice,
     UnknownCluster,
+    UsageRollup,
 )
 from app.models.ownership import OrganisationOwned, SiteOwned
 
@@ -75,7 +78,7 @@ SITE_SCOPED = (
     TvDevice,
 )
 
-ORGANISATION_SCOPED = (FaceSample, PairingAttempt, Person, UnknownCluster)
+ORGANISATION_SCOPED = (FaceSample, PairingAttempt, Person, TelegramChat, TelegramLink, UnknownCluster, UsageRollup)
 
 PARENTS = {
     AnalyticsView: (("camera_uuid", Camera, "uuid"),),
