@@ -19,7 +19,7 @@ import {
 } from "@/components/search/search-params"
 import { SearchResults } from "@/components/search/search-results"
 import { SimilarResults, type SimilarSource } from "@/components/search/similar-results"
-import { AppFrame } from "@/components/shell/app-frame"
+import { PageFrame } from "@/components/shell/page-frame"
 import { LoadingState, Spinner } from "@/components/shell/primitives"
 import { Segmented } from "@/components/shell/segmented"
 import { useSession } from "@/components/shell/session"
@@ -164,8 +164,23 @@ function SearchView() {
     </>
   )
 
+  const filtering = !(state.appearance && !photo) && !source
+
   return (
-    <AppFrame actions={actions}>
+    <PageFrame
+      actions={actions}
+      toolbar={
+        filtering ? (
+          <SearchFiltersBar
+            filters={state.filters}
+            facets={facets}
+            cameras={cameras}
+            onChange={changeFilters}
+            onClear={clear}
+          />
+        ) : null
+      }
+    >
       <main className="@container min-h-0 min-w-0 flex-1 overflow-y-auto">
         {state.appearance && !photo ? (
           <AppearanceResults
@@ -188,15 +203,6 @@ function SearchView() {
           />
         ) : (
           <div className="flex min-h-full flex-col">
-            <div className="border-b border-hairline px-3 py-3 sm:px-4">
-              <SearchFiltersBar
-                filters={state.filters}
-                facets={facets}
-                cameras={cameras}
-                onChange={changeFilters}
-                onClear={clear}
-              />
-            </div>
             <div className="min-h-0 flex-1">
               <SearchResults
                 filters={state.filters}
@@ -211,19 +217,20 @@ function SearchView() {
           </div>
         )}
       </main>
-    </AppFrame>
+    </PageFrame>
   )
 }
 
+/** The Search page: recorded events filtered by time, camera, view, kind and person, and similar-looking matches. */
 export function SearchPage() {
   return (
     <React.Suspense
       fallback={
-        <AppFrame>
+        <PageFrame>
           <main className="min-w-0 flex-1">
             <LoadingState label="Loading search" />
           </main>
-        </AppFrame>
+        </PageFrame>
       }
     >
       <SearchView />

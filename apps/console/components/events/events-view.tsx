@@ -10,7 +10,7 @@ import { EventPanel } from "@/components/events/event-panel"
 import { useEvents } from "@/components/events/events-provider"
 import { SourceChip } from "@/components/events/source-chip"
 import { FaceChip } from "@/components/people/face-parts"
-import { AppFrame } from "@/components/shell/app-frame"
+import { PageFrame, ToolbarRow } from "@/components/shell/page-frame"
 import { IconButton } from "@/components/shell/icon-button"
 import { Chip, EmptyState, LoadingState } from "@/components/shell/primitives"
 import { useSession } from "@/components/shell/session"
@@ -115,7 +115,7 @@ function Filters({
   const { cameras } = useSession()
   const filtered = camera !== ALL || kind !== ALL || label !== ALL || plate !== "" || day !== ""
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <ToolbarRow>
       <Select value={camera} onValueChange={onCamera}>
         <SelectTrigger aria-label="Camera" className="w-40">
           <SelectValue />
@@ -177,7 +177,7 @@ function Filters({
           Clear
         </Button>
       ) : null}
-    </div>
+    </ToolbarRow>
   )
 }
 
@@ -373,7 +373,7 @@ function EventsView() {
   }
 
   return (
-    <AppFrame
+    <PageFrame
       status={
         <Chip>
           <span
@@ -383,23 +383,25 @@ function EventsView() {
           {connected ? "Live" : "Reconnecting"}
         </Chip>
       }
+      toolbar={
+        <Filters
+          camera={camera}
+          kind={kind}
+          label={label}
+          plate={plate}
+          day={day}
+          onCamera={changeFilter(setCamera)}
+          onKind={changeFilter(setKind)}
+          onLabel={changeFilter(setLabel)}
+          onPlate={setPlate}
+          onDay={changeFilter(setDay)}
+          onClear={clear}
+        />
+      }
     >
       <div className="flex min-h-0 min-w-0 flex-1">
         <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto">
           <div className="flex flex-col gap-3 border-b border-hairline px-3 py-3 sm:px-4">
-            <Filters
-              camera={camera}
-              kind={kind}
-              label={label}
-              plate={plate}
-              day={day}
-              onCamera={changeFilter(setCamera)}
-              onKind={changeFilter(setKind)}
-              onLabel={changeFilter(setLabel)}
-              onPlate={setPlate}
-              onDay={changeFilter(setDay)}
-              onClear={clear}
-            />
             <EventCountRow query={query} />
             {sources.length > 0 ? (
               <div aria-label="Event sources" className="flex flex-wrap gap-1.5">
@@ -420,19 +422,20 @@ function EventsView() {
           </aside>
         ) : null}
       </div>
-    </AppFrame>
+    </PageFrame>
   )
 }
 
+/** The Events page: the live list of camera events with filters and a detail panel. */
 export function EventsPage() {
   return (
     <React.Suspense
       fallback={
-        <AppFrame>
+        <PageFrame>
           <main className="min-w-0 flex-1">
             <LoadingState label="Loading events" />
           </main>
-        </AppFrame>
+        </PageFrame>
       }
     >
       <EventsView />

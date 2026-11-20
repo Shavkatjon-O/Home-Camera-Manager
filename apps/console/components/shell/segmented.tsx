@@ -2,12 +2,14 @@
 
 import { cn } from "@/lib/utils"
 
+/** One choice of a segmented control. */
 export interface SegmentedOption<T extends string> {
   value: T
   label: string
   disabled?: boolean
 }
 
+/** A row of mutually exclusive choices, announced as a radio group. */
 export function Segmented<T extends string>({
   label,
   value,

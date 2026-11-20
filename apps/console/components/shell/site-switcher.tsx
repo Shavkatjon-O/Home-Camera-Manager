@@ -1,67 +1,102 @@
 "use client"
 
 import * as React from "react"
-import { BuildingIcon } from "lucide-react"
+import { BuildingIcon, HouseIcon, MapPinIcon, StoreIcon, WarehouseIcon, type LucideIcon } from "lucide-react"
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { api, isAbort } from "@/lib/api"
-import type { Site } from "@/lib/types"
+import { useSession } from "@/components/shell/session"
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import type { Site, SiteKind } from "@/lib/types"
+import { cn } from "@/lib/utils"
 
-const SITE_COOKIE = "sss_site"
-const YEAR_SECONDS = 31536000
-
-function readSiteCookie(): string | null {
-  const prefix = `${SITE_COOKIE}=`
-  const part = document.cookie.split("; ").find((item) => item.startsWith(prefix))
-  return part ? decodeURIComponent(part.slice(prefix.length)) : null
+const KIND_ICONS: Record<SiteKind, LucideIcon> = {
+  home: HouseIcon,
+  store: StoreIcon,
+  office: BuildingIcon,
+  warehouse: WarehouseIcon,
+  other: MapPinIcon,
 }
 
-export function SiteSwitcher() {
-  const [sites, setSites] = React.useState<Site[]>([])
-  const [current, setCurrent] = React.useState<string | null>(null)
+const TRIGGER = "h-8 w-auto min-w-0 max-w-[9.5rem] gap-1.5 px-2 font-mono text-[11px] sm:max-w-60 sm:px-2.5 md:max-w-80"
 
-  React.useEffect(() => {
-    const controller = new AbortController()
-    api
-      .listSites(controller.signal)
-      .then(({ items }) => {
-        const saved = readSiteCookie()
-        setSites(items)
-        setCurrent(items.find((site) => site.uuid === saved)?.uuid ?? items[0]?.uuid ?? null)
-      })
-      .catch((err: unknown) => {
-        if (!isAbort(err)) setSites([])
-      })
-    return () => controller.abort()
-  }, [])
+function SiteLabel({ site, showOrganisation }: { site: Site; showOrganisation: boolean }) {
+  const Icon = KIND_ICONS[site.kind] ?? MapPinIcon
+  return (
+    <span className="flex min-w-0 items-center gap-1.5">
+      <Icon aria-hidden className="size-3.5 shrink-0 text-text-3" />
+      {showOrganisation ? (
+        <>
+          <span className="hidden max-w-36 truncate text-text-3 md:inline">{site.organisation_name}</span>
+          <span aria-hidden className="hidden text-text-3 md:inline">
+            /
+          </span>
+        </>
+      ) : null}
+      <span className="truncate">{site.name}</span>
+    </span>
+  )
+}
 
-  if (sites.length < 2 || !current) return null
+function groupByOrganisation(sites: Site[]): { uuid: string; name: string; sites: Site[] }[] {
+  const groups: { uuid: string; name: string; sites: Site[] }[] = []
+  for (const site of sites) {
+    const group = groups.find((item) => item.uuid === site.organisation)
+    if (group) group.sites.push(site)
+    else groups.push({ uuid: site.organisation, name: site.organisation_name, sites: [site] })
+  }
+  return groups
+}
 
-  const showOrganisation = new Set(sites.map((site) => site.organisation)).size > 1
-  const label = (site: Site) => (showOrganisation ? `${site.organisation_name} / ${site.name}` : site.name)
-  const active = sites.find((site) => site.uuid === current) ?? sites[0]
+/**
+ * The organisation and site picker of the top bar. Switching reloads the console on the chosen site; with a single
+ * site it only names it.
+ */
+export function SiteSwitcher({ className }: { className?: string }) {
+  const { sites, site, switchSite } = useSession()
+  if (!site) return null
 
-  const change = (uuid: string) => {
-    if (uuid === current) return
-    document.cookie = `${SITE_COOKIE}=${encodeURIComponent(uuid)}; path=/; max-age=${YEAR_SECONDS}; SameSite=Lax`
-    window.location.reload()
+  const label = `${site.organisation_name} / ${site.name}`
+
+  if (sites.length < 2) {
+    return (
+      <div
+        role="group"
+        aria-label={`Site, ${label}`}
+        className={cn("flex items-center rounded-md text-foreground", TRIGGER, className)}
+      >
+        <SiteLabel site={site} showOrganisation />
+      </div>
+    )
   }
 
   return (
-    <Select value={current} onValueChange={change}>
-      <SelectTrigger aria-label={`Site, ${label(active)}`} className="w-auto max-w-40 gap-1.5 px-2 font-mono text-[11px] sm:max-w-56 sm:px-2.5">
+    <Select value={site.uuid} onValueChange={switchSite}>
+      <SelectTrigger aria-label={`Site, ${label}`} className={cn(TRIGGER, className)}>
         <SelectValue>
-          <span className="flex min-w-0 items-center gap-1.5">
-            <BuildingIcon aria-hidden className="size-3.5 shrink-0 text-text-3" />
-            <span className="hidden truncate sm:inline">{label(active)}</span>
-          </span>
+          <SiteLabel site={site} showOrganisation />
         </SelectValue>
       </SelectTrigger>
-      <SelectContent align="end" className="min-w-40">
-        {sites.map((site) => (
-          <SelectItem key={site.uuid} value={site.uuid}>
-            {label(site)}
-          </SelectItem>
+      <SelectContent align="start" className="w-auto min-w-56">
+        {groupByOrganisation(sites).map((group, index) => (
+          <React.Fragment key={group.uuid}>
+            {index > 0 ? <SelectSeparator /> : null}
+            <SelectGroup>
+              <SelectLabel>{group.name}</SelectLabel>
+              {group.sites.map((item) => (
+                <SelectItem key={item.uuid} value={item.uuid}>
+                  <SiteLabel site={item} showOrganisation={false} />
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </React.Fragment>
         ))}
       </SelectContent>
     </Select>

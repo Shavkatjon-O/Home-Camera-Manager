@@ -16,7 +16,7 @@ import {
 import { CameraFormDialog } from "@/components/cameras/camera-form-dialog"
 import { DeleteCameraDialog } from "@/components/cameras/delete-camera-dialog"
 import { WallOrder } from "@/components/cameras/wall-order"
-import { AppFrame } from "@/components/shell/app-frame"
+import { PageFrame } from "@/components/shell/page-frame"
 import { IconButton } from "@/components/shell/icon-button"
 import { Chip, EmptyState, LoadingState, StatusDot } from "@/components/shell/primitives"
 import { useSession } from "@/components/shell/session"
@@ -30,6 +30,7 @@ import type { Camera, Page } from "@/lib/types"
 
 const PAGE_SIZE = 20
 
+/** The Cameras page: every camera of the site in a table, and their order on the wall. */
 export function CamerasView() {
   const { refresh: refreshSession } = useSession()
   const [page, setPage] = React.useState(1)
@@ -208,7 +209,7 @@ export function CamerasView() {
   }
 
   return (
-    <AppFrame actions={actions}>
+    <PageFrame actions={actions}>
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-auto lg:flex-row lg:overflow-hidden">
         <main className="min-w-0 shrink-0 lg:min-h-0 lg:flex-1 lg:overflow-auto">{content}</main>
         <aside className="shrink-0 border-t border-hairline lg:w-[300px] lg:overflow-y-auto lg:border-t-0 lg:border-l">
@@ -231,6 +232,6 @@ export function CamerasView() {
         }}
         onDeleted={() => changed()}
       />
-    </AppFrame>
+    </PageFrame>
   )
 }

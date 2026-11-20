@@ -23,7 +23,7 @@ import { PlanList, type PlanListProps } from "@/components/coverage/plan-list"
 import { useAutosave, type SaveState } from "@/components/coverage/use-autosave"
 import { startPlacement, useCoverageGrid, type PlacementRun } from "@/components/coverage/use-coverage"
 import { usePlanHistory } from "@/components/coverage/use-history"
-import { AppFrame } from "@/components/shell/app-frame"
+import { PageFrame } from "@/components/shell/page-frame"
 import { IconButton } from "@/components/shell/icon-button"
 import { Chip, EmptyState, LoadingState, Spinner } from "@/components/shell/primitives"
 import { Segmented } from "@/components/shell/segmented"
@@ -381,7 +381,7 @@ function PlanWorkspace({
   )
 
   return (
-    <AppFrame actions={actions} status={<SaveChip state={saveState} />}>
+    <PageFrame actions={actions} status={<SaveChip state={saveState} />}>
       <Columns
         list={<PlanList {...listProps} activeDoc={doc} onRename={renameActive} />}
         content={
@@ -434,10 +434,11 @@ function PlanWorkspace({
           />
         }
       />
-    </AppFrame>
+    </PageFrame>
   )
 }
 
+/** The Coverage page: floor plans of the site with router placement and the Wi-Fi signal they give. */
 export function CoverageView() {
   const [plans, setPlans] = React.useState<FloorPlanSummary[]>([])
   const [total, setTotal] = React.useState(0)
@@ -588,9 +589,9 @@ export function CoverageView() {
       )
     }
     page = (
-      <AppFrame>
+      <PageFrame>
         <Columns list={<PlanList {...listProps} />} content={content} />
-      </AppFrame>
+      </PageFrame>
     )
   }
 

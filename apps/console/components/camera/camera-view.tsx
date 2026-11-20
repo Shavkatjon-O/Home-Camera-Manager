@@ -34,7 +34,7 @@ import {
 import { PtzPad } from "@/components/camera/ptz-pad"
 import { usePtz, usePtzKeyboard } from "@/components/camera/use-ptz"
 import { CameraFormDialog } from "@/components/cameras/camera-form-dialog"
-import { AppFrame } from "@/components/shell/app-frame"
+import { PageFrame, type PageParent } from "@/components/shell/page-frame"
 import { IconButton } from "@/components/shell/icon-button"
 import { Chip, EmptyState, LoadingState, Spinner, StatusDot } from "@/components/shell/primitives"
 import { Segmented } from "@/components/shell/segmented"
@@ -48,6 +48,7 @@ import { toggleFullscreen, useFullscreenElement } from "@/lib/stores"
 import type { Camera, CameraAudio } from "@/lib/types"
 
 const POLL_MS = 10000
+const WALL: PageParent = { href: "/", label: "Wall" }
 
 type Quality = "main" | "sub"
 
@@ -158,7 +159,7 @@ function CameraView({ id }: { id: string }) {
   if (!camera) {
     const notFound = error instanceof ApiError && error.status === 404
     return (
-      <AppFrame>
+      <PageFrame title="Camera" description={null} parent={WALL}>
         <main className="min-w-0 flex-1">
           {notFound ? (
             <EmptyState icon={<CctvOffIcon />} title="Camera not found">
@@ -178,7 +179,7 @@ function CameraView({ id }: { id: string }) {
             <LoadingState label="Loading camera" />
           )}
         </main>
-      </AppFrame>
+      </PageFrame>
     )
   }
 
@@ -235,6 +236,13 @@ function CameraView({ id }: { id: string }) {
       >
         {isFullscreen ? <MinimizeIcon /> : <MaximizeIcon />}
       </IconButton>
+      <span aria-hidden className="mx-0.5 h-5 w-px bg-hairline" />
+      <IconButton label="Check now" disabled={checking} onClick={check}>
+        {checking ? <Spinner className="size-3.5" /> : <RefreshCwIcon />}
+      </IconButton>
+      <IconButton label="Edit" onClick={() => setEditing(true)}>
+        <PencilIcon />
+      </IconButton>
     </>
   )
 
@@ -285,9 +293,11 @@ function CameraView({ id }: { id: string }) {
   }
 
   return (
-    <AppFrame
+    <PageFrame
+      title={camera.name}
+      description={camera.location ?? "No location"}
+      parent={WALL}
       actions={actions}
-      wideActions
       status={error ? <Chip className="text-danger">Refresh failed</Chip> : null}
     >
       <div
@@ -309,20 +319,6 @@ function CameraView({ id }: { id: string }) {
           </div>
         </main>
         <aside className="flex min-h-0 flex-1 flex-col overflow-y-auto border-t border-hairline md:w-[300px] md:flex-none md:border-t-0 md:border-l">
-          <div className="flex items-start justify-between gap-3 border-b border-hairline px-4 py-4">
-            <div className="flex min-w-0 flex-col gap-0.5">
-              <h1 className="truncate text-[15px] font-medium text-foreground">{camera.name}</h1>
-              <span className="truncate text-[12px] text-text-3">{camera.location ?? "No location"}</span>
-            </div>
-            <div className="flex shrink-0 items-center gap-0.5">
-              <IconButton label="Check now" size="icon-sm" disabled={checking} onClick={check}>
-                {checking ? <Spinner className="size-3.5" /> : <RefreshCwIcon />}
-              </IconButton>
-              <IconButton label="Edit" size="icon-sm" onClick={() => setEditing(true)}>
-                <PencilIcon />
-              </IconButton>
-            </div>
-          </div>
           {camera.ptz_enabled ? (
             <Section title="PTZ">
               <PtzPad controls={ptz} speed={speed} onSpeedChange={setSpeed} />
@@ -366,7 +362,7 @@ function CameraView({ id }: { id: string }) {
           void refreshSession()
         }}
       />
-    </AppFrame>
+    </PageFrame>
   )
 }
 
@@ -374,7 +370,7 @@ function CameraRoute() {
   const id = useSearchParams().get("id")
   if (!id) {
     return (
-      <AppFrame>
+      <PageFrame title="Camera" description={null} parent={WALL}>
         <main className="min-w-0 flex-1">
           <EmptyState icon={<CctvOffIcon />} title="No camera selected">
             <Button asChild variant="outline">
@@ -382,21 +378,22 @@ function CameraRoute() {
             </Button>
           </EmptyState>
         </main>
-      </AppFrame>
+      </PageFrame>
     )
   }
   return <CameraView key={id} id={id} />
 }
 
+/** The page of one camera, named by the id query parameter: live video, controls, events and settings. */
 export function CameraPage() {
   return (
     <React.Suspense
       fallback={
-        <AppFrame>
+        <PageFrame title="Camera" description={null} parent={WALL}>
           <main className="min-w-0 flex-1">
             <LoadingState label="Loading camera" />
           </main>
-        </AppFrame>
+        </PageFrame>
       }
     >
       <CameraRoute />

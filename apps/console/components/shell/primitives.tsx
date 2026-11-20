@@ -4,6 +4,7 @@ import { Loader2Icon } from "lucide-react"
 import { statusLabel } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
+/** A coloured dot for online, offline or unknown, named for screen readers. */
 export function StatusDot({ online, className }: { online: boolean | null; className?: string }) {
   return (
     <span
@@ -20,6 +21,7 @@ export function StatusDot({ online, className }: { online: boolean | null; class
   )
 }
 
+/** A small rounded label for counts and states. */
 export function Chip({ className, ...props }: React.ComponentProps<"span">) {
   return (
     <span
@@ -32,10 +34,12 @@ export function Chip({ className, ...props }: React.ComponentProps<"span">) {
   )
 }
 
+/** A spinning loader icon. */
 export function Spinner({ className }: { className?: string }) {
   return <Loader2Icon aria-hidden className={cn("size-4 animate-spin text-text-3", className)} />
 }
 
+/** A centred message for an empty or failed area, with an optional icon, explanation and action. */
 export function EmptyState({
   icon,
   title,
@@ -58,6 +62,7 @@ export function EmptyState({
   )
 }
 
+/** A centred spinner with a label while an area loads. */
 export function LoadingState({ label, className }: { label: string; className?: string }) {
   return (
     <div className={cn("flex h-full min-h-48 items-center justify-center gap-2 text-[13px] text-text-3", className)}>

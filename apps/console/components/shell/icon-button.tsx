@@ -5,6 +5,7 @@ import * as React from "react"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
+/** A square icon button with its label as the accessible name and a tooltip. */
 export function IconButton({
   label,
   side = "bottom",

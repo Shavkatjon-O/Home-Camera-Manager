@@ -14,7 +14,7 @@ import { PersonCard, type PersonActions } from "@/components/people/person-card"
 import { DeletePersonDialog, MergePersonDialog, PersonFormDialog } from "@/components/people/person-dialogs"
 import { PhotoUploadDialog, usePhotoUpload } from "@/components/people/photo-upload"
 import { usePagedQuery } from "@/components/people/use-paged"
-import { AppFrame } from "@/components/shell/app-frame"
+import { CardGrid, PageContent, PageFrame } from "@/components/shell/page-frame"
 import { Chip, EmptyState, LoadingState } from "@/components/shell/primitives"
 import { Button } from "@/components/ui/button"
 import { ApiError, errorMessage, isAbort } from "@/lib/api"
@@ -55,10 +55,6 @@ function Section({
       {children}
     </section>
   )
-}
-
-function CardGrid({ children }: { children: React.ReactNode }) {
-  return <div className="grid grid-cols-1 gap-3 @2xl:grid-cols-2 @5xl:grid-cols-3">{children}</div>
 }
 
 function LoadError({ title, error, onRetry }: { title: string; error: string; onRetry: () => void }) {
@@ -323,9 +319,9 @@ function PeopleView() {
   )
 
   return (
-    <AppFrame status={people.data ? <Chip>{peopleLabel(people.data.total)}</Chip> : null} actions={actions}>
+    <PageFrame status={people.data ? <Chip>{peopleLabel(people.data.total)}</Chip> : null} actions={actions} contained>
       <main className="@container min-h-0 min-w-0 flex-1 overflow-y-auto">
-        <div className="flex flex-col gap-6 p-3 sm:p-4">
+        <PageContent>
           <p className="flex items-start gap-2 text-[12px] text-text-3">
             <LockIcon aria-hidden className="mt-px size-3.5 shrink-0" />
             Faces are recognised on this computer and never leave it.
@@ -349,7 +345,7 @@ function PeopleView() {
           <Section title="Unknown faces" count={clusters.data?.total}>
             {clusterContent}
           </Section>
-        </div>
+        </PageContent>
       </main>
       <PersonFormDialog
         open={formOpen}
@@ -407,19 +403,20 @@ function PeopleView() {
         }}
         onDeleted={() => refreshClusters()}
       />
-    </AppFrame>
+    </PageFrame>
   )
 }
 
+/** The People page: known people with their face photos, and the unknown faces the cameras grouped. */
 export function PeoplePage() {
   return (
     <React.Suspense
       fallback={
-        <AppFrame>
+        <PageFrame>
           <main className="min-w-0 flex-1">
             <LoadingState label="Loading people" />
           </main>
-        </AppFrame>
+        </PageFrame>
       }
     >
       <PeopleView />
