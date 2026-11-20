@@ -175,6 +175,15 @@ function ViewCard({
         </Select>
       </div>
       <div className="flex items-center justify-between gap-2 text-[12px]">
+        <span className="text-text-3">Faces</span>
+        <Switch
+          aria-label={`Faces, ${title}`}
+          checked={view.faces ?? view.profile === "identity"}
+          disabled={busy}
+          onCheckedChange={(checked) => void update({ faces: checked })}
+        />
+      </div>
+      <div className="flex items-center justify-between gap-2 text-[12px]">
         <span className="text-text-3">Moving lens</span>
         <Switch
           aria-label={`Moving lens, ${title}`}

@@ -7,6 +7,7 @@ import { ArrowUpRightIcon, ImageOffIcon, XIcon } from "lucide-react"
 
 import { BoxLayer, FitBox, type DrawnBox } from "@/components/analytics/box-layer"
 import { AlertMark, EventDuration, KindChip, LabelChip } from "@/components/events/event-parts"
+import { FaceSummary } from "@/components/people/face-parts"
 import { IconButton } from "@/components/shell/icon-button"
 import { Button } from "@/components/ui/button"
 import { cameraHref } from "@/components/wall/wall-tile"
@@ -165,6 +166,11 @@ export function EventPanel({ event, onClose }: { event: CameraEvent; onClose: ()
         <div className="px-4 pt-3">
           <Clip key={`${event.uuid}-${event.has_clip}`} event={event} />
         </div>
+      ) : null}
+      {event.face ? (
+        <Section title="Face">
+          <FaceSummary face={event.face} eventUuid={event.uuid} />
+        </Section>
       ) : null}
       {details ? <AnalyticsReadOuts event={event} details={details} /> : null}
       <Section title="Times">

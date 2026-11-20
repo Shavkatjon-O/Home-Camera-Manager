@@ -1,3 +1,5 @@
+import type { Face } from "@/lib/people"
+
 export type CameraBrand = "ezviz" | "v380" | "onvif" | "rtsp"
 
 export interface User {
@@ -349,6 +351,8 @@ export type EventKind =
   | "line_crossing"
   | "loitering"
   | "crowd"
+  | "face_known"
+  | "face_unknown"
 
 export type EventOrigin = "camera" | "analytics"
 
@@ -377,6 +381,7 @@ export interface CameraEvent {
   details: Record<string, unknown>
   created_at: string
   updated_at: string
+  face?: Face | null
 }
 
 export type Box = [number, number, number, number]
@@ -709,6 +714,7 @@ export interface AnalyticsView {
   enabled: boolean
   fps: number
   tamper: boolean | null
+  faces: boolean | null
   moving: boolean
   zones: AnalyticsZone[]
   lines: AnalyticsLine[]
@@ -719,7 +725,9 @@ export interface AnalyticsViewList {
   items: AnalyticsView[]
 }
 
-export type AnalyticsViewUpdate = Partial<Pick<AnalyticsView, "name" | "profile" | "enabled" | "fps" | "tamper" | "moving">>
+export type AnalyticsViewUpdate = Partial<
+  Pick<AnalyticsView, "name" | "profile" | "enabled" | "fps" | "tamper" | "faces" | "moving">
+>
 
 export interface LiveObject {
   track: number
