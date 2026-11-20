@@ -141,6 +141,7 @@ from the backend. Download the models first:
 ```
 scripts/download-models.sh
 scripts/download-face-models.sh
+scripts/download-secondary-models.sh
 docker compose up -d --build analytics
 ```
 
@@ -150,34 +151,27 @@ the engine volume, which takes about a minute.
 
 ## Configuration
 
+The variables in .env.example, from the model folders to the clip lengths, are described in the configuration
+reference of the repository's README. The service also reads these, which .env.example does not list, so they keep
+their defaults unless set:
+
 | Name | Default | Meaning |
 |---|---|---|
-| HC_ANALYTICS_MODELS_DIR | analytics/models | Model folder mounted read-only at /models |
-| HC_ANALYTICS_FACE_MODELS_DIR | analytics/models/face | Face model folder mounted read-only at /face-models |
-| HC_ANALYTICS_DETECTOR | rfdetr-medium | Shared detector |
-| HC_ANALYTICS_FPS | 8 | Analysis rate of views that set none |
-| HC_ANALYTICS_CLIP_ENCODER | auto | auto, h264_nvenc, libx264 or copy |
-| HC_ANALYTICS_CLIP_BEFORE | 5 | Seconds a clip starts before its event |
-| HC_ANALYTICS_CLIP_AFTER | 5 | Seconds a clip runs after its event |
-| HC_ANALYTICS_CLIP_MAX | 60 | Longest clip in seconds |
-| HC_ANALYTICS_BUFFER_SECONDS | 120 | Seconds of segments kept per camera |
-| HC_ANALYTICS_APPEARANCE | true | Appearance vectors and journeys on views that allow them |
-| HC_ANALYTICS_POSE | true | Pose and fall detection on views with falls on |
-| HC_ANALYTICS_PLATES | true | Plate reading on views with plates on |
-| HC_ANALYTICS_PLATE_FINDER | text | text for the DB text detector, lpdnet for NVIDIA LPDNet |
-| HC_TIMEZONE | UTC | Time zone of schedules |
-| HC_ANALYTICS_BACKEND_URL | empty | Backend the configuration comes from and events go to |
-| HC_ANALYTICS_TOKEN | empty | Shared token of the backend's internal routes and the status endpoint |
-| HC_FACES_COOLDOWN_SECONDS | 600 | Seconds during which a person or cluster makes one event per view |
+| HC_ANALYTICS_BACKEND_URL | empty | Backend the configuration comes from and events go to; compose sets it |
+| HC_ANALYTICS_CONFIG_FILE | /config/analytics.json | JSON configuration read when no backend is set |
+| HC_ANALYTICS_RTSP_URL | rtsp://go2rtc:8554 | go2rtc RTSP server the streams are read from |
+| HC_ANALYTICS_ENGINE_BATCH | 8 | Largest batch the detector engine is built for |
+| HC_ANALYTICS_WORKSPACE_MB | 1024 | TensorRT builder workspace |
+| HC_FACES_MIN_SCORE | 0.6 | Lowest face detection score |
+| HC_FACES_MIN_SIZE | 36 | Smallest face height in pixels at the muxer resolution |
+| HC_FACES_MIN_QUALITY | 0.15 | Lowest quality of a face the pipeline sends |
+| HC_FACES_CLUSTER_QUALITY | 0.35 | Mean face quality a track needs to start a cluster |
 | HC_FACES_KNOWN_THRESHOLD | 0.45 | Similarity that names a person |
 | HC_FACES_IR_EXTRA | 0.05 | Added to the known threshold for grey faces |
 | HC_FACES_MARGIN | 0.08 | Lead over the next person needed to name one |
 | HC_FACES_CANDIDATE_THRESHOLD | 0.3 | Similarity from which an unknown face records its closest person |
 | HC_FACES_CLUSTER_THRESHOLD | 0.45 | Similarity that joins an unknown cluster |
-| HC_FACES_CLUSTER_QUALITY | 0.35 | Mean face quality a track needs to start a cluster |
-| HC_FACES_MIN_QUALITY | 0.15 | Lowest quality of a face the pipeline sends |
-| HC_FACES_MIN_SCORE | 0.6 | Lowest face detection score |
-| HC_FACES_MIN_SIZE | 36 | Smallest face height in pixels at the muxer resolution |
+| HC_FACES_COOLDOWN_SECONDS | 600 | Seconds during which a person or cluster makes one event per view |
 
 ## Status
 
