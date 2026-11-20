@@ -27,6 +27,12 @@ The TV app builds and tests with the Android Studio JDK and SDK, as tv/README.md
 cd tv && ./gradlew testDebugUnitTest
 ```
 
+The mobile app builds with Flutter 3.47 and the Android SDK, as apps/mobile/README.md describes:
+
+```
+cd apps/mobile && flutter pub get && flutter analyze && flutter test
+```
+
 Create a migration from backend/ against a database already at head, with the stack's postgres or a temporary one on the same network:
 
 ```
@@ -119,3 +125,16 @@ alembic revision --autogenerate -m "<message>"
 - Keep auto-follow off by default and move a lens only through the follow controller, which records its moves and retraces them, because the owner decides whether the cameras may move by themselves.
 - Return auto-follow by retracing its moves with one reverse command per move, not by GotoPreset, because PTZ 1 answers GotoPreset on its ONVIF device without moving and turns a fixed step of about a tenth of the picture per ContinuousMove, whatever its speed and duration.
 - Send follow moves to a camera's own ONVIF device when it offers PTZ and to the bridge otherwise, and remember the choice per camera, because a camera without device ONVIF answers only after a timeout.
+
+### Mobile app
+
+- Organise apps/mobile/lib by business domain, lib/features/<domain>/{data,domain,presentation}, with shared code only in lib/core and the app's bootstrap, router, theme and strings in lib/app, because a domain then changes in one folder and the screens never import another domain's data layer.
+- Give every public member a doc comment and keep public_member_api_docs on, and add an inline comment only where the code cannot show its reason, because the doc comments are the app's reference.
+- Never edit lib/core/network/api by hand; regenerate it with scripts/generate-api.sh from packages/contracts/openapi.json, because the client must follow the contract exactly.
+- Keep every repository behind its domain interface with a simulated fake_ and a server api_ implementation, because the app must run and be screenshotted without a server and the fakes are the UI's test data.
+- Send every request through the shared Dio client, which adds the bearer token and the X-Site header and refreshes the session once for all requests that fail together, because the server revokes a session whose refresh token is used twice.
+- Keep tokens in flutter_secure_storage only, never in shared preferences or logs, because they unlock live video of the user's sites.
+- Add a pairing method as its own folder in lib/features/devices/pairing/methods/<method_id> behind the PairingMethod interface, show only the methods the server's catalog returns and report every attempt to the pairing telemetry, because the catalog decides what a site can use and the telemetry shows which methods fail.
+- Keep the foss flavor free of Google services and Firebase, and keep push behind the push_bridge package, because the foss build must be publishable without proprietary code.
+- Keep golden images, screenshots and APKs out of git, and use only the simulated site or the development kit in screenshots, because the repository is public and the pre-push hook refuses media outside the resource folders.
+- Write plain ASCII in Dart code and escape non-Latin characters that code must recognise as \u sequences; letters of every language stay in the ARB files, and Uzbek uses U+02BB and U+02BC for its apostrophes.
