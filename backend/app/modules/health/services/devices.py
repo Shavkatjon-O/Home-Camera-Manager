@@ -86,7 +86,12 @@ def stored(field: str, value):
 
 
 class NetworkDeviceService(BaseModelService[NetworkDevice]):
-    """Manage network devices and the topology they form."""
+    """Manage network devices and the topology they form.
+
+    Attributes:
+        model: Network devices.
+        not_found_code: Error code of an unknown device.
+    """
 
     model = NetworkDevice
     not_found_code = "network_device_not_found"

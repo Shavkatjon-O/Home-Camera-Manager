@@ -131,6 +131,11 @@ async def stream_events(request: Request, user: UserContext = Depends(get_stream
     """
 
     async def body():
+        """Send the hello, then every published change, with a ping when the stream is quiet.
+
+        Yields:
+            Server-sent event frames until the client disconnects.
+        """
         with camera_events.broker.subscribe() as queue:
             yield f"retry: {RETRY_MILLISECONDS}\n\n"
             yield sse("hello", await stream_hello())

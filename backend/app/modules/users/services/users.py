@@ -11,7 +11,12 @@ __all__ = ["UserService"]
 
 
 class UserService(BaseModelService[User]):
-    """Find users and check their credentials."""
+    """Find users and check their credentials.
+
+    Attributes:
+        model: Users.
+        not_found_code: Error code of an unknown user.
+    """
 
     model = User
     not_found_code = "user_not_found"

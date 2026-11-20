@@ -321,6 +321,9 @@ class Line:
 
         Returns:
             The line.
+
+        Raises:
+            ValueError: If the direction is not in, out or both.
         """
         start, end = data["points"]
         direction = str(data.get("direction", "both"))

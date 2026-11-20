@@ -97,7 +97,12 @@ def moment(value: float) -> datetime:
 
 
 class JourneyService(BaseModelService[AnalyticsJourney]):
-    """Stores appearances and journeys and searches appearances."""
+    """Stores appearances and journeys and searches appearances.
+
+    Attributes:
+        model: Journeys across views.
+        not_found_code: Error code of an unknown journey.
+    """
 
     model = AnalyticsJourney
     not_found_code = "journey_not_found"

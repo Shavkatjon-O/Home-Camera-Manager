@@ -74,6 +74,16 @@ def segments_intersect(p1: Point, p2: Point, q1: Point, q2: Point, tolerance: fl
         q2 = (q2[0] + dx * tolerance, q2[1] + dy * tolerance)
 
     def cross(o: Point, a: Point, b: Point) -> float:
+        """Return the z component of the cross product of o to a and o to b.
+
+        Args:
+            o: Common origin.
+            a: End of the first vector.
+            b: End of the second vector.
+
+        Returns:
+            Positive when b lies to the left of o to a, negative to the right, zero on the line.
+        """
         return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
 
     d1 = cross(q1, q2, p1)

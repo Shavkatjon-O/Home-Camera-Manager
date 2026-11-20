@@ -80,7 +80,12 @@ def event_filters(filters: EventFilters) -> list[ColumnElement[bool]]:
 
 
 class EventSearchService(BaseModelService[Event]):
-    """Search events by camera, time, kind, analytics fields, person and cluster."""
+    """Search events by camera, time, kind, analytics fields, person and cluster.
+
+    Attributes:
+        model: Events.
+        not_found_code: Error code of an unknown event.
+    """
 
     model = Event
     not_found_code = "event_not_found"

@@ -77,7 +77,11 @@ def alive_check(host: str, port: int):
     """
 
     async def alive() -> bool:
-        """Probe the port and report whether it answered."""
+        """Probe the port and report whether it answered.
+
+        Returns:
+            True when the port accepted a connection.
+        """
         return (await tcp_probe(host, port)).ok
 
     return alive

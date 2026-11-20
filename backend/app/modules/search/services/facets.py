@@ -13,7 +13,12 @@ __all__ = ["FacetService"]
 
 
 class FacetService(BaseModelService[Event]):
-    """List the kinds, labels, people and clusters that searches can filter by."""
+    """List the kinds, labels, people and clusters that searches can filter by.
+
+    Attributes:
+        model: Events.
+        not_found_code: Error code of an unknown event.
+    """
 
     model = Event
     not_found_code = "event_not_found"

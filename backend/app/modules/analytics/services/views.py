@@ -195,7 +195,12 @@ def view_read(view: AnalyticsView, camera: Camera, zones: list[AnalyticsZone], l
 
 
 class AnalyticsViewService(BaseModelService[AnalyticsView]):
-    """Lists and changes analytics views and their rules."""
+    """Lists and changes analytics views and their rules.
+
+    Attributes:
+        model: Analytics views.
+        not_found_code: Error code of an unknown view.
+    """
 
     model = AnalyticsView
     not_found_code = "analytics_view_not_found"

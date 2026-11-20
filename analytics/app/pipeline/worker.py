@@ -75,6 +75,15 @@ def build_pipeline(
     )
 
     def branch(view: ViewPlan, upstream: str, upstream_pad: str, width: int, height: int) -> None:
+        """Add one view's queue, lens crop and rate limit after a source and link it to the muxer.
+
+        Args:
+            view: The view.
+            upstream: Element the branch reads from.
+            upstream_pad: Pad of that element, empty for its default pad.
+            width: Frame width of the source.
+            height: Frame height of the source.
+        """
         names = [f"queue{view.index}"]
         pipeline.add("queue", names[0], {"leaky": LEAK_OLDEST, "max-size-buffers": QUEUE_BUFFERS})
         pipeline.link((upstream, names[0]), (upstream_pad, ""))
@@ -237,6 +246,11 @@ def run(plan: PipelinePlan, outbox: multiprocessing.Queue) -> None:
         raise
 
     def on_message(message) -> None:
+        """Report the pipeline's state changes and end of stream to the parent.
+
+        Args:
+            message: Pipeline bus message.
+        """
         kind = type(message).__name__
         if kind == "StateTransitionMessage" and getattr(message, "origin", "") == "analytics":
             outbox.put(("state", time.time(), str(message.new_state)))

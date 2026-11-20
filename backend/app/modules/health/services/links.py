@@ -14,7 +14,12 @@ __all__ = ["CameraLinkService"]
 
 
 class CameraLinkService(BaseModelService[CameraLink]):
-    """Set and clear the device each camera connects through."""
+    """Set and clear the device each camera connects through.
+
+    Attributes:
+        model: Camera links.
+        not_found_code: Error code of an unknown link.
+    """
 
     model = CameraLink
     not_found_code = "camera_link_not_found"

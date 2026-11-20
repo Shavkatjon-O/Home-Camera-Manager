@@ -145,7 +145,11 @@ def timezone() -> ZoneInfo:
 
 
 class CountService(BaseModelService[AnalyticsCount]):
-    """Stores the analytics service's minute counts and sums them for the Counts page."""
+    """Stores the analytics service's minute counts and sums them for the Counts page.
+
+    Attributes:
+        model: Minute counts of the lines.
+    """
 
     model = AnalyticsCount
 
@@ -251,7 +255,12 @@ class CountService(BaseModelService[AnalyticsCount]):
 
 
 class AreaService(BaseModelService[AnalyticsArea]):
-    """Areas bounded by counting lines and their occupancy."""
+    """Areas bounded by counting lines and their occupancy.
+
+    Attributes:
+        model: Areas bounded by lines.
+        not_found_code: Error code of an unknown area.
+    """
 
     model = AnalyticsArea
     not_found_code = "area_not_found"

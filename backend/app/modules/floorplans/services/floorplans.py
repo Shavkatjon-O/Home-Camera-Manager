@@ -52,7 +52,12 @@ def load_items(model: type, stored: list[dict] | None) -> list:
 
 
 class FloorPlanService(BaseModelService[FloorPlan]):
-    """Create, read, change and delete floor plans."""
+    """Create, read, change and delete floor plans.
+
+    Attributes:
+        model: Floor plans.
+        not_found_code: Error code of an unknown plan.
+    """
 
     model = FloorPlan
     not_found_code = "floor_plan_not_found"

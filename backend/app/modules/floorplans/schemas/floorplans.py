@@ -140,7 +140,11 @@ def repeated_id(items: list) -> str | None:
 
 
 class Strict(BaseModel):
-    """Base model that rejects unknown fields and non-finite numbers."""
+    """Base model that rejects unknown fields and non-finite numbers.
+
+    Attributes:
+        model_config: Forbids extra fields and infinite or NaN numbers.
+    """
 
     model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 

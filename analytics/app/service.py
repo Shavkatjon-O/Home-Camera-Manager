@@ -394,6 +394,14 @@ class Service:
         """
 
         def counted(line: str, direction: str, label: str, at: float) -> None:
+            """Hand a counted crossing to the feature hub.
+
+            Args:
+                line: Line id.
+                direction: in or out.
+                label: Object label.
+                at: Time of the crossing.
+            """
             self.features.crossing(view_id, line, direction, label, at)
 
         return counted

@@ -43,7 +43,12 @@ def not_paired() -> Unauthorized:
 
 
 class TvDeviceService(BaseModelService[TvDevice]):
-    """List, revoke and authenticate paired TV devices."""
+    """List, revoke and authenticate paired TV devices.
+
+    Attributes:
+        model: Paired TV devices.
+        not_found_code: Error code of an unknown TV.
+    """
 
     model = TvDevice
     not_found_code = "tv_not_found"

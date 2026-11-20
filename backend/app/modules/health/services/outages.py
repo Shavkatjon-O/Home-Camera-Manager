@@ -15,7 +15,12 @@ __all__ = ["OutageService"]
 
 
 class OutageService(BaseModelService[Outage]):
-    """List recorded outages with the names of their targets and causes."""
+    """List recorded outages with the names of their targets and causes.
+
+    Attributes:
+        model: Outages.
+        not_found_code: Error code of an unknown outage.
+    """
 
     model = Outage
     not_found_code = "outage_not_found"

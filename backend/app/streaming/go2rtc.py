@@ -34,7 +34,11 @@ class Go2rtcClient:
         self.http: httpx.AsyncClient | None = None
 
     def client(self) -> httpx.AsyncClient:
-        """Return the shared HTTP client, creating it when it is missing or closed."""
+        """Return the shared HTTP client, creating it when it is missing or closed.
+
+        Returns:
+            The client bound to the go2rtc API address.
+        """
         if self.http is None or self.http.is_closed:
             self.http = httpx.AsyncClient(base_url=self.base_url, timeout=self.timeout)
         return self.http

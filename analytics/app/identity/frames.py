@@ -21,19 +21,40 @@ DTYPES = {(2, 32): np.float32, (1, 8): np.uint8, (0, 8): np.int8, (2, 16): np.fl
 
 
 class DLDevice(ctypes.Structure):
-    """DLPack device description."""
+    """DLPack device description.
+
+    Attributes:
+        device_type: DLPack device type code, 2 for CUDA.
+        device_id: Device index.
+    """
 
     _fields_ = [("device_type", ctypes.c_int32), ("device_id", ctypes.c_int32)]
 
 
 class DLDataType(ctypes.Structure):
-    """DLPack element type description."""
+    """DLPack element type description.
+
+    Attributes:
+        code: Type class code: 0 signed, 1 unsigned, 2 float.
+        bits: Bits per element.
+        lanes: Vector lanes, 1 for scalars.
+    """
 
     _fields_ = [("code", ctypes.c_uint8), ("bits", ctypes.c_uint8), ("lanes", ctypes.c_uint16)]
 
 
 class DLTensor(ctypes.Structure):
-    """DLPack tensor description."""
+    """DLPack tensor description.
+
+    Attributes:
+        data: Address of the data.
+        device: Device the data lives on.
+        ndim: Number of dimensions.
+        dtype: Element type.
+        shape: Size of each dimension.
+        strides: Stride of each dimension in elements, or null for a compact tensor.
+        byte_offset: Offset of the first element from data in bytes.
+    """
 
     _fields_ = [
         ("data", ctypes.c_void_p),

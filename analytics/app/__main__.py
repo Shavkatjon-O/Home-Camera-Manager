@@ -15,6 +15,12 @@ def main() -> None:
     service = Service(Settings())
 
     def stop(signum, frame) -> None:
+        """Ask the service to stop.
+
+        Args:
+            signum: Signal number.
+            frame: Interrupted stack frame.
+        """
         service.stopping.set()
 
     signal.signal(signal.SIGTERM, stop)
