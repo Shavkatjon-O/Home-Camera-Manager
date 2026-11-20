@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, Query, Response, status
 from app.modules.devices.deps import get_control_service
 from app.modules.devices.schemas import (
     AudioRead,
-    DeviceRead,
+    CameraDeviceRead,
     EncoderUpdate,
     ExtrasRead,
     ImageRead,
@@ -27,7 +27,9 @@ from app.modules.devices.schemas import (
 from app.modules.devices.services import CameraControlService
 from app.modules.operations.deps import audited
 from app.modules.operations.enums import AuditAction
-from app.modules.tenancy.deps import require_admin, require_operator
+from app.modules.tenancy.deps import get_site_access, require_admin, require_operator
+from app.modules.tenancy.enums import Role
+from app.modules.tenancy.services.access import SiteAccess
 
 router = APIRouter()
 
@@ -41,26 +43,36 @@ def no_content() -> Response:
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@router.get("/{uuid}/device", response_model=DeviceRead)
-async def get_camera_device(uuid: UUID, service: CameraControlService = Depends(get_control_service)) -> DeviceRead:
-    """Return the camera's ONVIF device details and clock.
+@router.get("/{uuid}/device", response_model=CameraDeviceRead)
+async def get_camera_device(
+    uuid: UUID,
+    access: SiteAccess = Depends(get_site_access),
+    service: CameraControlService = Depends(get_control_service),
+) -> CameraDeviceRead:
+    """Return the camera's ONVIF device details and clock; viewers do not see the serial number and hardware id.
 
     Args:
         uuid: Public id of the camera.
+        access: Access of the signed-in member to the request's site.
         service: Camera control service for the request.
 
     Returns:
         Device information, or the reason it is unavailable.
     """
-    return await service.device(uuid)
+    read = await service.device(uuid)
+    if not access.allows(Role.OPERATOR):
+        read = read.model_copy(update={"serial": None, "hardware_id": None})
+    return read
 
 
 @router.post(
     "/{uuid}/device/sync-time",
     dependencies=[Depends(audited(AuditAction.CAMERA_CONTROL, "camera")), Depends(require_admin)],
-    response_model=DeviceRead,
+    response_model=CameraDeviceRead,
 )
-async def sync_camera_time(uuid: UUID, service: CameraControlService = Depends(get_control_service)) -> DeviceRead:
+async def sync_camera_time(
+    uuid: UUID, service: CameraControlService = Depends(get_control_service)
+) -> CameraDeviceRead:
     """Set the camera's clock to this server's time.
 
     Args:
