@@ -5,6 +5,29 @@ export type CameraBrand = "ezviz" | "v380" | "onvif" | "rtsp"
 export interface User {
   uuid: string
   username: string
+  email?: string
+  name?: string
+  email_verified?: boolean
+  created_at?: string
+}
+
+export type SiteKind = "home" | "store" | "office" | "warehouse" | "other"
+
+export type SiteRole = "viewer" | "operator" | "admin" | "owner"
+
+export interface Site {
+  uuid: string
+  organisation: string
+  organisation_name: string
+  name: string
+  kind: SiteKind
+  timezone: string
+  position: number
+  role: SiteRole
+  camera_count: number
+  connector_count: number
+  created_at: string
+  updated_at: string
 }
 
 export interface CameraStatus {

@@ -23,6 +23,7 @@ import { toast } from "sonner"
 import { ArmModeSelect } from "@/components/analytics/arm-mode"
 import { IconButton } from "@/components/shell/icon-button"
 import { Chip, StatusDot } from "@/components/shell/primitives"
+import { SiteSwitcher } from "@/components/shell/site-switcher"
 import { useSession } from "@/components/shell/session"
 import { LOGIN_PATH, api, errorMessage } from "@/lib/api"
 import { setAlertsMuted, useAlertsMuted, useUnseenAlerts } from "@/lib/events"
@@ -195,6 +196,7 @@ export function AppFrame({
         </div>
         <div className="flex items-center gap-1.5">
           {actions}
+          <SiteSwitcher />
           <ArmModeSelect className={wideActions ? "max-sm:hidden" : undefined} />
           <AlertsToggle />
           <SignOutButton />

@@ -44,6 +44,7 @@ import type {
   PtzVector,
   ScanResult,
   TargetDetail,
+  Site,
   User,
   ViewSnapshot,
 } from "@/lib/types"
@@ -178,6 +179,7 @@ export const api = {
   logout: () => request<void>("/auth/logout", { method: "POST", redirectOn401: false }),
   me: (redirectOn401 = true, signal?: AbortSignal) =>
     request<User>("/auth/me", { redirectOn401, signal }),
+  listSites: (signal?: AbortSignal) => request<{ items: Site[] }>("/sites", { signal }),
 
   listCameras: (
     params: { page?: number; page_size?: number; order?: CameraOrder } = {},
