@@ -1,0 +1,25 @@
+---
+title: The TV app
+description: Build the Android TV app and install it on a TV from a USB stick.
+icon: Tv
+---
+
+The TV app shows the cameras on an Android TV by itself: it connects straight to the cameras on the local Wi-Fi, decodes them on the TV and needs nothing from the server.
+
+## Build
+
+The build needs a JDK 17 or newer and an Android SDK with platform android-37.0 and build-tools 36.0.0. The camera defaults, passwords included, compile in from apps/tv/cameras.local.properties, which git ignores; without it the build falls back to the example file.
+
+```bash
+cd apps/tv
+cp cameras.example.properties cameras.local.properties
+./gradlew testDebugUnitTest assembleRelease
+```
+
+The APK lands in app/build/outputs/apk/release/app-release.apk. The release build is minified and signed with the local debug key, which is enough for sideloading. The APK carries the camera passwords, so keep it off shared storage.
+
+## Install
+
+Many TVs have no adb. Copy app-release.apk to a USB stick, open it in the TV's file manager and allow installing from that source when the TV asks. A newer APK installs over the old one and keeps the settings. The app appears as Smart Surveillance in the launcher.
+
+The [TV guide](../guides/tv.mdx) describes the remote control keys, settings and diagnostics.

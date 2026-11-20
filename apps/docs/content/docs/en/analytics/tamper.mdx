@@ -1,0 +1,16 @@
+---
+title: Tamper
+description: Covered, blurred, too dark and moved views, judged on keyframes per lighting regime.
+icon: ShieldX
+---
+
+Every view is watched for tampering, at most every 5 s, on the small grey keyframe pictures the recorder already decodes, so the watch costs no extra decoding.
+
+| Reading | Means |
+|---|---|
+| covered | the picture is flat compared with what the view normally shows at that brightness |
+| too dark | the picture is below an absolute floor and well below the darkest regime learned |
+| blurred | the edges collapsed while the place still matches |
+| moved | the edge structure no longer lines up with the reference |
+
+A reference is learned per lighting regime, day and infrared night, and a switch between regimes starts a grace period. Views with too little structure, such as a blank wall, report only covered and too dark. Moving lenses never report moved, and their reference restarts when the picture stops lining up, so a lens that turns by itself is not taken for a blurred one.

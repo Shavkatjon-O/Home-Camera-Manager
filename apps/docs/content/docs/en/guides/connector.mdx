@@ -1,0 +1,25 @@
+---
+title: Connector
+description: "What a connector does at a site: discovery, health, camera credentials and the address central reaches it at."
+icon: Router
+---
+
+<Status kind="planned" /> The connector container is designed and not built yet; the API's side of its protocol exists. [Installing a connector](../getting-started/connector.mdx) covers pairing.
+
+A connector is the only part of the system that touches a site's network. Central never reaches the LAN itself, only the connector.
+
+## What it does
+
+- Discovery: a WS-Discovery probe for ONVIF devices together with a TCP sweep of the usual camera ports, so cameras that do not answer multicast, such as V380 cameras on port 8800, are still found. It reports what it finds, and the app shows the candidates.
+- Identification and control: the [camera adapters](../cameras/compatibility.mdx) identify each device, read its channels and capabilities, and carry out PTZ, light, siren, imaging and maintenance commands.
+- Credentials: camera passwords stay on the connector, encrypted.
+- Heartbeats: its version, address, health and the reachability of its cameras. A connector without a heartbeat for SSS_CONNECTOR_OFFLINE_SECONDS, 90 s by default, counts as offline.
+- Streams: its go2rtc serves each camera to central, which pulls the stream each view needs.
+
+## Direct and tunnel mode
+
+In direct mode central reaches the connector at the address it reports or an admin sets. In tunnel mode, the next stage, the connector dials out over WireGuard, carried over TCP 443 where UDP is blocked, and central reaches it at its overlay address. The modes differ only in that address.
+
+## Analytics at the edge
+
+A connector built on a Jetson can later run the analytics engine on site against the same configuration and event contract, with a token of its own, so only events, snapshots and clips travel. <Status kind="planned" />

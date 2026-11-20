@@ -1,0 +1,32 @@
+---
+title: Arm modes and alerts
+description: "Which events alert: the site's arm mode, schedules, alert policies, camera events and animals."
+icon: BellRing
+---
+
+Every event is stored; an alert is an event that also notifies. Each site has one arm mode, set from the console's top bar or the mobile app's home tab by an operator, admin or owner:
+
+| Arm mode | Alerts for |
+|---|---|
+| Disarmed | nothing |
+| Home | zones and lines whose policy always alerts |
+| Schedule | as Home, plus the policies whose alert windows are active |
+| Away | every analytics event |
+
+## Policies and schedules
+
+Each zone and line has an alert policy and, when it alerts on a schedule, alert windows such as people from 23:00 to 06:00 in the site's time zone. Schedules, counts and area resets follow that time zone.
+
+## Camera events
+
+The cameras' own ONVIF events carry no labels: the tested EZVIZ and V380 cameras send only motion, and their person and vehicle detection stays in the vendors' clouds. Camera events therefore alert only for tamper, storage failure and reboot; motion is recorded without alerting, and every label comes from the analytics.
+
+## Animals
+
+Dogs, cats and birds open animal events. A zone or line sets animals to record, the default, which stores events that never alert; include, which lets them alert like anything else; or exclude, which stores nothing.
+
+## Delivery
+
+- The console raises a toast on every page unless muted in the top bar, and counts new alerts on the Events tab.
+- The mobile app receives push notifications through Firebase Cloud Messaging when the server has a Firebase project (SSS_FCM_PROJECT_ID) or through an ntfy server (SSS_NTFY_URL). Push targets are registered per signed-in session, and a notification carries ids only; the app then fetches the snapshot with its own token, so no picture passes through the push service.
+- While the app is open, the event stream delivers events without any push service.

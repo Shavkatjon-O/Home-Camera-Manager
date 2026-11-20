@@ -1,0 +1,45 @@
+---
+title: Pairing methods
+description: The ways a camera, a recorder or a connector is added to a site, which work today and which are designed only.
+icon: QrCode
+---
+
+The apps ask the API which pairing methods fit the site and what is known so far, such as a scanned label or a discovered device, and offer them in order. Each method says what it needs, such as an admin role, a paired connector or being on the same Wi-Fi, and which values it asks for. The mobile app keeps one folder per method behind a common interface, so a method is added without touching the others.
+
+## Cameras and recorders
+
+| Method | How it works |
+|---|---|
+| connector_discovery | The site's connector lists the devices its discovery found; pick one, enter its login, and it is identified and added. |
+| manual_host | Enter an address, and optionally a port and login; the device is fingerprinted and the adapter chosen automatically. |
+| rtsp_url | Paste a full RTSP address, for a camera known only by its stream. |
+| label_qr | Scan the QR code on the camera's label; the adapters read the vendor's format and fill in what the label carries. |
+| nvr_import | Identify a recorder and add its channels as cameras in one step. |
+
+## Connectors
+
+| Method | How it works |
+|---|---|
+| connector_code | Type the code the connector shows. |
+| connector_qr | Scan the QR code the connector shows. |
+| connector_mdns | On the same Wi-Fi, pick a connector that announces itself as _sss-connector._tcp. |
+
+All three end in the same pairing; the [connector protocol](../reference/connector-protocol.mdx) describes it.
+
+## Which catalog entries offer which method
+
+<include>../../../../generated/cameras/pairing-support.md</include>
+
+## Label formats
+
+A label format is confirmed when it follows a published standard and guessed when the parser is a tolerant reading of public descriptions, not yet checked against a real label.
+
+<include>../../../../generated/cameras/label-formats.md</include>
+
+## Designed only
+
+<Status kind="planned" /> Methods that bring a factory-new camera onto Wi-Fi are designed and never offered: wifi_qr, where the camera reads a QR code the phone shows; soft_ap, where the phone joins the camera's own access point; ble, over Bluetooth with Improv Wi-Fi or a vendor protocol; sound_wave, where the phone plays the network as sound; and matter, Matter commissioning. The adapters' provisioning capability is the contract they will implement.
+
+## Telemetry
+
+Every pairing attempt records its method, adapter, last step, outcome, error code and duration per organisation, with no personal data, so the methods that fail most can be improved.

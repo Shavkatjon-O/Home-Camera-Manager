@@ -1,0 +1,21 @@
+---
+title: Installing a connector
+description: How a site joins a central backend through a connector, and what exists of it today.
+icon: Router
+---
+
+<Status kind="planned" /> The connector container is designed and not built yet. The API already serves its side of the pairing and reporting protocol, which the [connector protocol](../reference/connector-protocol.mdx) describes.
+
+A connector is what lets a central backend reach a site's cameras without opening any port at the site. It is one container on any always-on Linux machine on the site's network, such as a mini PC or a Raspberry Pi, run with host networking so it can find cameras by multicast. It holds go2rtc, the V380 support for V380 cameras, and an agent built from the [camera adapters](../cameras/compatibility.mdx).
+
+## Pairing
+
+1. The connector starts, asks the API for a pairing code and shows the code with a QR code. A code is valid for 15 minutes by default and can be used once.
+2. An admin or owner opens the mobile app or the console, chooses the site, and scans the QR code or types the code. On the same Wi-Fi the app can also find the connector by mDNS.
+3. The connector, which keeps polling, receives its own credential and starts reporting: heartbeats with its version, address and health, and the cameras its discovery finds.
+
+The connector belongs to that one site until it is removed. Camera passwords entered in the app go to the connector and stay there, encrypted; the API never stores them for a connector's cameras.
+
+## How central reaches it
+
+In the first stage central reaches the connector's go2rtc and agent directly at the address the connector reports. The next stage adds an outbound WireGuard tunnel from the connector, carried over TCP 443 where UDP is blocked; the two modes differ only in the address central uses.

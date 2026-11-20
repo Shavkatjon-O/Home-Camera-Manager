@@ -1,0 +1,22 @@
+---
+title: Contributing
+description: Commits, checks, documentation comments and privacy rules for changes to the repository.
+icon: GitPullRequest
+---
+
+<include>../../../../generated/contributing.md</include>
+
+## Developing without cameras
+
+The development kit in tools/devkit stands in for a real site. Its simulated camera image answers ONVIF and WS-Discovery like an IP camera and serves looping video files over RTSP, and several of them on one network form a site that discovery finds; the catalog's Simulated entry matches them. A whole simulated site with seed data follows. <Status kind="planned" /> Video files are mounted at run time and never enter the repository.
+
+## Documentation
+
+This site lives in apps/docs. Pages are MDX files under apps/docs/content/docs; the camera, configuration, API, analytics contract, architecture and changelog pages are generated from the repository when the site is built, so change their sources, not the pages. apps/docs/README.md describes running it.
+
+## Guides
+
+<Cards>
+  <Card title="Adding a camera adapter" href="/en/docs/contributing/camera-adapter/">A new kind of camera behind the adapter interface, with its catalog entries and tests.</Card>
+  <Card title="Adding a pairing method" href="/en/docs/contributing/pairing-method/">A new way to add a device, in the API and the mobile app.</Card>
+</Cards>
