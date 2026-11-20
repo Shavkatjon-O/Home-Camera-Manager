@@ -7,14 +7,28 @@ part of 'control_capabilities.dart';
 // **************************************************************************
 
 ControlCapabilities _$ControlCapabilitiesFromJson(Map<String, dynamic> json) {
-  $checkKeys(json, disallowNullValues: const ['ptz', 'zoom', 'presets', 'home', 'light', 'siren']);
+  $checkKeys(
+    json,
+    disallowNullValues: const [
+      'ptz',
+      'zoom',
+      'presets',
+      'home',
+      'light',
+      'siren',
+    ],
+  );
   return ControlCapabilities(
     ptz: ControlCapabilities._presentValue(json, 'ptz') == null
         ? false
-        : ControlCapabilities._read_ptz(ControlCapabilities._presentValue(json, 'ptz') as Object),
+        : ControlCapabilities._read_ptz(
+            ControlCapabilities._presentValue(json, 'ptz') as Object,
+          ),
     zoom: ControlCapabilities._presentValue(json, 'zoom') == null
         ? false
-        : ControlCapabilities._read_zoom(ControlCapabilities._presentValue(json, 'zoom') as Object),
+        : ControlCapabilities._read_zoom(
+            ControlCapabilities._presentValue(json, 'zoom') as Object,
+          ),
     presets: ControlCapabilities._presentValue(json, 'presets') == null
         ? false
         : ControlCapabilities._read_presets(
@@ -22,7 +36,9 @@ ControlCapabilities _$ControlCapabilitiesFromJson(Map<String, dynamic> json) {
           ),
     home: ControlCapabilities._presentValue(json, 'home') == null
         ? false
-        : ControlCapabilities._read_home(ControlCapabilities._presentValue(json, 'home') as Object),
+        : ControlCapabilities._read_home(
+            ControlCapabilities._presentValue(json, 'home') as Object,
+          ),
     light: ControlCapabilities._presentValue(json, 'light') == null
         ? false
         : ControlCapabilities._read_light(
@@ -33,7 +49,8 @@ ControlCapabilities _$ControlCapabilitiesFromJson(Map<String, dynamic> json) {
         : ControlCapabilities._read_siren(
             ControlCapabilities._presentValue(json, 'siren') as Object,
           ),
-    additionalProperties: ControlCapabilities._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        ControlCapabilities._extras(json, 'additionalProperties') == null
         ? const {}
         : ControlCapabilities._readExtras(
             ControlCapabilities._extras(json, 'additionalProperties'),
@@ -41,7 +58,9 @@ ControlCapabilities _$ControlCapabilitiesFromJson(Map<String, dynamic> json) {
   );
 }
 
-Map<String, dynamic> _$ControlCapabilitiesToJson(ControlCapabilities instance) => <String, dynamic>{
+Map<String, dynamic> _$ControlCapabilitiesToJson(
+  ControlCapabilities instance,
+) => <String, dynamic>{
   'ptz': ?ControlCapabilities._write_ptz(instance.ptz),
   'zoom': ?ControlCapabilities._write_zoom(instance.zoom),
   'presets': ?ControlCapabilities._write_presets(instance.presets),

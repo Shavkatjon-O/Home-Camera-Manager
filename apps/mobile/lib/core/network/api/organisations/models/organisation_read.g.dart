@@ -36,25 +36,34 @@ OrganisationRead _$OrganisationReadFromJson(Map<String, dynamic> json) {
     name: json['name'] as String,
     role: OrganisationRead._read_role(json['role']),
     facesEnabled: json['faces_enabled'] as bool,
-    facesConsentAt: OrganisationRead._read_facesConsentAt(json['faces_consent_at']),
+    facesConsentAt: OrganisationRead._read_facesConsentAt(
+      json['faces_consent_at'],
+    ),
     siteCount: OrganisationRead._read_siteCount(json['site_count']),
     memberCount: OrganisationRead._read_memberCount(json['member_count']),
     sites: (json['sites'] as List<dynamic>)
         .map((e) => SiteRead.fromJson(e as Map<String, dynamic>))
         .toList(),
     createdAt: OrganisationRead._read_createdAt(json['created_at']),
-    additionalProperties: OrganisationRead._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        OrganisationRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : OrganisationRead._readExtras(OrganisationRead._extras(json, 'additionalProperties')),
+        : OrganisationRead._readExtras(
+            OrganisationRead._extras(json, 'additionalProperties'),
+          ),
   );
 }
 
-Map<String, dynamic> _$OrganisationReadToJson(OrganisationRead instance) => <String, dynamic>{
+Map<String, dynamic> _$OrganisationReadToJson(
+  OrganisationRead instance,
+) => <String, dynamic>{
   'uuid': instance.uuid,
   'name': instance.name,
   'role': ?OrganisationRead._write_role(instance.role),
   'faces_enabled': instance.facesEnabled,
-  'faces_consent_at': OrganisationRead._write_facesConsentAt(instance.facesConsentAt),
+  'faces_consent_at': OrganisationRead._write_facesConsentAt(
+    instance.facesConsentAt,
+  ),
   'site_count': ?OrganisationRead._write_siteCount(instance.siteCount),
   'member_count': ?OrganisationRead._write_memberCount(instance.memberCount),
   'sites': instance.sites.map((e) => e.toJson()).toList(),

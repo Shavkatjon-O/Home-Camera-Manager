@@ -42,14 +42,18 @@ LineRead _$LineReadFromJson(Map<String, dynamic> json) {
         .toList(),
     labels: (json['labels'] as List<dynamic>).map((e) => e as String).toList(),
     direction: LineRead._read_direction(json['direction']),
-    schedule: (json['schedule'] as List<dynamic>).map((e) => e as Map<String, dynamic>).toList(),
+    schedule: (json['schedule'] as List<dynamic>)
+        .map((e) => e as Map<String, dynamic>)
+        .toList(),
     alert: json['alert'] as Map<String, dynamic>,
     enabled: json['enabled'] as bool,
     reference: json['reference'] as String?,
     suspended: json['suspended'] as bool,
     animals: LineRead._presentValue(json, 'animals') == null
         ? AnimalMode.record
-        : LineRead._read_animals(LineRead._presentValue(json, 'animals') as Object),
+        : LineRead._read_animals(
+            LineRead._presentValue(json, 'animals') as Object,
+          ),
     additionalProperties: LineRead._extras(json, 'additionalProperties') == null
         ? const {}
         : LineRead._readExtras(LineRead._extras(json, 'additionalProperties')),

@@ -15,13 +15,14 @@ PresetRead _$PresetReadFromJson(Map<String, dynamic> json) {
   return PresetRead(
     token: json['token'] as String,
     name: json['name'] as String,
-    additionalProperties: PresetRead._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        PresetRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : PresetRead._readExtras(PresetRead._extras(json, 'additionalProperties')),
+        : PresetRead._readExtras(
+            PresetRead._extras(json, 'additionalProperties'),
+          ),
   );
 }
 
-Map<String, dynamic> _$PresetReadToJson(PresetRead instance) => <String, dynamic>{
-  'token': instance.token,
-  'name': instance.name,
-};
+Map<String, dynamic> _$PresetReadToJson(PresetRead instance) =>
+    <String, dynamic>{'token': instance.token, 'name': instance.name};

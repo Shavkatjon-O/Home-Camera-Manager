@@ -20,7 +20,15 @@ MemberRead _$MemberReadFromJson(Map<String, dynamic> json) {
       'joined_at',
       'you',
     ],
-    disallowNullValues: const ['uuid', 'user', 'role', 'all_sites', 'sites', 'joined_at', 'you'],
+    disallowNullValues: const [
+      'uuid',
+      'user',
+      'role',
+      'all_sites',
+      'sites',
+      'joined_at',
+      'you',
+    ],
   );
   return MemberRead(
     uuid: json['uuid'] as String,
@@ -32,20 +40,24 @@ MemberRead _$MemberReadFromJson(Map<String, dynamic> json) {
     sites: (json['sites'] as List<dynamic>).map((e) => e as String).toList(),
     joinedAt: MemberRead._read_joinedAt(json['joined_at']),
     you: json['you'] as bool,
-    additionalProperties: MemberRead._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        MemberRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : MemberRead._readExtras(MemberRead._extras(json, 'additionalProperties')),
+        : MemberRead._readExtras(
+            MemberRead._extras(json, 'additionalProperties'),
+          ),
   );
 }
 
-Map<String, dynamic> _$MemberReadToJson(MemberRead instance) => <String, dynamic>{
-  'uuid': instance.uuid,
-  'user': instance.user,
-  'email': instance.email,
-  'name': instance.name,
-  'role': ?MemberRead._write_role(instance.role),
-  'all_sites': instance.allSites,
-  'sites': instance.sites,
-  'joined_at': ?MemberRead._write_joinedAt(instance.joinedAt),
-  'you': instance.you,
-};
+Map<String, dynamic> _$MemberReadToJson(MemberRead instance) =>
+    <String, dynamic>{
+      'uuid': instance.uuid,
+      'user': instance.user,
+      'email': instance.email,
+      'name': instance.name,
+      'role': ?MemberRead._write_role(instance.role),
+      'all_sites': instance.allSites,
+      'sites': instance.sites,
+      'joined_at': ?MemberRead._write_joinedAt(instance.joinedAt),
+      'you': instance.you,
+    };

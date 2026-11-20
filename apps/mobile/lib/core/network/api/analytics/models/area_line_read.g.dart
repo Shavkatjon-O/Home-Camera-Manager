@@ -17,15 +17,19 @@ AreaLineRead _$AreaLineReadFromJson(Map<String, dynamic> json) {
     lineName: json['line_name'] as String?,
     viewName: json['view_name'] as String?,
     entering: json['entering'] as String,
-    additionalProperties: AreaLineRead._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        AreaLineRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : AreaLineRead._readExtras(AreaLineRead._extras(json, 'additionalProperties')),
+        : AreaLineRead._readExtras(
+            AreaLineRead._extras(json, 'additionalProperties'),
+          ),
   );
 }
 
-Map<String, dynamic> _$AreaLineReadToJson(AreaLineRead instance) => <String, dynamic>{
-  'line_uuid': instance.lineUuid,
-  'line_name': instance.lineName,
-  'view_name': instance.viewName,
-  'entering': instance.entering,
-};
+Map<String, dynamic> _$AreaLineReadToJson(AreaLineRead instance) =>
+    <String, dynamic>{
+      'line_uuid': instance.lineUuid,
+      'line_name': instance.lineName,
+      'view_name': instance.viewName,
+      'entering': instance.entering,
+    };

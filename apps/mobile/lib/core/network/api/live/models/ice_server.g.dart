@@ -7,14 +7,21 @@ part of 'ice_server.dart';
 // **************************************************************************
 
 IceServer _$IceServerFromJson(Map<String, dynamic> json) {
-  $checkKeys(json, requiredKeys: const ['urls'], disallowNullValues: const ['urls']);
+  $checkKeys(
+    json,
+    requiredKeys: const ['urls'],
+    disallowNullValues: const ['urls'],
+  );
   return IceServer(
     urls: (json['urls'] as List<dynamic>).map((e) => e as String).toList(),
     username: json['username'] as String?,
     credential: json['credential'] as String?,
-    additionalProperties: IceServer._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        IceServer._extras(json, 'additionalProperties') == null
         ? const {}
-        : IceServer._readExtras(IceServer._extras(json, 'additionalProperties')),
+        : IceServer._readExtras(
+            IceServer._extras(json, 'additionalProperties'),
+          ),
   );
 }
 

@@ -70,11 +70,16 @@ EventRead _$EventReadFromJson(Map<String, dynamic> json) {
     details: json['details'] as Map<String, dynamic>,
     createdAt: EventRead._read_createdAt(json['created_at']),
     updatedAt: EventRead._read_updatedAt(json['updated_at']),
-    face: json['face'] == null ? null : FaceRead.fromJson(json['face'] as Map<String, dynamic>),
+    face: json['face'] == null
+        ? null
+        : FaceRead.fromJson(json['face'] as Map<String, dynamic>),
     acknowledgedAt: EventRead._read_acknowledgedAt(json['acknowledged_at']),
-    additionalProperties: EventRead._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        EventRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : EventRead._readExtras(EventRead._extras(json, 'additionalProperties')),
+        : EventRead._readExtras(
+            EventRead._extras(json, 'additionalProperties'),
+          ),
   );
 }
 

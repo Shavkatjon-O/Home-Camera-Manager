@@ -6,7 +6,9 @@ import 'exports.dart'
     as clients
     show
         AnalyticsClient,
+        AuditClient,
         AuthClient,
+        BillingClient,
         CamerasClient,
         ConnectorsClient,
         ControlClient,
@@ -21,7 +23,8 @@ import 'exports.dart'
         PeopleClient,
         PushClient,
         SearchClient,
-        SitesClient;
+        SitesClient,
+        TelegramClient;
 
 export 'exports.dart';
 
@@ -39,7 +42,9 @@ final class SurveillanceApi {
   final transport.Dio _client;
 
   late final clients.AnalyticsClient analytics = clients.AnalyticsClient(_client);
+  late final clients.AuditClient audit = clients.AuditClient(_client);
   late final clients.AuthClient auth = clients.AuthClient(_client);
+  late final clients.BillingClient billing = clients.BillingClient(_client);
   late final clients.CamerasClient cameras = clients.CamerasClient(_client);
   late final clients.ConnectorsClient connectors = clients.ConnectorsClient(_client);
   late final clients.ControlClient control = clients.ControlClient(_client);
@@ -55,4 +60,5 @@ final class SurveillanceApi {
   late final clients.PushClient push = clients.PushClient(_client);
   late final clients.SearchClient search = clients.SearchClient(_client);
   late final clients.SitesClient sites = clients.SitesClient(_client);
+  late final clients.TelegramClient telegram = clients.TelegramClient(_client);
 }

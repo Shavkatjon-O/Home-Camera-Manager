@@ -20,8 +20,9 @@ PersonCreate _$PersonCreateFromJson(Map<String, dynamic> json) {
   );
 }
 
-Map<String, dynamic> _$PersonCreateToJson(PersonCreate instance) => <String, dynamic>{
-  'name': instance.name,
-  'notes': ?instance.notes,
-  'color': ?instance.color,
-};
+Map<String, dynamic> _$PersonCreateToJson(PersonCreate instance) =>
+    <String, dynamic>{
+      'name': instance.name,
+      'notes': ?instance.notes,
+      'color': ?instance.color,
+    };

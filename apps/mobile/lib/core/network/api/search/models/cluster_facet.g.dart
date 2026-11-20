@@ -15,13 +15,14 @@ ClusterFacet _$ClusterFacetFromJson(Map<String, dynamic> json) {
   return ClusterFacet(
     uuid: json['uuid'] as String,
     label: json['label'] as String,
-    additionalProperties: ClusterFacet._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        ClusterFacet._extras(json, 'additionalProperties') == null
         ? const {}
-        : ClusterFacet._readExtras(ClusterFacet._extras(json, 'additionalProperties')),
+        : ClusterFacet._readExtras(
+            ClusterFacet._extras(json, 'additionalProperties'),
+          ),
   );
 }
 
-Map<String, dynamic> _$ClusterFacetToJson(ClusterFacet instance) => <String, dynamic>{
-  'uuid': instance.uuid,
-  'label': instance.label,
-};
+Map<String, dynamic> _$ClusterFacetToJson(ClusterFacet instance) =>
+    <String, dynamic>{'uuid': instance.uuid, 'label': instance.label};

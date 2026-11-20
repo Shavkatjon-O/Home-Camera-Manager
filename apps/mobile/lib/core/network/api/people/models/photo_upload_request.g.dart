@@ -20,6 +20,7 @@ PhotoUploadRequest _$PhotoUploadRequestFromJson(Map<String, dynamic> json) {
   );
 }
 
-Map<String, dynamic> _$PhotoUploadRequestToJson(PhotoUploadRequest instance) => <String, dynamic>{
-  'photos': instance.photos.map((e) => e.toJson()).toList(),
-};
+Map<String, dynamic> _$PhotoUploadRequestToJson(PhotoUploadRequest instance) =>
+    <String, dynamic>{
+      'photos': instance.photos.map((e) => e.toJson()).toList(),
+    };

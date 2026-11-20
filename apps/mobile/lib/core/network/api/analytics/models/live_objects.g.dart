@@ -18,14 +18,18 @@ LiveObjects _$LiveObjectsFromJson(Map<String, dynamic> json) {
     objects: (json['objects'] as List<dynamic>)
         .map((e) => LiveObject.fromJson(e as Map<String, dynamic>))
         .toList(),
-    additionalProperties: LiveObjects._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        LiveObjects._extras(json, 'additionalProperties') == null
         ? const {}
-        : LiveObjects._readExtras(LiveObjects._extras(json, 'additionalProperties')),
+        : LiveObjects._readExtras(
+            LiveObjects._extras(json, 'additionalProperties'),
+          ),
   );
 }
 
-Map<String, dynamic> _$LiveObjectsToJson(LiveObjects instance) => <String, dynamic>{
-  'view': instance.view,
-  'at': instance.at,
-  'objects': instance.objects.map((e) => e.toJson()).toList(),
-};
+Map<String, dynamic> _$LiveObjectsToJson(LiveObjects instance) =>
+    <String, dynamic>{
+      'view': instance.view,
+      'at': instance.at,
+      'objects': instance.objects.map((e) => e.toJson()).toList(),
+    };

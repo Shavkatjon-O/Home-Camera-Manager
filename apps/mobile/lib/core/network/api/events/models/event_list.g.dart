@@ -19,9 +19,12 @@ EventList _$EventListFromJson(Map<String, dynamic> json) {
     total: EventList._read_total(json['total']),
     page: EventList._read_page(json['page']),
     pageSize: EventList._read_pageSize(json['page_size']),
-    additionalProperties: EventList._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        EventList._extras(json, 'additionalProperties') == null
         ? const {}
-        : EventList._readExtras(EventList._extras(json, 'additionalProperties')),
+        : EventList._readExtras(
+            EventList._extras(json, 'additionalProperties'),
+          ),
   );
 }
 

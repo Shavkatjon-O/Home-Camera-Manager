@@ -38,19 +38,23 @@ CountLineRead _$CountLineReadFromJson(Map<String, dynamic> json) {
     cameraName: json['camera_name'] as String?,
     direction: json['direction'] as String,
     enabled: json['enabled'] as bool,
-    additionalProperties: CountLineRead._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        CountLineRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : CountLineRead._readExtras(CountLineRead._extras(json, 'additionalProperties')),
+        : CountLineRead._readExtras(
+            CountLineRead._extras(json, 'additionalProperties'),
+          ),
   );
 }
 
-Map<String, dynamic> _$CountLineReadToJson(CountLineRead instance) => <String, dynamic>{
-  'uuid': instance.uuid,
-  'name': instance.name,
-  'view_uuid': instance.viewUuid,
-  'view_name': instance.viewName,
-  'camera_uuid': instance.cameraUuid,
-  'camera_name': instance.cameraName,
-  'direction': instance.direction,
-  'enabled': instance.enabled,
-};
+Map<String, dynamic> _$CountLineReadToJson(CountLineRead instance) =>
+    <String, dynamic>{
+      'uuid': instance.uuid,
+      'name': instance.name,
+      'view_uuid': instance.viewUuid,
+      'view_name': instance.viewName,
+      'camera_uuid': instance.cameraUuid,
+      'camera_name': instance.cameraName,
+      'direction': instance.direction,
+      'enabled': instance.enabled,
+    };

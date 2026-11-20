@@ -55,26 +55,38 @@ ZoneRead _$ZoneReadFromJson(Map<String, dynamic> json) {
     minDwell: json['min_dwell'] as num,
     loiterSeconds: json['loiter_seconds'] as num,
     crowdCount: ZoneRead._read_crowdCount(json['crowd_count']),
-    schedule: (json['schedule'] as List<dynamic>).map((e) => e as Map<String, dynamic>).toList(),
+    schedule: (json['schedule'] as List<dynamic>)
+        .map((e) => e as Map<String, dynamic>)
+        .toList(),
     alert: json['alert'] as Map<String, dynamic>,
     enabled: json['enabled'] as bool,
     reference: json['reference'] as String?,
     suspended: json['suspended'] as bool,
     leftSeconds: ZoneRead._presentValue(json, 'left_seconds') == null
         ? 0.0
-        : ZoneRead._read_leftSeconds(ZoneRead._presentValue(json, 'left_seconds') as Object),
+        : ZoneRead._read_leftSeconds(
+            ZoneRead._presentValue(json, 'left_seconds') as Object,
+          ),
     takenSeconds: ZoneRead._presentValue(json, 'taken_seconds') == null
         ? 0.0
-        : ZoneRead._read_takenSeconds(ZoneRead._presentValue(json, 'taken_seconds') as Object),
+        : ZoneRead._read_takenSeconds(
+            ZoneRead._presentValue(json, 'taken_seconds') as Object,
+          ),
     objectLabels: ZoneRead._presentValue(json, 'object_labels') == null
         ? const []
-        : ZoneRead._read_objectLabels(ZoneRead._presentValue(json, 'object_labels') as Object),
+        : ZoneRead._read_objectLabels(
+            ZoneRead._presentValue(json, 'object_labels') as Object,
+          ),
     background: ZoneRead._presentValue(json, 'background') == null
         ? false
-        : ZoneRead._read_background(ZoneRead._presentValue(json, 'background') as Object),
+        : ZoneRead._read_background(
+            ZoneRead._presentValue(json, 'background') as Object,
+          ),
     animals: ZoneRead._presentValue(json, 'animals') == null
         ? AnimalMode.record
-        : ZoneRead._read_animals(ZoneRead._presentValue(json, 'animals') as Object),
+        : ZoneRead._read_animals(
+            ZoneRead._presentValue(json, 'animals') as Object,
+          ),
     additionalProperties: ZoneRead._extras(json, 'additionalProperties') == null
         ? const {}
         : ZoneRead._readExtras(ZoneRead._extras(json, 'additionalProperties')),

@@ -7,7 +7,10 @@ part of 'imaging_capabilities.dart';
 // **************************************************************************
 
 ImagingCapabilities _$ImagingCapabilitiesFromJson(Map<String, dynamic> json) {
-  $checkKeys(json, disallowNullValues: const ['settings', 'encoders', 'motion']);
+  $checkKeys(
+    json,
+    disallowNullValues: const ['settings', 'encoders', 'motion'],
+  );
   return ImagingCapabilities(
     settings: ImagingCapabilities._presentValue(json, 'settings') == null
         ? const []
@@ -24,7 +27,8 @@ ImagingCapabilities _$ImagingCapabilitiesFromJson(Map<String, dynamic> json) {
         : ImagingCapabilities._read_motion(
             ImagingCapabilities._presentValue(json, 'motion') as Object,
           ),
-    additionalProperties: ImagingCapabilities._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        ImagingCapabilities._extras(json, 'additionalProperties') == null
         ? const {}
         : ImagingCapabilities._readExtras(
             ImagingCapabilities._extras(json, 'additionalProperties'),
@@ -32,7 +36,9 @@ ImagingCapabilities _$ImagingCapabilitiesFromJson(Map<String, dynamic> json) {
   );
 }
 
-Map<String, dynamic> _$ImagingCapabilitiesToJson(ImagingCapabilities instance) => <String, dynamic>{
+Map<String, dynamic> _$ImagingCapabilitiesToJson(
+  ImagingCapabilities instance,
+) => <String, dynamic>{
   'settings': ?ImagingCapabilities._write_settings(instance.settings),
   'encoders': ?ImagingCapabilities._write_encoders(instance.encoders),
   'motion': ?ImagingCapabilities._write_motion(instance.motion),

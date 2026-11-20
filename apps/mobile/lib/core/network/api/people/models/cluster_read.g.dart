@@ -49,21 +49,25 @@ ClusterRead _$ClusterReadFromJson(Map<String, dynamic> json) {
         .toList(),
     createdAt: ClusterRead._read_createdAt(json['created_at']),
     updatedAt: ClusterRead._read_updatedAt(json['updated_at']),
-    additionalProperties: ClusterRead._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        ClusterRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : ClusterRead._readExtras(ClusterRead._extras(json, 'additionalProperties')),
+        : ClusterRead._readExtras(
+            ClusterRead._extras(json, 'additionalProperties'),
+          ),
   );
 }
 
-Map<String, dynamic> _$ClusterReadToJson(ClusterRead instance) => <String, dynamic>{
-  'uuid': instance.uuid,
-  'number': ?ClusterRead._write_number(instance.number),
-  'label': instance.label,
-  'seen_count': ?ClusterRead._write_seenCount(instance.seenCount),
-  'first_seen_at': ?ClusterRead._write_firstSeenAt(instance.firstSeenAt),
-  'last_seen_at': ?ClusterRead._write_lastSeenAt(instance.lastSeenAt),
-  'samples': instance.samples.map((e) => e.toJson()).toList(),
-  'sightings': instance.sightings.map((e) => e.toJson()).toList(),
-  'created_at': ?ClusterRead._write_createdAt(instance.createdAt),
-  'updated_at': ?ClusterRead._write_updatedAt(instance.updatedAt),
-};
+Map<String, dynamic> _$ClusterReadToJson(ClusterRead instance) =>
+    <String, dynamic>{
+      'uuid': instance.uuid,
+      'number': ?ClusterRead._write_number(instance.number),
+      'label': instance.label,
+      'seen_count': ?ClusterRead._write_seenCount(instance.seenCount),
+      'first_seen_at': ?ClusterRead._write_firstSeenAt(instance.firstSeenAt),
+      'last_seen_at': ?ClusterRead._write_lastSeenAt(instance.lastSeenAt),
+      'samples': instance.samples.map((e) => e.toJson()).toList(),
+      'sightings': instance.sightings.map((e) => e.toJson()).toList(),
+      'created_at': ?ClusterRead._write_createdAt(instance.createdAt),
+      'updated_at': ?ClusterRead._write_updatedAt(instance.updatedAt),
+    };

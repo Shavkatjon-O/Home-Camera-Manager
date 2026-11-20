@@ -21,6 +21,9 @@ part 'site_read.g.dart';
 ///     role: The member's role there.
 ///     camera_count: Cameras registered at the site.
 ///     connector_count: Connectors paired to the site.
+///     event_retention_days: Days the site keeps its events by its own setting, None when it has none.
+///     effective_event_retention_days: Days its events are actually kept: the shortest of its own setting, the
+///         plan's limit and the server's retention.
 ///     created_at: When the site was added.
 ///     updated_at: When it last changed.
 @Freezed(fromJson: false, toJson: false)
@@ -82,6 +85,22 @@ class const SiteRead({
   required final int connectorCount,
 
   @JsonKey(
+    name: "event_retention_days",
+    includeIfNull: false,
+    fromJson: SiteRead._read_eventRetentionDays,
+    toJson: SiteRead._write_eventRetentionDays,
+  )
+  final int? eventRetentionDays,
+
+  @JsonKey(
+    name: "effective_event_retention_days",
+    includeIfNull: false,
+    fromJson: SiteRead._read_effectiveEventRetentionDays,
+    toJson: SiteRead._write_effectiveEventRetentionDays,
+  )
+  final int? effectiveEventRetentionDays,
+
+  @JsonKey(
     name: "created_at",
     required: true,
     disallowNullValue: true,
@@ -113,6 +132,8 @@ class const SiteRead({
     "role",
     "camera_count",
     "connector_count",
+    "event_retention_days",
+    "effective_event_retention_days",
     "created_at",
     "updated_at",
   };
@@ -129,6 +150,12 @@ class const SiteRead({
   static Object? _write_cameraCount(int value) => value;
   static int _read_connectorCount(Object? value) => _readJsonInteger(value);
   static Object? _write_connectorCount(int value) => value;
+  static int? _read_eventRetentionDays(Object? value) =>
+      value == null ? null : _readJsonInteger(value);
+  static Object? _write_eventRetentionDays(int? value) => value;
+  static int? _read_effectiveEventRetentionDays(Object? value) =>
+      value == null ? null : _readJsonInteger(value);
+  static Object? _write_effectiveEventRetentionDays(int? value) => value;
   static DateTime _read_createdAt(Object? value) => DateTime.parse(value as String).toUtc();
   static Object? _write_createdAt(DateTime value) => value.toUtc().toIso8601String();
   static DateTime _read_updatedAt(Object? value) => DateTime.parse(value as String).toUtc();

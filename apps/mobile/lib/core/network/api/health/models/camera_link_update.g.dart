@@ -11,13 +11,17 @@ CameraLinkUpdate _$CameraLinkUpdateFromJson(Map<String, dynamic> json) {
   return CameraLinkUpdate(
     parentUuid: json['parent_uuid'] as String?,
     link: CameraLinkUpdate._read_link(json['link']),
-    additionalProperties: CameraLinkUpdate._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        CameraLinkUpdate._extras(json, 'additionalProperties') == null
         ? const {}
-        : CameraLinkUpdate._readExtras(CameraLinkUpdate._extras(json, 'additionalProperties')),
+        : CameraLinkUpdate._readExtras(
+            CameraLinkUpdate._extras(json, 'additionalProperties'),
+          ),
   );
 }
 
-Map<String, dynamic> _$CameraLinkUpdateToJson(CameraLinkUpdate instance) => <String, dynamic>{
-  'parent_uuid': instance.parentUuid,
-  'link': ?CameraLinkUpdate._write_link(instance.link),
-};
+Map<String, dynamic> _$CameraLinkUpdateToJson(CameraLinkUpdate instance) =>
+    <String, dynamic>{
+      'parent_uuid': instance.parentUuid,
+      'link': ?CameraLinkUpdate._write_link(instance.link),
+    };

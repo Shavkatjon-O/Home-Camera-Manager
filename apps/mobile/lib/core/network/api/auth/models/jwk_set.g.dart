@@ -7,7 +7,11 @@ part of 'jwk_set.dart';
 // **************************************************************************
 
 JwkSet _$JwkSetFromJson(Map<String, dynamic> json) {
-  $checkKeys(json, requiredKeys: const ['keys'], disallowNullValues: const ['keys']);
+  $checkKeys(
+    json,
+    requiredKeys: const ['keys'],
+    disallowNullValues: const ['keys'],
+  );
   return JwkSet(
     keys: (json['keys'] as List<dynamic>)
         .map((e) => Jwk.fromJson(e as Map<String, dynamic>))

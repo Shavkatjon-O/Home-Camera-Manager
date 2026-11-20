@@ -15,13 +15,17 @@ ResolutionRead _$ResolutionReadFromJson(Map<String, dynamic> json) {
   return ResolutionRead(
     width: ResolutionRead._read_width(json['width']),
     height: ResolutionRead._read_height(json['height']),
-    additionalProperties: ResolutionRead._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        ResolutionRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : ResolutionRead._readExtras(ResolutionRead._extras(json, 'additionalProperties')),
+        : ResolutionRead._readExtras(
+            ResolutionRead._extras(json, 'additionalProperties'),
+          ),
   );
 }
 
-Map<String, dynamic> _$ResolutionReadToJson(ResolutionRead instance) => <String, dynamic>{
-  'width': ?ResolutionRead._write_width(instance.width),
-  'height': ?ResolutionRead._write_height(instance.height),
-};
+Map<String, dynamic> _$ResolutionReadToJson(ResolutionRead instance) =>
+    <String, dynamic>{
+      'width': ?ResolutionRead._write_width(instance.width),
+      'height': ?ResolutionRead._write_height(instance.height),
+    };

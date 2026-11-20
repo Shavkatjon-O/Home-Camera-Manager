@@ -7,15 +7,21 @@ part of 'verify_email.dart';
 // **************************************************************************
 
 VerifyEmail _$VerifyEmailFromJson(Map<String, dynamic> json) {
-  $checkKeys(json, requiredKeys: const ['token'], disallowNullValues: const ['token']);
+  $checkKeys(
+    json,
+    requiredKeys: const ['token'],
+    disallowNullValues: const ['token'],
+  );
   return VerifyEmail(
     token: json['token'] as String,
-    additionalProperties: VerifyEmail._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        VerifyEmail._extras(json, 'additionalProperties') == null
         ? const {}
-        : VerifyEmail._readExtras(VerifyEmail._extras(json, 'additionalProperties')),
+        : VerifyEmail._readExtras(
+            VerifyEmail._extras(json, 'additionalProperties'),
+          ),
   );
 }
 
-Map<String, dynamic> _$VerifyEmailToJson(VerifyEmail instance) => <String, dynamic>{
-  'token': instance.token,
-};
+Map<String, dynamic> _$VerifyEmailToJson(VerifyEmail instance) =>
+    <String, dynamic>{'token': instance.token};

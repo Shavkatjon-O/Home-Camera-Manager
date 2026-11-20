@@ -21,7 +21,13 @@ SampleRead _$SampleReadFromJson(Map<String, dynamic> json) {
       'camera_name',
       'view_name',
     ],
-    disallowNullValues: const ['uuid', 'source', 'quality', 'seen_at', 'has_crop'],
+    disallowNullValues: const [
+      'uuid',
+      'source',
+      'quality',
+      'seen_at',
+      'has_crop',
+    ],
   );
   return SampleRead(
     uuid: json['uuid'] as String,
@@ -34,21 +40,25 @@ SampleRead _$SampleReadFromJson(Map<String, dynamic> json) {
     cameraUuid: json['camera_uuid'] as String?,
     cameraName: json['camera_name'] as String?,
     viewName: json['view_name'] as String?,
-    additionalProperties: SampleRead._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        SampleRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : SampleRead._readExtras(SampleRead._extras(json, 'additionalProperties')),
+        : SampleRead._readExtras(
+            SampleRead._extras(json, 'additionalProperties'),
+          ),
   );
 }
 
-Map<String, dynamic> _$SampleReadToJson(SampleRead instance) => <String, dynamic>{
-  'uuid': instance.uuid,
-  'source': ?SampleRead._write_source(instance.source),
-  'quality': instance.quality,
-  'confidence': instance.confidence,
-  'seen_at': ?SampleRead._write_seenAt(instance.seenAt),
-  'has_crop': instance.hasCrop,
-  'event_uuid': instance.eventUuid,
-  'camera_uuid': instance.cameraUuid,
-  'camera_name': instance.cameraName,
-  'view_name': instance.viewName,
-};
+Map<String, dynamic> _$SampleReadToJson(SampleRead instance) =>
+    <String, dynamic>{
+      'uuid': instance.uuid,
+      'source': ?SampleRead._write_source(instance.source),
+      'quality': instance.quality,
+      'confidence': instance.confidence,
+      'seen_at': ?SampleRead._write_seenAt(instance.seenAt),
+      'has_crop': instance.hasCrop,
+      'event_uuid': instance.eventUuid,
+      'camera_uuid': instance.cameraUuid,
+      'camera_name': instance.cameraName,
+      'view_name': instance.viewName,
+    };

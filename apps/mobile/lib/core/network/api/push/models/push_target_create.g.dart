@@ -15,13 +15,17 @@ PushTargetCreate _$PushTargetCreateFromJson(Map<String, dynamic> json) {
   return PushTargetCreate(
     provider: PushTargetCreate._read_provider(json['provider']),
     token: json['token'] as String,
-    additionalProperties: PushTargetCreate._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        PushTargetCreate._extras(json, 'additionalProperties') == null
         ? const {}
-        : PushTargetCreate._readExtras(PushTargetCreate._extras(json, 'additionalProperties')),
+        : PushTargetCreate._readExtras(
+            PushTargetCreate._extras(json, 'additionalProperties'),
+          ),
   );
 }
 
-Map<String, dynamic> _$PushTargetCreateToJson(PushTargetCreate instance) => <String, dynamic>{
-  'provider': ?PushTargetCreate._write_provider(instance.provider),
-  'token': instance.token,
-};
+Map<String, dynamic> _$PushTargetCreateToJson(PushTargetCreate instance) =>
+    <String, dynamic>{
+      'provider': ?PushTargetCreate._write_provider(instance.provider),
+      'token': instance.token,
+    };

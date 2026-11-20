@@ -12,14 +12,18 @@ CameraStatus _$CameraStatusFromJson(Map<String, dynamic> json) {
     online: json['online'] as bool?,
     checkedAt: CameraStatus._read_checkedAt(json['checked_at']),
     error: json['error'] as String?,
-    additionalProperties: CameraStatus._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        CameraStatus._extras(json, 'additionalProperties') == null
         ? const {}
-        : CameraStatus._readExtras(CameraStatus._extras(json, 'additionalProperties')),
+        : CameraStatus._readExtras(
+            CameraStatus._extras(json, 'additionalProperties'),
+          ),
   );
 }
 
-Map<String, dynamic> _$CameraStatusToJson(CameraStatus instance) => <String, dynamic>{
-  'online': instance.online,
-  'checked_at': CameraStatus._write_checkedAt(instance.checkedAt),
-  'error': instance.error,
-};
+Map<String, dynamic> _$CameraStatusToJson(CameraStatus instance) =>
+    <String, dynamic>{
+      'online': instance.online,
+      'checked_at': CameraStatus._write_checkedAt(instance.checkedAt),
+      'error': instance.error,
+    };

@@ -14,6 +14,8 @@ part 'site_update.g.dart';
 ///     kind: Kind of place.
 ///     timezone: IANA time zone.
 ///     position: Order within the organisation.
+///     event_retention_days: Days to keep the site's events, up to the plan's limit; 0 goes back to the longest
+///         the plan and the server allow.
 @Freezed(fromJson: false, toJson: false)
 @JsonSerializable(explicitToJson: true, includeIfNull: true, disallowUnrecognizedKeys: false)
 class const SiteUpdate({
@@ -31,10 +33,24 @@ class const SiteUpdate({
   )
   final int? position,
 
+  @JsonKey(
+    name: "event_retention_days",
+    includeIfNull: false,
+    fromJson: SiteUpdate._read_eventRetentionDays,
+    toJson: SiteUpdate._write_eventRetentionDays,
+  )
+  final int? eventRetentionDays,
+
   @JsonKey(readValue: SiteUpdate._extras, fromJson: SiteUpdate._readExtras, includeToJson: false)
   final Map<String, Object?> additionalProperties = const {},
 }) with _$SiteUpdate {
-  static const _knownKeys = <String>{"name", "kind", "timezone", "position"};
+  static const _knownKeys = <String>{
+    "name",
+    "kind",
+    "timezone",
+    "position",
+    "event_retention_days",
+  };
 
   factory SiteUpdate.fromJson(Map<String, Object?> json) => _$SiteUpdateFromJson(json);
 
@@ -42,6 +58,9 @@ class const SiteUpdate({
   static Object? _write_kind(SiteKind? value) => value?.toJson();
   static int? _read_position(Object? value) => value == null ? null : _readJsonInteger(value);
   static Object? _write_position(int? value) => value;
+  static int? _read_eventRetentionDays(Object? value) =>
+      value == null ? null : _readJsonInteger(value);
+  static Object? _write_eventRetentionDays(int? value) => value;
   static Object? _extras(Map map, String _) => {
     for (final entry in map.entries)
       if (!_knownKeys.contains(entry.key)) entry.key as String: entry.value,

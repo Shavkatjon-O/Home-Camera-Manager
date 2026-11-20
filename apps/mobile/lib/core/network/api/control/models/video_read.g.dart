@@ -19,10 +19,15 @@ VideoRead _$VideoReadFromJson(Map<String, dynamic> json) {
     service: json['service'] as String?,
     encoders: VideoRead._presentValue(json, 'encoders') == null
         ? const []
-        : VideoRead._read_encoders(VideoRead._presentValue(json, 'encoders') as Object),
-    additionalProperties: VideoRead._extras(json, 'additionalProperties') == null
+        : VideoRead._read_encoders(
+            VideoRead._presentValue(json, 'encoders') as Object,
+          ),
+    additionalProperties:
+        VideoRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : VideoRead._readExtras(VideoRead._extras(json, 'additionalProperties')),
+        : VideoRead._readExtras(
+            VideoRead._extras(json, 'additionalProperties'),
+          ),
   );
 }
 

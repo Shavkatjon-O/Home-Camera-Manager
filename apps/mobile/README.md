@@ -72,7 +72,7 @@ dart run build_runner build
 flutter gen-l10n
 ```
 
-scripts/generate-api.sh regenerates lib/core/network/api from packages/contracts/openapi.json with swagger_parser, leaving out the connector device, TV, floor plan and discovery operations, and then runs build_runner. build_runner writes the freezed models, Riverpod providers and typed routes; flutter gen-l10n writes the English, Russian and Uzbek strings from the ARB files in lib/app/l10n.
+scripts/generate-api.sh regenerates lib/core/network/api from packages/contracts/openapi.json with swagger_parser, leaving out the connector device, TV, floor plan, discovery and platform admin operations, and then runs build_runner. build_runner writes the freezed models, Riverpod providers and typed routes; flutter gen-l10n writes the English, Russian and Uzbek strings from the ARB files in lib/app/l10n.
 
 ## Test
 

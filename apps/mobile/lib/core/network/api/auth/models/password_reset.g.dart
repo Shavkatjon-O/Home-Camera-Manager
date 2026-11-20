@@ -15,13 +15,14 @@ PasswordReset _$PasswordResetFromJson(Map<String, dynamic> json) {
   return PasswordReset(
     token: json['token'] as String,
     password: json['password'] as String,
-    additionalProperties: PasswordReset._extras(json, 'additionalProperties') == null
+    additionalProperties:
+        PasswordReset._extras(json, 'additionalProperties') == null
         ? const {}
-        : PasswordReset._readExtras(PasswordReset._extras(json, 'additionalProperties')),
+        : PasswordReset._readExtras(
+            PasswordReset._extras(json, 'additionalProperties'),
+          ),
   );
 }
 
-Map<String, dynamic> _$PasswordResetToJson(PasswordReset instance) => <String, dynamic>{
-  'token': instance.token,
-  'password': instance.password,
-};
+Map<String, dynamic> _$PasswordResetToJson(PasswordReset instance) =>
+    <String, dynamic>{'token': instance.token, 'password': instance.password};
