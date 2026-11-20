@@ -202,3 +202,16 @@ def test_a_person_box_inside_a_parked_car_is_ignored():
     walker = walk(5, "person", (0.2, 0.8), (0.7, 0.8), 3, offset=10)
     updates = run(rules, [(at, [car, *objects]) for at, objects in walker])
     assert [update.action for update in updates] == ["open"]
+
+
+def test_a_walker_partly_hidden_behind_a_parked_car_still_opens():
+    from app.rules.model import Box, Detection
+
+    rules = engine(zone(polygon=[[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]], labels=["person"]))
+    car = Detection(9, "car", 0.9, Box(0.3, 0.05, 0.45, 0.3))
+    frames = []
+    for step in range(31):
+        left = 0.25 + step * 0.006
+        frames.append((step / 5, [car, Detection(5, "person", 0.8, Box(left, 0.02, left + 0.03, 0.08))]))
+    updates = run(rules, frames)
+    assert actions(updates) == [("open", "intrusion")]
