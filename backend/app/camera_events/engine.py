@@ -20,6 +20,7 @@ from app.core.database import async_session_maker
 from app.health.probe import tcp_probe
 from app.health.targets import camera_address
 from app.models import Camera, Event
+from app.modules.analytics.retention import purge_expired_counts, purge_expired_journeys
 from app.modules.events.enums import EventKind, SourceState
 from app.modules.events.schemas import EventRead, EventSourceRead, event_read
 from app.modules.people.services import purge_expired_samples
@@ -85,13 +86,15 @@ def alive_check(host: str, port: int):
 class CameraEventsEngine:
     """Run one event subscriber per enabled camera and turn their messages into stored events.
 
-    A background task reconciles subscribers with the camera list, closes finished events and prunes events past
-    retention. Every stored change is published to the broker.
+    A background task reconciles subscribers with the camera list, closes finished events and prunes events, their
+    face samples and the analytics appearances and journeys past the event retention, and line counts past theirs.
+    Every stored change is published to the broker.
 
     Attributes:
         store: Snapshot storage.
         broker: Broker that receives every change for live listeners.
-        retention: How long events are kept.
+        retention: How long events, their face samples, appearances and journeys are kept.
+        counts_retention: How long line counts are kept.
         tracker: Open events.
         subscribers: Subscriber of each camera with the key of the endpoint it was created for.
         statuses: Latest source status of each camera.
@@ -104,17 +107,19 @@ class CameraEventsEngine:
         pruned_at: Monotonic time of the last prune, if any.
     """
 
-    def __init__(self, store: SnapshotStore, broker: EventBroker, retention_days: int):
+    def __init__(self, store: SnapshotStore, broker: EventBroker, retention_days: int, counts_retention_days: int):
         """Create an engine that is not started yet.
 
         Args:
             store: Snapshot storage.
             broker: Broker that receives every change.
-            retention_days: Number of days events are kept.
+            retention_days: Number of days events, their face samples, appearances and journeys are kept.
+            counts_retention_days: Number of days line counts are kept.
         """
         self.store = store
         self.broker = broker
         self.retention = timedelta(days=retention_days)
+        self.counts_retention = timedelta(days=counts_retention_days)
 
         self.tracker = EventTracker()
         self.subscribers: dict[UUID, tuple[tuple, CameraSubscriber]] = {}
@@ -177,6 +182,10 @@ class CameraEventsEngine:
                     await self.prune_faces()
                 except Exception:
                     logger.exception("Pruning old face samples failed")
+                try:
+                    await self.prune_analytics()
+                except Exception:
+                    logger.exception("Pruning old appearances, journeys and counts failed")
             await asyncio.sleep(TICK_SECONDS)
 
     def sources(self) -> list[EventSourceRead]:
@@ -625,9 +634,17 @@ class CameraEventsEngine:
         async with async_session_maker() as session:
             await purge_expired_samples(session, datetime.now(UTC), self.retention.days)
 
+    async def prune_analytics(self) -> None:
+        """Delete appearances and journeys older than the event retention and line counts older than theirs."""
+        now = datetime.now(UTC)
+        async with async_session_maker() as session:
+            await purge_expired_journeys(session, now, self.retention.days)
+            await purge_expired_counts(session, now, self.counts_retention.days)
+
 
 camera_events = CameraEventsEngine(
     SnapshotStore(settings.events_dir, settings.go2rtc_url),
     EventBroker(),
     settings.events_retention_days,
+    settings.counts_retention_days,
 )

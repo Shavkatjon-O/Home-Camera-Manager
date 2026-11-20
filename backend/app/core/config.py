@@ -31,7 +31,8 @@ class Settings(BaseSettings):
         health_interval_seconds: Interval of the network health probes.
         health_retention_days: Days health samples are kept.
         events_dir: Folder of event snapshots and clips.
-        events_retention_days: Days events are kept.
+        events_retention_days: Days events, their face samples and the analytics appearances and journeys are kept.
+        counts_retention_days: Days analytics line counts are kept.
         replay_enabled: Whether SD card playback is offered.
         device_onvif_port: ONVIF port of bridged V380 cameras.
         device_username: Device login of bridged V380 cameras.
@@ -71,6 +72,7 @@ class Settings(BaseSettings):
 
     events_dir: str = "/data/events"
     events_retention_days: int = 30
+    counts_retention_days: int = 400
 
     replay_enabled: bool = False
 
