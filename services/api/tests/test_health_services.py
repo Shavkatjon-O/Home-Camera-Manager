@@ -178,3 +178,12 @@ async def test_bucket_counts_group_by_date_bin_from_the_window_start():
     assert "date_bin(" in query
     assert "count(*) FILTER (WHERE health_samples.ok IS true)" in query
     assert "health_samples.created_at >=" in query
+
+
+def test_targets_carry_the_site_their_samples_belong_to():
+    router = NetworkDevice(
+        uuid=uuid4(), name="Router", host="192.168.1.1", probe_port=80, parent_uuid=None, site_id=4, organisation_id=2
+    )
+    camera = Camera(uuid=uuid4(), host="192.168.1.106", device_host=None, rtsp_port=554, site_id=5, organisation_id=2)
+    targets = build_targets([router], [camera], [])
+    assert [(target.site_id, target.organisation_id) for target in targets] == [(4, 2), (5, 2)]
