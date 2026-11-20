@@ -140,6 +140,28 @@ function readAdapters(root: string): Map<string, AdapterInfo> {
 }
 
 /**
+ * Read the pairing methods the API offers from its pairing catalog: id, title, description and requirements.
+ *
+ * @param path The catalog module.
+ * @returns One row per method, in the order the module defines them.
+ */
+function readPairingMethods(path: string): string[][] {
+  const source = readFileSync(path, "utf8")
+  const rows: string[][] = []
+  for (const found of source.matchAll(/PairingMethod\(\s*id=ID\.(\w+),([\s\S]*?)\n\s{12}\)/g)) {
+    const body = found[2]
+    const title = /title="([^"]*)"/.exec(body)?.[1] ?? ""
+    const description = /description="([^"]*)"/.exec(body)?.[1] ?? ""
+    const requires = /requires=\[([^\]]*)\]/.exec(body)?.[1] ?? ""
+    const needs = [...requires.matchAll(/"(\w+)"(?: if not direct else "(\w+)")?/g)].map((need) =>
+      need[2] ? `${words(need[1])} or ${words(need[2])} mode` : words(need[1]),
+    )
+    rows.push([found[1].toLowerCase(), title, description, list(needs)])
+  }
+  return rows
+}
+
+/**
  * Write the generated tables of the camera compatibility and pairing pages.
  *
  * @returns Number of catalog entries and adapters, for the build log.
@@ -252,6 +274,17 @@ export function generateCameras(): string {
       ),
     ].join("\n"),
   )
+  const pairingCatalog = locate(SOURCES.pairingCatalog)
+  if (pairingCatalog) {
+    writeGenerated(
+      "cameras/pairing-methods.md",
+      [
+        `Generated from ${escape(fromRoot(pairingCatalog))}.`,
+        "",
+        table(["Method", "Shown as", "What it does", "Needs"], readPairingMethods(pairingCatalog)),
+      ].join("\n"),
+    )
+  }
   writeGenerated(
     "cameras/label-formats.md",
     [

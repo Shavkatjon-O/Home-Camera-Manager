@@ -33,6 +33,11 @@ export const SOURCES = {
   envExample: { name: "env-example", variable: "DOCS_ENV_EXAMPLE", fallback: ".env.example" },
   envDevExample: { name: "env-dev-example", variable: "DOCS_ENV_DEV_EXAMPLE", fallback: ".env.dev.example" },
   architecture: { name: "architecture", variable: "DOCS_ARCHITECTURE", fallback: "docs/architecture.md" },
+  pairingCatalog: {
+    name: "pairing-catalog",
+    variable: "DOCS_PAIRING_CATALOG",
+    fallback: "services/api/app/modules/devices/services/pairing_catalog.py",
+  },
   contributing: { name: "contributing", variable: "DOCS_CONTRIBUTING", fallback: "CONTRIBUTING.md" },
   contractSchemas: { name: "contract-schemas", variable: "DOCS_CONTRACT_SCHEMAS", fallback: "packages/contracts/schemas" },
 } satisfies Record<string, SourcePath>
