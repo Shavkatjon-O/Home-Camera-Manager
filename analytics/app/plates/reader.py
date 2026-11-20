@@ -178,27 +178,6 @@ def levelled(picture: np.ndarray, box: PlateBox, settings: PlateSettings) -> lis
     return result
 
 
-def widen(box: PlateBox, settings: PlateSettings, width: int, height: int) -> tuple[int, int, int, int]:
-    """Widen a plate box and clip it to the picture.
-
-    Args:
-        box: Plate box in picture pixels.
-        settings: Reading settings.
-        width: Picture width.
-        height: Picture height.
-
-    Returns:
-        Left, top, right and bottom in whole pixels.
-    """
-    extra_x = (box.right - box.left) * settings.widen_x
-    extra_y = (box.bottom - box.top) * settings.widen_y
-    left = max(0, int(box.left - extra_x))
-    top = max(0, int(box.top - extra_y))
-    right = min(width, int(np.ceil(box.right + extra_x)))
-    bottom = min(height, int(np.ceil(box.bottom + extra_y)))
-    return left, top, right, bottom
-
-
 class PlateReader:
     """Finds and reads the plate of vehicle pictures.
 

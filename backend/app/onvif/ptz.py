@@ -5,7 +5,7 @@ from xml.etree.ElementTree import Element
 from xml.sax.saxutils import escape
 
 from app.onvif.media import whole
-from app.onvif.soap import child, descendant, descendant_text, descendants, text
+from app.onvif.soap import child, descendant, descendants, text
 
 
 @dataclass(frozen=True)
@@ -68,18 +68,6 @@ def parse_node(body: Element) -> NodeInfo:
         max_presets=whole(text(child(node, "MaximumNumberOfPresets"))),
         home_supported=None if home is None else home.lower() == "true",
     )
-
-
-def parse_preset_token(body: Element) -> str | None:
-    """Read the preset token from a SetPreset response.
-
-    Args:
-        body: SOAP body of the response.
-
-    Returns:
-        The token, or None when the response has none.
-    """
-    return descendant_text(body, "PresetToken")
 
 
 def profile(token: str) -> str:

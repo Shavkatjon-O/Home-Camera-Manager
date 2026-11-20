@@ -22,7 +22,6 @@ logger = logging.getLogger(__name__)
 
 DETECTOR_NAME = "scrfd-10g"
 EMBEDDER_NAME = "glintr100"
-EMBEDDER_SIZE = 112
 STRIDES = (8, 16, 32)
 KINDS = {1: "score", 4: "box", 10: "kps"}
 HASH_CHUNK = 1 << 20

@@ -277,14 +277,3 @@ class TrackBook:
             for track_id in identity.tracks:
                 self.by_track.pop(track_id, None)
         self.memories = [memory for memory in self.memories if memory.until > now]
-
-    def lost(self, now: float) -> list[Identity]:
-        """Return identities not seen in the frame at the given time.
-
-        Args:
-            now: Time of the latest frame.
-
-        Returns:
-            Identities whose last sighting is older than now.
-        """
-        return [identity for identity in self.identities.values() if identity.last_seen < now]

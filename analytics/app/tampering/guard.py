@@ -2,10 +2,10 @@
 
 The guard samples a view's small grey keyframe band at most once per interval and compares it with what the view
 normally shows. It keeps one learned reference per lighting regime, because a camera switching to infrared at dusk
-changes brightness, contrast and noise at once while the scene stays where it is. A regime change is known from a
-night hint when the caller has one, such as the chroma of a colour thumbnail, which is zero under infrared, or is
-inferred from a sudden brightness step that keeps the picture structured. Every regime change starts a short grace
-during which no condition can start.
+changes brightness, contrast and noise at once while the scene stays where it is. The service's thumbnails are grey,
+so a regime change is inferred from a sudden brightness step that keeps the picture structured; a caller with colour
+pictures can pass a night hint instead, which night_from_chroma reads from their chroma, zero under infrared. Every
+regime change starts a short grace during which no condition can start.
 
 - covered: the picture turns flat, its contrast far below what the view shows at that brightness. On a view with
   little structure, such as a blank wall, a large brightness change must come with it.
@@ -533,13 +533,3 @@ class TamperGuard:
             "mode": mode,
             "grace": self.grace,
         }
-
-    def rebase(self) -> None:
-        """Forget everything learned, for instance after the owner moved a camera on purpose."""
-        self.regimes = []
-        self.current = None
-        self.grace = 0
-        self.previous_mean = None
-        self.active.clear()
-        self.streaks = dict.fromkeys(CONDITIONS, 0)
-        self.clears = dict.fromkeys(CONDITIONS, 0)

@@ -17,7 +17,6 @@ from app.rules.model import Box
 KEYPOINTS = 17
 DEFAULT_ASPECT = 16 / 9
 
-NOSE = 0
 LEFT_SHOULDER = 5
 RIGHT_SHOULDER = 6
 LEFT_HIP = 11

@@ -35,7 +35,6 @@ PRUNE_SECONDS = 3600.0
 PRUNE_BATCH = 500
 
 STORAGE_REPEAT = timedelta(hours=24)
-MESSAGE_HISTORY = 20
 
 SNAPSHOT_KINDS = {EventKind.MOTION, EventKind.PERSON, EventKind.VEHICLE, EventKind.TAMPER}
 QUIET_KINDS = {EventKind.MOTION.value}
@@ -200,17 +199,6 @@ class CameraEventsEngine:
         """
         ordered = sorted(self.statuses.values(), key=lambda item: (item.position, item.camera_name))
         return [source_read(status) for status in ordered]
-
-    def open_kinds(self) -> dict[UUID, list[str]]:
-        """List the kinds of the events that are open now.
-
-        Returns:
-            The kinds of open events by camera id.
-        """
-        result: dict[UUID, list[str]] = {}
-        for event in self.tracker.open_events():
-            result.setdefault(event.camera_uuid, []).append(event.kind)
-        return result
 
     def set_status(self, status: SourceStatus) -> None:
         """Store a source status and publish it when it changed.

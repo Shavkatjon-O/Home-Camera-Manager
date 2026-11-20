@@ -32,8 +32,6 @@ REBOOT_TOPIC = "monitoring/operatingtime/lastreboot"
 
 CONDITION_WORDS = ("imagetoodark", "imagetoobright", "imagetooblurry", "signalloss")
 
-EVENT_KINDS = (EventKind.MOTION, EventKind.PERSON, EventKind.VEHICLE, EventKind.TAMPER, EventKind.STORAGE)
-
 
 @dataclass(frozen=True)
 class Signal:

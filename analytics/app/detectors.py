@@ -24,20 +24,6 @@ COCO_NAMES = {
     33: "suitcase",
 }
 
-LABELS = (
-    "person",
-    "bicycle",
-    "car",
-    "motorcycle",
-    "bus",
-    "truck",
-    "bird",
-    "cat",
-    "dog",
-    "backpack",
-    "handbag",
-    "suitcase",
-)
 
 PARSER_LIBRARY = "/opt/analytics/lib/libnvds_rfdetr_parser.so"
 DISABLED_THRESHOLD = 1.1
@@ -101,8 +87,6 @@ class Detector:
         return self.thresholds.get(label, default)
 
 
-RF_DETR_CLASSES = {class_id: name for class_id, name in COCO_NAMES.items()}
-
 DETECTORS: dict[str, Detector] = {
     "rfdetr-nano": Detector(
         name="rfdetr-nano",
@@ -111,7 +95,7 @@ DETECTORS: dict[str, Detector] = {
         width=672,
         height=384,
         num_classes=91,
-        classes=RF_DETR_CLASSES,
+        classes=COCO_NAMES,
         thresholds={"person": 0.4},
         parser="NvDsInferParseRfDetr",
         nms_iou=0.5,
@@ -124,7 +108,7 @@ DETECTORS: dict[str, Detector] = {
         width=896,
         height=512,
         num_classes=91,
-        classes=RF_DETR_CLASSES,
+        classes=COCO_NAMES,
         thresholds={"person": 0.4},
         parser="NvDsInferParseRfDetr",
         nms_iou=0.5,
@@ -137,7 +121,7 @@ DETECTORS: dict[str, Detector] = {
         width=1024,
         height=576,
         num_classes=91,
-        classes=RF_DETR_CLASSES,
+        classes=COCO_NAMES,
         thresholds={"person": 0.45},
         parser="NvDsInferParseRfDetr",
         nms_iou=0.5,
@@ -150,7 +134,7 @@ DETECTORS: dict[str, Detector] = {
         width=1248,
         height=704,
         num_classes=91,
-        classes=RF_DETR_CLASSES,
+        classes=COCO_NAMES,
         thresholds={"person": 0.4},
         parser="NvDsInferParseRfDetr",
         nms_iou=0.5,

@@ -24,16 +24,6 @@ class ServiceError(Exception):
         self.message = message
 
 
-class BadRequest(ServiceError):
-    """The request is malformed.
-
-    Attributes:
-        status_code: HTTP status 400.
-    """
-
-    status_code = 400
-
-
 class Unauthorized(ServiceError):
     """The request has no valid credentials.
 

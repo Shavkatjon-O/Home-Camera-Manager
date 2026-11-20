@@ -51,8 +51,3 @@ class EventBroker:
                 queue.put_nowait({"type": "overflow", "data": {}})
                 continue
             queue.put_nowait(message)
-
-    @property
-    def listeners(self) -> int:
-        """Return the number of listeners currently subscribed."""
-        return len(self.queues)

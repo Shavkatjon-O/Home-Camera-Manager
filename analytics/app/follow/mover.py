@@ -286,9 +286,3 @@ class RecordingMover:
             if self.segments:
                 self.raw.stop()
         self.segments = []
-
-    @property
-    def away_seconds(self) -> float:
-        """float: Total seconds of recorded movement since the start position."""
-        running = self.clock() - self.current[2] if self.current else 0.0
-        return sum(segment.seconds for segment in self.segments) + running
