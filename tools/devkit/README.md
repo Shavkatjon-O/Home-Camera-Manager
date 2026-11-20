@@ -49,7 +49,8 @@ scripts/devkit.sh seed creates:
 - the Demo organisation with the sites Home and Store;
 - the members owner, admin, operator and viewer at <role>@SSS_DEMO_EMAIL_DOMAIN, with the password SSS_DEMO_PASSWORD from .env.dev; the operator reaches only Home and the viewer only Store;
 - the store camera, added by address, and the home cameras, added through the connector, which the seed pairs to Home when it waits for pairing;
-- for every camera, an analytics view with an Entrance zone that alerts on people and a Door line that counts people both ways;
+- for every camera, an enabled analytics view with an Entrance zone that alerts on people and a Door line that counts people both ways, which the analytics service runs once the analytics profile is started;
+- a Store switch network device, at the store LAN address of go2rtc, with the store camera linked to it, so the store's health page has a probed device; the home cameras' health comes from the connector's heartbeats;
 - a week of events with snapshots taken from the cameras, and a week of minute line counts.
 
 Running it again creates nothing that already exists.
@@ -66,4 +67,4 @@ The seed's tests run with the API suite.
 
 ## Configuration
 
-.env.dev.example lists the variables of the kit. The camera takes its settings from CAMERA_ environment variables, listed in camera/README.md. The seed also reads DEVKIT_HOME_NAMES and DEVKIT_STORE_NAMES, comma-separated address=name pairs.
+.env.dev.example lists the variables of the kit. The camera takes its settings from CAMERA_ environment variables, listed in camera/README.md. The seed also reads DEVKIT_HOME_NAMES and DEVKIT_STORE_NAMES, comma-separated address=name pairs, and DEVKIT_STORE_SWITCH, the address of the store's stand-in switch. SSS_RATE_LIMIT_CREDENTIALS and SSS_RATE_LIMIT_MAIL are generous in the kit, because every app and test on the machine shares one client address.

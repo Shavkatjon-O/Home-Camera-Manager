@@ -37,6 +37,8 @@ class Settings(BaseSettings):
         verify_token_hours: Hours an email confirmation link stays valid.
         reset_token_minutes: Minutes a password reset link stays valid.
         invitation_days: Days an invitation stays valid.
+        rate_limit_credentials: Sign-in, token and verification attempts one client address may make a minute.
+        rate_limit_mail: Requests that send mail, such as sign-ups, one client address may make a minute.
         smtp_host: SMTP server of outgoing mail; empty logs mail instead of sending it.
         smtp_port: SMTP port.
         smtp_username: SMTP login, empty for none.
@@ -82,6 +84,7 @@ class Settings(BaseSettings):
         telegram_bot_username: Username of that bot, read from Telegram at start when empty.
         telegram_api_url: Base address of the Telegram Bot API, replaced by a fake in tests and the kit.
         telegram_webhook_secret: Secret Telegram sends with every webhook call, required for webhook mode.
+        telegram_webhook_url: Address Telegram delivers updates to; empty uses the public address.
         telegram_polling: Whether to poll Telegram for updates instead of receiving them by webhook.
         telegram_link_minutes: Minutes a chat link stays valid.
     """
@@ -117,6 +120,9 @@ class Settings(BaseSettings):
     verify_token_hours: int = 48
     reset_token_minutes: int = 60
     invitation_days: int = 7
+
+    rate_limit_credentials: int = 20
+    rate_limit_mail: int = 5
 
     smtp_host: str = ""
     smtp_port: int = 587
@@ -179,6 +185,7 @@ class Settings(BaseSettings):
     telegram_bot_username: str = ""
     telegram_api_url: str = "https://api.telegram.org"
     telegram_webhook_secret: str = ""
+    telegram_webhook_url: str = ""
     telegram_polling: bool = False
     telegram_link_minutes: int = 30
 

@@ -137,9 +137,8 @@ class TelegramBot:
                 await self.client.delete_webhook()
                 self.task = asyncio.create_task(self.poll(), name="telegram-poll")
             elif settings.telegram_webhook_secret:
-                await self.client.set_webhook(
-                    f"{settings.public_url.rstrip('/')}/api/v1/telegram/webhook", settings.telegram_webhook_secret
-                )
+                url = settings.telegram_webhook_url or f"{settings.public_url.rstrip('/')}/api/v1/telegram/webhook"
+                await self.client.set_webhook(url, settings.telegram_webhook_secret)
             else:
                 logger.warning("SSS_TELEGRAM_WEBHOOK_SECRET is empty, so Telegram updates are not received")
         except TelegramError as exc:

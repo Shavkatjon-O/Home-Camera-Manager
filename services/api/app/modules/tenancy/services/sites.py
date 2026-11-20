@@ -7,10 +7,11 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.context import UserContext
-from app.core.exceptions import Forbidden
+from app.core.config import settings
+from app.core.exceptions import Forbidden, Unprocessable
 from app.models import Camera, Connector, Membership, Organisation, Site
 from app.modules.billing.enums import Limit
-from app.modules.billing.services.entitlements import require_capacity
+from app.modules.billing.services.entitlements import entitlements_for, require_capacity
 from app.modules.tenancy.enums import Role, SiteKind
 from app.modules.tenancy.schemas import SiteCreate, SiteList, SiteRead, SiteUpdate
 from app.modules.tenancy.services.access import (
@@ -21,7 +22,7 @@ from app.modules.tenancy.services.access import (
 )
 from app.modules.tenancy.services.memberships import delete_site_rows
 
-__all__ = ["SiteService", "site_counts", "site_reads"]
+__all__ = ["SiteService", "effective_retention", "site_counts", "site_reads"]
 
 
 async def site_counts(session: AsyncSession, site_ids: list[int]) -> tuple[dict[int, int], dict[int, int]]:
@@ -49,6 +50,19 @@ async def site_counts(session: AsyncSession, site_ids: list[int]) -> tuple[dict[
     return dict(cameras.all()), dict(connectors.all())
 
 
+def effective_retention(own: int | None, plan: int | None) -> int:
+    """Return how long a site's events are kept.
+
+    Args:
+        own: The site's own setting, if any.
+        plan: The plan's limit, None for unlimited.
+
+    Returns:
+        Days: the shortest of the site's setting, the plan's limit and the server's retention.
+    """
+    return min(value for value in (own, plan, settings.events_retention_days) if value)
+
+
 async def site_reads(session: AsyncSession, rows: list[tuple[Site, Membership, Organisation]]) -> list[SiteRead]:
     """Build the API views of sites with their counts.
 
@@ -60,6 +74,12 @@ async def site_reads(session: AsyncSession, rows: list[tuple[Site, Membership, O
         The sites in the given order.
     """
     cameras, connectors = await site_counts(session, [site.id for site, _, _ in rows])
+    limits = {}
+    for _, _, organisation in rows:
+        if organisation.id not in limits:
+            limits[organisation.id] = (await entitlements_for(session, organisation.id)).limit(
+                Limit.EVENT_RETENTION_DAYS
+            )
     return [
         SiteRead(
             uuid=site.uuid,
@@ -72,6 +92,8 @@ async def site_reads(session: AsyncSession, rows: list[tuple[Site, Membership, O
             role=Role(membership.role),
             camera_count=cameras.get(site.id, 0),
             connector_count=connectors.get(site.id, 0),
+            event_retention_days=site.event_retention_days,
+            effective_event_retention_days=effective_retention(site.event_retention_days, limits[organisation.id]),
             created_at=site.created_at,
             updated_at=site.updated_at,
         )
@@ -191,10 +213,19 @@ class SiteService:
 
         Returns:
             The site.
+
+        Raises:
+            Unprocessable: The event retention asked for is longer than the plan allows.
         """
         site, membership, organisation = await self.row(site_uuid)
         check_role(Role(membership.role), Role.ADMIN)
         changes = payload.model_dump(exclude_unset=True, exclude_none=True)
+        retention = changes.pop("event_retention_days", None)
+        if retention is not None:
+            cap = (await entitlements_for(self.session, organisation.id)).limit(Limit.EVENT_RETENTION_DAYS)
+            if cap is not None and retention > cap:
+                raise Unprocessable("retention_over_plan", f"The plan keeps events for at most {cap} days")
+            site.event_retention_days = retention or None
         for field, value in changes.items():
             setattr(site, field, value.value if isinstance(value, SiteKind) else value)
         await self.session.commit()

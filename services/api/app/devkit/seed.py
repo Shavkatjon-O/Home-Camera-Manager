@@ -29,9 +29,11 @@ from app.models import (
     AnalyticsView,
     AnalyticsZone,
     Camera,
+    CameraLink,
     Event,
     Membership,
     MembershipSite,
+    NetworkDevice,
     Organisation,
     Site,
     User,
@@ -83,6 +85,7 @@ class DemoSettings:
         connector_url: Address of the simulated site's connector agent.
         home_names: Names of the home cameras by address.
         store_names: Names of the store cameras by address, which the API reaches directly.
+        store_switch: Address on the store LAN that stands in for the store's switch.
     """
 
     password: str = field(default_factory=lambda: os.environ.get("SSS_DEMO_PASSWORD", ""))
@@ -100,6 +103,7 @@ class DemoSettings:
     store_names: dict[str, str] = field(
         default_factory=lambda: parse_names(os.environ.get("DEVKIT_STORE_NAMES", "172.31.252.11=Counter"))
     )
+    store_switch: str = field(default_factory=lambda: os.environ.get("DEVKIT_STORE_SWITCH", "172.31.252.2"))
 
     def email(self, role: str) -> str:
         """Return the address of a demo member.
@@ -122,6 +126,7 @@ class SeedReport:
         sites: Sites created.
         cameras: Cameras added through the API.
         views: Analytics views created.
+        devices: Network devices created.
         events: Events written.
         counts: Count rows written.
     """
@@ -130,6 +135,7 @@ class SeedReport:
     sites: int = 0
     cameras: int = 0
     views: int = 0
+    devices: int = 0
     events: int = 0
     counts: int = 0
 
@@ -401,8 +407,8 @@ async def add_home_site_cameras(api: ApiClient, demo: DemoSettings, site: Site, 
 async def ensure_view(session: AsyncSession, camera: Camera, report: SeedReport) -> tuple[AnalyticsView, AnalyticsLine]:
     """Give a camera an analytics view with an entrance zone and a door line unless it has a view.
 
-    The view stays disabled, since the development kit runs no analytics engine by default; the zone alerts on
-    people at any time and the line counts people both ways.
+    The view is enabled, so the analytics service runs it when the kit starts the analytics profile; the zone alerts
+    on people at any time and the line counts people both ways. A view the seed created before is enabled again.
 
     Args:
         session: Database session without a scope.
@@ -423,7 +429,7 @@ async def ensure_view(session: AsyncSession, camera: Camera, report: SeedReport)
             lens=0,
             name=camera.name,
             profile="perimeter",
-            enabled=False,
+            enabled=True,
         )
         session.add(view)
         await session.flush()
@@ -453,8 +459,60 @@ async def ensure_view(session: AsyncSession, camera: Camera, report: SeedReport)
         )
         await session.flush()
         report.views += 1
+    elif not view.enabled:
+        seeded = await session.scalar(
+            select(AnalyticsZone.id).where(AnalyticsZone.view_id == view.id, AnalyticsZone.name == "Entrance").limit(1)
+        )
+        if seeded is not None:
+            view.enabled = True
     line = await session.scalar(select(AnalyticsLine).where(AnalyticsLine.view_id == view.id).limit(1))
     return view, line
+
+
+async def ensure_store_switch(session: AsyncSession, site: Site, demo: DemoSettings, report: SeedReport) -> None:
+    """Give the store a network device the API can probe, with its camera linked to it, unless it has one.
+
+    The store LAN's go2rtc address stands in for the switch, so the store's health page has a real device and a
+    camera behind it.
+
+    Args:
+        session: Database session without a scope.
+        site: The store site.
+        demo: Seed settings.
+        report: Report to count in.
+    """
+    device = await session.scalar(
+        select(NetworkDevice).where(NetworkDevice.site_id == site.id, NetworkDevice.name == "Store switch")
+    )
+    if device is None:
+        device = NetworkDevice(
+            site_id=site.id,
+            organisation_id=site.organisation_id,
+            name="Store switch",
+            kind="switch",
+            host=demo.store_switch,
+            probe_port=1984,
+            enabled=True,
+        )
+        session.add(device)
+        await session.flush()
+        report.devices += 1
+    cameras = await session.scalars(
+        select(Camera).where(Camera.site_id == site.id, Camera.deleted_at.is_(None), Camera.connector_id.is_(None))
+    )
+    for camera in cameras:
+        linked = await session.scalar(select(CameraLink.id).where(CameraLink.camera_uuid == camera.uuid))
+        if linked is None:
+            session.add(
+                CameraLink(
+                    site_id=site.id,
+                    organisation_id=site.organisation_id,
+                    camera_uuid=camera.uuid,
+                    parent_uuid=device.uuid,
+                    link="cable",
+                )
+            )
+    await session.flush()
 
 
 async def fetch_frame(stream: str, width: int | None = None) -> bytes | None:
@@ -625,6 +683,7 @@ async def seed(demo: DemoSettings) -> SeedReport:
                 select(Camera).where(Camera.site_id.in_(site_ids), Camera.deleted_at.is_(None)).order_by(Camera.id)
             )
         )
+        await ensure_store_switch(session, sites["Store"], demo, report)
         for camera in cameras:
             view, line = await ensure_view(session, camera, report)
             await ensure_events(session, camera, view, rng, report)
@@ -642,7 +701,8 @@ def main() -> None:
     report = asyncio.run(seed(DemoSettings()))
     print(
         f"Demo seeded: {report.users} members, {report.sites} sites, {report.cameras} cameras, "
-        f"{report.views} views, {report.events} events, {report.counts} count rows created"
+        f"{report.views} views, {report.devices} network devices, {report.events} events, "
+        f"{report.counts} count rows created"
     )
 
 

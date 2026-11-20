@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import Unauthorized
 from app.core.security import hash_token
-from app.models import Camera, Connector, DiscoveredCamera
+from app.models import Camera, Connector, DiscoveredCamera, HealthSample
 from app.modules.devices.enums import CameraBrand, FoundBy
 from app.modules.devices.schemas import (
     ConnectorCameraConfig,
@@ -121,6 +121,9 @@ class ConnectorDeviceService:
     async def heartbeat(self, report: HeartbeatIn, client: str | None) -> HeartbeatAck:
         """Record a heartbeat: version, address, ports, health and camera reachability.
 
+        Each camera's reachability is also stored as a health sample, since the backend cannot probe cameras on the
+        connector's network itself.
+
         In direct mode the connector is reached at the address it reports, or else at the heartbeat's source
         address, unless a member pinned an address.
 
@@ -154,6 +157,17 @@ class ConnectorDeviceService:
                 camera.host,
                 camera.rtsp_port,
                 ProbeResult(online=item.online, checked_at=now, error=item.error),
+            )
+            self.session.add(
+                HealthSample(
+                    target_kind="camera",
+                    target_uuid=camera.uuid,
+                    ok=item.online,
+                    latency_ms=None,
+                    error=(item.error or None) and item.error[:100],
+                    site_id=camera.site_id,
+                    organisation_id=camera.organisation_id,
+                )
             )
         requested = connector.discovery_requested_at
         wanted = requested is not None and (connector.discovered_at is None or connector.discovered_at < requested)

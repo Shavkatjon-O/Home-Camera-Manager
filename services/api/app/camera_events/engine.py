@@ -7,7 +7,7 @@ from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, or_, select, update
 
 from app.camera_events.broker import EventBroker
 from app.camera_events.snapshots import SnapshotStore
@@ -18,11 +18,14 @@ from app.core.config import settings
 from app.core.database import async_session_maker
 from app.health.probe import tcp_probe
 from app.health.targets import camera_address
-from app.models import Camera, Event
+from app.models import Camera, Event, Site
 from app.modules.analytics.retention import purge_expired_counts, purge_expired_journeys
+from app.modules.billing.enums import Limit
+from app.modules.billing.services.entitlements import entitlements_for
 from app.modules.events.enums import EventKind, SourceState
 from app.modules.events.schemas import EventRead, EventSourceRead, event_read
 from app.modules.investigation.services.retention import purge_expired_samples
+from app.modules.tenancy.services.sites import effective_retention
 from app.onvif.endpoints import device_endpoint, endpoint_key
 from app.streaming.names import MAIN, SUB, stream_name
 from camera_adapters.onvif.notifications import Notification, parse_time
@@ -600,9 +603,46 @@ class CameraEventsEngine:
         read = event_read(row, self.names.get(row.camera_uuid), datetime.now(UTC))
         self.broker.publish("event", read.model_dump(mode="json"))
 
+    async def cutoffs(self, session, now: datetime) -> tuple[dict[int, datetime], dict[int, datetime]]:
+        """Work out how far back each site keeps its events and its clips.
+
+        A site keeps events for the shortest of its own setting, its plan's event retention and the server's
+        retention, and clips for the shorter of that and its plan's clip retention.
+
+        Args:
+            session: Database session without a scope.
+            now: Current time.
+
+        Returns:
+            Event cutoff and clip cutoff by site id.
+        """
+        sites = (
+            await session.execute(
+                select(Site.id, Site.organisation_id, Site.event_retention_days).where(Site.deleted_at.is_(None))
+            )
+        ).all()
+        plans = {}
+        events, clips = {}, {}
+        for site_id, organisation_id, own in sites:
+            if organisation_id not in plans:
+                plans[organisation_id] = await entitlements_for(session, organisation_id)
+            granted = plans[organisation_id]
+            days = effective_retention(own, granted.limit(Limit.EVENT_RETENTION_DAYS))
+            clip_days = min(days, granted.limit(Limit.CLIP_RETENTION_DAYS) or days)
+            events[site_id] = now - timedelta(days=days)
+            clips[site_id] = now - timedelta(days=clip_days)
+        return events, clips
+
     async def prune(self) -> None:
-        """Delete events older than the retention in batches, together with their snapshot and clip files."""
-        cutoff = datetime.now(UTC) - self.retention
+        """Delete events past their site's retention in batches, with their files, and clips past theirs."""
+        now = datetime.now(UTC)
+        default = now - self.retention
+        async with async_session_maker() as session:
+            events, clips = await self.cutoffs(session, now)
+        expired = or_(
+            Event.site_id.is_(None) & (Event.started_at < default),
+            *[(Event.site_id == site_id) & (Event.started_at < cutoff) for site_id, cutoff in events.items()],
+        )
         total = 0
         while True:
             async with self.lock:
@@ -610,7 +650,7 @@ class CameraEventsEngine:
                     rows = (
                         await session.execute(
                             select(Event.id, Event.snapshot_path, Event.thumbnail_path, Event.clip_path)
-                            .where(Event.started_at < cutoff)
+                            .where(expired)
                             .limit(PRUNE_BATCH)
                         )
                     ).all()
@@ -624,7 +664,39 @@ class CameraEventsEngine:
             if len(rows) < PRUNE_BATCH:
                 break
         if total:
-            logger.info("Pruned %d events older than %d days", total, self.retention.days)
+            logger.info("Pruned %d events past their retention", total)
+        await self.prune_clips(clips, events)
+
+    async def prune_clips(self, clips: dict[int, datetime], events: dict[int, datetime]) -> None:
+        """Delete the clips of events that outlive their site's clip retention, keeping the events.
+
+        Args:
+            clips: Clip cutoff by site id.
+            events: Event cutoff by site id; sites whose clips go with their events are skipped.
+        """
+        shorter = {site_id: cutoff for site_id, cutoff in clips.items() if cutoff > events.get(site_id, cutoff)}
+        if not shorter:
+            return
+        expired = or_(
+            *[(Event.site_id == site_id) & (Event.started_at < cutoff) for site_id, cutoff in shorter.items()]
+        )
+        async with self.lock:
+            async with async_session_maker() as session:
+                rows = (
+                    await session.execute(
+                        select(Event.id, Event.clip_path)
+                        .where(Event.clip_path.is_not(None), expired)
+                        .limit(PRUNE_BATCH)
+                    )
+                ).all()
+                if not rows:
+                    return
+                await session.execute(
+                    update(Event).where(Event.id.in_([row.id for row in rows])).values(clip_path=None)
+                )
+                await session.commit()
+        await self.store.remove([row.clip_path for row in rows])
+        logger.info("Removed %d clips past their retention", len(rows))
 
     async def prune_faces(self) -> None:
         """Delete face samples seen by the cameras before the retention, together with their crops."""
