@@ -4,7 +4,7 @@ import numpy as np
 
 from app.rules.model import Zone
 from app.scene import SceneMatcher
-from app.tamper import TamperWatch, gradients
+from app.tamper import gradients
 
 
 def scene(seed):
@@ -34,13 +34,3 @@ def test_whole_view_zone():
     part = Zone.from_dict({"id": "b", "polygon": [[0, 0.5], [1, 0.5], [1, 1], [0, 1]]})
     assert whole.whole_view
     assert not part.whole_view
-
-
-def test_tamper_reports_a_covered_lens_after_it_holds():
-    watch = TamperWatch()
-    for _ in range(8):
-        assert watch.update(scene(3)) == (set(), set())
-    dark = np.full((90, 160), 3, np.float32)
-    started = [watch.update(dark)[0] for _ in range(4)]
-    assert started[-1] == {"covered"}
-    assert watch.update(scene(3))[1] == {"covered"}

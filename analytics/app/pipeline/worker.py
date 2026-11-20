@@ -22,6 +22,8 @@ from pathlib import Path
 from app.identity.probe import add_elements, collector, infer_config
 from app.identity.settings import IdentitySettings
 from app.pipeline.plan import PipelinePlan, ViewPlan, lens_crop
+from app.stages.probe import add_elements as person_elements
+from app.stages.probe import collector as person_collector
 
 logger = logging.getLogger(__name__)
 
@@ -33,18 +35,24 @@ LEAK_OLDEST = 2
 
 
 def build_pipeline(
-    plan: PipelinePlan, infer_config: str, outbox: multiprocessing.Queue, face_config: str | None = None
+    plan: PipelinePlan,
+    infer_config: str,
+    outbox: multiprocessing.Queue,
+    face_config: str | None = None,
+    persons=None,
 ):
     """Build the pipeline for a plan.
 
     With face views, the face detector and the RGB conversion follow the tracker, and a second probe sends the
-    best faces of each person track to the service.
+    best faces of each person track to the service. With person stages, a probe on a tap after that, with its own
+    RGB conversion when there are no face views, sends appearance vectors and keypoints.
 
     Args:
         plan: What to build.
         infer_config: nvinfer configuration file of the detector.
         outbox: Queue that receives the tracked objects of every batch.
         face_config: nvinfer configuration file of the face detector, or None without face views.
+        persons: The person stages' probe operator, or None without person stages.
 
     Returns:
         The pyservicemaker pipeline, ready to start.
@@ -123,15 +131,21 @@ def build_pipeline(
         },
     )
     pipeline.add("fakesink", "sink", {"sync": False, "async": False})
+    pipeline.link("mux", "detector", "tracker")
+    chain = "tracker"
     if face_config is not None:
         first, last = add_elements(pipeline, Path(face_config))
-        pipeline.link("mux", "detector", "tracker", first)
-        pipeline.link(last, "sink")
+        pipeline.link(chain, first)
+        chain = last
         pipeline.attach(
             last, Probe("faces", collector(set(plan.faces), IdentitySettings(), outbox, plan.width, plan.height))
         )
-    else:
-        pipeline.link("mux", "detector", "tracker", "sink")
+    if persons is not None:
+        first, last = person_elements(pipeline, face_config is None)
+        pipeline.link(chain, first)
+        chain = last
+        pipeline.attach(last, Probe("persons", persons))
+    pipeline.link(chain, "sink")
 
     labels = dict(plan.labels)
     scale_x, scale_y = 1.0 / plan.width, 1.0 / plan.height
@@ -210,7 +224,14 @@ def run(plan: PipelinePlan, outbox: multiprocessing.Queue) -> None:
             except (OSError, ValueError, RuntimeError) as exc:
                 # A missing or damaged face model turns faces off instead of stopping every view.
                 outbox.put(("faces_off", time.time(), f"Faces are off: {exc}"))
-        pipeline = build_pipeline(plan, str(config), outbox, face_config)
+        persons = None
+        if plan.persons is not None and plan.persons.active:
+            outbox.put(("preparing", time.time(), "Preparing the appearance and pose engines"))
+            try:
+                persons = person_collector(plan.persons, outbox, dict(plan.labels), plan.width, plan.height)
+            except (OSError, ValueError, RuntimeError) as exc:
+                outbox.put(("persons_off", time.time(), f"Appearance and pose are off: {exc}"))
+        pipeline = build_pipeline(plan, str(config), outbox, face_config, persons)
     except Exception as exc:
         outbox.put(("failed", time.time(), f"Building the pipeline failed: {exc}"))
         raise

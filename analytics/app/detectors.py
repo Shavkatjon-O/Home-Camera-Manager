@@ -16,11 +16,28 @@ COCO_NAMES = {
     4: "motorcycle",
     6: "bus",
     8: "truck",
+    16: "bird",
     17: "cat",
     18: "dog",
+    27: "backpack",
+    31: "handbag",
+    33: "suitcase",
 }
 
-LABELS = ("person", "bicycle", "car", "motorcycle", "bus", "truck", "cat", "dog")
+LABELS = (
+    "person",
+    "bicycle",
+    "car",
+    "motorcycle",
+    "bus",
+    "truck",
+    "bird",
+    "cat",
+    "dog",
+    "backpack",
+    "handbag",
+    "suitcase",
+)
 
 PARSER_LIBRARY = "/opt/analytics/lib/libnvds_rfdetr_parser.so"
 DISABLED_THRESHOLD = 1.1
