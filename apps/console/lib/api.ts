@@ -1,4 +1,14 @@
 import type {
+  AdminConnector,
+  AdminOrganisation,
+  AdminOrganisationUpdate,
+  AuditQuery,
+  AuditRecord,
+  OrganisationPlan,
+  OrganisationUsage,
+  PlanChoice,
+  TelegramChatList,
+  TelegramLink,
   AnalyticsRules,
   AnalyticsSettings,
   AnalyticsStatus,
@@ -302,6 +312,42 @@ export const api = {
     request<void>(`/health/devices/${encodeURIComponent(uuid)}`, { method: "DELETE" }),
   setCameraLink: (cameraUuid: string, data: CameraLinkUpdate) =>
     request<CameraLink>(`/health/camera-links/${encodeURIComponent(cameraUuid)}`, { method: "PUT", body: data }),
+  organisationPlan: (organisation: string, signal?: AbortSignal) =>
+    request<OrganisationPlan>(`/organisations/${encodeURIComponent(organisation)}/plan`, { signal }),
+  organisationUsage: (organisation: string, days: number, signal?: AbortSignal) =>
+    request<OrganisationUsage>(
+      `/organisations/${encodeURIComponent(organisation)}/usage${query({ days, bucket: "day" })}`,
+      { signal },
+    ),
+  organisationAudit: (organisation: string, params: AuditQuery = {}, signal?: AbortSignal) =>
+    request<Page<AuditRecord>>(`/organisations/${encodeURIComponent(organisation)}/audit${query({ ...params })}`, {
+      signal,
+    }),
+  listTelegramChats: (signal?: AbortSignal) => request<TelegramChatList>("/alerting/telegram/chats", { signal }),
+  createTelegramLink: () => request<TelegramLink>("/alerting/telegram/links", { method: "POST" }),
+  testTelegramChat: (uuid: string) =>
+    request<void>(`/alerting/telegram/chats/${encodeURIComponent(uuid)}/test`, { method: "POST" }),
+  removeTelegramChat: (uuid: string) =>
+    request<void>(`/alerting/telegram/chats/${encodeURIComponent(uuid)}`, { method: "DELETE" }),
+
+  listPlans: (signal?: AbortSignal) => request<{ items: PlanChoice[] }>("/plans", { signal }),
+  adminOrganisations: (
+    params: { search?: string; page?: number; page_size?: number } = {},
+    signal?: AbortSignal,
+  ) => request<Page<AdminOrganisation>>(`/admin/organisations${query(params)}`, { signal }),
+  adminUpdateOrganisation: (uuid: string, data: AdminOrganisationUpdate) =>
+    request<AdminOrganisation>(`/admin/organisations/${encodeURIComponent(uuid)}`, { method: "PATCH", body: data }),
+  adminSuspendOrganisation: (uuid: string, reason: string) =>
+    request<AdminOrganisation>(`/admin/organisations/${encodeURIComponent(uuid)}/suspend`, {
+      method: "POST",
+      body: { reason },
+    }),
+  adminRestoreOrganisation: (uuid: string) =>
+    request<AdminOrganisation>(`/admin/organisations/${encodeURIComponent(uuid)}/restore`, { method: "POST" }),
+  adminConnectors: (params: { page?: number; page_size?: number } = {}, signal?: AbortSignal) =>
+    request<Page<AdminConnector>>(`/admin/connectors${query(params)}`, { signal }),
+  adminAudit: (params: AuditQuery = {}, signal?: AbortSignal) =>
+    request<Page<AuditRecord>>(`/admin/audit${query({ ...params })}`, { signal }),
 }
 
 export const EVENT_STREAM_URL = "/api/v1/events/stream"
