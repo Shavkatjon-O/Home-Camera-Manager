@@ -26,6 +26,9 @@ from app.stages.gate import Pace, StageGate
 logger = logging.getLogger(__name__)
 
 UNTRACKED = 0xFFFFFFFFFFFFFFFF
+TAP = "persons"
+RGB_CONVERTER = "persons_rgb"
+RGB_CAPS = "persons_rgbcaps"
 APPEARANCE = "appearance"
 POSE = "pose"
 MIN_PERSON_WIDTH = 16
@@ -59,6 +62,31 @@ class PersonStages:
     def active(self) -> bool:
         """bool: True when any view wants a person stage."""
         return bool(self.appearance_pads or self.pose_pads)
+
+
+def add_elements(pipeline, convert: bool) -> tuple[str, str]:
+    """Add the elements the person stages hang on: an RGB conversion when the batch is not RGB yet, and a tap.
+
+    The face stage converts the batch to RGB when face views exist; otherwise the person stages add the same
+    conversion. The probe goes on a pass-through tap of its own, so it never shares a pad with the face probe.
+
+    Args:
+        pipeline: The Service Maker pipeline.
+        convert: Whether to add the RGB conversion.
+
+    Returns:
+        Names of the first and last added elements; attach the probe from collector to the last.
+    """
+    names = []
+    if convert:
+        pipeline.add("nvvideoconvert", RGB_CONVERTER, {"output-buffers": 2})
+        pipeline.add("capsfilter", RGB_CAPS, {"caps": "video/x-raw(memory:NVMM), format=RGB"})
+        names += [RGB_CONVERTER, RGB_CAPS]
+    pipeline.add("identity", TAP, {"silent": True})
+    names.append(TAP)
+    if len(names) > 1:
+        pipeline.link(*names)
+    return names[0], names[-1]
 
 
 def person_crop(data: np.ndarray, origin: tuple[int, int], box: tuple[float, float, float, float]) -> np.ndarray:
