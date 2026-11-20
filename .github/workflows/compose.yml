@@ -53,4 +53,6 @@ jobs:
           docker compose -p smart-surveillance-dev --env-file .env.dev -f docker-compose.yml -f docker-compose.dev.yml
           --profile devkit --profile analytics --profile v380 config -q
       - name: Validate the standalone connector
+        env:
+          SSS_CONNECTOR_BACKEND_URL: https://cameras.example.com
         run: docker compose -f docker-compose.connector.yml config -q
