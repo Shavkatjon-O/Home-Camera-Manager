@@ -315,6 +315,10 @@ class DevicePairingService:
 
         Returns:
             The new device with its channels.
+
+        Raises:
+            ServiceError: The device could not be identified or added, such as camera_exists for a camera the site
+                has; the attempt is recorded as failed and the session stays usable.
         """
         attempt = await self.telemetry.find(request.attempt) or await self.telemetry.start(
             request.method, request.adapter
@@ -327,6 +331,7 @@ class DevicePairingService:
             device = await self.store(request, identity, channels, connector)
         except ServiceError as exc:
             await self.session.rollback()
+            await self.session.refresh(attempt)
             self.telemetry.finish(attempt, AttemptOutcome.FAILED, "create", request.adapter, exc.code)
             await self.session.commit()
             raise

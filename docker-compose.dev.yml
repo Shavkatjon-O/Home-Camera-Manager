@@ -134,7 +134,7 @@ services:
       CAMERA_NAME: Yard
       CAMERA_MODEL: SIM-PTZ
       CAMERA_SERIAL: SIM-0012
-      CAMERA_MAIN: /samples/sample_cam5.mp4
+      CAMERA_MAIN: /samples/sample_720p.mp4
       CAMERA_PTZ: "true"
       CAMERA_PASSWORD: ${SSS_DEV_CAMERA_PASSWORD:?run scripts/devkit.sh init}
     networks:

@@ -13,6 +13,7 @@ from app.core.exceptions import NotFound
 from app.health.stats import BucketCounts, Window, availability, bucket_window, fill_buckets, latency_summary
 from app.health.targets import Target, camera_address, depth_order
 from app.models import Camera, CameraLink, HealthSample, NetworkDevice, Outage
+from app.modules.devices.services.connector_pairing import HEARTBEAT_SECONDS
 from app.modules.operations.enums import DeviceKind, HealthRange, LinkKind, TargetKind, TargetStatus
 from app.modules.operations.schemas import (
     HealthBucket,
@@ -57,6 +58,8 @@ class TargetInfo:
         link: How it connects to the parent.
         notes: Notes of a device, None for a camera.
         enabled: Whether the target is probed.
+        interval: Seconds between its samples when they come slower than the probe rounds, such as a
+            connector's heartbeats.
     """
 
     uuid: UUID
@@ -69,6 +72,7 @@ class TargetInfo:
     link: LinkKind | None
     notes: str | None
     enabled: bool
+    interval: int | None = None
 
 
 @dataclass(frozen=True)
@@ -178,6 +182,7 @@ class HealthOverviewService:
                     Camera.rtsp_port,
                     Camera.enabled,
                     Camera.deleted_at,
+                    Camera.connector_id,
                 ).order_by(Camera.position.asc(), Camera.created_at.desc(), Camera.id.desc())
             )
         ).all()
@@ -229,6 +234,7 @@ class HealthOverviewService:
                     link=LinkKind(link.link) if link else None,
                     notes=None,
                     enabled=camera.enabled,
+                    interval=HEARTBEAT_SECONDS if camera.connector_id is not None else None,
                 )
             )
         return infos, names
@@ -414,7 +420,7 @@ class HealthOverviewService:
                     link=info.link,
                     notes=info.notes,
                     enabled=info.enabled,
-                    status=target_status(info.enabled, ongoing, current, window.until, self.interval),
+                    status=target_status(info.enabled, ongoing, current, window.until, info.interval or self.interval),
                     last_sample_at=current.at if current else None,
                     last_error=current.error if current and not current.ok else None,
                     samples=samples,

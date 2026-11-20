@@ -9,6 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.context import UserContext
+from app.core.config import settings
 from app.core.database import async_session_maker, get_db
 from app.core.exceptions import Forbidden, TooManyRequests, Unauthorized
 from app.core.rate_limit import RateLimiter
@@ -161,8 +162,8 @@ async def get_stream_user(
         return await authenticate(token, credentials, session)
 
 
-CREDENTIAL_ATTEMPTS = 20
-MAIL_ATTEMPTS = 5
+CREDENTIAL_ATTEMPTS = settings.rate_limit_credentials
+MAIL_ATTEMPTS = settings.rate_limit_mail
 WINDOW_SECONDS = 60.0
 
 credential_limiter = RateLimiter(CREDENTIAL_ATTEMPTS, WINDOW_SECONDS)

@@ -37,6 +37,8 @@ class Settings(BaseSettings):
         verify_token_hours: Hours an email confirmation link stays valid.
         reset_token_minutes: Minutes a password reset link stays valid.
         invitation_days: Days an invitation stays valid.
+        rate_limit_credentials: Sign-in, token and verification attempts one client address may make a minute.
+        rate_limit_mail: Requests that send mail, such as sign-ups, one client address may make a minute.
         smtp_host: SMTP server of outgoing mail; empty logs mail instead of sending it.
         smtp_port: SMTP port.
         smtp_username: SMTP login, empty for none.
@@ -117,6 +119,9 @@ class Settings(BaseSettings):
     verify_token_hours: int = 48
     reset_token_minutes: int = 60
     invitation_days: int = 7
+
+    rate_limit_credentials: int = 20
+    rate_limit_mail: int = 5
 
     smtp_host: str = ""
     smtp_port: int = 587
