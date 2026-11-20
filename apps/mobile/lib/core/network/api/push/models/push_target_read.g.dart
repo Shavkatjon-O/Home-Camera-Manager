@@ -18,13 +18,7 @@ PushTargetRead _$PushTargetReadFromJson(Map<String, dynamic> json) {
       'last_error',
       'created_at',
     ],
-    disallowNullValues: const [
-      'uuid',
-      'provider',
-      'token',
-      'enabled',
-      'created_at',
-    ],
+    disallowNullValues: const ['uuid', 'provider', 'token', 'enabled', 'created_at'],
   );
   return PushTargetRead(
     uuid: json['uuid'] as String,
@@ -34,24 +28,18 @@ PushTargetRead _$PushTargetReadFromJson(Map<String, dynamic> json) {
     lastSuccessAt: PushTargetRead._read_lastSuccessAt(json['last_success_at']),
     lastError: json['last_error'] as String?,
     createdAt: PushTargetRead._read_createdAt(json['created_at']),
-    additionalProperties:
-        PushTargetRead._extras(json, 'additionalProperties') == null
+    additionalProperties: PushTargetRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : PushTargetRead._readExtras(
-            PushTargetRead._extras(json, 'additionalProperties'),
-          ),
+        : PushTargetRead._readExtras(PushTargetRead._extras(json, 'additionalProperties')),
   );
 }
 
-Map<String, dynamic> _$PushTargetReadToJson(PushTargetRead instance) =>
-    <String, dynamic>{
-      'uuid': instance.uuid,
-      'provider': ?PushTargetRead._write_provider(instance.provider),
-      'token': instance.token,
-      'enabled': instance.enabled,
-      'last_success_at': PushTargetRead._write_lastSuccessAt(
-        instance.lastSuccessAt,
-      ),
-      'last_error': instance.lastError,
-      'created_at': ?PushTargetRead._write_createdAt(instance.createdAt),
-    };
+Map<String, dynamic> _$PushTargetReadToJson(PushTargetRead instance) => <String, dynamic>{
+  'uuid': instance.uuid,
+  'provider': ?PushTargetRead._write_provider(instance.provider),
+  'token': instance.token,
+  'enabled': instance.enabled,
+  'last_success_at': PushTargetRead._write_lastSuccessAt(instance.lastSuccessAt),
+  'last_error': instance.lastError,
+  'created_at': ?PushTargetRead._write_createdAt(instance.createdAt),
+};

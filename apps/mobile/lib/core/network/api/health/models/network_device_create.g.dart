@@ -29,8 +29,7 @@ NetworkDeviceCreate _$NetworkDeviceCreateFromJson(Map<String, dynamic> json) {
         : NetworkDeviceCreate._read_enabled(
             NetworkDeviceCreate._presentValue(json, 'enabled') as Object,
           ),
-    additionalProperties:
-        NetworkDeviceCreate._extras(json, 'additionalProperties') == null
+    additionalProperties: NetworkDeviceCreate._extras(json, 'additionalProperties') == null
         ? const {}
         : NetworkDeviceCreate._readExtras(
             NetworkDeviceCreate._extras(json, 'additionalProperties'),
@@ -38,9 +37,7 @@ NetworkDeviceCreate _$NetworkDeviceCreateFromJson(Map<String, dynamic> json) {
   );
 }
 
-Map<String, dynamic> _$NetworkDeviceCreateToJson(
-  NetworkDeviceCreate instance,
-) => <String, dynamic>{
+Map<String, dynamic> _$NetworkDeviceCreateToJson(NetworkDeviceCreate instance) => <String, dynamic>{
   'name': instance.name,
   'kind': ?NetworkDeviceCreate._write_kind(instance.kind),
   'host': instance.host,

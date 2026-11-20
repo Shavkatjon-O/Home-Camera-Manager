@@ -14,14 +14,12 @@ RefreshRequest _$RefreshRequestFromJson(Map<String, dynamic> json) {
   );
   return RefreshRequest(
     refreshToken: json['refresh_token'] as String,
-    additionalProperties:
-        RefreshRequest._extras(json, 'additionalProperties') == null
+    additionalProperties: RefreshRequest._extras(json, 'additionalProperties') == null
         ? const {}
-        : RefreshRequest._readExtras(
-            RefreshRequest._extras(json, 'additionalProperties'),
-          ),
+        : RefreshRequest._readExtras(RefreshRequest._extras(json, 'additionalProperties')),
   );
 }
 
-Map<String, dynamic> _$RefreshRequestToJson(RefreshRequest instance) =>
-    <String, dynamic>{'refresh_token': instance.refreshToken};
+Map<String, dynamic> _$RefreshRequestToJson(RefreshRequest instance) => <String, dynamic>{
+  'refresh_token': instance.refreshToken,
+};

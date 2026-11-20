@@ -16,18 +16,14 @@ PersonFacet _$PersonFacetFromJson(Map<String, dynamic> json) {
     uuid: json['uuid'] as String,
     name: json['name'] as String,
     color: json['color'] as String,
-    additionalProperties:
-        PersonFacet._extras(json, 'additionalProperties') == null
+    additionalProperties: PersonFacet._extras(json, 'additionalProperties') == null
         ? const {}
-        : PersonFacet._readExtras(
-            PersonFacet._extras(json, 'additionalProperties'),
-          ),
+        : PersonFacet._readExtras(PersonFacet._extras(json, 'additionalProperties')),
   );
 }
 
-Map<String, dynamic> _$PersonFacetToJson(PersonFacet instance) =>
-    <String, dynamic>{
-      'uuid': instance.uuid,
-      'name': instance.name,
-      'color': instance.color,
-    };
+Map<String, dynamic> _$PersonFacetToJson(PersonFacet instance) => <String, dynamic>{
+  'uuid': instance.uuid,
+  'name': instance.name,
+  'color': instance.color,
+};

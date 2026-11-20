@@ -17,19 +17,15 @@ HealthBucket _$HealthBucketFromJson(Map<String, dynamic> json) {
     samples: HealthBucket._read_samples(json['samples']),
     availability: json['availability'] as num?,
     latencyMs: json['latency_ms'] as num?,
-    additionalProperties:
-        HealthBucket._extras(json, 'additionalProperties') == null
+    additionalProperties: HealthBucket._extras(json, 'additionalProperties') == null
         ? const {}
-        : HealthBucket._readExtras(
-            HealthBucket._extras(json, 'additionalProperties'),
-          ),
+        : HealthBucket._readExtras(HealthBucket._extras(json, 'additionalProperties')),
   );
 }
 
-Map<String, dynamic> _$HealthBucketToJson(HealthBucket instance) =>
-    <String, dynamic>{
-      'start': ?HealthBucket._write_start(instance.start),
-      'samples': ?HealthBucket._write_samples(instance.samples),
-      'availability': instance.availability,
-      'latency_ms': instance.latencyMs,
-    };
+Map<String, dynamic> _$HealthBucketToJson(HealthBucket instance) => <String, dynamic>{
+  'start': ?HealthBucket._write_start(instance.start),
+  'samples': ?HealthBucket._write_samples(instance.samples),
+  'availability': instance.availability,
+  'latency_ms': instance.latencyMs,
+};

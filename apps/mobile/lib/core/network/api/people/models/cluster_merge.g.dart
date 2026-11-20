@@ -16,5 +16,6 @@ ClusterMerge _$ClusterMergeFromJson(Map<String, dynamic> json) {
   return ClusterMerge(into: json['into'] as String);
 }
 
-Map<String, dynamic> _$ClusterMergeToJson(ClusterMerge instance) =>
-    <String, dynamic>{'into': instance.into};
+Map<String, dynamic> _$ClusterMergeToJson(ClusterMerge instance) => <String, dynamic>{
+  'into': instance.into,
+};

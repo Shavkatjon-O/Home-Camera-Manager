@@ -75,42 +75,36 @@ CameraRead _$CameraReadFromJson(Map<String, dynamic> json) {
     channel: CameraRead._read_channel(json['channel']),
     capabilities: json['capabilities'] == null
         ? null
-        : CapabilitiesRead.fromJson(
-            json['capabilities'] as Map<String, dynamic>,
-          ),
-    additionalProperties:
-        CameraRead._extras(json, 'additionalProperties') == null
+        : CapabilitiesRead.fromJson(json['capabilities'] as Map<String, dynamic>),
+    additionalProperties: CameraRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : CameraRead._readExtras(
-            CameraRead._extras(json, 'additionalProperties'),
-          ),
+        : CameraRead._readExtras(CameraRead._extras(json, 'additionalProperties')),
   );
 }
 
-Map<String, dynamic> _$CameraReadToJson(CameraRead instance) =>
-    <String, dynamic>{
-      'uuid': instance.uuid,
-      'name': instance.name,
-      'brand': ?CameraRead._write_brand(instance.brand),
-      'host': instance.host,
-      'device_host': instance.deviceHost,
-      'rtsp_port': ?CameraRead._write_rtspPort(instance.rtspPort),
-      'onvif_port': CameraRead._write_onvifPort(instance.onvifPort),
-      'username': instance.username,
-      'has_password': instance.hasPassword,
-      'main_path': instance.mainPath,
-      'sub_path': instance.subPath,
-      'lenses': ?CameraRead._write_lenses(instance.lenses),
-      'ptz_enabled': instance.ptzEnabled,
-      'location': instance.location,
-      'position': ?CameraRead._write_position(instance.position),
-      'enabled': instance.enabled,
-      'status': instance.status.toJson(),
-      'streams': instance.streams.toJson(),
-      'created_at': ?CameraRead._write_createdAt(instance.createdAt),
-      'updated_at': ?CameraRead._write_updatedAt(instance.updatedAt),
-      'connector': ?instance.connector,
-      'device': ?instance.device,
-      'channel': ?CameraRead._write_channel(instance.channel),
-      'capabilities': ?instance.capabilities?.toJson(),
-    };
+Map<String, dynamic> _$CameraReadToJson(CameraRead instance) => <String, dynamic>{
+  'uuid': instance.uuid,
+  'name': instance.name,
+  'brand': ?CameraRead._write_brand(instance.brand),
+  'host': instance.host,
+  'device_host': instance.deviceHost,
+  'rtsp_port': ?CameraRead._write_rtspPort(instance.rtspPort),
+  'onvif_port': CameraRead._write_onvifPort(instance.onvifPort),
+  'username': instance.username,
+  'has_password': instance.hasPassword,
+  'main_path': instance.mainPath,
+  'sub_path': instance.subPath,
+  'lenses': ?CameraRead._write_lenses(instance.lenses),
+  'ptz_enabled': instance.ptzEnabled,
+  'location': instance.location,
+  'position': ?CameraRead._write_position(instance.position),
+  'enabled': instance.enabled,
+  'status': instance.status.toJson(),
+  'streams': instance.streams.toJson(),
+  'created_at': ?CameraRead._write_createdAt(instance.createdAt),
+  'updated_at': ?CameraRead._write_updatedAt(instance.updatedAt),
+  'connector': ?instance.connector,
+  'device': ?instance.device,
+  'channel': ?CameraRead._write_channel(instance.channel),
+  'capabilities': ?instance.capabilities?.toJson(),
+};

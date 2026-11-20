@@ -16,12 +16,9 @@ LineFacet _$LineFacetFromJson(Map<String, dynamic> json) {
     id: json['id'] as String,
     name: json['name'] as String,
     view: json['view'] as String,
-    additionalProperties:
-        LineFacet._extras(json, 'additionalProperties') == null
+    additionalProperties: LineFacet._extras(json, 'additionalProperties') == null
         ? const {}
-        : LineFacet._readExtras(
-            LineFacet._extras(json, 'additionalProperties'),
-          ),
+        : LineFacet._readExtras(LineFacet._extras(json, 'additionalProperties')),
   );
 }
 

@@ -29,21 +29,14 @@ TokenPair _$TokenPairFromJson(Map<String, dynamic> json) {
     accessToken: json['access_token'] as String,
     tokenType: TokenPair._presentValue(json, 'token_type') == null
         ? "Bearer"
-        : TokenPair._read_tokenType(
-            TokenPair._presentValue(json, 'token_type') as Object,
-          ),
+        : TokenPair._read_tokenType(TokenPair._presentValue(json, 'token_type') as Object),
     expiresIn: TokenPair._read_expiresIn(json['expires_in']),
     refreshToken: json['refresh_token'] as String,
-    refreshExpiresIn: TokenPair._read_refreshExpiresIn(
-      json['refresh_expires_in'],
-    ),
+    refreshExpiresIn: TokenPair._read_refreshExpiresIn(json['refresh_expires_in']),
     session: SessionRead.fromJson(json['session'] as Map<String, dynamic>),
-    additionalProperties:
-        TokenPair._extras(json, 'additionalProperties') == null
+    additionalProperties: TokenPair._extras(json, 'additionalProperties') == null
         ? const {}
-        : TokenPair._readExtras(
-            TokenPair._extras(json, 'additionalProperties'),
-          ),
+        : TokenPair._readExtras(TokenPair._extras(json, 'additionalProperties')),
   );
 }
 
@@ -52,8 +45,6 @@ Map<String, dynamic> _$TokenPairToJson(TokenPair instance) => <String, dynamic>{
   'token_type': ?TokenPair._write_tokenType(instance.tokenType),
   'expires_in': ?TokenPair._write_expiresIn(instance.expiresIn),
   'refresh_token': instance.refreshToken,
-  'refresh_expires_in': ?TokenPair._write_refreshExpiresIn(
-    instance.refreshExpiresIn,
-  ),
+  'refresh_expires_in': ?TokenPair._write_refreshExpiresIn(instance.refreshExpiresIn),
   'session': instance.session.toJson(),
 };

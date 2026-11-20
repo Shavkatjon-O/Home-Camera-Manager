@@ -25,13 +25,7 @@ SimilarRead _$SimilarReadFromJson(Map<String, dynamic> json) {
       'camera_name',
       'view_name',
     ],
-    disallowNullValues: const [
-      'sample_uuid',
-      'score',
-      'source',
-      'seen_at',
-      'has_crop',
-    ],
+    disallowNullValues: const ['sample_uuid', 'score', 'source', 'seen_at', 'has_crop'],
   );
   return SimilarRead(
     sampleUuid: json['sample_uuid'] as String,
@@ -48,29 +42,25 @@ SimilarRead _$SimilarReadFromJson(Map<String, dynamic> json) {
     cameraUuid: json['camera_uuid'] as String?,
     cameraName: json['camera_name'] as String?,
     viewName: json['view_name'] as String?,
-    additionalProperties:
-        SimilarRead._extras(json, 'additionalProperties') == null
+    additionalProperties: SimilarRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : SimilarRead._readExtras(
-            SimilarRead._extras(json, 'additionalProperties'),
-          ),
+        : SimilarRead._readExtras(SimilarRead._extras(json, 'additionalProperties')),
   );
 }
 
-Map<String, dynamic> _$SimilarReadToJson(SimilarRead instance) =>
-    <String, dynamic>{
-      'sample_uuid': instance.sampleUuid,
-      'score': instance.score,
-      'source': ?SimilarRead._write_source(instance.source),
-      'seen_at': ?SimilarRead._write_seenAt(instance.seenAt),
-      'has_crop': instance.hasCrop,
-      'person_uuid': instance.personUuid,
-      'person_name': instance.personName,
-      'person_color': instance.personColor,
-      'cluster_uuid': instance.clusterUuid,
-      'cluster_label': instance.clusterLabel,
-      'event_uuid': instance.eventUuid,
-      'camera_uuid': instance.cameraUuid,
-      'camera_name': instance.cameraName,
-      'view_name': instance.viewName,
-    };
+Map<String, dynamic> _$SimilarReadToJson(SimilarRead instance) => <String, dynamic>{
+  'sample_uuid': instance.sampleUuid,
+  'score': instance.score,
+  'source': ?SimilarRead._write_source(instance.source),
+  'seen_at': ?SimilarRead._write_seenAt(instance.seenAt),
+  'has_crop': instance.hasCrop,
+  'person_uuid': instance.personUuid,
+  'person_name': instance.personName,
+  'person_color': instance.personColor,
+  'cluster_uuid': instance.clusterUuid,
+  'cluster_label': instance.clusterLabel,
+  'event_uuid': instance.eventUuid,
+  'camera_uuid': instance.cameraUuid,
+  'camera_name': instance.cameraName,
+  'view_name': instance.viewName,
+};

@@ -16,28 +16,22 @@ InvitationCreate _$InvitationCreateFromJson(Map<String, dynamic> json) {
     email: json['email'] as String,
     role: InvitationCreate._presentValue(json, 'role') == null
         ? Role.viewer
-        : InvitationCreate._read_role(
-            InvitationCreate._presentValue(json, 'role') as Object,
-          ),
+        : InvitationCreate._read_role(InvitationCreate._presentValue(json, 'role') as Object),
     allSites: InvitationCreate._presentValue(json, 'all_sites') == null
         ? true
         : InvitationCreate._read_allSites(
             InvitationCreate._presentValue(json, 'all_sites') as Object,
           ),
     sites: (json['sites'] as List<dynamic>?)?.map((e) => e as String).toList(),
-    additionalProperties:
-        InvitationCreate._extras(json, 'additionalProperties') == null
+    additionalProperties: InvitationCreate._extras(json, 'additionalProperties') == null
         ? const {}
-        : InvitationCreate._readExtras(
-            InvitationCreate._extras(json, 'additionalProperties'),
-          ),
+        : InvitationCreate._readExtras(InvitationCreate._extras(json, 'additionalProperties')),
   );
 }
 
-Map<String, dynamic> _$InvitationCreateToJson(InvitationCreate instance) =>
-    <String, dynamic>{
-      'email': instance.email,
-      'role': ?InvitationCreate._write_role(instance.role),
-      'all_sites': ?InvitationCreate._write_allSites(instance.allSites),
-      'sites': ?instance.sites,
-    };
+Map<String, dynamic> _$InvitationCreateToJson(InvitationCreate instance) => <String, dynamic>{
+  'email': instance.email,
+  'role': ?InvitationCreate._write_role(instance.role),
+  'all_sites': ?InvitationCreate._write_allSites(instance.allSites),
+  'sites': ?instance.sites,
+};

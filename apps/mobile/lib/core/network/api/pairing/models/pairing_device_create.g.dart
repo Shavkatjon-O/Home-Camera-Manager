@@ -7,11 +7,7 @@ part of 'pairing_device_create.dart';
 // **************************************************************************
 
 PairingDeviceCreate _$PairingDeviceCreateFromJson(Map<String, dynamic> json) {
-  $checkKeys(
-    json,
-    requiredKeys: const ['name'],
-    disallowNullValues: const ['method', 'name'],
-  );
+  $checkKeys(json, requiredKeys: const ['name'], disallowNullValues: const ['method', 'name']);
   return PairingDeviceCreate(
     host: json['host'] as String?,
     port: PairingDeviceCreate._read_port(json['port']),
@@ -31,8 +27,7 @@ PairingDeviceCreate _$PairingDeviceCreateFromJson(Map<String, dynamic> json) {
     channels: PairingDeviceCreate._read_channels(json['channels']),
     discovered: json['discovered'] as String?,
     attempt: json['attempt'] as String?,
-    additionalProperties:
-        PairingDeviceCreate._extras(json, 'additionalProperties') == null
+    additionalProperties: PairingDeviceCreate._extras(json, 'additionalProperties') == null
         ? const {}
         : PairingDeviceCreate._readExtras(
             PairingDeviceCreate._extras(json, 'additionalProperties'),
@@ -40,9 +35,7 @@ PairingDeviceCreate _$PairingDeviceCreateFromJson(Map<String, dynamic> json) {
   );
 }
 
-Map<String, dynamic> _$PairingDeviceCreateToJson(
-  PairingDeviceCreate instance,
-) => <String, dynamic>{
+Map<String, dynamic> _$PairingDeviceCreateToJson(PairingDeviceCreate instance) => <String, dynamic>{
   'host': ?instance.host,
   'port': ?PairingDeviceCreate._write_port(instance.port),
   'rtsp_port': ?PairingDeviceCreate._write_rtspPort(instance.rtspPort),

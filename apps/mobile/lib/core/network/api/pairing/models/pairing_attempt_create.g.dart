@@ -23,8 +23,7 @@ PairingAttemptCreate _$PairingAttemptCreateFromJson(Map<String, dynamic> json) {
         : PairingAttemptCreate._read_durationMs(
             PairingAttemptCreate._presentValue(json, 'duration_ms') as Object,
           ),
-    additionalProperties:
-        PairingAttemptCreate._extras(json, 'additionalProperties') == null
+    additionalProperties: PairingAttemptCreate._extras(json, 'additionalProperties') == null
         ? const {}
         : PairingAttemptCreate._readExtras(
             PairingAttemptCreate._extras(json, 'additionalProperties'),
@@ -32,13 +31,12 @@ PairingAttemptCreate _$PairingAttemptCreateFromJson(Map<String, dynamic> json) {
   );
 }
 
-Map<String, dynamic> _$PairingAttemptCreateToJson(
-  PairingAttemptCreate instance,
-) => <String, dynamic>{
-  'method': ?PairingAttemptCreate._write_method(instance.method),
-  'adapter': ?instance.adapter,
-  'last_step': instance.lastStep,
-  'outcome': ?PairingAttemptCreate._write_outcome(instance.outcome),
-  'error_code': ?instance.errorCode,
-  'duration_ms': ?PairingAttemptCreate._write_durationMs(instance.durationMs),
-};
+Map<String, dynamic> _$PairingAttemptCreateToJson(PairingAttemptCreate instance) =>
+    <String, dynamic>{
+      'method': ?PairingAttemptCreate._write_method(instance.method),
+      'adapter': ?instance.adapter,
+      'last_step': instance.lastStep,
+      'outcome': ?PairingAttemptCreate._write_outcome(instance.outcome),
+      'error_code': ?instance.errorCode,
+      'duration_ms': ?PairingAttemptCreate._write_durationMs(instance.durationMs),
+    };

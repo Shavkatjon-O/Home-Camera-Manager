@@ -10,12 +10,7 @@ PresetsRead _$PresetsReadFromJson(Map<String, dynamic> json) {
   $checkKeys(
     json,
     requiredKeys: const ['camera_uuid', 'supported'],
-    disallowNullValues: const [
-      'camera_uuid',
-      'supported',
-      'presets',
-      'home_supported',
-    ],
+    disallowNullValues: const ['camera_uuid', 'supported', 'presets', 'home_supported'],
   );
   return PresetsRead(
     cameraUuid: json['camera_uuid'] as String,
@@ -24,27 +19,20 @@ PresetsRead _$PresetsReadFromJson(Map<String, dynamic> json) {
     endpoint: json['endpoint'] as String?,
     presets: PresetsRead._presentValue(json, 'presets') == null
         ? const []
-        : PresetsRead._read_presets(
-            PresetsRead._presentValue(json, 'presets') as Object,
-          ),
+        : PresetsRead._read_presets(PresetsRead._presentValue(json, 'presets') as Object),
     maxPresets: PresetsRead._read_maxPresets(json['max_presets']),
     homeSupported: PresetsRead._presentValue(json, 'home_supported') == null
         ? false
         : PresetsRead._read_homeSupported(
             PresetsRead._presentValue(json, 'home_supported') as Object,
           ),
-    additionalProperties:
-        PresetsRead._extras(json, 'additionalProperties') == null
+    additionalProperties: PresetsRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : PresetsRead._readExtras(
-            PresetsRead._extras(json, 'additionalProperties'),
-          ),
+        : PresetsRead._readExtras(PresetsRead._extras(json, 'additionalProperties')),
   );
 }
 
-Map<String, dynamic> _$PresetsReadToJson(
-  PresetsRead instance,
-) => <String, dynamic>{
+Map<String, dynamic> _$PresetsReadToJson(PresetsRead instance) => <String, dynamic>{
   'camera_uuid': instance.cameraUuid,
   'supported': instance.supported,
   'reason': ?instance.reason,

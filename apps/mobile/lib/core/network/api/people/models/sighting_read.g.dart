@@ -28,22 +28,18 @@ SightingRead _$SightingReadFromJson(Map<String, dynamic> json) {
     viewName: json['view_name'] as String?,
     seenAt: SightingRead._read_seenAt(json['seen_at']),
     confidence: json['confidence'] as num?,
-    additionalProperties:
-        SightingRead._extras(json, 'additionalProperties') == null
+    additionalProperties: SightingRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : SightingRead._readExtras(
-            SightingRead._extras(json, 'additionalProperties'),
-          ),
+        : SightingRead._readExtras(SightingRead._extras(json, 'additionalProperties')),
   );
 }
 
-Map<String, dynamic> _$SightingReadToJson(SightingRead instance) =>
-    <String, dynamic>{
-      'event_uuid': instance.eventUuid,
-      'sample_uuid': instance.sampleUuid,
-      'camera_uuid': instance.cameraUuid,
-      'camera_name': instance.cameraName,
-      'view_name': instance.viewName,
-      'seen_at': ?SightingRead._write_seenAt(instance.seenAt),
-      'confidence': instance.confidence,
-    };
+Map<String, dynamic> _$SightingReadToJson(SightingRead instance) => <String, dynamic>{
+  'event_uuid': instance.eventUuid,
+  'sample_uuid': instance.sampleUuid,
+  'camera_uuid': instance.cameraUuid,
+  'camera_name': instance.cameraName,
+  'view_name': instance.viewName,
+  'seen_at': ?SightingRead._write_seenAt(instance.seenAt),
+  'confidence': instance.confidence,
+};

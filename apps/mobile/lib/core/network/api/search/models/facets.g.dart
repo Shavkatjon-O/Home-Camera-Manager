@@ -9,24 +9,8 @@ part of 'facets.dart';
 Facets _$FacetsFromJson(Map<String, dynamic> json) {
   $checkKeys(
     json,
-    requiredKeys: const [
-      'kinds',
-      'labels',
-      'views',
-      'zones',
-      'lines',
-      'people',
-      'clusters',
-    ],
-    disallowNullValues: const [
-      'kinds',
-      'labels',
-      'views',
-      'zones',
-      'lines',
-      'people',
-      'clusters',
-    ],
+    requiredKeys: const ['kinds', 'labels', 'views', 'zones', 'lines', 'people', 'clusters'],
+    disallowNullValues: const ['kinds', 'labels', 'views', 'zones', 'lines', 'people', 'clusters'],
   );
   return Facets(
     kinds: (json['kinds'] as List<dynamic>).map((e) => e as String).toList(),

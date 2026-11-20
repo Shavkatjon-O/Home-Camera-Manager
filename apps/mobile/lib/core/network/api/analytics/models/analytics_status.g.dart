@@ -19,19 +19,15 @@ AnalyticsStatus _$AnalyticsStatusFromJson(Map<String, dynamic> json) {
     views: (json['views'] as Map<String, dynamic>).map(
       (k, e) => MapEntry(k, e as Map<String, dynamic>),
     ),
-    additionalProperties:
-        AnalyticsStatus._extras(json, 'additionalProperties') == null
+    additionalProperties: AnalyticsStatus._extras(json, 'additionalProperties') == null
         ? const {}
-        : AnalyticsStatus._readExtras(
-            AnalyticsStatus._extras(json, 'additionalProperties'),
-          ),
+        : AnalyticsStatus._readExtras(AnalyticsStatus._extras(json, 'additionalProperties')),
   );
 }
 
-Map<String, dynamic> _$AnalyticsStatusToJson(AnalyticsStatus instance) =>
-    <String, dynamic>{
-      'pipeline': instance.pipeline,
-      'gpu': instance.gpu,
-      'updated_at': AnalyticsStatus._write_updatedAt(instance.updatedAt),
-      'views': instance.views,
-    };
+Map<String, dynamic> _$AnalyticsStatusToJson(AnalyticsStatus instance) => <String, dynamic>{
+  'pipeline': instance.pipeline,
+  'gpu': instance.gpu,
+  'updated_at': AnalyticsStatus._write_updatedAt(instance.updatedAt),
+  'views': instance.views,
+};

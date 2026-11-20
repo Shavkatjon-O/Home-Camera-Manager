@@ -7,11 +7,7 @@ part of 'view_list.dart';
 // **************************************************************************
 
 ViewList _$ViewListFromJson(Map<String, dynamic> json) {
-  $checkKeys(
-    json,
-    requiredKeys: const ['items'],
-    disallowNullValues: const ['items'],
-  );
+  $checkKeys(json, requiredKeys: const ['items'], disallowNullValues: const ['items']);
   return ViewList(
     items: (json['items'] as List<dynamic>)
         .map((e) => ViewRead.fromJson(e as Map<String, dynamic>))

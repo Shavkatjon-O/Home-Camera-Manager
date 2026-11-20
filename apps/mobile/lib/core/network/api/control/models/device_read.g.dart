@@ -46,32 +46,26 @@ DeviceRead _$DeviceReadFromJson(Map<String, dynamic> json) {
     channels: (json['channels'] as List<dynamic>)
         .map((e) => DeviceChannelRead.fromJson(e as Map<String, dynamic>))
         .toList(),
-    capabilities: CapabilitiesRead.fromJson(
-      json['capabilities'] as Map<String, dynamic>,
-    ),
+    capabilities: CapabilitiesRead.fromJson(json['capabilities'] as Map<String, dynamic>),
     identifiedAt: DeviceRead._read_identifiedAt(json['identified_at']),
     createdAt: DeviceRead._read_createdAt(json['created_at']),
-    additionalProperties:
-        DeviceRead._extras(json, 'additionalProperties') == null
+    additionalProperties: DeviceRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : DeviceRead._readExtras(
-            DeviceRead._extras(json, 'additionalProperties'),
-          ),
+        : DeviceRead._readExtras(DeviceRead._extras(json, 'additionalProperties')),
   );
 }
 
-Map<String, dynamic> _$DeviceReadToJson(DeviceRead instance) =>
-    <String, dynamic>{
-      'uuid': instance.uuid,
-      'kind': instance.kind,
-      'adapter': instance.adapter,
-      'name': instance.name,
-      'vendor': instance.vendor,
-      'model': instance.model,
-      'connector': instance.connector,
-      'channel_count': ?DeviceRead._write_channelCount(instance.channelCount),
-      'channels': instance.channels.map((e) => e.toJson()).toList(),
-      'capabilities': instance.capabilities.toJson(),
-      'identified_at': DeviceRead._write_identifiedAt(instance.identifiedAt),
-      'created_at': ?DeviceRead._write_createdAt(instance.createdAt),
-    };
+Map<String, dynamic> _$DeviceReadToJson(DeviceRead instance) => <String, dynamic>{
+  'uuid': instance.uuid,
+  'kind': instance.kind,
+  'adapter': instance.adapter,
+  'name': instance.name,
+  'vendor': instance.vendor,
+  'model': instance.model,
+  'connector': instance.connector,
+  'channel_count': ?DeviceRead._write_channelCount(instance.channelCount),
+  'channels': instance.channels.map((e) => e.toJson()).toList(),
+  'capabilities': instance.capabilities.toJson(),
+  'identified_at': DeviceRead._write_identifiedAt(instance.identifiedAt),
+  'created_at': ?DeviceRead._write_createdAt(instance.createdAt),
+};

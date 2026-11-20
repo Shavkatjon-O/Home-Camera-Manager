@@ -21,28 +21,24 @@ CameraUpdate _$CameraUpdateFromJson(Map<String, dynamic> json) => CameraUpdate(
   lenses: CameraUpdate._read_lenses(json['lenses']),
   ptzEnabled: json['ptz_enabled'] as bool?,
   enabled: json['enabled'] as bool?,
-  additionalProperties:
-      CameraUpdate._extras(json, 'additionalProperties') == null
+  additionalProperties: CameraUpdate._extras(json, 'additionalProperties') == null
       ? const {}
-      : CameraUpdate._readExtras(
-          CameraUpdate._extras(json, 'additionalProperties'),
-        ),
+      : CameraUpdate._readExtras(CameraUpdate._extras(json, 'additionalProperties')),
 );
 
-Map<String, dynamic> _$CameraUpdateToJson(CameraUpdate instance) =>
-    <String, dynamic>{
-      'name': ?instance.name,
-      'brand': ?CameraUpdate._write_brand(instance.brand),
-      'host': ?instance.host,
-      'device_host': ?instance.deviceHost,
-      'location': ?instance.location,
-      'rtsp_port': ?CameraUpdate._write_rtspPort(instance.rtspPort),
-      'onvif_port': ?CameraUpdate._write_onvifPort(instance.onvifPort),
-      'username': ?instance.username,
-      'password': ?instance.password,
-      'main_path': ?instance.mainPath,
-      'sub_path': ?instance.subPath,
-      'lenses': ?CameraUpdate._write_lenses(instance.lenses),
-      'ptz_enabled': ?instance.ptzEnabled,
-      'enabled': ?instance.enabled,
-    };
+Map<String, dynamic> _$CameraUpdateToJson(CameraUpdate instance) => <String, dynamic>{
+  'name': ?instance.name,
+  'brand': ?CameraUpdate._write_brand(instance.brand),
+  'host': ?instance.host,
+  'device_host': ?instance.deviceHost,
+  'location': ?instance.location,
+  'rtsp_port': ?CameraUpdate._write_rtspPort(instance.rtspPort),
+  'onvif_port': ?CameraUpdate._write_onvifPort(instance.onvifPort),
+  'username': ?instance.username,
+  'password': ?instance.password,
+  'main_path': ?instance.mainPath,
+  'sub_path': ?instance.subPath,
+  'lenses': ?CameraUpdate._write_lenses(instance.lenses),
+  'ptz_enabled': ?instance.ptzEnabled,
+  'enabled': ?instance.enabled,
+};

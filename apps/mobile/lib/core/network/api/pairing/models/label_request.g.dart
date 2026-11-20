@@ -7,21 +7,15 @@ part of 'label_request.dart';
 // **************************************************************************
 
 LabelRequest _$LabelRequestFromJson(Map<String, dynamic> json) {
-  $checkKeys(
-    json,
-    requiredKeys: const ['payload'],
-    disallowNullValues: const ['payload'],
-  );
+  $checkKeys(json, requiredKeys: const ['payload'], disallowNullValues: const ['payload']);
   return LabelRequest(
     payload: json['payload'] as String,
-    additionalProperties:
-        LabelRequest._extras(json, 'additionalProperties') == null
+    additionalProperties: LabelRequest._extras(json, 'additionalProperties') == null
         ? const {}
-        : LabelRequest._readExtras(
-            LabelRequest._extras(json, 'additionalProperties'),
-          ),
+        : LabelRequest._readExtras(LabelRequest._extras(json, 'additionalProperties')),
   );
 }
 
-Map<String, dynamic> _$LabelRequestToJson(LabelRequest instance) =>
-    <String, dynamic>{'payload': instance.payload};
+Map<String, dynamic> _$LabelRequestToJson(LabelRequest instance) => <String, dynamic>{
+  'payload': instance.payload,
+};

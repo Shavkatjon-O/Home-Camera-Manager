@@ -18,20 +18,16 @@ CountBucketRead _$CountBucketReadFromJson(Map<String, dynamic> json) {
     label: json['label'] as String,
     in2: CountBucketRead._read_in2(json['in']),
     out: CountBucketRead._read_out(json['out']),
-    additionalProperties:
-        CountBucketRead._extras(json, 'additionalProperties') == null
+    additionalProperties: CountBucketRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : CountBucketRead._readExtras(
-            CountBucketRead._extras(json, 'additionalProperties'),
-          ),
+        : CountBucketRead._readExtras(CountBucketRead._extras(json, 'additionalProperties')),
   );
 }
 
-Map<String, dynamic> _$CountBucketReadToJson(CountBucketRead instance) =>
-    <String, dynamic>{
-      'line_uuid': instance.lineUuid,
-      'at': ?CountBucketRead._write_at(instance.at),
-      'label': instance.label,
-      'in': ?CountBucketRead._write_in2(instance.in2),
-      'out': ?CountBucketRead._write_out(instance.out),
-    };
+Map<String, dynamic> _$CountBucketReadToJson(CountBucketRead instance) => <String, dynamic>{
+  'line_uuid': instance.lineUuid,
+  'at': ?CountBucketRead._write_at(instance.at),
+  'label': instance.label,
+  'in': ?CountBucketRead._write_in2(instance.in2),
+  'out': ?CountBucketRead._write_out(instance.out),
+};

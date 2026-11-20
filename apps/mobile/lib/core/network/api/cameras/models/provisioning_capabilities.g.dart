@@ -6,9 +6,7 @@ part of 'provisioning_capabilities.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-ProvisioningCapabilities _$ProvisioningCapabilitiesFromJson(
-  Map<String, dynamic> json,
-) {
+ProvisioningCapabilities _$ProvisioningCapabilitiesFromJson(Map<String, dynamic> json) {
   $checkKeys(json, disallowNullValues: const ['methods']);
   return ProvisioningCapabilities(
     methods: ProvisioningCapabilities._presentValue(json, 'methods') == null
@@ -16,8 +14,7 @@ ProvisioningCapabilities _$ProvisioningCapabilitiesFromJson(
         : ProvisioningCapabilities._read_methods(
             ProvisioningCapabilities._presentValue(json, 'methods') as Object,
           ),
-    additionalProperties:
-        ProvisioningCapabilities._extras(json, 'additionalProperties') == null
+    additionalProperties: ProvisioningCapabilities._extras(json, 'additionalProperties') == null
         ? const {}
         : ProvisioningCapabilities._readExtras(
             ProvisioningCapabilities._extras(json, 'additionalProperties'),
@@ -25,8 +22,5 @@ ProvisioningCapabilities _$ProvisioningCapabilitiesFromJson(
   );
 }
 
-Map<String, dynamic> _$ProvisioningCapabilitiesToJson(
-  ProvisioningCapabilities instance,
-) => <String, dynamic>{
-  'methods': ?ProvisioningCapabilities._write_methods(instance.methods),
-};
+Map<String, dynamic> _$ProvisioningCapabilitiesToJson(ProvisioningCapabilities instance) =>
+    <String, dynamic>{'methods': ?ProvisioningCapabilities._write_methods(instance.methods)};

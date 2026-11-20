@@ -15,15 +15,12 @@ AreaUpdate _$AreaUpdateFromJson(Map<String, dynamic> json) => AreaUpdate(
   resetAt: json['reset_at'] as String?,
   additionalProperties: AreaUpdate._extras(json, 'additionalProperties') == null
       ? const {}
-      : AreaUpdate._readExtras(
-          AreaUpdate._extras(json, 'additionalProperties'),
-        ),
+      : AreaUpdate._readExtras(AreaUpdate._extras(json, 'additionalProperties')),
 );
 
-Map<String, dynamic> _$AreaUpdateToJson(AreaUpdate instance) =>
-    <String, dynamic>{
-      'name': ?instance.name,
-      'lines': ?instance.lines?.map((e) => e.toJson()).toList(),
-      'labels': ?instance.labels,
-      'reset_at': ?instance.resetAt,
-    };
+Map<String, dynamic> _$AreaUpdateToJson(AreaUpdate instance) => <String, dynamic>{
+  'name': ?instance.name,
+  'lines': ?instance.lines?.map((e) => e.toJson()).toList(),
+  'labels': ?instance.labels,
+  'reset_at': ?instance.resetAt,
+};

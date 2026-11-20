@@ -11,15 +11,10 @@ AreaReset _$AreaResetFromJson(Map<String, dynamic> json) {
   return AreaReset(
     occupancy: AreaReset._presentValue(json, 'occupancy') == null
         ? 0
-        : AreaReset._read_occupancy(
-            AreaReset._presentValue(json, 'occupancy') as Object,
-          ),
-    additionalProperties:
-        AreaReset._extras(json, 'additionalProperties') == null
+        : AreaReset._read_occupancy(AreaReset._presentValue(json, 'occupancy') as Object),
+    additionalProperties: AreaReset._extras(json, 'additionalProperties') == null
         ? const {}
-        : AreaReset._readExtras(
-            AreaReset._extras(json, 'additionalProperties'),
-          ),
+        : AreaReset._readExtras(AreaReset._extras(json, 'additionalProperties')),
   );
 }
 

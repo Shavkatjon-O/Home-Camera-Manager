@@ -9,21 +9,8 @@ part of 'invitation_preview.dart';
 InvitationPreview _$InvitationPreviewFromJson(Map<String, dynamic> json) {
   $checkKeys(
     json,
-    requiredKeys: const [
-      'organisation',
-      'role',
-      'invited_by',
-      'email',
-      'status',
-      'expires_at',
-    ],
-    disallowNullValues: const [
-      'organisation',
-      'role',
-      'email',
-      'status',
-      'expires_at',
-    ],
+    requiredKeys: const ['organisation', 'role', 'invited_by', 'email', 'status', 'expires_at'],
+    disallowNullValues: const ['organisation', 'role', 'email', 'status', 'expires_at'],
   );
   return InvitationPreview(
     organisation: json['organisation'] as String,
@@ -32,21 +19,17 @@ InvitationPreview _$InvitationPreviewFromJson(Map<String, dynamic> json) {
     email: json['email'] as String,
     status: InvitationPreview._read_status(json['status']),
     expiresAt: InvitationPreview._read_expiresAt(json['expires_at']),
-    additionalProperties:
-        InvitationPreview._extras(json, 'additionalProperties') == null
+    additionalProperties: InvitationPreview._extras(json, 'additionalProperties') == null
         ? const {}
-        : InvitationPreview._readExtras(
-            InvitationPreview._extras(json, 'additionalProperties'),
-          ),
+        : InvitationPreview._readExtras(InvitationPreview._extras(json, 'additionalProperties')),
   );
 }
 
-Map<String, dynamic> _$InvitationPreviewToJson(InvitationPreview instance) =>
-    <String, dynamic>{
-      'organisation': instance.organisation,
-      'role': ?InvitationPreview._write_role(instance.role),
-      'invited_by': instance.invitedBy,
-      'email': instance.email,
-      'status': ?InvitationPreview._write_status(instance.status),
-      'expires_at': ?InvitationPreview._write_expiresAt(instance.expiresAt),
-    };
+Map<String, dynamic> _$InvitationPreviewToJson(InvitationPreview instance) => <String, dynamic>{
+  'organisation': instance.organisation,
+  'role': ?InvitationPreview._write_role(instance.role),
+  'invited_by': instance.invitedBy,
+  'email': instance.email,
+  'status': ?InvitationPreview._write_status(instance.status),
+  'expires_at': ?InvitationPreview._write_expiresAt(instance.expiresAt),
+};

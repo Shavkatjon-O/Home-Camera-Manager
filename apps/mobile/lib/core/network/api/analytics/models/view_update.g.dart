@@ -21,23 +21,20 @@ ViewUpdate _$ViewUpdateFromJson(Map<String, dynamic> json) => ViewUpdate(
   stream: ViewUpdate._read_stream(json['stream']),
   additionalProperties: ViewUpdate._extras(json, 'additionalProperties') == null
       ? const {}
-      : ViewUpdate._readExtras(
-          ViewUpdate._extras(json, 'additionalProperties'),
-        ),
+      : ViewUpdate._readExtras(ViewUpdate._extras(json, 'additionalProperties')),
 );
 
-Map<String, dynamic> _$ViewUpdateToJson(ViewUpdate instance) =>
-    <String, dynamic>{
-      'name': ?instance.name,
-      'profile': ?ViewUpdate._write_profile(instance.profile),
-      'enabled': ?instance.enabled,
-      'fps': ?instance.fps,
-      'tamper': ?instance.tamper,
-      'faces': ?instance.faces,
-      'moving': ?instance.moving,
-      'appearance': ?instance.appearance,
-      'falls': ?instance.falls,
-      'plates': ?instance.plates,
-      'follow': ?instance.follow,
-      'stream': ?ViewUpdate._write_stream(instance.stream),
-    };
+Map<String, dynamic> _$ViewUpdateToJson(ViewUpdate instance) => <String, dynamic>{
+  'name': ?instance.name,
+  'profile': ?ViewUpdate._write_profile(instance.profile),
+  'enabled': ?instance.enabled,
+  'fps': ?instance.fps,
+  'tamper': ?instance.tamper,
+  'faces': ?instance.faces,
+  'moving': ?instance.moving,
+  'appearance': ?instance.appearance,
+  'falls': ?instance.falls,
+  'plates': ?instance.plates,
+  'follow': ?instance.follow,
+  'stream': ?ViewUpdate._write_stream(instance.stream),
+};
