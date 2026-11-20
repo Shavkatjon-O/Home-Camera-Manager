@@ -67,4 +67,3 @@ async def test_an_unknown_brand_falls_back_to_plain_rtsp_and_keeps_stored_capabi
     await backfill_devices(session, BootstrapReport())
     assert session.added[0].capabilities["adapter"] == "rtsp"
     assert camera.capabilities == {"adapter": "kept"}
-
