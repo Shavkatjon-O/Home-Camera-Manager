@@ -1,0 +1,49 @@
+name: api
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "services/api/**"
+      - "packages/camera-adapters/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/api.yml"
+  pull_request:
+    paths:
+      - "services/api/**"
+      - "packages/camera-adapters/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/api.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.13"
+      - name: Install the workspace
+        run: uv sync --frozen --all-packages
+      - name: Lint
+        working-directory: services/api
+        run: uv run --frozen ruff check .
+      - name: Check formatting
+        working-directory: services/api
+        run: uv run --frozen ruff format --check .
+      - name: Check import contracts
+        working-directory: services/api
+        run: uv run --frozen lint-imports
+      - name: Test
+        working-directory: services/api
+        run: uv run --frozen pytest -q

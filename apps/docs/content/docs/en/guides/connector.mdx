@@ -1,0 +1,48 @@
+---
+title: Connector
+description: "What a connector does at a site: discovery, camera credentials, its go2rtc, its API and how central reaches it."
+icon: Router
+---
+
+<Status kind="beta" /> The connector in services/connector runs at a site, next to its cameras. It is the only part of the system that touches the site's network: central never reaches the LAN itself, only the connector. [Installing a connector](../getting-started/connector.mdx) covers running and pairing it.
+
+## Discovery
+
+Discovery sends a WS-Discovery probe with a time to live of 1 from each site network interface and sweeps the camera ports of those interfaces' subnets at the same time, then identifies each candidate over ONVIF without credentials. The sweep finds cameras that do not answer multicast, such as V380 cameras. Only addresses inside the swept subnets are reported.
+
+The connector keeps an interface only when it is not a loopback, container, Kubernetes, VPN or tunnel interface and its address is a private address outside Docker's default bridge network. SSS_CONNECTOR_INTERFACES names the interfaces explicitly instead; otherwise SSS_CONNECTOR_SUBNETS keeps the interfaces inside the listed subnets. A network larger than a /24 is swept only in the /24 around the interface's address. Discovery runs when the app asks for it, or every SSS_CONNECTOR_DISCOVERY_INTERVAL seconds when that is set.
+
+## Cameras and credentials
+
+- Camera credentials stay on the connector, encrypted with its store key; the camera list the backend serves carries none.
+- The connector identifies devices with the [camera adapters](../cameras/compatibility.mdx), tests logins and finds stream paths, and moves PTZ cameras.
+- Its own go2rtc restreams every camera over RTSP behind the stream login central received at pairing, so central reaches every camera of the site at one address. go2rtc gets its configuration from the connector directly, so no file holds camera passwords.
+- Heartbeats report the connector's version, address, health and each camera's reachability. When the backend's camera list changes, the connector fetches it and reconciles, keeping the credentials it holds.
+
+## Its API
+
+Central calls the connector's agent API on port 8780 with the key the connector received at pairing. Every route under /api needs that key and answers 503 until the connector is paired.
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | /health | liveness and whether the connector is paired, without a key |
+| GET | /pairing | the pending pairing code and link, without a key |
+| GET | /pairing.svg | the pending pairing link as a QR code, without a key |
+| PUT | /api/cameras/:uuid | store a camera with its credentials and stream it |
+| DELETE | /api/cameras/:uuid | remove a camera and its credentials |
+| POST | /api/cameras/test | test a camera's login and find its stream paths |
+| POST | /api/identify | identify a device with the adapter registry |
+| POST | /api/cameras/:uuid/ptz/move | start a continuous move of the camera's channel |
+| POST | /api/cameras/:uuid/ptz/stop | stop the move |
+| POST | /api/discovery | start a discovery run that reports to the backend |
+
+## Direct and tunnel mode
+
+The modes differ only in the address central uses for the agent API and the RTSP port.
+
+- Direct mode works today: central uses the address the connector advertises in SSS_CONNECTOR_ADVERTISE_ADDRESS, or the source address of its heartbeats.
+- Tunnel mode <Status kind="planned" /> is a contract the backend already carries. The connector sends its WireGuard public key when pairing, and the token answer carries the tunnel: central's WireGuard endpoint, a wstunnel address on TCP 443 for networks without outbound UDP, central's key, the connector's overlay address and the addresses routed into the tunnel. The connector brings the tunnel up in user space, tries UDP first and falls back to TCP 443, and binds its API and go2rtc to the overlay address as well. The backend then calls the overlay address; the key, stream login, routes and stream names stay the same. The tunnel carries only central's traffic to the connector, never the site's network.
+
+## Analytics at the edge
+
+A connector on a Jetson can later run the analytics engine at the site against the same configuration and event contract, with a token of its own, so only events, snapshots and clips travel. <Status kind="planned" />

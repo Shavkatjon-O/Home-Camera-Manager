@@ -1,0 +1,299 @@
+name: smart-surveillance-dev
+
+x-dev-logging: &dev-logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: "3"
+
+x-dev-hardening: &dev-hardening
+  restart: unless-stopped
+  logging: *dev-logging
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+
+x-dev-camera: &dev-camera
+  <<: *dev-hardening
+  build: ./tools/devkit/camera
+  image: smart-surveillance-dev-camera:local
+  profiles: [devkit]
+  cap_add:
+    - NET_BIND_SERVICE
+  mem_limit: 256m
+  volumes:
+    - ./tools/devkit/samples:/samples:ro
+  healthcheck:
+    test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:1984/api"]
+    interval: 15s
+    timeout: 5s
+    retries: 5
+
+x-dev-v380-camera: &dev-v380-camera
+  <<: *dev-hardening
+  build: ./tools/devkit/v380
+  image: smart-surveillance-dev-v380-camera:local
+  profiles: [devkit]
+  read_only: true
+  tmpfs:
+    - /tmp
+  mem_limit: 256m
+  volumes:
+    - ./tools/devkit/samples:/samples:ro
+  healthcheck:
+    test: ["CMD", "python3", "-c", "import socket; socket.create_connection(('127.0.0.1', 8800), 2).close()"]
+    interval: 15s
+    timeout: 5s
+    retries: 5
+    start_period: 60s
+
+x-dev-v380-relay: &dev-v380-relay
+  image: smart-surveillance-dev-v380-relay:local
+  profiles: !override [devkit]
+  networks: !override
+    cams:
+    site-lan:
+
+services:
+  postgres:
+    container_name: smart-surveillance-dev-postgres
+
+  go2rtc:
+    image: alexxit/go2rtc:1.9.14
+    container_name: smart-surveillance-dev-go2rtc
+    deploy: !reset {}
+    volumes: !override
+      - ./tools/devkit/go2rtc/go2rtc.yaml:/config/go2rtc.yaml:ro
+    ports: !override
+      - "127.0.0.1:${SSS_DEV_WEBRTC_PORT:-18755}:8555/tcp"
+      - "127.0.0.1:${SSS_DEV_WEBRTC_PORT:-18755}:8555/udp"
+    networks: !override
+      cams:
+      store-lan:
+        ipv4_address: 172.31.252.2
+
+  backend:
+    image: smart-surveillance-dev-backend:local
+    container_name: smart-surveillance-dev-backend
+    env_file: !override
+      - .env.dev
+    ports:
+      - "127.0.0.1:${SSS_DEV_API_PORT:-18700}:8000"
+    networks: !override
+      cams:
+      database:
+      store-lan:
+        ipv4_address: 172.31.252.3
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./services/api/app
+          target: /app/app
+        - action: rebuild
+          path: ./services/api/pyproject.toml
+
+  analytics:
+    image: smart-surveillance-dev-analytics:local
+    container_name: smart-surveillance-dev-analytics
+    profiles: [analytics]
+    env_file: !override
+      - .env.dev
+
+  v380-ptz-1:
+    image: smart-surveillance-dev-v380-bridge:local
+    container_name: smart-surveillance-dev-v380-ptz-1
+    profiles: [v380]
+
+  v380-ptz-2:
+    image: smart-surveillance-dev-v380-bridge:local
+    container_name: smart-surveillance-dev-v380-ptz-2
+    profiles: [v380]
+
+  v380-relay-ptz-1:
+    <<: *dev-v380-relay
+    container_name: smart-surveillance-dev-v380-relay-ptz-1
+    environment:
+      SSS_V380_HOST: 172.31.250.21
+      SSS_V380_DEVICE_ID: "12345678"
+
+      SSS_V380_USERNAME: admin
+      SSS_V380_PASSWORD: ${SSS_DEV_CAMERA_PASSWORD:?run scripts/devkit.sh init}
+    depends_on:
+      v380-camera-porch:
+        condition: service_healthy
+
+  v380-relay-ptz-2:
+    <<: *dev-v380-relay
+    container_name: smart-surveillance-dev-v380-relay-ptz-2
+    environment:
+      SSS_V380_HOST: 172.31.250.22
+      SSS_V380_DEVICE_ID: "23456789"
+
+      SSS_V380_USERNAME: admin
+      SSS_V380_PASSWORD: ${SSS_DEV_CAMERA_PASSWORD:?run scripts/devkit.sh init}
+    depends_on:
+      v380-camera-garage:
+        condition: service_healthy
+
+  web:
+    image: smart-surveillance-dev-web:local
+    container_name: smart-surveillance-dev-web
+    ports: !override
+      - "127.0.0.1:${SSS_DEV_WEB_PORT:-18750}:8080"
+
+  mailpit:
+    <<: *dev-hardening
+    image: axllent/mailpit:v1.27.11
+    container_name: smart-surveillance-dev-mailpit
+    mem_limit: 128m
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: "true"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "true"
+      MP_MAX_MESSAGES: "2000"
+    ports:
+      - "127.0.0.1:${SSS_DEV_MAIL_PORT:-18725}:8025"
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks: [cams]
+
+  camera-gate:
+    <<: *dev-camera
+    container_name: smart-surveillance-dev-camera-gate
+    environment:
+      CAMERA_ADDRESS: 172.31.250.11
+      CAMERA_NAME: Gate
+      CAMERA_MODEL: SIM-1
+      CAMERA_SERIAL: SIM-0011
+      CAMERA_MAIN: /samples/sample_1080p_h264.mp4
+      CAMERA_SUB: /samples/sample_qHD.mp4
+      CAMERA_MAIN_SIZE: 1920x1080
+      CAMERA_SUB_SIZE: 960x540
+      CAMERA_PASSWORD: ${SSS_DEV_CAMERA_PASSWORD:?run scripts/devkit.sh init}
+    networks:
+      site-lan:
+        ipv4_address: 172.31.250.11
+
+  camera-yard:
+    <<: *dev-camera
+    container_name: smart-surveillance-dev-camera-yard
+    environment:
+      CAMERA_ADDRESS: 172.31.250.12
+      CAMERA_NAME: Yard
+      CAMERA_MODEL: SIM-PTZ
+      CAMERA_SERIAL: SIM-0012
+      CAMERA_MAIN: /samples/sample_720p.mp4
+      CAMERA_PTZ: "true"
+      CAMERA_PASSWORD: ${SSS_DEV_CAMERA_PASSWORD:?run scripts/devkit.sh init}
+    networks:
+      site-lan:
+        ipv4_address: 172.31.250.12
+
+  camera-store:
+    <<: *dev-camera
+    container_name: smart-surveillance-dev-camera-store
+    environment:
+      CAMERA_ADDRESS: 172.31.252.11
+      CAMERA_NAME: Counter
+      CAMERA_MODEL: SIM-1
+      CAMERA_SERIAL: SIM-0021
+      CAMERA_MAIN: /samples/sample_office.mp4
+      CAMERA_PASSWORD: ${SSS_DEV_CAMERA_PASSWORD:?run scripts/devkit.sh init}
+    networks:
+      store-lan:
+        ipv4_address: 172.31.252.11
+
+  v380-camera-porch:
+    <<: *dev-v380-camera
+    container_name: smart-surveillance-dev-v380-camera-porch
+    environment:
+      V380_SIM_ADDRESS: 172.31.250.21
+      V380_SIM_MAC: "02:00:00:38:00:21"
+      V380_SIM_DEVICE_ID: "12345678"
+      V380_SIM_PASSWORD: ${SSS_DEV_CAMERA_PASSWORD:?run scripts/devkit.sh init}
+
+      V380_SIM_DEVICE_VERSION: "32"
+      V380_SIM_AUDIO: adpcm
+      V380_SIM_SOURCE: /samples/sample_cam5.mp4
+    networks:
+      site-lan:
+        ipv4_address: 172.31.250.21
+
+  v380-camera-garage:
+    <<: *dev-v380-camera
+    container_name: smart-surveillance-dev-v380-camera-garage
+    environment:
+      V380_SIM_ADDRESS: 172.31.250.22
+      V380_SIM_MAC: "02:00:00:38:00:22"
+      V380_SIM_DEVICE_ID: "23456789"
+      V380_SIM_PASSWORD: ${SSS_DEV_CAMERA_PASSWORD:?run scripts/devkit.sh init}
+
+      V380_SIM_DEVICE_VERSION: "31"
+      V380_SIM_AUDIO: aac
+      V380_SIM_SOURCE: /samples/sample_qHD.mp4
+    networks:
+      site-lan:
+        ipv4_address: 172.31.250.22
+
+  telegram:
+    <<: *dev-hardening
+    build: ./tools/devkit/telegram
+    image: smart-surveillance-dev-telegram:local
+    container_name: smart-surveillance-dev-telegram
+    profiles: [devkit]
+    read_only: true
+    mem_limit: 128m
+    environment:
+      FAKE_TELEGRAM_TOKEN: ${SSS_TELEGRAM_BOT_TOKEN:-devkit-fake-token}
+    ports:
+      - "127.0.0.1:${SSS_DEV_TELEGRAM_PORT:-18781}:8081"
+    networks: [cams]
+
+  connector:
+    <<: *dev-hardening
+    build:
+      context: .
+      dockerfile: services/connector/Dockerfile
+    image: smart-surveillance-dev-connector:local
+    container_name: smart-surveillance-dev-connector
+    profiles: [devkit]
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp
+    mem_limit: 256m
+    environment:
+      SSS_CONNECTOR_BACKEND_URL: http://backend:8000
+      SSS_CONNECTOR_NAME: Home connector
+
+      SSS_CONNECTOR_SUBNETS: 172.31.250.0/24
+      SSS_CONNECTOR_DISCOVERY_INTERVAL: "0"
+
+      SSS_CONNECTOR_VERIFY_TLS: "false"
+    volumes:
+      - connector-data:/data
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      cams:
+      site-lan:
+        ipv4_address: 172.31.250.2
+
+volumes:
+  connector-data:
+
+networks:
+  site-lan:
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.31.250.0/24
+  store-lan:
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.31.252.0/24

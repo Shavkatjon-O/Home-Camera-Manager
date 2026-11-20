@@ -1,0 +1,51 @@
+---
+title: Console
+description: "The web app of a site: the wall, camera pages and control, events, counts, people, search, discovery, coverage and health."
+icon: Monitor
+---
+
+The console is the web app in apps/console, a Next.js static export served by nginx, which also proxies the API and the video websocket. It signs in with a session cookie, and every page, API call and video connection needs that session.
+
+## Top bar
+
+The top bar holds the page tabs, the number of cameras online, the clock, the site switcher for members of several sites, the arm mode of the current site and a switch that mutes alert toasts. On a phone the tabs turn into icons.
+
+## Wall
+
+Every enabled camera in one grid that fills the screen, on the cameras' sub streams, with automatic or fixed 1, 2x2 and 3x3 layouts and fullscreen for the wall and for each tile. A camera with several lenses in one picture takes one tile per lens. A recognised person's name shows on the tile that saw them for 8 s.
+
+## Camera page
+
+One camera on its main or sub stream with optional sound, its details and status, and a PTZ pad with speed; the arrow keys and plus or minus drive it while the view has focus. A multi-lens camera shows its lenses side by side or one at a time. A toggle draws the boxes the analytics is tracking over the live video.
+
+The sidebar reads and writes what the camera itself offers over ONVIF, and labels a section the camera does not offer: PTZ presets and the home position, the light and siren of V380 cameras, video encoders, image settings, motion detection, the SD card's recording timeline, the clock with time sync, and reboot. SD card playback is off by default (SSS_REPLAY_ENABLED), because the tested cameras reset a playback session right after it starts and several sessions at once made one restart; turned on, it allows one session per camera.
+
+The same page turns analytics on per view and holds the zone and line editor, described in [zones and lines](../analytics/zones-and-lines.mdx).
+
+## Cameras
+
+The registry of cameras: add, edit, order and remove them. The brand fills the defaults of fields left empty; the [compatibility page](../cameras/compatibility.mdx) lists what each adapter needs. A dual-lens camera that sends both pictures stacked in one frame is registered with Lenses set to 2, and every view, the wall and the analytics then treat each band as its own lens.
+
+## Events
+
+A live list of events with filters for camera, kind, label and day, counts for the filtered events, and a side panel with the snapshot, the boxes of its objects, the clip, plate candidates, the person's journey and Find this person. Alerts raise a toast on every page unless muted, and count on the Events tab. [Arm modes and alerts](../analytics/arm-modes.mdx) explains which events alert.
+
+## Counts
+
+Crossings in and out per line by hour and day, and the occupancy of areas bounded by lines with their daily reset and a manual set; see [counts](../analytics/counts.mdx).
+
+## People and Search
+
+Known people with their sample faces and latest sightings, unknown clusters, enrolment from photos, merging and deleting; and search over every event. [Faces](../analytics/faces.mdx) and [search](../analytics/search.mdx) describe both.
+
+## Discover
+
+Scans the local subnet in SSS_DISCOVERY_SUBNET for cameras: a TCP sweep of the usual camera ports followed by ONVIF identification. It opens the add form prefilled for any camera it finds.
+
+## Coverage
+
+Plans Wi-Fi coverage on a floor plan with routers, walls by material and devices, shows a heatmap per band and suggests router placement.
+
+## Health
+
+Probes every router and camera with a TCP connect every SSS_HEALTH_INTERVAL_SECONDS and shows uptime, latency and outages. Two failed samples open an outage and the first answer closes it; when the device a target connects through is down at the same time, the outage names the top device of that chain as its cause. A bridged V380 camera is probed on its own address and port 8800, never on its bridge, because the bridge answers even when the camera is gone.

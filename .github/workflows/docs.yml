@@ -1,0 +1,106 @@
+name: docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/docs/**"
+      - "packages/contracts/**"
+      - "packages/camera-adapters/**"
+      - "services/api/app/core/config.py"
+      - "services/api/app/modules/analytics/routers/**"
+      - "services/api/app/modules/investigation/routers/internal.py"
+      - "services/analytics/app/settings.py"
+      - "services/analytics/app/identity/settings.py"
+      - "tools/cv-viewer/cv_viewer.py"
+      - "docs/**"
+      - "CONTRIBUTING.md"
+      - ".env.example"
+      - ".env.dev.example"
+      - "docker-compose*.yml"
+      - ".github/workflows/docs.yml"
+  pull_request:
+    paths:
+      - "apps/docs/**"
+      - "packages/contracts/**"
+      - "packages/camera-adapters/**"
+      - "services/api/app/core/config.py"
+      - "services/api/app/modules/analytics/routers/**"
+      - "services/api/app/modules/investigation/routers/internal.py"
+      - "services/analytics/app/settings.py"
+      - "services/analytics/app/identity/settings.py"
+      - "tools/cv-viewer/cv_viewer.py"
+      - "docs/**"
+      - "CONTRIBUTING.md"
+      - ".env.example"
+      - ".env.dev.example"
+      - "docker-compose*.yml"
+      - ".github/workflows/docs.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: apps/docs
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Enable pnpm
+        run: corepack enable
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Lint
+        run: pnpm lint
+      - name: Type check
+        run: pnpm typecheck
+      - name: Build without a base path
+        run: pnpm build
+      - name: Check links
+        run: pnpm check:links
+      - name: Configure Pages
+        if: github.event_name != 'pull_request'
+        id: pages
+        uses: actions/configure-pages@v5
+      - name: Build for Pages
+        if: github.event_name != 'pull_request'
+        run: pnpm build
+        env:
+          DOCS_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+      - name: Upload the site
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/docs/out
+
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

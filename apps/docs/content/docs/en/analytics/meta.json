@@ -1,0 +1,17 @@
+{
+  "title": "Analytics",
+  "icon": "ScanEye",
+  "pages": [
+    "index",
+    "zones-and-lines",
+    "arm-modes",
+    "tamper",
+    "counts",
+    "objects",
+    "faces",
+    "search",
+    "falls",
+    "plates",
+    "follow"
+  ]
+}

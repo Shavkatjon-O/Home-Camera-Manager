@@ -1,0 +1,34 @@
+---
+title: Licences
+description: The repository's licence, the licences of the models the analytics uses, and of the main dependencies.
+icon: Scale
+---
+
+The repository carries no licence file yet; the owner has not chosen one.
+
+## Models
+
+Model weights are never committed. scripts/download-models.sh, download-face-models.sh and download-secondary-models.sh fetch them with pinned checksums and print each licence. Every default model is Apache 2.0 or MIT, except the face models, which the user downloads knowingly.
+
+| Model | Use | Licence | Fetched by |
+|---|---|---|---|
+| RF-DETR Medium | shared detector | Apache 2.0 | download-models.sh |
+| RF-DETR Nano, Small and Large | detector candidates and the Jetson profile | Apache 2.0 | download-models.sh --all |
+| NVIDIA PeopleNet and TrafficCamNet | detector candidates for comparison | NVIDIA Open Model License | download-models.sh --all |
+| InsightFace antelopev2: SCRFD 10G and glintr100 | face detection and recognition | non-commercial research use only | download-face-models.sh |
+| OSNet-AIN x1.0 MSMT17 | person appearance for journeys | MIT | download-secondary-models.sh |
+| RTMPose-m body7 | body keypoints for falls | Apache 2.0 | download-secondary-models.sh |
+| PaddleOCR PP-OCRv4 text detector and English recogniser | number plates | Apache 2.0 | download-secondary-models.sh |
+| NVIDIA LPDNet | optional plate finder | NVIDIA AI Enterprise EULA, not an open licence | download-secondary-models.sh --all |
+
+The face models make face recognition unfit for a product that anyone installs until a permissive face model replaces them, and LPDNet stays optional for the same reason. Ultralytics YOLO weights and code are never used, because their AGPL licence would bind the whole project.
+
+## Runtime
+
+- The analytics image is built on NVIDIA's DeepStream container, under the NVIDIA Deep Learning Container License.
+- The V380 bridge builds an outside project that carries no licence file. A clean-room reimplementation from the project's own protocol specification replaces it. <Status kind="planned" />
+- The mobile app uses only MIT, BSD and Apache packages. The Firebase SDKs, which are not open source, are only in the play flavor; the foss flavor has none.
+
+## This site
+
+Next.js and Fumadocs are MIT licensed, mermaid is MIT, lucide is ISC, and the Geist fonts are under the SIL Open Font License.

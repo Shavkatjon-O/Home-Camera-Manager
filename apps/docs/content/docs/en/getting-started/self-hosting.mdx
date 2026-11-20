@@ -1,0 +1,75 @@
+---
+title: Self-hosting
+description: Run the whole system on one Linux computer in the site's network with Docker Compose.
+icon: Server
+---
+
+A self-hosted site runs every service on one computer: the API, the console, go2rtc, the analytics engine, Postgres and a V380 bridge per V380 camera. Nothing it stores leaves that computer.
+
+## Requirements
+
+- Linux with Docker Engine, Docker Compose v2 and the NVIDIA Container Toolkit.
+- An NVIDIA GPU with NVDEC and NVENC and a driver that supports CUDA 13.2, which is 595.58 or newer. The analytics image is DeepStream 9.1 on CUDA 13.2 and TensorRT 10.16; the stack is built and measured on a GeForce RTX 5070 with 12 GB.
+- GPU memory: about 2.1 GB for the analytics with every feature on, and 0.2 to 0.3 GB for each H.264 transcode go2rtc runs while a browser watches.
+- RAM: the analytics container is capped at 6 GB and uses about 1.5 GB with four cameras; the other services together use under 1 GB.
+- CPU: go2rtc decodes the browser transcodes on the CPU, under half a core for four 5 MP cameras on the wall; the analytics uses about a quarter of a core.
+- Disk: about 30 GB for the images, most of it the DeepStream base image, 2.5 GB for the models, 0.5 GB for the TensorRT engines, and the events volume, which grows by a few GB a day of clips with several people about.
+
+## Install
+
+<Steps>
+<Step>
+
+### Configure
+
+Copy the example configuration:
+
+```bash
+cp .env.example .env
+```
+
+Set SSS_SECRET_KEY to a long random value, SSS_TV_RTSP_PASSWORD and SSS_ANALYTICS_TOKEN to two other random values, SSS_ADMIN_PASSWORD, SSS_TIMEZONE to the zone schedules use, and SSS_LAN_BIND to the computer's address on the local network, reserved in the router so it does not change. SSS_SECRET_KEY also encrypts the stored camera passwords, so changing it later makes them unreadable. Every variable is listed in the [configuration reference](../reference/configuration.mdx).
+
+</Step>
+<Step>
+
+### Download the models
+
+```bash
+scripts/download-models.sh
+scripts/download-face-models.sh
+scripts/download-secondary-models.sh
+```
+
+The first fetches RF-DETR and exports it to ONNX, the second the face models, and the third the appearance, pose and plate models. Each script checks every file against a pinned checksum and prints its licence; read the [model licences](../licences.mdx) before use, because the face models are published for non-commercial research only. The scripts read SSS_ANALYTICS_MODELS_DIR and SSS_ANALYTICS_FACE_MODELS_DIR from the shell, not from .env, and default to the folders compose mounts.
+
+</Step>
+<Step>
+
+### Start
+
+```bash
+docker compose up -d --build
+```
+
+The first start of the analytics builds its TensorRT engines into the analytics-engines volume, which takes a few minutes; later starts reuse them.
+
+</Step>
+<Step>
+
+### Sign in and add cameras
+
+Open `http://127.0.0.1:8750` and sign in with SSS_ADMIN_USERNAME and SSS_ADMIN_PASSWORD. The API creates that user on first start and never overwrites its password afterwards; the installation becomes one organisation with one site, owned by that user.
+
+Add cameras on the Cameras page or find them with Discover, then turn on analytics per view on each camera's page and draw zones and lines there. The [console guide](../guides/console.mdx) walks through the pages.
+
+</Step>
+</Steps>
+
+## Ports
+
+Only two ports are published. The web app listens on 127.0.0.1 and on SSS_LAN_BIND at SSS_WEB_PORT, 8750 by default, and go2rtc's RTSP port 8554 listens on SSS_LAN_BIND only, so phones and TVs on the local Wi-Fi reach them while a VPN on the same computer does not. The analytics engine and the V380 bridges publish nothing.
+
+## Updating
+
+Pull the repository and run docker compose up -d --build again. Database migrations run when the API starts, and the named volumes postgres, events and analytics-engines keep the data between versions.

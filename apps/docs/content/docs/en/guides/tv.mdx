@@ -1,0 +1,33 @@
+---
+title: TV app
+description: Using the Android TV wall with the remote, its settings and diagnostics, and how it plays the cameras.
+icon: Tv
+---
+
+The TV app in apps/tv shows a grid of every camera on an Android TV. It connects straight to the cameras on the local Wi-Fi, decodes them on the TV and needs nothing from the server. [Getting started](../getting-started/tv.mdx) covers building and installing it.
+
+## Using it
+
+- Grid: the D-pad moves a thin outline between tiles and briefly shows the camera name and lens; OK opens that tile fullscreen. A tile without a picture shows a quiet status: Connecting, Reconnecting in N s, Offline, Decoder limit or the login error.
+- Fullscreen: Back returns to the grid. The camera's sound plays only here, and the mute and volume keys work as usual. On a PTZ camera, holding an arrow pans or tilts the camera until the key is released; on other cameras left and right step to the previous or next tile.
+- Menu, or a long press on OK, opens Settings, Diagnostics and Reload.
+- Settings: OK on an address opens the TV keyboard, and a confirmed address applies at once. A switch turns a camera off. Find V380 cameras searches the Wi-Fi and moves a V380 camera to the address that answers with its device id. Reset to defaults returns to the compiled values.
+- Diagnostics: per camera the state, stream, resolution, frame rate and bit rate, decoder, decode delay, time to the first picture, audio format and last error; then the device, the app's memory, the decoders in use and every HEVC and AVC decoder with its instance limit and maximum size, and the events log.
+
+## Cameras it plays
+
+| Camera | Protocol | Grid | Fullscreen |
+|---|---|---|---|
+| EZVIZ and other RTSP cameras | RTSP over TCP with digest or basic login | sub stream | main stream with sound |
+| V380 | the V380 LAN protocol on port 8800 | small stream | large stream with sound |
+
+A V380 picture holds both lenses stacked, lens 1 on top and the moving lens 2 below, and the app shows each as its own tile.
+
+## How it plays them
+
+- One session and one decoder per camera, never per tile. The grid runs every enabled camera on its small stream; fullscreen stops the grid sessions and opens only that camera's large stream with sound, and Back reverses it.
+- Decoding uses MediaCodec in asynchronous mode and renders each frame as soon as it is decoded, hardware decoders first. A camera whose decoder cannot start shows Decoder limit and retries every 30 s, and a fullscreen stream larger than the hardware decoder allows falls back to the small stream.
+- Every decoder draws into its own texture, and one OpenGL ES 2.0 surface composes the visible tiles, each letterboxed to keep its aspect.
+- Each camera reconnects on its own after 1, 2, 5, 10 and then every 30 s. A V380 camera that does not answer at start triggers one discovery, and losing and regaining the network reconnects everything.
+
+<Callout type="info">The V380 client is being reimplemented from the project's own protocol specification. <Status kind="planned" /></Callout>
