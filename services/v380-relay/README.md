@@ -26,7 +26,7 @@ A camera served by a relay is registered with the relay as its host, RTSP port 8
 | Request | Effect |
 |---|---|
 | GET /api/status | running when a session is open or the camera answers, otherwise unreachable, with the facts of each open stream |
-| POST /api/ptz/left, right, up, down or stop | Starts a move along one axis or stops it; a move stops by itself after 10 seconds |
+| POST /api/ptz/left, right, up, down or stop | Starts a move along one axis or stops it; a move that is neither stopped nor renewed stops by itself after 30 seconds |
 | POST /api/light/on, off or auto | Switches the light |
 | POST /api/siren/on?seconds=10 | Sounds the siren for the given seconds, up to 300 |
 | POST /api/siren/off | Silences the siren |
@@ -43,6 +43,21 @@ The relay and the client are tested against the device simulator in tools/devkit
 cd tools/devkit/v380
 uv run --package camera-adapters pytest -q
 ```
+
+## Cut-over on the real cameras
+
+The relay replaces the bridge services only after these steps pass on the real cameras, with the owner on site. Run them with both relays up beside the bridges, then stop the bridges.
+
+1. Start the relays: docker compose --profile v380-native up -d --build v380-relay-ptz-1 v380-relay-ptz-2, and check that GET /api/status answers running for both.
+2. Sessions: on both cameras, device version 31 and device version 32, check with ffprobe that rtsp://RELAY:8554/main and /sub play H.265 at the sizes the specification lists, and that the logs show the short stream login reply and no reconnect loop.
+3. Two streams at once: play /main and /sub of the same camera together for ten minutes. If either drops or the camera restarts, set SSS_V380_STREAMS to the one stream the site needs.
+4. Registration: change each camera to the relay as host, RTSP port 8554 and the paths /main and /sub, in place of the bridge and /live, and check live view, analytics and recordings.
+5. PTZ: move each camera left, right, up and down and release. Every move must stop, including when the viewer leaves the camera, when the stream process exits and after the 30 s guard. The API moves bridged cameras over ONVIF; a camera whose PTZ came from the bridge's ONVIF needs the API to call the V380 adapter or the relay's /api/ptz before the cut-over. Presets and a home position exist only where a camera's own ONVIF offers them.
+6. Light, siren, picture and flip: try each on each camera and note what has an effect, whether the siren needs siren on every 500 ms, and which model has no siren. None of these commands is verified yet.
+7. Reconnects: restart a camera and interrupt its Wi-Fi; the relay must resume within the back-off of 1, 2, 5 and 10 s and then 30 s, and go2rtc must keep its streams.
+8. Refusals: give one relay a wrong password and check that it reports the refusal and retries no more than every 300 s.
+9. TV: on the real TV, check that both cameras play, that full view falls back to the sub stream where the main stream exceeds the decoder's 1920x1088 limit, that sound plays (IMA ADPCM on the version 32 camera, AAC on the version 31 camera), that the low-latency SPS rewrite takes effect, that a held direction key moves and its release stops, and that the V380 search finds both cameras, also after one moves to another address.
+10. Remove: once every step passes, stop and remove the bridge services and services/v380-bridge, rebuild the TV APK and record the results.
 
 ## Configuration
 
