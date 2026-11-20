@@ -30,6 +30,31 @@ x-dev-camera: &dev-camera
     timeout: 5s
     retries: 5
 
+x-dev-v380-camera: &dev-v380-camera
+  <<: *dev-hardening
+  build: ./tools/devkit/v380
+  image: smart-surveillance-dev-v380-camera:local
+  profiles: [devkit]
+  read_only: true
+  tmpfs:
+    - /tmp
+  mem_limit: 256m
+  volumes:
+    - ./tools/devkit/samples:/samples:ro
+  healthcheck:
+    test: ["CMD", "python3", "-c", "import socket; socket.create_connection(('127.0.0.1', 8800), 2).close()"]
+    interval: 15s
+    timeout: 5s
+    retries: 5
+    start_period: 60s
+
+x-dev-v380-relay: &dev-v380-relay
+  image: smart-surveillance-dev-v380-relay:local
+  profiles: !override [devkit]
+  networks: !override
+    cams:
+    site-lan:
+
 services:
   postgres:
     container_name: smart-surveillance-dev-postgres
@@ -84,6 +109,32 @@ services:
     image: smart-surveillance-dev-v380-bridge:local
     container_name: smart-surveillance-dev-v380-ptz-2
     profiles: [v380]
+
+  v380-relay-ptz-1:
+    <<: *dev-v380-relay
+    container_name: smart-surveillance-dev-v380-relay-ptz-1
+    environment:
+      SSS_V380_HOST: 172.31.250.21
+      SSS_V380_DEVICE_ID: "12345678"
+
+      SSS_V380_USERNAME: admin
+      SSS_V380_PASSWORD: ${SSS_DEV_CAMERA_PASSWORD:?run scripts/devkit.sh init}
+    depends_on:
+      v380-camera-porch:
+        condition: service_healthy
+
+  v380-relay-ptz-2:
+    <<: *dev-v380-relay
+    container_name: smart-surveillance-dev-v380-relay-ptz-2
+    environment:
+      SSS_V380_HOST: 172.31.250.22
+      SSS_V380_DEVICE_ID: "23456789"
+
+      SSS_V380_USERNAME: admin
+      SSS_V380_PASSWORD: ${SSS_DEV_CAMERA_PASSWORD:?run scripts/devkit.sh init}
+    depends_on:
+      v380-camera-garage:
+        condition: service_healthy
 
   web:
     image: smart-surveillance-dev-web:local
@@ -154,6 +205,38 @@ services:
     networks:
       store-lan:
         ipv4_address: 172.31.252.11
+
+  v380-camera-porch:
+    <<: *dev-v380-camera
+    container_name: smart-surveillance-dev-v380-camera-porch
+    environment:
+      V380_SIM_ADDRESS: 172.31.250.21
+      V380_SIM_MAC: "02:00:00:38:00:21"
+      V380_SIM_DEVICE_ID: "12345678"
+      V380_SIM_PASSWORD: ${SSS_DEV_CAMERA_PASSWORD:?run scripts/devkit.sh init}
+
+      V380_SIM_DEVICE_VERSION: "32"
+      V380_SIM_AUDIO: adpcm
+      V380_SIM_SOURCE: /samples/sample_cam5.mp4
+    networks:
+      site-lan:
+        ipv4_address: 172.31.250.21
+
+  v380-camera-garage:
+    <<: *dev-v380-camera
+    container_name: smart-surveillance-dev-v380-camera-garage
+    environment:
+      V380_SIM_ADDRESS: 172.31.250.22
+      V380_SIM_MAC: "02:00:00:38:00:22"
+      V380_SIM_DEVICE_ID: "23456789"
+      V380_SIM_PASSWORD: ${SSS_DEV_CAMERA_PASSWORD:?run scripts/devkit.sh init}
+
+      V380_SIM_DEVICE_VERSION: "31"
+      V380_SIM_AUDIO: aac
+      V380_SIM_SOURCE: /samples/sample_qHD.mp4
+    networks:
+      site-lan:
+        ipv4_address: 172.31.250.22
 
   connector:
     <<: *dev-hardening

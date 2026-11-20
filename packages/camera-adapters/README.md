@@ -10,6 +10,8 @@ The Python package camera_adapters: one adapter per kind of camera behind one in
 | registry | Picks the adapter of a device from its fingerprint and the catalog; loads third-party adapters from the entry point group smart_surveillance.camera_adapters |
 | catalog | Known camera models, in catalog/models.yaml |
 | onvif, rtsp, ezviz, v380 | Built-in adapters |
+| v380 client, streamer, pipe, control, router | Our V380 LAN protocol client, written from docs/protocols/v380.md: sessions, reconnects, the Annex-B output go2rtc reads from an exec source, and the control socket |
+| v380 relay, go2rtc | The relay that serves one V380 camera over RTSP, and the go2rtc exec source of a camera |
 | fingerprint, classifier, sweep | Device fingerprinting, classification and subnet sweep |
 | manifest | Capability manifest of a camera |
 

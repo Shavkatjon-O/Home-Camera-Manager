@@ -29,6 +29,27 @@ x-v380-bridge: &v380-bridge
     start_period: 30s
   networks: [cams]
 
+x-v380-relay: &v380-relay
+  <<: [*restart, *hardening]
+  build:
+    context: .
+    dockerfile: services/v380-relay/Dockerfile
+  image: smart-surveillance-system-v380-relay:local
+  profiles: [v380-native]
+  logging: *logging
+  init: true
+  read_only: true
+  tmpfs:
+    - /tmp
+  mem_limit: 256m
+  healthcheck:
+    test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/api/status', timeout=4)"]
+    interval: 30s
+    timeout: 5s
+    retries: 3
+    start_period: 20s
+  networks: [cams]
+
 services:
   postgres:
     <<: [*restart, *hardening]
@@ -207,6 +228,26 @@ services:
       - "8554"
       - --http-port
       - "8080"
+
+  v380-relay-ptz-1:
+    <<: *v380-relay
+    container_name: smart-surveillance-system-v380-relay-ptz-1
+    environment:
+      SSS_V380_HOST: ${V380_PTZ_1_HOST:-}
+      SSS_V380_DEVICE_ID: ${V380_PTZ_1_ID:-}
+
+      SSS_V380_USERNAME: ${V380_USERNAME:-admin}
+      SSS_V380_PASSWORD: ${V380_PASSWORD:-}
+
+  v380-relay-ptz-2:
+    <<: *v380-relay
+    container_name: smart-surveillance-system-v380-relay-ptz-2
+    environment:
+      SSS_V380_HOST: ${V380_PTZ_2_HOST:-}
+      SSS_V380_DEVICE_ID: ${V380_PTZ_2_ID:-}
+
+      SSS_V380_USERNAME: ${V380_USERNAME:-admin}
+      SSS_V380_PASSWORD: ${V380_PASSWORD:-}
 
   web:
     <<: [*restart, *hardening]

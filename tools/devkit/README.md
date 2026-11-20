@@ -5,6 +5,7 @@ A whole stack on one machine with a simulated site in place of real cameras, run
 | Folder | Holds |
 |---|---|
 | camera | A container image that simulates one IP camera with ONVIF, WS-Discovery and RTSP, as camera/README.md describes |
+| v380 | A simulator of a V380 camera's LAN protocol and its container image, as v380/README.md describes |
 | go2rtc | The go2rtc configuration of the kit: no GPU, WebRTC for the host and the Android emulator |
 | samples | The sample videos the cameras loop, copied out of the DeepStream image and ignored by git |
 
@@ -37,6 +38,9 @@ The Android emulator reaches the same ports at 10.0.2.2, and go2rtc offers both 
 |---|---|---|---|
 | camera-gate | home LAN 172.31.250.0/24 | 172.31.250.11 | Camera with a main and a sub stream |
 | camera-yard | home LAN 172.31.250.0/24 | 172.31.250.12 | PTZ camera |
+| v380-camera-porch | home LAN 172.31.250.0/24 | 172.31.250.21 | V380 camera, device version 32, ADPCM audio, device id 12345678 |
+| v380-camera-garage | home LAN 172.31.250.0/24 | 172.31.250.22 | V380 camera, device version 31, AAC audio, device id 23456789 |
+| v380-relay-ptz-1 and v380-relay-ptz-2 | home LAN and the stack network | assigned | V380 relays that serve the two V380 cameras at /main and /sub |
 | connector | home LAN and the stack network | 172.31.250.2 | Connector agent of the home site |
 | camera-store | store LAN 172.31.252.0/24 | 172.31.252.11 | Camera the API reaches directly |
 
@@ -60,6 +64,12 @@ The camera tests need no network. Run them from this folder with ruff.toml as th
 
 ```
 cd tools/devkit/camera && python -m pytest -q
+```
+
+The V380 tests run the V380 client, adapter and relay against the simulator and need the camera_adapters package:
+
+```
+cd tools/devkit/v380 && uv run --package camera-adapters pytest -q
 ```
 
 The seed's tests run with the API suite.
