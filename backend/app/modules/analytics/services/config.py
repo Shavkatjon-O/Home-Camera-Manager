@@ -32,6 +32,11 @@ def zone_config(zone: AnalyticsZone) -> dict:
         "alert": zone.alert,
         "enabled": zone.enabled,
         "reference": None if zone.whole_view else zone.reference,
+        "left_seconds": zone.left_seconds,
+        "taken_seconds": zone.taken_seconds,
+        "object_labels": zone.object_labels,
+        "background": zone.background,
+        "animals": zone.animals,
     }
 
 
@@ -54,14 +59,15 @@ def line_config(line: AnalyticsLine) -> dict:
         "alert": line.alert,
         "enabled": line.enabled,
         "reference": line.reference,
+        "animals": line.animals,
     }
 
 
 def view_config(view: AnalyticsView, zones: list[AnalyticsZone], lines: list[AnalyticsLine]) -> dict:
     """Return a view in the analytics service's form.
 
-    References only matter on moving lenses, so fixed views run their zones without them, and the tamper watch is
-    off on moving lenses unless set, because a lens that pans looks like a moved camera.
+    References only matter on moving lenses, so fixed views run their zones without them. The tamper guard runs on
+    moving lenses too and never reports them moved, because a lens that pans changes its scene on purpose.
 
     Args:
         view: The view.
@@ -78,6 +84,11 @@ def view_config(view: AnalyticsView, zones: list[AnalyticsZone], lines: list[Ana
         "profile": view.profile,
         "enabled": view.enabled,
         "fps": view.fps,
+        "moving": view.moving,
+        "appearance": view.appearance,
+        "falls": {"enabled": view.falls},
+        "plates": {"enabled": view.plates},
+        "follow": {"enabled": view.follow},
         "zones": [zone_config(zone) for zone in zones],
         "lines": [line_config(line) for line in lines],
     }
@@ -86,8 +97,6 @@ def view_config(view: AnalyticsView, zones: list[AnalyticsZone], lines: list[Ana
             item["reference"] = None
     if view.tamper is not None:
         data["tamper"] = view.tamper
-    elif view.moving:
-        data["tamper"] = False
     if view.faces is not None:
         data["faces"] = view.faces
     if view.tuning:

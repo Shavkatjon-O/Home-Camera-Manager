@@ -5,7 +5,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field, field_validator
 
-from app.modules.analytics.enums import LABEL_GROUPS, LABELS, AlertMode, LineDirection
+from app.modules.analytics.enums import LABEL_GROUPS, LABELS, AlertMode, AnimalMode, LineDirection
 
 __all__ = ["AlertPolicy", "LineInput", "LineRead", "RulesUpdate", "Window", "ZoneInput", "ZoneRead"]
 
@@ -91,6 +91,11 @@ class ZoneInput(BaseModel):
         alert: Alert policy.
         enabled: Whether the zone produces events.
         reference: Snapshot the zone was drawn on.
+        left_seconds: Seconds a carried object stays still before it counts as left, 0 for off.
+        taken_seconds: Seconds an object must have been present before its going counts as taken, 0 for off.
+        object_labels: Labels watched for left and taken, empty for the default carried objects.
+        background: Also find unclassed objects by comparing with the empty scene.
+        animals: What dogs, cats and birds do in the zone.
     """
 
     uuid: UUID | None = None
@@ -105,8 +110,13 @@ class ZoneInput(BaseModel):
     alert: AlertPolicy = Field(default_factory=AlertPolicy)
     enabled: bool = True
     reference: str | None = Field(None, pattern=REFERENCE)
+    left_seconds: float = Field(0.0, ge=0.0, le=86400.0)
+    taken_seconds: float = Field(0.0, ge=0.0, le=86400.0)
+    object_labels: list[str] = Field(default_factory=list, max_length=10)
+    background: bool = False
+    animals: AnimalMode = AnimalMode.RECORD
 
-    @field_validator("labels")
+    @field_validator("labels", "object_labels")
     @classmethod
     def known_labels(cls, values: list[str]) -> list[str]:
         """Reject unknown labels.
@@ -148,6 +158,7 @@ class LineInput(BaseModel):
         alert: Alert policy.
         enabled: Whether the line produces events.
         reference: Snapshot the line was drawn on.
+        animals: What dogs, cats and birds crossing the line do.
     """
 
     uuid: UUID | None = None
@@ -159,6 +170,7 @@ class LineInput(BaseModel):
     alert: AlertPolicy = Field(default_factory=AlertPolicy)
     enabled: bool = True
     reference: str | None = Field(None, pattern=REFERENCE)
+    animals: AnimalMode = AnimalMode.RECORD
 
     @field_validator("labels")
     @classmethod
@@ -221,6 +233,11 @@ class ZoneRead(BaseModel):
         enabled: Whether the zone produces events.
         reference: Snapshot the zone was drawn on.
         suspended: True while a moving lens no longer shows that scene.
+        left_seconds: Seconds before a carried object counts as left, 0 for off.
+        taken_seconds: Seconds of presence before a disappearance counts as taken, 0 for off.
+        object_labels: Labels watched for left and taken.
+        background: Also finds unclassed objects by comparing with the empty scene.
+        animals: What dogs, cats and birds do in the zone.
     """
 
     uuid: UUID
@@ -236,6 +253,11 @@ class ZoneRead(BaseModel):
     enabled: bool
     reference: str | None
     suspended: bool
+    left_seconds: float = 0.0
+    taken_seconds: float = 0.0
+    object_labels: list[str] = []
+    background: bool = False
+    animals: AnimalMode = AnimalMode.RECORD
 
 
 class LineRead(BaseModel):
@@ -252,6 +274,7 @@ class LineRead(BaseModel):
         enabled: Whether the line produces events.
         reference: Snapshot the line was drawn on.
         suspended: True while a moving lens no longer shows that scene.
+        animals: What dogs, cats and birds crossing the line do.
     """
 
     uuid: UUID
@@ -264,3 +287,4 @@ class LineRead(BaseModel):
     enabled: bool
     reference: str | None
     suspended: bool
+    animals: AnimalMode = AnimalMode.RECORD

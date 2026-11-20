@@ -34,6 +34,8 @@ class AnalyticsEventIn(BaseModel):
         boxes: Boxes of the objects when they joined.
         count: Largest number of objects at once.
         alert: Whether the event raises an alert.
+        plates: Number plate candidates of a vehicle event, strongest first, None when not read.
+        plate_status: read, infrared, no_plate, too_small, unreadable or pending, None when not read.
         snapshot_path: Snapshot relative to the events folder.
         thumbnail_path: Thumbnail relative to the events folder.
         clip_path: Clip relative to the events folder.
@@ -58,6 +60,8 @@ class AnalyticsEventIn(BaseModel):
     boxes: list[dict] = Field(default_factory=list, max_length=20)
     count: int = 0
     alert: bool = False
+    plates: list[dict] | None = Field(None, max_length=5)
+    plate_status: str | None = Field(None, max_length=20)
     snapshot_path: str | None = Field(None, pattern=MEDIA)
     thumbnail_path: str | None = Field(None, pattern=MEDIA)
     clip_path: str | None = Field(None, pattern=MEDIA)

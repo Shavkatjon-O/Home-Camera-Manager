@@ -353,6 +353,10 @@ export type EventKind =
   | "crowd"
   | "face_known"
   | "face_unknown"
+  | "animal"
+  | "object_left"
+  | "object_taken"
+  | "fall"
 
 export type EventOrigin = "camera" | "analytics"
 
@@ -442,6 +446,7 @@ export interface EventQuery {
   camera_uuid?: string
   kind?: EventKind
   label?: string
+  plate?: string
   source?: EventOrigin
   from?: string
   to?: string
@@ -638,6 +643,8 @@ export interface AlertPolicy {
   labels: string[]
 }
 
+export type AnimalsMode = "include" | "record" | "exclude"
+
 export interface AnalyticsZone {
   uuid: string
   name: string
@@ -647,6 +654,11 @@ export interface AnalyticsZone {
   min_dwell: number
   loiter_seconds: number
   crowd_count: number
+  left_seconds: number
+  taken_seconds: number
+  object_labels: string[]
+  background: boolean
+  animals: AnimalsMode
   schedule: TimeWindow[]
   alert: AlertPolicy
   enabled: boolean
@@ -660,6 +672,7 @@ export interface AnalyticsLine {
   points: [ViewPoint, ViewPoint]
   labels: string[]
   direction: LineDirection
+  animals: AnimalsMode
   schedule: TimeWindow[]
   alert: AlertPolicy
   enabled: boolean
@@ -716,6 +729,10 @@ export interface AnalyticsView {
   tamper: boolean | null
   faces: boolean | null
   moving: boolean
+  appearance: boolean
+  falls: boolean
+  plates: boolean
+  follow: boolean
   zones: AnalyticsZone[]
   lines: AnalyticsLine[]
   status: ViewStatus | null
@@ -726,7 +743,7 @@ export interface AnalyticsViewList {
 }
 
 export type AnalyticsViewUpdate = Partial<
-  Pick<AnalyticsView, "name" | "profile" | "enabled" | "fps" | "tamper" | "faces" | "moving">
+  Pick<AnalyticsView, "name" | "profile" | "enabled" | "fps" | "tamper" | "faces" | "moving" | "appearance" | "falls" | "plates" | "follow">
 >
 
 export interface LiveObject {

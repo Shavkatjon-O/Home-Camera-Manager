@@ -15,6 +15,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime, tzinfo
 
+from app.rules.animals import is_animal
 from app.rules.geometry import point_in_polygon, segments_intersect, side_of_line
 from app.rules.model import VEHICLES, ArmMode, Detection, EventKind, Frame, Line, ViewRules, Zone, label_matches
 from app.rules.tracks import Identity, TrackBook
@@ -24,6 +25,22 @@ OCCUPANT_SHARE = 0.9
 OCCUPANT_RISE = 0.15
 LINE_TOLERANCE = 0.05
 FIRED_MEMORY_SECONDS = 3600.0
+
+
+def kind_of(label: str) -> EventKind:
+    """Return the kind of zone event an object of a label opens.
+
+    Args:
+        label: Canonical label.
+
+    Returns:
+        vehicle for vehicles, animal for dogs, cats and birds, and intrusion for everything else.
+    """
+    if label in VEHICLES:
+        return EventKind.VEHICLE
+    if is_animal(label):
+        return EventKind.ANIMAL
+    return EventKind.INTRUSION
 
 
 @dataclass
@@ -161,6 +178,7 @@ class RulesEngine:
         started_at: float,
         timezone: tzinfo,
         arm: Callable[[], ArmMode] = lambda: ArmMode.DISARMED,
+        on_crossing: Callable[[str, str, str, float], None] | None = None,
     ):
         """Create the engine for one view.
 
@@ -170,11 +188,13 @@ class RulesEngine:
             started_at: Time the view started, which ends the warm up.
             timezone: Time zone of the schedules.
             arm: Callable returning the current arm mode.
+            on_crossing: Called with the line id, direction, label and time of every counted crossing.
         """
         self.view = view
         self.rules = rules
         self.timezone = timezone
         self.arm = arm
+        self.on_crossing = on_crossing
         self.book = TrackBook(rules.tuning, started_at)
         self.inside: dict[str, dict[int, float]] = {}
         self.sides: dict[str, dict[int, int]] = {}
@@ -325,6 +345,8 @@ class RulesEngine:
         for identity in identities:
             if not label_matches(zone.labels, identity.label) or not identity.counts:
                 continue
+            if not zone.animals.produces(identity.label):
+                continue
             if not point_in_polygon(identity.foot, zone.polygon):
                 continue
             present.append(identity)
@@ -341,9 +363,9 @@ class RulesEngine:
         updates: list[Update] = []
         dwelled = [identity for identity in present if now - entered[identity.id] >= zone.min_dwell]
         for identity in dwelled:
-            kind = EventKind.VEHICLE if identity.label in VEHICLES else EventKind.INTRUSION
+            kind = kind_of(identity.label)
             updates += self.join_episode(zone, kind, identity.label, [identity], now, moment, active)
-            loiters = zone.loiter_seconds and identity.label not in VEHICLES
+            loiters = zone.loiter_seconds and identity.label not in VEHICLES and not is_animal(identity.label)
             if loiters and now - entered[identity.id] >= zone.loiter_seconds and active:
                 updates += self.instant(
                     ("loiter", zone.id, identity.id),
@@ -400,7 +422,7 @@ class RulesEngine:
                 started_at=now,
                 zone=zone.id,
                 zone_name=zone.name,
-                alert=zone.alert.alerts(self.arm(), label, moment),
+                alert=zone.alert.alerts(self.arm(), label, moment) and zone.animals.may_alert(label),
             )
             for identity in members:
                 event.add(identity, now)
@@ -454,7 +476,11 @@ class RulesEngine:
             direction = "in" if side > 0 else "out"
             counts = self.line_counts.setdefault(line.id, {"in": Counter(), "out": Counter()})
             counts[direction][identity.label] += 1
+            if self.on_crossing is not None:
+                self.on_crossing(line.id, direction, identity.label, now)
             if line.direction not in ("both", direction) or not line.schedule.active(moment):
+                continue
+            if not line.animals.produces(identity.label):
                 continue
             updates += self.instant(
                 ("line", line.id, identity.id, direction),
@@ -507,7 +533,7 @@ class RulesEngine:
             return []
         self.fired[key] = now
         self.fired = {item: at for item, at in self.fired.items() if now - at < FIRED_MEMORY_SECONDS}
-        policy = zone.alert if zone is not None else line.alert
+        owner = zone if zone is not None else line
         event = Event(
             id=str(uuid.uuid4()),
             view=self.view,
@@ -521,7 +547,7 @@ class RulesEngine:
             line_name=line.name if line else None,
             direction=direction,
             count=1,
-            alert=policy.alerts(self.arm(), identity.label, moment),
+            alert=owner.alert.alerts(self.arm(), identity.label, moment) and owner.animals.may_alert(identity.label),
         )
         event.add(identity, now)
         return [Update("instant", event)]

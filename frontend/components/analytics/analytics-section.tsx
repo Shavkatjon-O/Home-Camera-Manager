@@ -4,6 +4,7 @@ import * as React from "react"
 import { PentagonIcon, TriangleAlertIcon } from "lucide-react"
 import { toast } from "sonner"
 
+import { ViewFeatures } from "@/components/analytics/view-features"
 import { ControlSection } from "@/components/camera/control-sections"
 import { Spinner } from "@/components/shell/primitives"
 import { Button } from "@/components/ui/button"
@@ -192,6 +193,12 @@ function ViewCard({
           onCheckedChange={(checked) => void update({ moving: checked })}
         />
       </div>
+      <ViewFeatures
+        value={{ appearance: view.appearance, falls: view.falls, plates: view.plates, follow: view.follow }}
+        moving={view.moving}
+        disabled={busy}
+        onChange={(patch) => void update(patch)}
+      />
       <ViewStatusBlock view={view} />
       <Button variant="outline" size="sm" className="self-start" onClick={() => onEdit(view.uuid)}>
         <PentagonIcon />

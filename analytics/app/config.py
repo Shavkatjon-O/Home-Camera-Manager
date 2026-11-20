@@ -42,6 +42,8 @@ class ViewConfig:
         fps: Analysis rate in frames per second.
         rules: Zones, lines and tuning.
         faces: Whether the face stage runs on the view.
+        appearance: Whether the view's people get appearance vectors for journeys across cameras.
+        falls: Whether the view watches for falls.
         raw: The view's configuration as received, for change detection.
     """
 
@@ -55,6 +57,8 @@ class ViewConfig:
     fps: float
     rules: ViewRules
     faces: bool = False
+    appearance: bool = True
+    falls: bool = False
     raw: dict = field(default_factory=dict, compare=False)
 
     @property
@@ -73,7 +77,17 @@ class ViewConfig:
         Returns:
             A hashable tuple of the view's pipeline settings.
         """
-        return (self.id, self.camera, self.lens, self.lenses, self.detects, self.recognises, round(self.fps, 2))
+        return (
+            self.id,
+            self.camera,
+            self.lens,
+            self.lenses,
+            self.detects,
+            self.recognises,
+            self.detects and self.appearance,
+            self.detects and self.falls,
+            round(self.fps, 2),
+        )
 
 
 @dataclass(frozen=True)
@@ -167,6 +181,8 @@ def parse_view(camera: dict, data: dict, default_fps: float) -> ViewConfig:
         fps=float(data.get("fps") or default_fps),
         rules=ViewRules.from_dict(data),
         faces=bool(data.get("faces", PROFILES[profile_name].faces)),
+        appearance=bool(data.get("appearance", True)),
+        falls=bool((data.get("falls") or {}).get("enabled", False)),
         raw=data,
     )
 

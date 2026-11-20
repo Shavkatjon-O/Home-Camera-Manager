@@ -71,11 +71,11 @@ export const DAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"
 
 export const CLASS_GROUPS = ["person", "vehicle", "animal"]
 
-export const CLASS_LABELS = ["car", "truck", "bus", "motorcycle", "bicycle", "dog", "cat"]
+export const CLASS_LABELS = ["car", "truck", "bus", "motorcycle", "bicycle", "dog", "cat", "bird", "backpack", "handbag", "suitcase"]
 
 const VEHICLE_LABELS = ["vehicle", "car", "truck", "bus", "motorcycle", "bicycle"]
 
-const ANIMAL_LABELS = ["animal", "dog", "cat"]
+const ANIMAL_LABELS = ["animal", "dog", "cat", "bird"]
 
 export function labelColor(label: string): string {
   if (label === "person") return "var(--status-warn)"
@@ -185,6 +185,11 @@ export function draftZone(zone: AnalyticsZone): DraftZone {
     min_dwell: zone.min_dwell,
     loiter_seconds: zone.loiter_seconds,
     crowd_count: zone.crowd_count,
+    left_seconds: zone.left_seconds,
+    taken_seconds: zone.taken_seconds,
+    object_labels: [...zone.object_labels],
+    background: zone.background,
+    animals: zone.animals,
     schedule: copyWindows(zone.schedule),
     alert: copyAlert(zone.alert),
     enabled: zone.enabled,
@@ -204,6 +209,7 @@ export function draftLine(line: AnalyticsLine): DraftLine {
     ],
     labels: [...line.labels],
     direction: line.direction,
+    animals: line.animals,
     schedule: copyWindows(line.schedule),
     alert: copyAlert(line.alert),
     enabled: line.enabled,
@@ -226,6 +232,11 @@ export function newZone(key: string, name: string, polygon: ViewPoint[], wholeVi
     min_dwell: 1,
     loiter_seconds: 0,
     crowd_count: 0,
+    left_seconds: 0,
+    taken_seconds: 0,
+    object_labels: [],
+    background: false,
+    animals: "record",
     schedule: [],
     alert: defaultAlert(),
     enabled: true,
@@ -241,6 +252,7 @@ export function newLine(key: string, name: string, points: [ViewPoint, ViewPoint
     points,
     labels: [],
     direction: "both",
+    animals: "record",
     schedule: [],
     alert: defaultAlert(),
     enabled: true,
@@ -273,6 +285,11 @@ export function zoneInput(zone: DraftZone, reference: string | null): AnalyticsZ
     min_dwell: zone.min_dwell,
     loiter_seconds: zone.loiter_seconds,
     crowd_count: zone.crowd_count,
+    left_seconds: zone.left_seconds,
+    taken_seconds: zone.taken_seconds,
+    object_labels: zone.object_labels,
+    background: zone.background,
+    animals: zone.animals,
     schedule: zone.schedule,
     alert: zone.alert,
     enabled: zone.enabled,
@@ -290,6 +307,7 @@ export function lineInput(line: DraftLine, reference: string | null): AnalyticsL
     ],
     labels: line.labels,
     direction: line.direction,
+    animals: line.animals,
     schedule: line.schedule,
     alert: line.alert,
     enabled: line.enabled,

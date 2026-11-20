@@ -2,7 +2,7 @@
 
 from uuid import UUID
 
-from sqlalchemy import Boolean, Float, Integer, String, UniqueConstraint, Uuid
+from sqlalchemy import Boolean, Float, Integer, String, UniqueConstraint, Uuid, false, true
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -25,6 +25,10 @@ class AnalyticsView(BaseModel):
         faces: Whether faces are recognised on the view, None for the profile's default.
         moving: Whether the lens moves, so zones need a reference snapshot.
         tuning: Optional overrides of the rules engine's timing and distance settings.
+        appearance: Whether people on the view get appearance vectors for journeys across cameras.
+        falls: Whether the view watches for falls.
+        plates: Whether vehicle events on the view read number plates.
+        follow: Whether a moving lens turns to follow a person.
     """
 
     __tablename__ = "analytics_views"
@@ -40,3 +44,8 @@ class AnalyticsView(BaseModel):
     faces: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
     moving: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     tuning: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
+
+    appearance: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default=true())
+    falls: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default=false())
+    plates: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default=false())
+    follow: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default=false())

@@ -57,3 +57,9 @@ alembic revision --autogenerate -m "<message>"
 - Run probes that load downloaded models under prlimit --as of 96 GB with a container memory limit, because TensorRT engine builds fail under a 32 GB address space cap.
 - Evaluate zones and lines in analytics/app/rules, never in nvdsanalytics, because zone edits must apply without a pipeline restart and the rules must run on a Jetson.
 - Keep model weights and engines out of git; scripts/download-models.sh fetches them with pinned checksums.
+- Read number plates from full-resolution pictures of the recording buffer and never from infrared pictures, because the 1080p muxer frame shrinks Camera B's plates by a third and infrared light makes plates glare white.
+- Crop pose inputs from the RGB frame with the person box widened by a quarter, never through an nvinfer object crop, because nvinfer feeds only the bare box and RTMPose then finds far fewer keypoints.
+- Compare appearance vectors only after centring them on the running mean of all tracks, because raw OSNet cosine is about 0.5 between any two people on these cameras.
+- Keep NVIDIA LPDNet optional behind scripts/download-secondary-models.sh --all, because its licence is the NVIDIA AI Enterprise EULA, not an open licence.
+- Keep auto-follow off by default and move a lens only through the follow controller, which saves the position first and returns to it, because the owner decides whether the cameras may move by themselves.
+- Send follow moves to a camera's own ONVIF device when it offers PTZ and to the bridge otherwise, and remember the choice per camera, because a camera without device ONVIF answers only after a timeout.

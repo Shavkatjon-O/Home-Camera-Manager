@@ -1,0 +1,38 @@
+services:
+  go2rtc:
+    image: alexxit/go2rtc:1.9.14
+    deploy: !reset {}
+    volumes: !override
+      - ./go2rtc.jetson.yaml:/config/go2rtc.yaml:ro
+      - ./go2rtc-tv.sh:/config/tv.sh:ro
+
+  analytics:
+    runtime: nvidia
+    environment:
+      HC_ANALYTICS_BACKEND_URL: http://backend:8000
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility,video
+
+      HC_ANALYTICS_DETECTOR: rfdetr-nano
+      HC_ANALYTICS_ENGINE_BATCH: "6"
+      HC_ANALYTICS_WORKSPACE_MB: "512"
+
+      HC_ANALYTICS_FPS: "4"
+
+      HC_ANALYTICS_CLIP_ENCODER: libx264
+      HC_ANALYTICS_BUFFER_SECONDS: "60"
+
+      HC_ANALYTICS_PLATES: "false"
+    deploy: !override
+      resources:
+        limits:
+          memory: 3g
+    volumes: !override
+      - ${HC_ANALYTICS_MODELS_DIR:-./analytics/models}:/models:ro
+      - analytics-engines:/engines
+      - events:/data/events
+      - type: tmpfs
+        target: /buffer
+        tmpfs:
+          size: 536870912
+          mode: 01777

@@ -1,6 +1,6 @@
 """Analytics zone: a polygon on a view and the rules evaluated on it."""
 
-from sqlalchemy import BigInteger, Boolean, Float, ForeignKey, Integer, String
+from sqlalchemy import BigInteger, Boolean, Float, ForeignKey, Integer, String, false, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -26,6 +26,11 @@ class AnalyticsZone(BaseModel):
         alert: Alert policy with mode, schedule and labels.
         enabled: Whether the zone produces events.
         reference: Snapshot the zone was drawn on, relative to the events folder.
+        left_seconds: Seconds a carried object stays still before it counts as left, 0 turns it off.
+        taken_seconds: Seconds an object must have been present before its going counts as taken, 0 turns it off.
+        object_labels: Labels watched for left and taken, empty for the default carried objects.
+        background: Also find unclassed objects by comparing with the empty scene.
+        animals: include, record or exclude, what dogs, cats and birds do in the zone.
     """
 
     __tablename__ = "analytics_zones"
@@ -45,3 +50,9 @@ class AnalyticsZone(BaseModel):
     alert: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
     enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     reference: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+    left_seconds: Mapped[float] = mapped_column(Float, nullable=False, default=0.0, server_default=text("0"))
+    taken_seconds: Mapped[float] = mapped_column(Float, nullable=False, default=0.0, server_default=text("0"))
+    object_labels: Mapped[list] = mapped_column(JSONB, nullable=False, default=list, server_default=text("'[]'"))
+    background: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default=false())
+    animals: Mapped[str] = mapped_column(String(10), nullable=False, default="record", server_default="record")

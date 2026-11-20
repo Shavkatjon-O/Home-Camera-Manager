@@ -11,6 +11,9 @@ from app.core.config import settings
 from app.core.database import get_db
 from app.core.exceptions import Unauthorized, Unavailable
 from app.modules.analytics.services import AnalyticsIngestService, AnalyticsSettingsService, AnalyticsViewService
+from app.modules.analytics.services.counts import AreaService, CountService
+from app.modules.analytics.services.follow import FollowPtzService
+from app.modules.analytics.services.journeys import JourneyService
 
 
 def get_view_service(
@@ -75,3 +78,99 @@ def get_ingest_service(
         The service.
     """
     return AnalyticsIngestService(session)
+
+
+def get_count_service(
+    session: AsyncSession = Depends(get_db),
+    actor: UserContext = Depends(get_current_user),
+) -> CountService:
+    """Build the count service for a signed-in request.
+
+    Args:
+        session: Request-scoped database session.
+        actor: Signed-in user.
+
+    Returns:
+        The service.
+    """
+    return CountService(session, actor)
+
+
+def get_area_service(
+    session: AsyncSession = Depends(get_db),
+    actor: UserContext = Depends(get_current_user),
+) -> AreaService:
+    """Build the area service for a signed-in request.
+
+    Args:
+        session: Request-scoped database session.
+        actor: Signed-in user.
+
+    Returns:
+        The service.
+    """
+    return AreaService(session, actor)
+
+
+def get_journey_service(
+    session: AsyncSession = Depends(get_db),
+    actor: UserContext = Depends(get_current_user),
+) -> JourneyService:
+    """Build the journey service for a signed-in request.
+
+    Args:
+        session: Request-scoped database session.
+        actor: Signed-in user.
+
+    Returns:
+        The service.
+    """
+    return JourneyService(session, actor)
+
+
+def get_count_ingest_service(
+    session: AsyncSession = Depends(get_db),
+    authorized: None = Depends(require_analytics_token),
+) -> CountService:
+    """Build the count service for a report of the analytics service.
+
+    Args:
+        session: Request-scoped database session.
+        authorized: Result of the token check.
+
+    Returns:
+        The service.
+    """
+    return CountService(session)
+
+
+def get_journey_ingest_service(
+    session: AsyncSession = Depends(get_db),
+    authorized: None = Depends(require_analytics_token),
+) -> JourneyService:
+    """Build the journey service for a report of the analytics service.
+
+    Args:
+        session: Request-scoped database session.
+        authorized: Result of the token check.
+
+    Returns:
+        The service.
+    """
+    return JourneyService(session)
+
+
+def get_follow_service(
+    session: AsyncSession = Depends(get_db),
+    authorized: None = Depends(require_analytics_token),
+) -> FollowPtzService:
+    """Build the follow PTZ service for a command of the analytics service.
+
+    Args:
+        session: Request-scoped database session.
+        authorized: Result of the token check.
+
+    Returns:
+        The service.
+    """
+    return FollowPtzService(session)

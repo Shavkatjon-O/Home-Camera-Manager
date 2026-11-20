@@ -147,6 +147,10 @@ def view_read(view: AnalyticsView, camera: Camera, zones: list[AnalyticsZone], l
         tamper=view.tamper,
         faces=view.faces,
         moving=view.moving,
+        appearance=view.appearance,
+        falls=view.falls,
+        plates=view.plates,
+        follow=view.follow,
         zones=[
             ZoneRead(
                 uuid=zone.uuid,
@@ -162,6 +166,11 @@ def view_read(view: AnalyticsView, camera: Camera, zones: list[AnalyticsZone], l
                 enabled=zone.enabled,
                 reference=zone.reference,
                 suspended=str(zone.uuid) in suspended,
+                left_seconds=zone.left_seconds,
+                taken_seconds=zone.taken_seconds,
+                object_labels=zone.object_labels,
+                background=zone.background,
+                animals=zone.animals,
             )
             for zone in zones
         ],
@@ -177,6 +186,7 @@ def view_read(view: AnalyticsView, camera: Camera, zones: list[AnalyticsZone], l
                 enabled=line.enabled,
                 reference=line.reference,
                 suspended=str(line.uuid) in suspended,
+                animals=line.animals,
             )
             for line in lines
         ],
@@ -263,7 +273,7 @@ class AnalyticsViewService(BaseModelService[AnalyticsView]):
         """
         view = await self.get(uuid)
         changes = data.model_dump(exclude_unset=True)
-        for name in ("name", "enabled", "fps", "moving"):
+        for name in ("name", "enabled", "fps", "moving", "appearance", "falls", "plates", "follow"):
             if name in changes and changes[name] is not None:
                 setattr(view, name, changes[name])
         if "profile" in changes and changes["profile"] is not None:
@@ -314,6 +324,11 @@ class AnalyticsViewService(BaseModelService[AnalyticsView]):
                 alert=zone.alert.model_dump(mode="json"),
                 enabled=zone.enabled,
                 reference=zone.reference,
+                left_seconds=zone.left_seconds,
+                taken_seconds=zone.taken_seconds,
+                object_labels=zone.object_labels,
+                background=zone.background,
+                animals=zone.animals.value,
             )
             if zone.uuid is not None:
                 row.uuid = zone.uuid
@@ -330,6 +345,7 @@ class AnalyticsViewService(BaseModelService[AnalyticsView]):
                 alert=line.alert.model_dump(mode="json"),
                 enabled=line.enabled,
                 reference=line.reference,
+                animals=line.animals.value,
             )
             if line.uuid is not None:
                 row.uuid = line.uuid

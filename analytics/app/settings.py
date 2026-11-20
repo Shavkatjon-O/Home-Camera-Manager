@@ -49,6 +49,10 @@ class Settings:
         clip_max: Longest clip in seconds.
         buffer_seconds: Seconds of segments kept per camera.
         tracker_config: NvDCF tracker configuration file.
+        appearance: Runs person appearance and journeys on views that allow it.
+        pose: Runs the pose model for fall detection on views with falls enabled.
+        plates: Reads number plates on views with plates enabled.
+        plate_finder: text for PaddleOCR's DB text detector, or lpdnet for NVIDIA LPDNet.
     """
 
     config_file: Path = field(default_factory=lambda: Path(env("HC_ANALYTICS_CONFIG_FILE", "/config/analytics.json")))
@@ -75,3 +79,8 @@ class Settings:
     clip_max: float = field(default_factory=lambda: float(env("HC_ANALYTICS_CLIP_MAX", "60")))
     buffer_seconds: float = field(default_factory=lambda: float(env("HC_ANALYTICS_BUFFER_SECONDS", "120")))
     tracker_config: Path = Path("/opt/analytics/configs/tracker.yml")
+
+    appearance: bool = field(default_factory=lambda: env("HC_ANALYTICS_APPEARANCE", "true").lower() == "true")
+    pose: bool = field(default_factory=lambda: env("HC_ANALYTICS_POSE", "true").lower() == "true")
+    plates: bool = field(default_factory=lambda: env("HC_ANALYTICS_PLATES", "true").lower() == "true")
+    plate_finder: str = field(default_factory=lambda: env("HC_ANALYTICS_PLATE_FINDER", "text"))

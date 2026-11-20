@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore } from "react"
 
+import { EXTRA_KIND_LABELS, EXTRA_OBJECT_LABELS, TAMPER_SUBTYPE_LABELS, tamperLabel } from "@/lib/extras"
 import type { AnalyticsEventDetails, Box, CameraEvent, EventBox, EventKind, EventOrigin, EventSourceState } from "@/lib/types"
 
 export const EVENT_KINDS: EventKind[] = [
@@ -17,6 +18,10 @@ export const EVENT_KINDS: EventKind[] = [
   "tamper",
   "storage",
   "reboot",
+  "animal",
+  "object_left",
+  "object_taken",
+  "fall",
 ]
 
 export const KIND_LABELS: Record<EventKind, string> = {
@@ -32,11 +37,15 @@ export const KIND_LABELS: Record<EventKind, string> = {
   tamper: "Tamper",
   storage: "Storage",
   reboot: "Restart",
+  animal: EXTRA_KIND_LABELS.animal,
+  object_left: EXTRA_KIND_LABELS.object_left,
+  object_taken: EXTRA_KIND_LABELS.object_taken,
+  fall: EXTRA_KIND_LABELS.fall,
 }
 
-export const OBJECT_LABELS = ["person", "car", "truck", "bus", "motorcycle", "bicycle", "dog", "cat"]
+export const OBJECT_LABELS = ["person", "car", "truck", "bus", "motorcycle", "bicycle", "dog", "cat", "bird", "backpack", "handbag", "suitcase"]
 
-export const TAMPER_LABELS = ["covered", "blurred", "moved"]
+export const TAMPER_LABELS = ["covered", "blurred", "dark", "moved"]
 
 export const EVENT_LABELS = [...OBJECT_LABELS, ...TAMPER_LABELS]
 
@@ -49,9 +58,8 @@ const LABEL_NAMES: Record<string, string> = {
   bicycle: "Bicycle",
   dog: "Dog",
   cat: "Cat",
-  covered: "Covered",
-  blurred: "Blurred",
-  moved: "Moved",
+  ...EXTRA_OBJECT_LABELS,
+  ...TAMPER_SUBTYPE_LABELS,
   vehicle: "Vehicle",
   animal: "Animal",
 }
@@ -141,12 +149,6 @@ export function isActivity(kind: EventKind): boolean {
   return ACTIVITY_KINDS.includes(kind)
 }
 
-const TAMPER_TITLES: Record<string, string> = {
-  covered: "covered",
-  blurred: "blurred",
-  moved: "moved",
-}
-
 type TitleEvent = Pick<CameraEvent, "kind" | "camera_name"> &
   Partial<Pick<CameraEvent, "label" | "source" | "details" | "face">>
 
@@ -176,9 +178,17 @@ export function eventTitle(event: TitleEvent): string {
     case "face_unknown":
       return `${event.face?.cluster_label ?? "An unknown person"} on ${camera}`
     case "tamper": {
-      const how = event.label ? TAMPER_TITLES[event.label] : undefined
+      const how = event.label ? tamperLabel(event.label)?.toLowerCase() : undefined
       return how ? `${camera} view ${how}` : `${camera} view disturbed`
     }
+    case "animal":
+      return `${label ?? "Animal"} on ${camera}`
+    case "object_left":
+      return zone ? `${label ?? "Object"} left in ${zone} on ${camera}` : `Object left on ${camera}`
+    case "object_taken":
+      return zone ? `${label ?? "Object"} taken from ${zone} on ${camera}` : `Object taken on ${camera}`
+    case "fall":
+      return `Fall on ${camera}`
     case "storage":
       return `${camera} storage problem`
     case "reboot":

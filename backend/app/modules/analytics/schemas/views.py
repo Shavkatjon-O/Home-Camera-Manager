@@ -26,6 +26,10 @@ class ViewRead(BaseModel):
         tamper: Tamper watch on or off, None for the profile default.
         faces: Face recognition on or off, None for the profile default.
         moving: Whether the lens moves.
+        appearance: Whether people get appearance vectors for journeys across cameras.
+        falls: Whether the view watches for falls.
+        plates: Whether vehicle events read number plates.
+        follow: Whether a moving lens follows a person.
         zones: The zones.
         lines: The lines.
         status: Latest status from the analytics service, None before its first report.
@@ -43,6 +47,10 @@ class ViewRead(BaseModel):
     tamper: bool | None
     faces: bool | None
     moving: bool
+    appearance: bool
+    falls: bool
+    plates: bool
+    follow: bool
     zones: list[ZoneRead]
     lines: list[LineRead]
     status: dict | None
@@ -69,6 +77,10 @@ class ViewUpdate(BaseModel):
         tamper: Tamper watch on or off, None for the profile default.
         faces: Face recognition on or off, None for the profile default.
         moving: Whether the lens moves.
+        appearance: Whether people get appearance vectors for journeys across cameras.
+        falls: Whether the view watches for falls.
+        plates: Whether vehicle events read number plates.
+        follow: Whether a moving lens follows a person.
     """
 
     name: str | None = Field(None, min_length=1, max_length=100)
@@ -78,3 +90,7 @@ class ViewUpdate(BaseModel):
     tamper: bool | None = None
     faces: bool | None = None
     moving: bool | None = None
+    appearance: bool | None = None
+    falls: bool | None = None
+    plates: bool | None = None
+    follow: bool | None = None

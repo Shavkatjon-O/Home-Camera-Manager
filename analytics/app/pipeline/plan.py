@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from app.stages.probe import PersonStages
+
 
 @dataclass(frozen=True)
 class ViewPlan:
@@ -63,6 +65,7 @@ class PipelinePlan:
         engine_batch: Largest batch the engine accepts.
         reconnect_seconds: Seconds without data before a source reconnects.
         faces: Muxer pads of the views the face stage runs on.
+        persons: What the person stages run on, None when no view needs them.
     """
 
     sources: tuple[SourcePlan, ...]
@@ -80,6 +83,7 @@ class PipelinePlan:
     engine_batch: int = 8
     reconnect_seconds: int = 10
     faces: tuple[int, ...] = ()
+    persons: PersonStages | None = None
 
     @property
     def views(self) -> list[ViewPlan]:

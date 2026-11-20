@@ -34,7 +34,7 @@ export function WallTile({ camera, lens = null }: { camera: Camera; lens?: numbe
   const href = cameraHref(camera.uuid)
   const offline = camera.status.online === false
   const activity = useOpenEvents(camera.uuid).find((event) => isActivity(event.kind))
-  const recognitions = useRecognitions(camera.uuid)
+  const recognitions = useRecognitions(camera.uuid, lens)
 
   const onFullscreen = async () => {
     const ok = await toggleFullscreen(tile)

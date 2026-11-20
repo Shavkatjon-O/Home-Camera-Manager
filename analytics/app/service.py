@@ -1,4 +1,4 @@
-"""The analytics service: configuration, pipeline supervision, rules, tamper watch, faces, media and status.
+"""The analytics service: configuration, pipeline supervision, rules, tamper guard, faces, features, media and status.
 
 The DeepStream pipeline runs in a child process and sends tracked objects back over a queue. Everything else runs
 here: the rules engines, the tamper watch, the recorders, clip and snapshot cutting, and the status endpoint. Rule
@@ -26,19 +26,30 @@ import numpy as np
 from app.backend import BackendClient, BackendConfigSource, Outbox
 from app.config import ServiceConfig, ViewConfig, parse_config
 from app.detectors import detector
+from app.features import FeatureHub
 from app.identity import enroll
 from app.identity.models import FaceModels
 from app.identity.settings import IdentitySettings
 from app.identity.stage import FaceStage, GallerySync, ViewInfo
 from app.pipeline.plan import PipelinePlan, SourcePlan, ViewPlan
+from app.plates.ctc import load_characters
+from app.plates.detect import LpdFinder
+from app.plates.frames import picture_at
+from app.plates.reader import PlateReader, PlateSettings
+from app.plates.textboxes import TextFinder
+from app.plates.watch import PlateJob
 from app.recorder import CameraRecorder, ClipMaker, latest_frame
 from app.rules.engine import Event, RulesEngine, Update
 from app.rules.model import ArmMode, Box, Detection, EventKind, Frame, ViewRules
 from app.scene import SceneMatcher
 from app.settings import Settings
 from app.sources import probe_size, redact, stream_uri
+from app.stages import engines
+from app.stages.models import PLATE_DETECTOR, PLATE_DICTIONARY, PLATE_DICTIONARY_SHA256, PLATE_READER, PLATE_TEXT
+from app.stages.probe import PersonStages
 from app.status import StatusServer
-from app.tamper import TamperWatch, lens_band
+from app.tamper import lens_band
+from app.tampering.guard import GuardSettings, TamperGuard
 
 logger = logging.getLogger(__name__)
 
@@ -98,7 +109,7 @@ class ViewRuntime:
         config: The view's configuration.
         engine: Its rules engine, None for views without rules.
         suspended: Zones and lines suspended because the moving lens left the scene they were drawn on.
-        tamper: Its tamper watch, None when off.
+        tamper: Its tamper guard, None when off.
         frames: Frames analysed since the service started.
         stamps: Arrival times of recent frames, for the rate.
         latencies: Recent pipeline latencies in milliseconds.
@@ -111,7 +122,7 @@ class ViewRuntime:
     config: ViewConfig
     engine: RulesEngine | None = None
     suspended: frozenset[str] = frozenset()
-    tamper: TamperWatch | None = None
+    tamper: TamperGuard | None = None
     frames: int = 0
     stamps: collections.deque = field(default_factory=lambda: collections.deque(maxlen=300))
     latencies: collections.deque = field(default_factory=lambda: collections.deque(maxlen=200))
@@ -241,6 +252,24 @@ class Service:
         self.gpu_polled = 0.0
         self.stopping = threading.Event()
 
+        self.person_views: dict[int, ViewConfig] = {}
+        self.persons_note: str | None = None
+        self.plates_note: str | None = None
+        self.plate_reader_built = False
+        self.plate_reader_instance: PlateReader | None = None
+        self.features = FeatureHub(
+            self.timezone,
+            self.arm_mode,
+            self.handle,
+            self.outbox_backend.send if self.outbox_backend is not None else None,
+            self.attach_details,
+            self.plate_reader,
+            self.plate_picture,
+            state_dir=settings.engines_dir,
+            backend=(settings.backend_url, settings.backend_token) if settings.backend_url else None,
+            appearance=settings.appearance,
+        )
+
     def arm_mode(self) -> ArmMode:
         """Return the current arm mode.
 
@@ -260,6 +289,7 @@ class Service:
             lambda data: enroll.answer(data, self.faces.models, self.identity),
         ).start()
         self.faces.start()
+        self.features.start()
         if self.outbox_backend is not None:
             self.outbox_backend.start()
         threading.Thread(target=self.media_loop, name="media", daemon=True).start()
@@ -273,6 +303,7 @@ class Service:
             try:
                 self.supervise(now)
                 self.tick(now)
+                self.features.tick(now)
                 self.maintain(now)
                 self.observe(now)
             except Exception:
@@ -281,7 +312,8 @@ class Service:
         self.shutdown()
 
     def shutdown(self) -> None:
-        """Stop the pipeline and the recorders."""
+        """Stop the features, the pipeline and the recorders."""
+        self.features.stop()
         self.stop_pipeline()
         for recorder in self.recorders.values():
             recorder.stop()
@@ -323,17 +355,24 @@ class Service:
                 if view.enabled and view.profile.rules:
                     rules = self.effective_rules(view, runtime.suspended)
                     if runtime.engine is None:
-                        runtime.engine = RulesEngine(view.id, rules, now, self.timezone, self.arm_mode)
+                        runtime.engine = RulesEngine(
+                            view.id, rules, now, self.timezone, self.arm_mode, self.crossing_hook(view.id)
+                        )
                     else:
                         self.handle(view, runtime.engine.configure(rules))
                 elif runtime.engine is not None:
                     self.handle(view, runtime.engine.configure(type(view.rules)()))
                     runtime.engine = None
                 tamper = view.enabled and bool(view.raw.get("tamper", view.profile.tamper))
-                if tamper and runtime.tamper is None:
-                    runtime.tamper = TamperWatch()
+                moving = bool(view.raw.get("moving", False))
+                guard = GuardSettings.from_dict(view.raw.get("tamper_settings"))
+                if tamper and (
+                    runtime.tamper is None or (runtime.tamper.moving, runtime.tamper.settings) != (moving, guard)
+                ):
+                    runtime.tamper = TamperGuard(guard, moving=moving)
                 elif not tamper:
                     runtime.tamper = None
+            self.features.apply(config, now)
         self.sync_recorders()
         logger.info(
             "Configuration %s applied: %d cameras, %d views, %d analysed, arm mode %s",
@@ -343,6 +382,21 @@ class Service:
             sum(1 for view in config.views if view.detects),
             config.arm_mode.value,
         )
+
+    def crossing_hook(self, view_id: str):
+        """Return the callback a view's rules engine calls for every counted line crossing.
+
+        Args:
+            view_id: The view.
+
+        Returns:
+            A callable taking the line id, direction, label and time.
+        """
+
+        def counted(line: str, direction: str, label: str, at: float) -> None:
+            self.features.crossing(view_id, line, direction, label, at)
+
+        return counted
 
     @staticmethod
     def references(view: ViewConfig) -> set[str]:
@@ -451,6 +505,8 @@ class Service:
             return None, None
         sources = []
         faces: list[int] = []
+        appearance: list[int] = []
+        poses: list[int] = []
         index = 0
         for camera in self.config.cameras:
             views = [view for view in camera.views if view.detects]
@@ -471,6 +527,10 @@ class Service:
                 plans.append(ViewPlan(index, view.id, view.lens, camera.lenses, view.fps))
                 if view.recognises:
                     faces.append(index)
+                if view.appearance and self.settings.appearance:
+                    appearance.append(index)
+                if view.falls and self.settings.pose:
+                    poses.append(index)
                 index += 1
             sources.append(SourcePlan(camera.id, uri, width, height, tuple(plans)))
         if not sources:
@@ -489,6 +549,17 @@ class Service:
             height=self.settings.mux_height,
             engine_batch=self.settings.engine_batch,
             faces=tuple(faces),
+            persons=(
+                PersonStages(
+                    frozenset(appearance),
+                    frozenset(poses),
+                    str(self.settings.models_dir),
+                    str(self.settings.engines_dir),
+                    self.settings.workspace_mb,
+                )
+                if appearance or poses
+                else None
+            ),
         )
         key = (self.config.pipeline_key(), tuple(sorted(self.sizes.items())))
         return plan, key
@@ -555,6 +626,8 @@ class Service:
                 face_views[view.index] = ViewInfo(config.id, config.name, config.camera)
         self.faces.set_views(face_views)
         self.faces_note = None
+        self.person_views = {view.index: configs[view.view] for view in plan.views if view.view in configs}
+        self.persons_note = None
         self.plan, self.plan_key = plan, key
         self.pipeline_started = time.time()
         self.pipeline_restarts += 1
@@ -617,6 +690,11 @@ class Service:
         elif kind == "faces_off":
             self.faces_note = message[2]
             logger.warning("Pipeline: %s", message[2])
+        elif kind == "persons":
+            self.features.on_persons(self.person_views, message[2], message[3])
+        elif kind == "persons_off":
+            self.persons_note = message[2]
+            logger.warning("Pipeline: %s", message[2])
         elif kind in ("starting", "preparing"):
             self.pipeline_message = str(message[2])
             logger.info("Pipeline: %s", message[2])
@@ -645,11 +723,11 @@ class Service:
                 runtime.last_frame_at = received
                 if ntp:
                     runtime.latencies.append(max(0.0, (received - ntp / 1e9) * 1000))
-                detections = tuple(
+                everything = tuple(
                     Detection(track, label, max(found, kept), Box(left, top, right, bottom), found > 0)
                     for track, label, found, kept, left, top, right, bottom in objects
-                    if label in profile.labels
                 )
+                detections = tuple(item for item in everything if item.label in profile.labels)
                 runtime.objects = [
                     {
                         "track": item.track_id,
@@ -661,6 +739,7 @@ class Service:
                 ]
                 if runtime.engine is not None:
                     self.handle(runtime.config, runtime.engine.process(Frame(received, detections)))
+                self.features.on_frame(runtime.config, received, everything, runtime.engine)
 
     def tick(self, now: float) -> None:
         """Close episodes of views whose frames stopped.
@@ -681,6 +760,7 @@ class Service:
             updates: Event changes from a rules engine or the tamper watch.
         """
         for update in updates:
+            self.features.on_update(update)
             event = update.event.as_dict()
             event.update({"camera": view.camera, "view_name": view.name, "profile": view.profile.name})
             event["action"] = update.action
@@ -831,8 +911,71 @@ class Service:
             self.media_events[event_id] = {**event, **paths}
             self.publish({**event, **paths, "action": "media"})
 
+    def attach_details(self, event_id: str, details: dict) -> None:
+        """Add details such as plate candidates to a published event and send it again.
+
+        Args:
+            event_id: The event.
+            details: Fields to add.
+        """
+        with self.lock:
+            event = self.media_events.get(event_id)
+            if event is None:
+                return
+            self.media_events[event_id] = {**event, **details}
+            self.publish({**event, **details, "action": "update"})
+
+    def plate_reader(self) -> PlateReader | None:
+        """Return the plate reader, loading its engines on first use.
+
+        Returns:
+            The reader, or None when plates are off or the models are missing.
+        """
+        if self.plate_reader_built or not self.settings.plates:
+            return self.plate_reader_instance
+        self.plate_reader_built = True
+        from app.identity.runtime import Cuda, EngineRunner
+
+        settings = self.settings
+        try:
+            cuda = Cuda()
+            finder_model = PLATE_DETECTOR if settings.plate_finder == "lpdnet" else PLATE_TEXT
+            finder_engine = engines.ensure(
+                finder_model, settings.models_dir, settings.engines_dir, settings.workspace_mb
+            )
+            finder_runner = EngineRunner(finder_engine, cuda)
+            finder = LpdFinder(finder_runner) if settings.plate_finder == "lpdnet" else TextFinder(finder_runner)
+            reader_engine = engines.ensure(
+                PLATE_READER, settings.models_dir, settings.engines_dir, settings.workspace_mb
+            )
+            dictionary = PLATE_READER.path(settings.models_dir).parent / PLATE_DICTIONARY
+            engines.verify(dictionary, PLATE_DICTIONARY_SHA256)
+            self.plate_reader_instance = PlateReader(
+                finder, EngineRunner(reader_engine, cuda), load_characters(dictionary), PlateSettings()
+            )
+            logger.info("Plate reading is on with the %s finder", finder.kind)
+        except (OSError, ValueError, RuntimeError) as exc:
+            self.plates_note = f"Plates are off: {exc}"
+            logger.warning(self.plates_note)
+        return self.plate_reader_instance
+
+    def plate_picture(self, view: ViewConfig, job: PlateJob) -> np.ndarray | None:
+        """Cut the full-resolution picture of a plate job from the camera's buffer.
+
+        Args:
+            view: The view of the job.
+            job: The job.
+
+        Returns:
+            RGB pixels, or None when the buffer does not hold the moment.
+        """
+        recorder = self.recorders.get(view.camera)
+        seen = recorder.seen if recorder else None
+        folder = self.settings.buffer_dir / view.camera
+        return picture_at(folder, job.at, view.lens, view.lenses, job.box.as_tuple(), seen)
+
     def on_keyframe(self, camera: str, at: float, data: bytes) -> None:
-        """Feed a keyframe thumbnail to the tamper watch of the camera's views.
+        """Feed a keyframe thumbnail to the tamper guard and the background fallback of the camera's views.
 
         Args:
             camera: Camera id.
@@ -853,9 +996,10 @@ class Service:
                 references = self.references(view)
                 if references and self.scenes.update(view.id, band, references):
                     self.rescan(runtime)
+                self.features.on_keyframe(view, band, at, [Box(*item["box"]) for item in runtime.objects])
                 if runtime.tamper is None:
                     continue
-                started, ended = runtime.tamper.update(band)
+                started, ended = runtime.tamper.update(band, at)
                 updates = []
                 for condition in started:
                     event = Event(
@@ -1091,6 +1235,11 @@ class Service:
                     **self.faces.status(),
                     "note": self.faces_note,
                     "gallery_error": self.gallery_sync.error if self.gallery_sync else None,
+                },
+                "features": {
+                    **self.features.status(),
+                    "persons_note": self.persons_note,
+                    "plates_note": self.plates_note,
                 },
             }
 

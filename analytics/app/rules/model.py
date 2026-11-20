@@ -6,11 +6,11 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import StrEnum
 
+from app.rules.animals import ANIMALS, AnimalPolicy
 from app.rules.geometry import Point
 from app.rules.schedule import Schedule
 
 VEHICLES = frozenset({"car", "truck", "bus", "motorcycle"})
-ANIMALS = frozenset({"dog", "cat"})
 GROUPS = {"vehicle": VEHICLES, "animal": ANIMALS}
 WHOLE_VIEW_AREA = 0.95
 
@@ -33,6 +33,10 @@ class EventKind(StrEnum):
     CROWD = "crowd"
     LINE_CROSSING = "line_crossing"
     TAMPER = "tamper"
+    ANIMAL = "animal"
+    OBJECT_LEFT = "object_left"
+    OBJECT_TAKEN = "object_taken"
+    FALL = "fall"
 
 
 class AlertMode(StrEnum):
@@ -219,6 +223,7 @@ class Zone:
         enabled: False keeps the zone configured but silent.
         suspended: True while the view no longer matches the scene the zone was drawn on.
         reference: Snapshot the zone was drawn on, relative to the events folder, for lenses that move.
+        animals: Whether dogs, cats and birds produce events here and whether those may alert.
     """
 
     id: str
@@ -233,6 +238,7 @@ class Zone:
     enabled: bool = True
     suspended: bool = False
     reference: str | None = None
+    animals: AnimalPolicy = field(default_factory=AnimalPolicy)
 
     @property
     def whole_view(self) -> bool:
@@ -267,6 +273,7 @@ class Zone:
             enabled=bool(data.get("enabled", True)),
             suspended=bool(data.get("suspended", False)),
             reference=data.get("reference") or None,
+            animals=AnimalPolicy.from_dict(data),
         )
 
 
@@ -289,6 +296,7 @@ class Line:
         enabled: False keeps the line configured but silent.
         suspended: True while the view no longer matches the scene the line was drawn on.
         reference: Snapshot the line was drawn on, relative to the events folder, for lenses that move.
+        animals: Whether dogs, cats and birds produce events here and whether those may alert.
     """
 
     id: str
@@ -302,6 +310,7 @@ class Line:
     enabled: bool = True
     suspended: bool = False
     reference: str | None = None
+    animals: AnimalPolicy = field(default_factory=AnimalPolicy)
 
     @classmethod
     def from_dict(cls, data: dict) -> Line:
@@ -329,6 +338,7 @@ class Line:
             enabled=bool(data.get("enabled", True)),
             suspended=bool(data.get("suspended", False)),
             reference=data.get("reference") or None,
+            animals=AnimalPolicy.from_dict(data),
         )
 
 
