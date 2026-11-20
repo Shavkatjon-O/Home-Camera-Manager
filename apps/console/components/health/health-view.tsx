@@ -11,6 +11,7 @@ import { TargetPanel } from "@/components/health/target-panel"
 import { CardGrid, PageContent, PageFrame } from "@/components/shell/page-frame"
 import { Chip, EmptyState, LoadingState } from "@/components/shell/primitives"
 import { Segmented } from "@/components/shell/segmented"
+import { useCan } from "@/components/shell/session"
 import { Button } from "@/components/ui/button"
 import { api, errorMessage, isAbort } from "@/lib/api"
 import { RANGE_OPTIONS, RANGE_OPTIONS_SHORT, TONE_CLASSES, formatSpan, isHealthy, type Tone } from "@/lib/health"
@@ -62,6 +63,7 @@ function GroupEmpty({ icon, children }: { icon: React.ReactNode; children: React
 
 /** The Health page: reachability and latency of cameras and network devices, and the outage log. */
 export function HealthView() {
+  const canManage = useCan("admin")
   const [range, setRange] = React.useState<HealthRange>("1h")
   const [tick, setTick] = React.useState(0)
   const [reload, setReload] = React.useState(0)
@@ -180,10 +182,12 @@ export function HealthView() {
         onChange={setRange}
         className="md:hidden"
       />
-      <Button onClick={openAdd} aria-label="Add device">
-        <PlusIcon />
-        <span className="hidden sm:inline">Add device</span>
-      </Button>
+      {canManage ? (
+        <Button onClick={openAdd} aria-label="Add network device">
+          <PlusIcon />
+          <span className="hidden sm:inline">Add network device</span>
+        </Button>
+      ) : null}
     </>
   )
 
@@ -203,10 +207,12 @@ export function HealthView() {
     content = (
       <EmptyState icon={<ActivityIcon />} title="Nothing to watch yet">
         <span>Add the routers and access points the cameras connect through, then each camera shows up here too.</span>
-        <Button variant="outline" onClick={openAdd}>
-          <PlusIcon />
-          Add device
-        </Button>
+        {canManage ? (
+          <Button variant="outline" onClick={openAdd}>
+            <PlusIcon />
+            Add network device
+          </Button>
+        ) : null}
       </EmptyState>
     )
   } else {
@@ -233,10 +239,12 @@ export function HealthView() {
                 No network devices yet. Add the routers and access points the cameras connect through, so an outage
                 shows where it starts.
               </span>
-              <Button variant="outline" onClick={openAdd}>
-                <PlusIcon />
-                Add device
-              </Button>
+              {canManage ? (
+                <Button variant="outline" onClick={openAdd}>
+                  <PlusIcon />
+                  Add network device
+                </Button>
+              ) : null}
             </GroupEmpty>
           )}
         </Group>

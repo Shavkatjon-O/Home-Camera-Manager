@@ -685,6 +685,10 @@ function PlacementSection({
   )
 }
 
+/**
+ * The side panel of the plan editor: the selected wall, router or device, the coverage figures and the legend.
+ * Read only, it shows the properties without letting them change and leaves out placement suggestions.
+ */
 export function Inspector({
   doc,
   band,
@@ -700,6 +704,7 @@ export function Inspector({
   onAlongWallsChange,
   onApply,
   onDiscard,
+  readOnly = false,
 }: {
   doc: PlanDoc
   band: Band
@@ -715,6 +720,7 @@ export function Inspector({
   onAlongWallsChange: (value: boolean) => void
   onApply: () => void
   onDiscard: () => void
+  readOnly?: boolean
 }) {
   const wall = selection?.kind === "wall" ? doc.walls.find((item) => item.id === selection.id) : undefined
   const apIndex = selection?.kind === "ap" ? doc.access_points.findIndex((item) => item.id === selection.id) : -1
@@ -762,6 +768,18 @@ export function Inspector({
       onDiscard={onDiscard}
     />
   )
+
+  if (readOnly) {
+    return (
+      <div className="flex flex-col">
+        <fieldset disabled className="contents [&_[data-slot=button]]:hidden">
+          {detail}
+        </fieldset>
+        <StatsSection stats={stats} band={band} accessPoints={doc.access_points} />
+        <LegendSection />
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col">

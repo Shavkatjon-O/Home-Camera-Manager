@@ -22,7 +22,7 @@ import { SimilarResults, type SimilarSource } from "@/components/search/similar-
 import { PageFrame } from "@/components/shell/page-frame"
 import { LoadingState, Spinner } from "@/components/shell/primitives"
 import { Segmented } from "@/components/shell/segmented"
-import { useSession } from "@/components/shell/session"
+import { useCan, useSession } from "@/components/shell/session"
 import { Button } from "@/components/ui/button"
 import { errorMessage, eventImageUrl } from "@/lib/api"
 import { downscalePhoto, peopleApi, sampleCropUrl, type Facets } from "@/lib/people"
@@ -41,6 +41,7 @@ function SearchView() {
   const params = useSearchParams()
   const router = useRouter()
   const { cameras } = useSession()
+  const canManage = useCan("admin")
   const state = React.useMemo(() => readSearchState(params), [params])
   const [facets, setFacets] = React.useState<Facets | null>(null)
   const [photo, setPhoto] = React.useState<PhotoQuery | null>(null)
@@ -142,7 +143,7 @@ function SearchView() {
     <Segmented<Layout> label="Layout" value={state.layout} options={LAYOUT_OPTIONS} onChange={changeLayout} />
   )
 
-  const actions = (
+  const actions = canManage ? (
     <>
       <input
         ref={fileRef}
@@ -162,7 +163,7 @@ function SearchView() {
         <span className="hidden sm:inline lg:hidden">From a photo</span>
       </Button>
     </>
-  )
+  ) : null
 
   const filtering = !(state.appearance && !photo) && !source
 

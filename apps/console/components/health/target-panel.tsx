@@ -9,6 +9,7 @@ import { HealthDot, LatencyChart } from "@/components/health/charts"
 import { NONE } from "@/components/health/device-form-dialog"
 import { IconButton } from "@/components/shell/icon-button"
 import { Chip, LoadingState, Spinner } from "@/components/shell/primitives"
+import { useCan } from "@/components/shell/session"
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -202,6 +203,10 @@ function DeleteDeviceDialog({
   )
 }
 
+/**
+ * Details of one watched router or camera: its state, latency and outages. Admins also edit or delete a network
+ * device and set which device a camera connects through.
+ */
 export function TargetPanel({
   target,
   detail,
@@ -226,6 +231,7 @@ export function TargetPanel({
   onDeleted: () => void
 }) {
   const [deleting, setDeleting] = React.useState(false)
+  const canManage = useCan("admin")
   const live = detail?.target.uuid === target.uuid ? detail.target : target
   const isDevice = live.kind === "device"
 
@@ -281,7 +287,7 @@ export function TargetPanel({
           </ul>
         )}
       </Section>
-      {isDevice ? (
+      {isDevice && canManage ? (
         <Section title="Device">
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" size="sm" onClick={onEdit}>
@@ -295,7 +301,7 @@ export function TargetPanel({
           </div>
           <DeleteDeviceDialog target={live} open={deleting} onOpenChange={setDeleting} onDeleted={onDeleted} />
         </Section>
-      ) : (
+      ) : !isDevice ? (
         <Section
           title="Connection"
           action={
@@ -307,9 +313,18 @@ export function TargetPanel({
             </Button>
           }
         >
-          <CameraLinkForm key={`${live.uuid}-${live.parent_uuid}-${live.link}`} target={live} devices={devices} onSaved={onChanged} />
+          {canManage ? (
+            <CameraLinkForm
+              key={`${live.uuid}-${live.parent_uuid}-${live.link}`}
+              target={live}
+              devices={devices}
+              onSaved={onChanged}
+            />
+          ) : (
+            <p className="text-[12px] text-text-3">An admin sets which device this camera connects through.</p>
+          )}
         </Section>
-      )}
+      ) : null}
     </div>
   )
 }

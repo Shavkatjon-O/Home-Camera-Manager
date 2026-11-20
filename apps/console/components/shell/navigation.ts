@@ -95,7 +95,7 @@ export const NAV_GROUPS: NavGroup[] = [
       },
       {
         href: "/discover/",
-        label: "Add device",
+        label: "Add camera",
         description: "Scan the network for cameras and register them",
         icon: RadarIcon,
         minRole: "admin",

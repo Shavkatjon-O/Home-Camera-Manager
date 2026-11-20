@@ -6,6 +6,7 @@ import { toast } from "sonner"
 
 import { IconButton } from "@/components/shell/icon-button"
 import { EmptyState, LoadingState, Spinner } from "@/components/shell/primitives"
+import { useCan } from "@/components/shell/session"
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -97,6 +98,7 @@ function RenameInput({
   )
 }
 
+/** The site's floor plans; admins also create, rename and delete them. */
 export function PlanList({
   plans,
   total,
@@ -112,6 +114,7 @@ export function PlanList({
   onLoadMore,
   onRetry,
 }: PlanListProps & { activeDoc?: PlanDoc | null }) {
+  const canManage = useCan("admin")
   const [renaming, setRenaming] = React.useState<string | null>(null)
   const [deleting, setDeleting] = React.useState<FloorPlanSummary | null>(null)
   const [busy, setBusy] = React.useState(false)
@@ -178,7 +181,7 @@ export function PlanList({
                   <span className="w-full truncate font-data text-[11px] text-text-3">{meta(source)}</span>
                 </button>
               )}
-              {renaming === plan.uuid ? null : (
+              {renaming === plan.uuid || !canManage ? null : (
                 <div
                   className={cn(
                     "flex shrink-0 items-center opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100",
@@ -215,10 +218,12 @@ export function PlanList({
           Plans
           {total > 0 ? <span className="ml-1.5 font-data text-[11px]">{total}</span> : null}
         </span>
-        <Button variant="outline" size="xs" onClick={onCreate}>
-          <PlusIcon />
-          New plan
-        </Button>
+        {canManage ? (
+          <Button variant="outline" size="xs" onClick={onCreate}>
+            <PlusIcon />
+            New plan
+          </Button>
+        ) : null}
       </div>
       {body}
       <AlertDialog open={deleting !== null} onOpenChange={(open) => !busy && !open && setDeleting(null)}>

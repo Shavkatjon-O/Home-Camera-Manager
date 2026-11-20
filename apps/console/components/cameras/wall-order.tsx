@@ -6,11 +6,13 @@ import { toast } from "sonner"
 
 import { IconButton } from "@/components/shell/icon-button"
 import { Chip, EmptyState, LoadingState, StatusDot } from "@/components/shell/primitives"
-import { useSession } from "@/components/shell/session"
+import { useCan, useSession } from "@/components/shell/session"
 import { api, errorMessage } from "@/lib/api"
 
+/** The cameras in the order the wall shows them; admins move them up and down. */
 export function WallOrder() {
   const { cameras, loaded, refresh } = useSession()
+  const canManage = useCan("admin")
   const [saving, setSaving] = React.useState(false)
 
   const move = async (index: number, delta: number) => {
@@ -55,24 +57,28 @@ export function WallOrder() {
                 ) : null}
               </div>
               {!camera.enabled ? <Chip>Disabled</Chip> : null}
-              <IconButton
-                label="Move up"
-                size="icon-xs"
-                side="left"
-                disabled={saving || index === 0}
-                onClick={() => void move(index, -1)}
-              >
-                <ArrowUpIcon />
-              </IconButton>
-              <IconButton
-                label="Move down"
-                size="icon-xs"
-                side="left"
-                disabled={saving || index === cameras.length - 1}
-                onClick={() => void move(index, 1)}
-              >
-                <ArrowDownIcon />
-              </IconButton>
+              {canManage ? (
+                <>
+                  <IconButton
+                    label="Move up"
+                    size="icon-xs"
+                    side="left"
+                    disabled={saving || index === 0}
+                    onClick={() => void move(index, -1)}
+                  >
+                    <ArrowUpIcon />
+                  </IconButton>
+                  <IconButton
+                    label="Move down"
+                    size="icon-xs"
+                    side="left"
+                    disabled={saving || index === cameras.length - 1}
+                    onClick={() => void move(index, 1)}
+                  >
+                    <ArrowDownIcon />
+                  </IconButton>
+                </>
+              ) : null}
             </li>
           ))}
         </ol>

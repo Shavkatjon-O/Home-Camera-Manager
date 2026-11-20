@@ -27,6 +27,7 @@ import { PageFrame } from "@/components/shell/page-frame"
 import { IconButton } from "@/components/shell/icon-button"
 import { Chip, EmptyState, LoadingState, Spinner } from "@/components/shell/primitives"
 import { Segmented } from "@/components/shell/segmented"
+import { useCan } from "@/components/shell/session"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { api, errorMessage, isAbort } from "@/lib/api"
@@ -91,6 +92,8 @@ function rememberPlan(uuid: string | null) {
     window.history.replaceState(window.history.state, "", url)
   } catch {}
 }
+
+function ignore(): void {}
 
 function editableTarget(target: EventTarget | null): boolean {
   if (!(target instanceof Element)) return false
@@ -193,6 +196,7 @@ function PlanWorkspace({
   listProps: PlanListProps
   onSaved: (plan: FloorPlan) => void
 }) {
+  const canManage = useCan("admin")
   const [initial] = React.useState(() => docFromPlan(plan))
   const history = usePlanHistory(initial)
   const doc = history.doc
@@ -270,6 +274,10 @@ function PlanWorkspace({
 
   const onKeyDown = React.useEffectEvent((event: KeyboardEvent) => {
     if (editableTarget(event.target)) return
+    if (!canManage) {
+      if (event.key === "Escape") setSelection(null)
+      return
+    }
     const key = event.key.toLowerCase()
     const modifier = event.ctrlKey || event.metaKey
     if (modifier && key === "z") {
@@ -357,7 +365,7 @@ function PlanWorkspace({
   const running = suggestion?.status === "running"
   const actions = (
     <>
-      <ToolPicker value={tool} onChange={setTool} className="hidden md:flex" />
+      {canManage ? <ToolPicker value={tool} onChange={setTool} className="hidden md:flex" /> : null}
       <Segmented<Band> label="Band" value={band} options={BAND_OPTIONS} onChange={setBand} className="hidden sm:flex" />
       <Segmented<Band>
         label="Band in GHz"
@@ -366,22 +374,24 @@ function PlanWorkspace({
         onChange={setBand}
         className="sm:hidden"
       />
-      <Button
-        onClick={suggest}
-        disabled={running || doc.access_points.length === 0}
-        aria-label="Suggest placement"
-        data-testid="suggest"
-      >
-        {running ? <Spinner className="size-3.5 text-primary-foreground" /> : <WandSparklesIcon />}
-        <span className="hidden xl:inline">
-          {running ? `Suggesting ${formatPercent(suggestion?.progress ?? 0)}` : "Suggest placement"}
-        </span>
-      </Button>
+      {canManage ? (
+        <Button
+          onClick={suggest}
+          disabled={running || doc.access_points.length === 0}
+          aria-label="Suggest placement"
+          data-testid="suggest"
+        >
+          {running ? <Spinner className="size-3.5 text-primary-foreground" /> : <WandSparklesIcon />}
+          <span className="hidden xl:inline">
+            {running ? `Suggesting ${formatPercent(suggestion?.progress ?? 0)}` : "Suggest placement"}
+          </span>
+        </Button>
+      ) : null}
     </>
   )
 
   return (
-    <PageFrame actions={actions} status={<SaveChip state={saveState} />}>
+    <PageFrame actions={actions} status={canManage ? <SaveChip state={saveState} /> : null}>
       <Columns
         list={<PlanList {...listProps} activeDoc={doc} onRename={renameActive} />}
         content={
@@ -396,23 +406,25 @@ function PlanWorkspace({
               ghosts={ghosts}
               deviceSignals={deviceSignals}
               onSelect={setSelection}
-              onCommit={history.commit}
-              onGestureStart={history.begin}
-              onGesturePreview={history.preview}
-              onGestureEnd={history.end}
+              onCommit={canManage ? history.commit : ignore}
+              onGestureStart={canManage ? history.begin : ignore}
+              onGesturePreview={canManage ? history.preview : ignore}
+              onGestureEnd={canManage ? history.end : ignore}
               onDraggingChange={setDragging}
             />
-            <div
-              className="absolute bottom-3 right-3 flex items-center gap-0.5 rounded-md border border-hairline bg-surface/90 p-0.5"
-              onPointerDown={(event) => event.stopPropagation()}
-            >
-              <IconButton label="Undo" size="icon-sm" side="top" disabled={!history.canUndo} onClick={history.undo}>
-                <Undo2Icon />
-              </IconButton>
-              <IconButton label="Redo" size="icon-sm" side="top" disabled={!history.canRedo} onClick={history.redo}>
-                <Redo2Icon />
-              </IconButton>
-            </div>
+            {canManage ? (
+              <div
+                className="absolute bottom-3 right-3 flex items-center gap-0.5 rounded-md border border-hairline bg-surface/90 p-0.5"
+                onPointerDown={(event) => event.stopPropagation()}
+              >
+                <IconButton label="Undo" size="icon-sm" side="top" disabled={!history.canUndo} onClick={history.undo}>
+                  <Undo2Icon />
+                </IconButton>
+                <IconButton label="Redo" size="icon-sm" side="top" disabled={!history.canRedo} onClick={history.redo}>
+                  <Redo2Icon />
+                </IconButton>
+              </div>
+            ) : null}
           </>
         }
         inspector={
@@ -431,6 +443,7 @@ function PlanWorkspace({
             onAlongWallsChange={setAlongWalls}
             onApply={apply}
             onDiscard={discard}
+            readOnly={!canManage}
           />
         }
       />
@@ -440,6 +453,7 @@ function PlanWorkspace({
 
 /** The Coverage page: floor plans of the site with router placement and the Wi-Fi signal they give. */
 export function CoverageView() {
+  const canManage = useCan("admin")
   const [plans, setPlans] = React.useState<FloorPlanSummary[]>([])
   const [total, setTotal] = React.useState(0)
   const [listLoaded, setListLoaded] = React.useState(false)
@@ -583,8 +597,14 @@ export function CoverageView() {
     } else {
       content = (
         <EmptyState icon={<WifiIcon />} title="No floor plans yet">
-          <span>Create a plan, place your routers and see where the signal reaches. Walls are optional.</span>
-          <CreatePlanForm onCreated={created} className="pt-2" />
+          {canManage ? (
+            <>
+              <span>Create a plan, place your routers and see where the signal reaches. Walls are optional.</span>
+              <CreatePlanForm onCreated={created} className="pt-2" />
+            </>
+          ) : (
+            <span>An admin draws the floor plans of this site, with its routers and where their signal reaches.</span>
+          )}
         </EmptyState>
       )
     }

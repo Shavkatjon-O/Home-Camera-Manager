@@ -178,7 +178,7 @@ export function WallView() {
   }
 
   return (
-    <PageFrame actions={actions}>
+    <PageFrame actions={actions} compact>
       <main ref={setWall} className="relative min-h-0 min-w-0 flex-1 overflow-hidden bg-background">
         {content}
       </main>

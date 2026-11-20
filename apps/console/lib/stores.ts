@@ -3,6 +3,7 @@
 import { useCallback, useSyncExternalStore } from "react"
 
 import { isWallLayout, type WallLayout } from "@/lib/grid"
+import { THEME_KEY, type ThemeChoice } from "@/lib/theme"
 
 const LAYOUT_KEY = "sss-wall-layout"
 const layoutListeners = new Set<() => void>()
@@ -164,4 +165,42 @@ export function useMediaQuery(query: string): boolean {
     [query],
   )
   return useSyncExternalStore(subscribe, () => window.matchMedia(query).matches, () => false)
+}
+
+const themeListeners = new Set<() => void>()
+let memoryTheme: ThemeChoice = "system"
+
+function readTheme(): ThemeChoice {
+  try {
+    const stored = window.localStorage.getItem(THEME_KEY)
+    return stored === "light" || stored === "dark" ? stored : memoryTheme
+  } catch {
+    return memoryTheme
+  }
+}
+
+function subscribeTheme(listener: () => void) {
+  themeListeners.add(listener)
+  window.addEventListener("storage", listener)
+  return () => {
+    themeListeners.delete(listener)
+    window.removeEventListener("storage", listener)
+  }
+}
+
+/** Applies a theme choice to the page at once and remembers it in this browser. */
+export function setThemeChoice(value: ThemeChoice) {
+  memoryTheme = value
+  try {
+    if (value === "system") window.localStorage.removeItem(THEME_KEY)
+    else window.localStorage.setItem(THEME_KEY, value)
+  } catch {}
+  if (value === "system") delete document.documentElement.dataset.theme
+  else document.documentElement.dataset.theme = value
+  themeListeners.forEach((listener) => listener())
+}
+
+/** The theme choice this browser remembers, system until the member picks one. */
+export function useThemeChoice(): ThemeChoice {
+  return useSyncExternalStore(subscribeTheme, readTheme, () => "system")
 }

@@ -18,7 +18,8 @@ export interface PageParent {
 
 /**
  * The header of a page's content area: the title with an optional parent link, status and description on the
- * left, the page's own actions on the right, and an optional toolbar row of filters below.
+ * left, the page's own actions on the right, and an optional toolbar row of filters below. A compact header is one
+ * slim row with the title and the actions, for pages such as the wall that give their space to video.
  */
 export function PageHeader({
   title,
@@ -28,6 +29,7 @@ export function PageHeader({
   actions,
   toolbar,
   contained = false,
+  compact = false,
 }: {
   title: string
   description?: React.ReactNode
@@ -36,7 +38,17 @@ export function PageHeader({
   actions?: React.ReactNode
   toolbar?: React.ReactNode
   contained?: boolean
+  compact?: boolean
 }) {
+  if (compact) {
+    return (
+      <header className="flex h-10 shrink-0 items-center gap-3 border-b border-hairline bg-background px-3 sm:px-4">
+        <h1 className="min-w-0 flex-1 truncate text-[13px] font-medium text-foreground">{title}</h1>
+        {status ? <div className="flex shrink-0 items-center gap-1.5">{status}</div> : null}
+        {actions ? <div className="flex shrink-0 items-center gap-1">{actions}</div> : null}
+      </header>
+    )
+  }
   return (
     <header className="shrink-0 border-b border-hairline bg-background">
       <div
@@ -82,6 +94,7 @@ export function PageFrame({
   actions,
   toolbar,
   contained = false,
+  compact = false,
   children,
 }: {
   title?: string
@@ -91,6 +104,7 @@ export function PageFrame({
   actions?: React.ReactNode
   toolbar?: React.ReactNode
   contained?: boolean
+  compact?: boolean
   children: React.ReactNode
 }) {
   const item = findItem(normalizePath(usePathname()))
@@ -104,6 +118,7 @@ export function PageFrame({
         actions={actions}
         toolbar={toolbar}
         contained={contained}
+        compact={compact}
       />
       <div className="flex min-h-0 min-w-0 flex-1">{children}</div>
     </>

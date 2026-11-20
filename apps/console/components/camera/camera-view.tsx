@@ -38,7 +38,7 @@ import { PageFrame, type PageParent } from "@/components/shell/page-frame"
 import { IconButton } from "@/components/shell/icon-button"
 import { Chip, EmptyState, LoadingState, Spinner, StatusDot } from "@/components/shell/primitives"
 import { Segmented } from "@/components/shell/segmented"
-import { useSession } from "@/components/shell/session"
+import { useCan, useSession } from "@/components/shell/session"
 import { Button } from "@/components/ui/button"
 import { VideoPlaceholder } from "@/components/video/video-placeholder"
 import { VideoStream } from "@/components/video/video-stream"
@@ -63,6 +63,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function CameraView({ id }: { id: string }) {
   const { refresh: refreshSession } = useSession()
+  const canOperate = useCan("operator")
+  const canManage = useCan("admin")
   const [camera, setCamera] = React.useState<Camera | null>(null)
   const [error, setError] = React.useState<Error | null>(null)
   const [reload, setReload] = React.useState(0)
@@ -80,7 +82,8 @@ function CameraView({ id }: { id: string }) {
   const analytics = useAnalyticsViews(id)
   const fullscreen = useFullscreenElement()
   const ptz = usePtz(id, speed)
-  const keyboard = usePtzKeyboard(camera?.ptz_enabled ? ptz : null)
+  const ptzEnabled = Boolean(camera?.ptz_enabled) && canOperate
+  const keyboard = usePtzKeyboard(ptzEnabled ? ptz : null)
 
   React.useEffect(() => {
     const controller = new AbortController()
@@ -118,7 +121,6 @@ function CameraView({ id }: { id: string }) {
     if (name) document.title = `${name} - Smart Surveillance`
   }, [name])
 
-  const ptzEnabled = camera?.ptz_enabled ?? false
   React.useEffect(() => {
     if (ptzEnabled) viewRef.current?.focus({ preventScroll: true })
   }, [ptzEnabled])
@@ -236,13 +238,17 @@ function CameraView({ id }: { id: string }) {
       >
         {isFullscreen ? <MinimizeIcon /> : <MaximizeIcon />}
       </IconButton>
-      <span aria-hidden className="mx-0.5 h-5 w-px bg-hairline" />
-      <IconButton label="Check now" disabled={checking} onClick={check}>
-        {checking ? <Spinner className="size-3.5" /> : <RefreshCwIcon />}
-      </IconButton>
-      <IconButton label="Edit" onClick={() => setEditing(true)}>
-        <PencilIcon />
-      </IconButton>
+      {canOperate ? <span aria-hidden className="mx-0.5 h-5 w-px bg-hairline" /> : null}
+      {canOperate ? (
+        <IconButton label="Check now" disabled={checking} onClick={check}>
+          {checking ? <Spinner className="size-3.5" /> : <RefreshCwIcon />}
+        </IconButton>
+      ) : null}
+      {canManage ? (
+        <IconButton label="Edit" onClick={() => setEditing(true)}>
+          <PencilIcon />
+        </IconButton>
+      ) : null}
     </>
   )
 
@@ -319,13 +325,13 @@ function CameraView({ id }: { id: string }) {
           </div>
         </main>
         <aside className="flex min-h-0 flex-1 flex-col overflow-y-auto border-t border-hairline md:w-[300px] md:flex-none md:border-t-0 md:border-l">
-          {camera.ptz_enabled ? (
+          {ptzEnabled ? (
             <Section title="PTZ">
               <PtzPad controls={ptz} speed={speed} onSpeedChange={setSpeed} />
             </Section>
           ) : null}
-          {camera.ptz_enabled ? <PresetsSection cameraUuid={camera.uuid} /> : null}
-          {camera.device_host ? <ExtrasSection cameraUuid={camera.uuid} /> : null}
+          {ptzEnabled ? <PresetsSection cameraUuid={camera.uuid} /> : null}
+          {camera.device_host && canOperate ? <ExtrasSection cameraUuid={camera.uuid} /> : null}
           <Section title="Events">
             <CameraEvents cameraUuid={camera.uuid} />
           </Section>
@@ -335,7 +341,7 @@ function CameraView({ id }: { id: string }) {
             onChange={analytics.replace}
             onEdit={setEditingView}
           />
-          <RecordingsSection cameraUuid={camera.uuid} />
+          {canOperate ? <RecordingsSection cameraUuid={camera.uuid} /> : null}
           <VideoSection cameraUuid={camera.uuid} />
           <ImageSection cameraUuid={camera.uuid} />
           <MotionSection cameraUuid={camera.uuid} />
@@ -345,7 +351,7 @@ function CameraView({ id }: { id: string }) {
           </Section>
         </aside>
       </div>
-      {editingZones ? (
+      {editingZones && canManage ? (
         <ZoneEditor
           key={editingZones.uuid}
           view={editingZones}
@@ -354,7 +360,7 @@ function CameraView({ id }: { id: string }) {
         />
       ) : null}
       <CameraFormDialog
-        open={editing}
+        open={editing && canManage}
         onOpenChange={setEditing}
         camera={camera}
         onSaved={(saved) => {

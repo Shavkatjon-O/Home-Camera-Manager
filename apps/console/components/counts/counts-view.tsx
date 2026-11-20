@@ -10,6 +10,7 @@ import { DailySection } from "@/components/counts/daily-section"
 import { LineCard } from "@/components/counts/line-card"
 import { CardGrid, PageContent, PageFrame } from "@/components/shell/page-frame"
 import { IconButton } from "@/components/shell/icon-button"
+import { useCan } from "@/components/shell/session"
 import { Chip, EmptyState, LoadingState } from "@/components/shell/primitives"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -34,6 +35,7 @@ const ALL = "all"
 
 /** The Counts page: line crossings by hour for one day, and how many are inside each area. */
 export function CountsView() {
+  const canManage = useCan("admin")
   const [day, setDay] = React.useState(() => startOfDay(new Date()))
   const [label, setLabel] = React.useState(ALL)
   const [tick, setTick] = React.useState(0)
@@ -148,10 +150,12 @@ export function CountsView() {
           ))}
         </SelectContent>
       </Select>
-      <Button onClick={openAdd} aria-label="Add area">
-        <PlusIcon />
-        <span className="hidden sm:inline">Add area</span>
-      </Button>
+      {canManage ? (
+        <Button onClick={openAdd} aria-label="Add area">
+          <PlusIcon />
+          <span className="hidden sm:inline">Add area</span>
+        </Button>
+      ) : null}
     </>
   )
 
@@ -186,10 +190,12 @@ export function CountsView() {
                 An area is a place bounded by lines, such as a house behind its entrance door, and shows how many are
                 inside.
               </span>
-              <Button variant="outline" onClick={openAdd}>
-                <PlusIcon />
-                Add area
-              </Button>
+              {canManage ? (
+                <Button variant="outline" onClick={openAdd}>
+                  <PlusIcon />
+                  Add area
+                </Button>
+              ) : null}
             </div>
           ) : (
             <CardGrid>
@@ -210,10 +216,16 @@ export function CountsView() {
         </section>
         {lines.length === 0 ? (
           <EmptyState icon={<SigmaIcon />} title="No lines to count yet">
-            <span>Draw a line on a camera&apos;s analytics view to count crossings</span>
-            <Button asChild variant="outline">
-              <Link href="/cameras/">Go to cameras</Link>
-            </Button>
+            {canManage ? (
+              <>
+                <span>Draw a line on a camera&apos;s analytics view to count crossings</span>
+                <Button asChild variant="outline">
+                  <Link href="/cameras/">Go to cameras</Link>
+                </Button>
+              </>
+            ) : (
+              <span>An admin draws counting lines on a camera&apos;s analytics view</span>
+            )}
           </EmptyState>
         ) : (
           <>

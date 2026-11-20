@@ -7,6 +7,7 @@ import { toast } from "sonner"
 import { IconButton } from "@/components/shell/icon-button"
 import { Spinner } from "@/components/shell/primitives"
 import { Segmented } from "@/components/shell/segmented"
+import { useCan } from "@/components/shell/session"
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -64,6 +65,7 @@ function useLoad<T>(load: Loader<T>, key: string) {
   return { data, setData, error }
 }
 
+/** A titled section of the camera page's side panel. */
 export function ControlSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="flex flex-col gap-3 border-b border-hairline px-4 py-4 last:border-b-0">
@@ -157,9 +159,11 @@ function offsetLabel(seconds: number | null): string {
   return `${formatSpan(Math.abs(rounded))} ${rounded > 0 ? "ahead" : "behind"}`
 }
 
+/** The camera's identity and clock, with time sync and reboot for admins. */
 export function DeviceSection({ cameraUuid }: { cameraUuid: string }) {
   const { data, setData, error } = useLoad<CameraDevice>((signal) => api.cameraDevice(cameraUuid, signal), cameraUuid)
   const { busy, run } = useAction()
+  const canManage = useCan("admin")
   const [confirm, setConfirm] = React.useState<"sync" | "reboot" | null>(null)
   return (
     <ControlSection title="Device">
@@ -180,17 +184,19 @@ export function DeviceSection({ cameraUuid }: { cameraUuid: string }) {
                 value={[data.clock?.mode, data.clock?.timezone].filter(Boolean).join(", ") || "-"}
               />
             </div>
-            <div className="flex flex-wrap gap-2">
-              <Button variant="outline" size="sm" disabled={busy !== null} onClick={() => setConfirm("sync")}>
-                {busy === "sync" ? <Spinner className="size-3.5" /> : null}
-                Sync time
-              </Button>
-              {data.can_reboot ? (
-                <Button variant="outline" size="sm" disabled={busy !== null} onClick={() => setConfirm("reboot")}>
-                  Reboot
+            {canManage ? (
+              <div className="flex flex-wrap gap-2">
+                <Button variant="outline" size="sm" disabled={busy !== null} onClick={() => setConfirm("sync")}>
+                  {busy === "sync" ? <Spinner className="size-3.5" /> : null}
+                  Sync time
                 </Button>
-              ) : null}
-            </div>
+                {data.can_reboot ? (
+                  <Button variant="outline" size="sm" disabled={busy !== null} onClick={() => setConfirm("reboot")}>
+                    Reboot
+                  </Button>
+                ) : null}
+              </div>
+            ) : null}
           </>
         ) : null}
       </Loading>
@@ -315,10 +321,12 @@ function EncoderEditor({
   )
 }
 
+/** The camera's video encoders, editable by admins. */
 export function VideoSection({ cameraUuid }: { cameraUuid: string }) {
   const { data, setData, error } = useLoad<CameraVideo>((signal) => api.cameraVideo(cameraUuid, signal), cameraUuid)
   const [editing, setEditing] = React.useState<string | null>(null)
   const { busy, run } = useAction()
+  const canManage = useCan("admin")
 
   const save = (encoder: VideoEncoder, values: { encoding: string; resolution: string; fps: string; bitrate: string; gop: string }) => {
     const [width, height] = values.resolution.split("x").map(Number)
@@ -351,7 +359,7 @@ export function VideoSection({ cameraUuid }: { cameraUuid: string }) {
                   <span className="truncate text-[12px] text-foreground">
                     {encoder.profiles.join(", ") || encoder.name}
                   </span>
-                  {editing !== encoder.token ? (
+                  {canManage && editing !== encoder.token ? (
                     <IconButton label="Edit video settings" size="icon-sm" onClick={() => setEditing(encoder.token)}>
                       <PencilIcon />
                     </IconButton>
@@ -432,9 +440,12 @@ function LevelSlider({
   )
 }
 
+/** The camera's image settings, adjustable by admins and read only for others. */
 export function ImageSection({ cameraUuid }: { cameraUuid: string }) {
   const { data, setData, error } = useLoad<CameraImage>((signal) => api.cameraImage(cameraUuid, signal), cameraUuid)
   const { busy, run } = useAction()
+  const canManage = useCan("admin")
+  const locked = busy !== null || !canManage
   const apply = (changes: Partial<ImageSettings>) =>
     void run("image", async () => setData(await api.updateImage(cameraUuid, changes)))
   const settings = data?.settings
@@ -456,7 +467,7 @@ export function ImageSection({ cameraUuid }: { cameraUuid: string }) {
                   value={value}
                   min={range.min}
                   max={range.max}
-                  disabled={busy !== null}
+                  disabled={locked}
                   onCommit={(next) => apply({ [key]: next })}
                 />
               )
@@ -467,7 +478,11 @@ export function ImageSection({ cameraUuid }: { cameraUuid: string }) {
                 <Segmented<string>
                   label="Day and night"
                   value={settings.ir_cut_filter}
-                  options={options.ir_cut_filter_modes.map((mode) => ({ value: mode, label: IR_LABELS[mode] ?? mode }))}
+                  options={options.ir_cut_filter_modes.map((mode) => ({
+                    value: mode,
+                    label: IR_LABELS[mode] ?? mode,
+                    disabled: locked,
+                  }))}
                   onChange={(mode) => apply({ ir_cut_filter: mode })}
                 />
               </div>
@@ -478,7 +493,7 @@ export function ImageSection({ cameraUuid }: { cameraUuid: string }) {
                 <Switch
                   aria-label="Wide dynamic range"
                   checked={settings.wdr_mode === "ON"}
-                  disabled={busy !== null || !options.wdr_modes.includes(settings.wdr_mode === "ON" ? "OFF" : "ON")}
+                  disabled={locked || !options.wdr_modes.includes(settings.wdr_mode === "ON" ? "OFF" : "ON")}
                   onCheckedChange={(checked) => apply({ wdr_mode: checked ? "ON" : "OFF" })}
                 />
               </div>
@@ -489,7 +504,7 @@ export function ImageSection({ cameraUuid }: { cameraUuid: string }) {
                 value={settings.wdr_level}
                 min={options.wdr_level.min}
                 max={options.wdr_level.max}
-                disabled={busy !== null}
+                disabled={locked}
                 onCommit={(next) => apply({ wdr_level: next })}
               />
             ) : null}
@@ -499,7 +514,7 @@ export function ImageSection({ cameraUuid }: { cameraUuid: string }) {
                 <Switch
                   aria-label="Backlight compensation"
                   checked={settings.backlight_mode === "ON"}
-                  disabled={busy !== null}
+                  disabled={locked}
                   onCheckedChange={(checked) => apply({ backlight_mode: checked ? "ON" : "OFF" })}
                 />
               </div>
@@ -511,9 +526,12 @@ export function ImageSection({ cameraUuid }: { cameraUuid: string }) {
   )
 }
 
+/** The camera's own motion detection, adjustable by admins and read only for others. */
 export function MotionSection({ cameraUuid }: { cameraUuid: string }) {
   const { data, setData, error } = useLoad<CameraMotion>((signal) => api.cameraMotion(cameraUuid, signal), cameraUuid)
   const { busy, run } = useAction()
+  const canManage = useCan("admin")
+  const locked = busy !== null || !canManage
   const apply = (changes: { sensitivity?: number; enabled?: boolean }) =>
     void run("motion", async () => setData(await api.updateMotion(cameraUuid, changes)))
   return (
@@ -530,7 +548,7 @@ export function MotionSection({ cameraUuid }: { cameraUuid: string }) {
                 <Switch
                   aria-label="Motion detection"
                   checked={data.enabled}
-                  disabled={busy !== null}
+                  disabled={locked}
                   onCheckedChange={(checked) => apply({ enabled: checked })}
                 />
               </div>
@@ -541,7 +559,7 @@ export function MotionSection({ cameraUuid }: { cameraUuid: string }) {
                 value={data.sensitivity}
                 min={data.sensitivity_range.min}
                 max={data.sensitivity_range.max}
-                disabled={busy !== null}
+                disabled={locked}
                 onCommit={(next) => apply({ sensitivity: next })}
               />
             ) : null}
@@ -570,8 +588,9 @@ function PresetRow({
   const [value, setValue] = React.useState(name)
   const [removing, setRemoving] = React.useState(false)
   const { busy, run } = useAction()
+  const canManage = useCan("admin")
   const locked = disabled || busy !== null
-  if (renaming) {
+  if (renaming && canManage) {
     return (
       <li className="flex items-center gap-1">
         <Input value={value} maxLength={60} onChange={(event) => setValue(event.target.value)} className="h-7 text-[12px]" />
@@ -605,12 +624,16 @@ function PresetRow({
       >
         <PlayIcon />
       </IconButton>
-      <IconButton label="Rename" size="icon-sm" disabled={locked} onClick={() => setRenaming(true)}>
-        <PencilIcon />
-      </IconButton>
-      <IconButton label="Remove" size="icon-sm" disabled={locked} onClick={() => setRemoving(true)}>
-        <Trash2Icon />
-      </IconButton>
+      {canManage ? (
+        <IconButton label="Rename" size="icon-sm" disabled={locked} onClick={() => setRenaming(true)}>
+          <PencilIcon />
+        </IconButton>
+      ) : null}
+      {canManage ? (
+        <IconButton label="Remove" size="icon-sm" disabled={locked} onClick={() => setRemoving(true)}>
+          <Trash2Icon />
+        </IconButton>
+      ) : null}
       <Confirm
         open={removing}
         onOpenChange={setRemoving}
@@ -623,11 +646,13 @@ function PresetRow({
   )
 }
 
+/** PTZ presets and the home position: operators go to them, admins also save, rename and remove them. */
 export function PresetsSection({ cameraUuid }: { cameraUuid: string }) {
   const { data, setData, error } = useLoad<CameraPresets>((signal) => api.cameraPresets(cameraUuid, signal), cameraUuid)
   const [name, setName] = React.useState("")
   const [settingHome, setSettingHome] = React.useState(false)
   const { busy, run } = useAction()
+  const canManage = useCan("admin")
   return (
     <ControlSection title="Presets">
       <Loading data={data} error={error}>
@@ -650,7 +675,7 @@ export function PresetsSection({ cameraUuid }: { cameraUuid: string }) {
             ) : (
               <Note>No presets saved yet.</Note>
             )}
-            {data.max_presets ? (
+            {data.max_presets && canManage ? (
               <form
                 className="flex items-center gap-1.5"
                 onSubmit={(event) => {
@@ -685,12 +710,14 @@ export function PresetsSection({ cameraUuid }: { cameraUuid: string }) {
                   <HomeIcon />
                   Go home
                 </Button>
-                <Button size="sm" variant="ghost" disabled={busy !== null} onClick={() => setSettingHome(true)}>
-                  Set home here
-                </Button>
+                {canManage ? (
+                  <Button size="sm" variant="ghost" disabled={busy !== null} onClick={() => setSettingHome(true)}>
+                    Set home here
+                  </Button>
+                ) : null}
               </div>
             ) : null}
-            <Note>Renaming a preset also stores the current view under it.</Note>
+            {canManage ? <Note>Renaming a preset also stores the current view under it.</Note> : null}
           </>
         ) : null}
       </Loading>
@@ -706,6 +733,7 @@ export function PresetsSection({ cameraUuid }: { cameraUuid: string }) {
   )
 }
 
+/** The camera's light and siren, for operators and up. */
 export function ExtrasSection({ cameraUuid }: { cameraUuid: string }) {
   const { data, error } = useLoad<CameraExtras>((signal) => api.cameraExtras(cameraUuid, signal), cameraUuid)
   const [sounding, setSounding] = React.useState(false)
@@ -885,6 +913,7 @@ function ReplayDialog({
   )
 }
 
+/** Recordings stored on the camera, with replay, for operators and up. */
 export function RecordingsSection({ cameraUuid }: { cameraUuid: string }) {
   const [day, setDay] = React.useState(() => localDay(new Date()))
   const range = dayRange(day)

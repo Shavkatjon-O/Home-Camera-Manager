@@ -16,6 +16,7 @@ import { PhotoUploadDialog, usePhotoUpload } from "@/components/people/photo-upl
 import { usePagedQuery } from "@/components/people/use-paged"
 import { CardGrid, PageContent, PageFrame } from "@/components/shell/page-frame"
 import { Chip, EmptyState, LoadingState } from "@/components/shell/primitives"
+import { RoleGate } from "@/components/shell/role-gate"
 import { Button } from "@/components/ui/button"
 import { ApiError, errorMessage, isAbort } from "@/lib/api"
 import { isFaceKind, peopleApi, peopleLabel, personHref, type Cluster, type Person, type Sample } from "@/lib/people"
@@ -324,7 +325,8 @@ function PeopleView() {
         <PageContent>
           <p className="flex items-start gap-2 text-[12px] text-text-3">
             <LockIcon aria-hidden className="mt-px size-3.5 shrink-0" />
-            Faces are recognised on this computer and never leave it.
+            Faces are processed and stored only on the servers that run this installation&apos;s analytics. They are
+            never sent to third parties, and you can delete them at any time.
           </p>
           {focus ? (
             <Section
@@ -410,16 +412,18 @@ function PeopleView() {
 /** The People page: known people with their face photos, and the unknown faces the cameras grouped. */
 export function PeoplePage() {
   return (
-    <React.Suspense
-      fallback={
-        <PageFrame>
-          <main className="min-w-0 flex-1">
-            <LoadingState label="Loading people" />
-          </main>
-        </PageFrame>
-      }
-    >
-      <PeopleView />
-    </React.Suspense>
+    <RoleGate minRole="admin">
+      <React.Suspense
+        fallback={
+          <PageFrame>
+            <main className="min-w-0 flex-1">
+              <LoadingState label="Loading people" />
+            </main>
+          </PageFrame>
+        }
+      >
+        <PeopleView />
+      </React.Suspense>
+    </RoleGate>
   )
 }

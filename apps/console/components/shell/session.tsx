@@ -3,6 +3,7 @@
 import * as React from "react"
 import { CircleAlertIcon } from "lucide-react"
 
+import { hasRole } from "@/components/shell/navigation"
 import { EmptyState } from "@/components/shell/primitives"
 import { Button } from "@/components/ui/button"
 import { ApiError, api, errorMessage, isAbort, request } from "@/lib/api"
@@ -49,6 +50,15 @@ export function useSession(): SessionValue {
   const value = React.useContext(SessionContext)
   if (!value) throw new Error("useSession needs a SessionProvider")
   return value
+}
+
+/**
+ * Checks the member's role at the current site against the least role an action needs, with the same rule as the
+ * sidebar. It only decides what the console shows; the server checks every request itself.
+ */
+export function useCan(minRole: SiteRole): boolean {
+  const { role } = useSession()
+  return hasRole(role, minRole)
 }
 
 /**

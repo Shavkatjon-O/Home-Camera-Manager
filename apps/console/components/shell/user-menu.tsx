@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { LogOutIcon } from "lucide-react"
+import { LogOutIcon, MonitorIcon, MoonIcon, SunIcon, type LucideIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { ROLE_LABELS } from "@/components/shell/navigation"
@@ -12,10 +12,24 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { LOGIN_PATH, api, errorMessage } from "@/lib/api"
+import { setThemeChoice, useThemeChoice } from "@/lib/stores"
+import type { ThemeChoice } from "@/lib/theme"
+
+const THEMES: { value: ThemeChoice; label: string; icon: LucideIcon }[] = [
+  { value: "system", label: "System", icon: MonitorIcon },
+  { value: "light", label: "Light", icon: SunIcon },
+  { value: "dark", label: "Dark", icon: MoonIcon },
+]
+
+function isThemeChoice(value: string): value is ThemeChoice {
+  return THEMES.some((item) => item.value === value)
+}
 
 function initials(name: string): string {
   const parts = name.split(/[\s._@-]+/).filter(Boolean)
@@ -23,10 +37,11 @@ function initials(name: string): string {
   return letters.toUpperCase()
 }
 
-/** The account menu of the top bar: who is signed in, their role at the current site, and sign out. */
+/** The account menu of the top bar: who is signed in, their role at the current site, the theme, and sign out. */
 export function UserMenu() {
   const { user, site, role, platformAdmin } = useSession()
   const [busy, setBusy] = React.useState(false)
+  const theme = useThemeChoice()
   const display = user.name || user.username
 
   const signOut = async () => {
@@ -63,6 +78,24 @@ export function UserMenu() {
           ) : null}
           {platformAdmin ? <span className="text-[12px] text-text-2">Platform admin</span> : null}
         </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel>Theme</DropdownMenuLabel>
+        <DropdownMenuRadioGroup
+          value={theme}
+          onValueChange={(value) => {
+            if (isThemeChoice(value)) setThemeChoice(value)
+          }}
+        >
+          {THEMES.map((item) => {
+            const Icon = item.icon
+            return (
+              <DropdownMenuRadioItem key={item.value} value={item.value} onSelect={(event) => event.preventDefault()}>
+                <Icon />
+                {item.label}
+              </DropdownMenuRadioItem>
+            )
+          })}
+        </DropdownMenuRadioGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem disabled={busy} onSelect={() => void signOut()}>
           <LogOutIcon />

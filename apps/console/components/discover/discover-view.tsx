@@ -6,6 +6,7 @@ import { ArrowUpRightIcon, CircleAlertIcon, PlusIcon, RadarIcon } from "lucide-r
 
 import { CameraFormDialog, type CameraPrefill } from "@/components/cameras/camera-form-dialog"
 import { PageFrame } from "@/components/shell/page-frame"
+import { RoleGate } from "@/components/shell/role-gate"
 import { Chip, EmptyState, LoadingState, Spinner } from "@/components/shell/primitives"
 import { useSession } from "@/components/shell/session"
 import { Button } from "@/components/ui/button"
@@ -17,8 +18,16 @@ import { brandLabel } from "@/lib/brands"
 import { formatDuration, formatTime } from "@/lib/format"
 import type { Camera, ScanItem, ScanResult } from "@/lib/types"
 
-/** The Add device page: scans the site's network for cameras and registers the ones found. */
+/** The Add camera page for admins: scans the site's network for cameras and registers the ones found. */
 export function DiscoverView() {
+  return (
+    <RoleGate minRole="admin">
+      <DiscoverScan />
+    </RoleGate>
+  )
+}
+
+function DiscoverScan() {
   const { refresh: refreshSession } = useSession()
   const [subnet, setSubnet] = React.useState("")
   const [scanning, setScanning] = React.useState(false)
