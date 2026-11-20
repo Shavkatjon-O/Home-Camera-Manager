@@ -1,0 +1,9 @@
+## Conventions
+
+- Every route lives under /api/v1 and answers JSON.
+- Errors answer with one body shape, a stable code and a message, and the status codes each route lists: 401 when nobody is signed in, 403 when the role or site scope does not allow the call, 404, 409 on a conflict with the current state, 422 for an invalid request, 429 when rate limited, 502 when a camera, connector or go2rtc did not answer and 503 when a dependency is not available.
+- The console signs in with a session cookie. The mobile app and other clients take an access token from POST /api/v1/auth/token and send it as a bearer token; it is an ES256 JWT of 15 minutes, and POST /api/v1/auth/token/refresh rotates the refresh token on every use. GET /api/v1/auth/jwks publishes the public key.
+- Every call is checked against the caller's membership: its role and its site scope. Calls that act on one site take the site from the resource or from the site parameter.
+- The routes a connector calls authenticate with the connector's own credential, never a user token.
+
+The document this reference is built from is packages/contracts/openapi.json; the mobile app's client is generated from the same file.

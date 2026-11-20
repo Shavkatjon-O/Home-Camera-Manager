@@ -1,0 +1,14 @@
+---
+title: Objects left and taken
+description: Objects that arrive and stay in a zone, and objects that leave while someone is near.
+icon: Package
+---
+
+A zone with a left time or a taken time watches objects in it:
+
+- Object left: a carried object, or a listed vehicle, arrives and stays still for the zone's left time.
+- Object taken: an object present for the zone's taken time leaves while a person is near or the object is seen leaving.
+
+Still objects are tracked by place rather than by tracker id. Objects already there when a view starts never raise left, so parked cars and boxes stay silent. A zone with background comparison on also compares keyframes with a slow background model, for objects the detector has no class for.
+
+Objects left and taken are verified on synthetic input and against a live baseline without real occurrences.

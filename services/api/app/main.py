@@ -19,10 +19,12 @@ from app.core.exceptions import ServiceError, Unavailable
 from app.core.logging import setup_logging
 from app.core.security import require_secret_key
 from app.health.prober import health_prober
-from app.modules.alerting.services import PushDispatcher
+from app.modules.alerting.services import PushDispatcher, telegram_bot
 from app.modules.analytics.routers import analytics_internal_router
+from app.modules.billing.services import sync_plans, usage_meter
 from app.modules.identity.services.seed import seed_admin
 from app.modules.investigation.routers import people_internal_router
+from app.modules.operations.services import audit_pruner
 from app.modules.tenancy.services.bootstrap import run_bootstrap
 from app.modules.tv.routers import tv_internal_router
 from app.streaming.supervisor import supervisor
@@ -46,13 +48,20 @@ async def lifespan(application: FastAPI):
     require_secret_key()
     await verify_db_connection()
     await seed_admin()
+    await sync_plans()
     await run_bootstrap()
     await supervisor.start()
     await health_prober.start()
     await camera_events.start()
     await push_dispatcher.start()
+    await usage_meter.start()
+    await audit_pruner.start()
+    await telegram_bot.start()
     logger.info("%s %s started", APP_NAME, APP_VERSION)
     yield
+    await telegram_bot.stop()
+    await audit_pruner.stop()
+    await usage_meter.stop()
     await push_dispatcher.stop()
     await camera_events.stop()
     await health_prober.stop()

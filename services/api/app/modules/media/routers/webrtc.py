@@ -9,11 +9,17 @@ from app.modules.identity.deps import get_current_user
 from app.modules.media.deps import get_live_service
 from app.modules.media.schemas import IceServerList, WebrtcAnswer, WebrtcOffer
 from app.modules.media.services import LiveService, ice_servers
+from app.modules.operations.deps import audited
+from app.modules.operations.enums import AuditAction
 
 router = APIRouter()
 
 
-@router.post("/cameras/{uuid}/webrtc", response_model=WebrtcAnswer)
+@router.post(
+    "/cameras/{uuid}/webrtc",
+    response_model=WebrtcAnswer,
+    dependencies=[Depends(audited(AuditAction.LIVE_VIEW, "camera"))],
+)
 async def create_webrtc_session(
     uuid: UUID, payload: WebrtcOffer, service: LiveService = Depends(get_live_service)
 ) -> WebrtcAnswer:

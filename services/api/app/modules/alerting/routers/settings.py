@@ -5,6 +5,8 @@ from fastapi import APIRouter, Depends
 from app.modules.alerting.deps import get_settings_service
 from app.modules.alerting.schemas import AnalyticsSettingsRead, AnalyticsSettingsUpdate
 from app.modules.alerting.services import AnalyticsSettingsService
+from app.modules.operations.deps import audited
+from app.modules.operations.enums import AuditAction
 from app.modules.tenancy.deps import require_operator
 
 router = APIRouter()
@@ -25,7 +27,11 @@ async def read_analytics_settings(
     return await service.read()
 
 
-@router.put("/settings", dependencies=[Depends(require_operator)], response_model=AnalyticsSettingsRead)
+@router.put(
+    "/settings",
+    dependencies=[Depends(audited(AuditAction.ARM_MODE_CHANGE, "site")), Depends(require_operator)],
+    response_model=AnalyticsSettingsRead,
+)
 async def update_analytics_settings(
     data: AnalyticsSettingsUpdate,
     service: AnalyticsSettingsService = Depends(get_settings_service),

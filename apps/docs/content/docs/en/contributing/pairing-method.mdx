@@ -1,0 +1,25 @@
+---
+title: Adding a pairing method
+description: A new way to add a camera, a recorder or a connector, in the API and in the mobile app.
+icon: QrCode
+---
+
+A pairing method has two halves: the API decides when the method applies and what it asks for, and the mobile app shows its steps.
+
+## In the API
+
+The devices domain of the API holds the pairing method catalog. A method has an id, a title and description, what it requires (such as the admin role, a paired connector, direct mode or being on the same Wi-Fi) and the parameters it asks for, each with a type, whether it is required, and a prefill read from the context, such as a scanned label. Add the id to the method ids, describe it in the catalog, decide in which contexts it applies and in which order, and add the route that completes it, reusing identification and device creation.
+
+Every attempt reports telemetry: method, adapter, last step, outcome, error code and duration, never personal data.
+
+## In the mobile app
+
+Each method lives in its own folder, apps/mobile/lib/features/devices/pairing/methods/method_id, behind the PairingMethod interface, and the registry lists it. A method shows its steps, collects its parameters, calls the API and reports its attempt. Strings go into the English, Russian and Uzbek ARB files.
+
+## In the catalog
+
+Add the method id to the pairing list of the catalog entries that support it, so the [pairing methods page](../cameras/pairing-methods.mdx) shows them.
+
+## Provisioning methods
+
+Methods that bring a factory-new camera onto Wi-Fi, such as wifi_qr, soft_ap, ble, sound_wave and matter, are designed only. They go through the adapters' provisioning capability, which generates what the phone shows, plays or sends; none is offered until it is built and tested. <Status kind="planned" />

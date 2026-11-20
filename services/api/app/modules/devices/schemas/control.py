@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field, field_validator
 __all__ = [
     "AudioRead",
     "ClockRead",
-    "DeviceRead",
+    "CameraDeviceRead",
     "EncoderOptionsRead",
     "EncoderRead",
     "EncoderUpdate",
@@ -79,7 +79,7 @@ class ClockRead(BaseModel):
     daylight_savings: bool | None
 
 
-class DeviceRead(BaseModel):
+class CameraDeviceRead(BaseModel):
     """ONVIF device details of a camera.
 
     Attributes:

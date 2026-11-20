@@ -1,0 +1,36 @@
+---
+title: The mobile app
+description: Build the Flutter app, connect it to a server or try it in demo mode, and set up a site.
+icon: Smartphone
+---
+
+<Status kind="beta" /> The app is in development in apps/mobile and is not published in a store yet. It is built for Android first; iOS comes later.
+
+## Build
+
+The app needs Flutter 3.47.4 and the Android SDK. It has two flavors:
+
+| Flavor | Push notifications | Needs |
+|---|---|---|
+| foss | none; the in-app event stream shows alerts while the app is open | nothing beyond the SDK |
+| play | Firebase Cloud Messaging | android/app/src/play/google-services.json from the server's Firebase project |
+
+google-services.json never enters git, and the play flavor builds only when it is present. The API client is generated from packages/contracts/openapi.json:
+
+```bash
+cd apps/mobile
+scripts/generate-api.sh
+flutter build apk --flavor foss --dart-define=SSS_BACKEND=api --dart-define=SSS_API_URL=https://your-server
+```
+
+Without SSS_BACKEND=api the app runs in demo mode on sample data and needs no server.
+
+## First start
+
+1. In API mode the welcome screen shows the server address, the API of a self-hosted site or of a central deployment, and lets you change it.
+2. Create an account with email and password and confirm the email; or sign in, or accept an invitation from its link.
+3. Create the organisation and its first site: a name, its kind (home, store, office, warehouse or other) and its time zone.
+4. Add cameras: through a connector, by address, by RTSP address, by scanning the camera's label, or from a recorder. [Pairing methods](../cameras/pairing-methods.mdx) explains each way.
+5. Allow notifications, so alerts reach the phone while the app is closed.
+
+The [mobile guide](../guides/mobile.mdx) describes the screens.

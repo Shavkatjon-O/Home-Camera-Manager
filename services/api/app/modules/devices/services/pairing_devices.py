@@ -13,6 +13,8 @@ from app.core.config import settings
 from app.core.exceptions import BadGateway, NotFound, ServiceError, Unprocessable
 from app.core.security import encrypt_secret
 from app.models import Camera, Connector, Device, DiscoveredCamera
+from app.modules.billing.enums import Limit
+from app.modules.billing.services.entitlements import require_capacity
 from app.modules.devices.agent import AgentClient
 from app.modules.devices.enums import CameraBrand
 from app.modules.devices.schemas.capabilities import capabilities_read
@@ -28,6 +30,7 @@ from app.modules.devices.schemas.pairing import (
 from app.modules.devices.services.cameras import CameraService
 from app.modules.devices.services.devices import DeviceService
 from app.modules.devices.services.pairing_telemetry import PairingTelemetryService
+from app.modules.tenancy.services.scope import scope_of
 from camera_adapters.base import AdapterError, Channel, DeviceKind, Identity, Target
 from camera_adapters.fingerprint import collect
 from camera_adapters.manifest import CapabilityManifest
@@ -312,6 +315,10 @@ class DevicePairingService:
 
         Returns:
             The new device with its channels.
+
+        Raises:
+            ServiceError: The device could not be identified or added, such as camera_exists for a camera the site
+                has; the attempt is recorded as failed and the session stays usable.
         """
         attempt = await self.telemetry.find(request.attempt) or await self.telemetry.start(
             request.method, request.adapter
@@ -324,6 +331,7 @@ class DevicePairingService:
             device = await self.store(request, identity, channels, connector)
         except ServiceError as exc:
             await self.session.rollback()
+            await self.session.refresh(attempt)
             self.telemetry.finish(attempt, AttemptOutcome.FAILED, "create", request.adapter, exc.code)
             await self.session.commit()
             raise
@@ -348,6 +356,9 @@ class DevicePairingService:
         Raises:
             Conflict: A channel's stream is already registered at the site.
         """
+        scope = scope_of(self.session)
+        if scope is not None:
+            await require_capacity(self.session, scope.organisation_id, Limit.CAMERAS, len(channels))
         now = datetime.now(UTC)
         brand = identity.adapter if identity.adapter in {item.value for item in CameraBrand} else CameraBrand.RTSP.value
         host = request.host or (identity.channels[0].name if not request.host else request.host)

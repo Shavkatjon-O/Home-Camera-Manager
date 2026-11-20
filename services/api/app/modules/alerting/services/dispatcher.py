@@ -13,6 +13,9 @@ from app.core.database import async_session_maker
 from app.models import AuthSession, Camera, Membership, MembershipSite, PushTarget, Site
 from app.modules.alerting.services.providers import providers
 from app.modules.alerting.services.targets import deliver
+from app.modules.alerting.services.telegram import telegram_bot
+from app.modules.billing.enums import UsageMetric
+from app.modules.billing.services.metering import record_usage
 
 __all__ = ["PushDispatcher", "alert_payload", "recipients"]
 
@@ -142,12 +145,20 @@ class PushDispatcher:
         Args:
             event: The event data.
 
+        Telegram chats of the organisation receive the alert first, then the members' push targets.
+
         Returns:
-            The number of targets the providers accepted.
+            The number of Telegram chats and push targets that accepted it.
         """
+        sent = 0
+        if telegram_bot.enabled:
+            try:
+                sent += await telegram_bot.notify(event)
+            except Exception:
+                logger.exception("Sending the Telegram alert of event %s failed", event.get("uuid"))
         available = providers()
         if not any(provider.enabled for provider in available.values()):
-            return 0
+            return sent
         async with async_session_maker() as session:
             row = (
                 await session.execute(
@@ -157,11 +168,12 @@ class PushDispatcher:
                 )
             ).first()
             if row is None:
-                return 0
+                return sent
             site_id, organisation_id, site_uuid = row
             targets = await recipients(session, site_id, organisation_id)
             if not targets:
-                return 0
-            sent = await deliver(targets, alert_payload(event, site_uuid), available)
+                return sent
+            pushed = await deliver(targets, alert_payload(event, site_uuid), available)
+            await record_usage(session, organisation_id, site_id, UsageMetric.NOTIFICATIONS, pushed)
             await session.commit()
-            return sent
+            return sent + pushed

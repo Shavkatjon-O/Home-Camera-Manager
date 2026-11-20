@@ -2,3 +2,4 @@
 
 from .settings import *
 from .targets import *
+from .telegram import *

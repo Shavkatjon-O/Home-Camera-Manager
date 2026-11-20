@@ -9,6 +9,8 @@ from fastapi import APIRouter, Depends, Query, Response, status
 from app.modules.insights.deps import get_area_service, get_count_service
 from app.modules.insights.schemas.counts import AreaCreate, AreaList, AreaRead, AreaReset, AreaUpdate, CountsRead
 from app.modules.insights.services.counts import AreaService, CountService
+from app.modules.operations.deps import audited
+from app.modules.operations.enums import AuditAction
 from app.modules.tenancy.deps import require_admin, require_operator
 
 router = APIRouter()
@@ -49,7 +51,10 @@ async def list_areas(service: AreaService = Depends(get_area_service)) -> AreaLi
 
 
 @router.post(
-    "/areas", dependencies=[Depends(require_admin)], response_model=AreaRead, status_code=status.HTTP_201_CREATED
+    "/areas",
+    dependencies=[Depends(audited(AuditAction.RULES_UPDATE, "area")), Depends(require_admin)],
+    response_model=AreaRead,
+    status_code=status.HTTP_201_CREATED,
 )
 async def create_area(payload: AreaCreate, service: AreaService = Depends(get_area_service)) -> AreaRead:
     """Create an area bounded by counting lines.
@@ -64,7 +69,11 @@ async def create_area(payload: AreaCreate, service: AreaService = Depends(get_ar
     return await service.create(payload)
 
 
-@router.patch("/areas/{uuid}", dependencies=[Depends(require_admin)], response_model=AreaRead)
+@router.patch(
+    "/areas/{uuid}",
+    dependencies=[Depends(audited(AuditAction.RULES_UPDATE, "area")), Depends(require_admin)],
+    response_model=AreaRead,
+)
 async def update_area(uuid: UUID, payload: AreaUpdate, service: AreaService = Depends(get_area_service)) -> AreaRead:
     """Change an area.
 
@@ -79,7 +88,11 @@ async def update_area(uuid: UUID, payload: AreaUpdate, service: AreaService = De
     return await service.update(uuid, payload)
 
 
-@router.delete("/areas/{uuid}", dependencies=[Depends(require_admin)], status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/areas/{uuid}",
+    dependencies=[Depends(audited(AuditAction.RULES_UPDATE, "area")), Depends(require_admin)],
+    status_code=status.HTTP_204_NO_CONTENT,
+)
 async def delete_area(uuid: UUID, service: AreaService = Depends(get_area_service)) -> Response:
     """Delete an area.
 

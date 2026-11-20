@@ -4,6 +4,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Response, status
 
+from app.modules.operations.deps import audited_account
+from app.modules.operations.enums import AuditAction
 from app.modules.tenancy.deps import (
     get_invitation_service,
     get_organisation_service,
@@ -38,7 +40,10 @@ async def list_invitations(
 
 
 @router.post(
-    "/organisations/{organisation}/invitations", response_model=InvitationRead, status_code=status.HTTP_201_CREATED
+    "/organisations/{organisation}/invitations",
+    response_model=InvitationRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(audited_account(AuditAction.INVITATION_CREATE, "invitation", target=None))],
 )
 async def create_invitation(
     organisation: UUID, payload: InvitationCreate, service: InvitationService = Depends(get_invitation_service)
@@ -60,6 +65,7 @@ async def create_invitation(
     "/organisations/{organisation}/invitations/{invitation}",
     status_code=status.HTTP_204_NO_CONTENT,
     response_class=Response,
+    dependencies=[Depends(audited_account(AuditAction.INVITATION_REVOKE, "invitation", target="invitation"))],
 )
 async def revoke_invitation(
     organisation: UUID, invitation: UUID, service: InvitationService = Depends(get_invitation_service)
@@ -94,7 +100,10 @@ async def preview_invitation(
     return await service.preview(token)
 
 
-@router.post("/invitations/{token}/accept", response_model=OrganisationRead)
+@router.post(
+    "/invitations/{token}/accept",
+    response_model=OrganisationRead,
+)
 async def accept_invitation(
     token: str,
     service: InvitationService = Depends(get_invitation_service),

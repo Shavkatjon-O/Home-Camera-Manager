@@ -5,10 +5,12 @@ from uuid import UUID
 from fastapi import APIRouter, Depends
 from fastapi.responses import FileResponse
 
+from app.modules.billing.deps import require_feature
+from app.modules.billing.enums import Feature
 from app.modules.investigation.deps import get_sample_service
 from app.modules.investigation.services import SampleService
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(require_feature(Feature.FACES))])
 
 CROP_HEADERS = {"Cache-Control": "private, max-age=300"}
 

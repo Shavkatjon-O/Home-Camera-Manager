@@ -185,7 +185,7 @@ services:
       CAMERA_NAME: Yard
       CAMERA_MODEL: SIM-PTZ
       CAMERA_SERIAL: SIM-0012
-      CAMERA_MAIN: /samples/sample_cam5.mp4
+      CAMERA_MAIN: /samples/sample_720p.mp4
       CAMERA_PTZ: "true"
       CAMERA_PASSWORD: ${SSS_DEV_CAMERA_PASSWORD:?run scripts/devkit.sh init}
     networks:
@@ -237,6 +237,20 @@ services:
     networks:
       site-lan:
         ipv4_address: 172.31.250.22
+
+  telegram:
+    <<: *dev-hardening
+    build: ./tools/devkit/telegram
+    image: smart-surveillance-dev-telegram:local
+    container_name: smart-surveillance-dev-telegram
+    profiles: [devkit]
+    read_only: true
+    mem_limit: 128m
+    environment:
+      FAKE_TELEGRAM_TOKEN: ${SSS_TELEGRAM_BOT_TOKEN:-devkit-fake-token}
+    ports:
+      - "127.0.0.1:${SSS_DEV_TELEGRAM_PORT:-18781}:8081"
+    networks: [cams]
 
   connector:
     <<: *dev-hardening

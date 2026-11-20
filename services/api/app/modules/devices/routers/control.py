@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, Query, Response, status
 from app.modules.devices.deps import get_control_service
 from app.modules.devices.schemas import (
     AudioRead,
-    DeviceRead,
+    CameraDeviceRead,
     EncoderUpdate,
     ExtrasRead,
     ImageRead,
@@ -25,7 +25,11 @@ from app.modules.devices.schemas import (
     VideoRead,
 )
 from app.modules.devices.services import CameraControlService
-from app.modules.tenancy.deps import require_admin, require_operator
+from app.modules.operations.deps import audited
+from app.modules.operations.enums import AuditAction
+from app.modules.tenancy.deps import get_site_access, require_admin, require_operator
+from app.modules.tenancy.enums import Role
+from app.modules.tenancy.services.access import SiteAccess
 
 router = APIRouter()
 
@@ -39,22 +43,36 @@ def no_content() -> Response:
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@router.get("/{uuid}/device", response_model=DeviceRead)
-async def get_camera_device(uuid: UUID, service: CameraControlService = Depends(get_control_service)) -> DeviceRead:
-    """Return the camera's ONVIF device details and clock.
+@router.get("/{uuid}/device", response_model=CameraDeviceRead)
+async def get_camera_device(
+    uuid: UUID,
+    access: SiteAccess = Depends(get_site_access),
+    service: CameraControlService = Depends(get_control_service),
+) -> CameraDeviceRead:
+    """Return the camera's ONVIF device details and clock; viewers do not see the serial number and hardware id.
 
     Args:
         uuid: Public id of the camera.
+        access: Access of the signed-in member to the request's site.
         service: Camera control service for the request.
 
     Returns:
         Device information, or the reason it is unavailable.
     """
-    return await service.device(uuid)
+    read = await service.device(uuid)
+    if not access.allows(Role.OPERATOR):
+        read = read.model_copy(update={"serial": None, "hardware_id": None})
+    return read
 
 
-@router.post("/{uuid}/device/sync-time", dependencies=[Depends(require_admin)], response_model=DeviceRead)
-async def sync_camera_time(uuid: UUID, service: CameraControlService = Depends(get_control_service)) -> DeviceRead:
+@router.post(
+    "/{uuid}/device/sync-time",
+    dependencies=[Depends(audited(AuditAction.CAMERA_CONTROL, "camera")), Depends(require_admin)],
+    response_model=CameraDeviceRead,
+)
+async def sync_camera_time(
+    uuid: UUID, service: CameraControlService = Depends(get_control_service)
+) -> CameraDeviceRead:
     """Set the camera's clock to this server's time.
 
     Args:
@@ -67,7 +85,11 @@ async def sync_camera_time(uuid: UUID, service: CameraControlService = Depends(g
     return await service.sync_time(uuid)
 
 
-@router.post("/{uuid}/device/reboot", dependencies=[Depends(require_admin)], status_code=status.HTTP_204_NO_CONTENT)
+@router.post(
+    "/{uuid}/device/reboot",
+    dependencies=[Depends(audited(AuditAction.CAMERA_CONTROL, "camera")), Depends(require_admin)],
+    status_code=status.HTTP_204_NO_CONTENT,
+)
 async def reboot_camera(uuid: UUID, service: CameraControlService = Depends(get_control_service)) -> Response:
     """Reboot the camera.
 
@@ -96,7 +118,11 @@ async def get_video_settings(uuid: UUID, service: CameraControlService = Depends
     return await service.video(uuid)
 
 
-@router.put("/{uuid}/video/{token}", dependencies=[Depends(require_admin)], response_model=VideoRead)
+@router.put(
+    "/{uuid}/video/{token}",
+    dependencies=[Depends(audited(AuditAction.CAMERA_CONTROL, "camera")), Depends(require_admin)],
+    response_model=VideoRead,
+)
 async def update_video_encoder(
     uuid: UUID,
     token: str,
@@ -131,7 +157,11 @@ async def get_image_settings(uuid: UUID, service: CameraControlService = Depends
     return await service.image(uuid)
 
 
-@router.patch("/{uuid}/image", dependencies=[Depends(require_admin)], response_model=ImageRead)
+@router.patch(
+    "/{uuid}/image",
+    dependencies=[Depends(audited(AuditAction.CAMERA_CONTROL, "camera")), Depends(require_admin)],
+    response_model=ImageRead,
+)
 async def update_image_settings(
     uuid: UUID,
     payload: ImageSettings,
@@ -164,7 +194,11 @@ async def get_motion_settings(uuid: UUID, service: CameraControlService = Depend
     return await service.motion(uuid)
 
 
-@router.patch("/{uuid}/motion", dependencies=[Depends(require_admin)], response_model=MotionRead)
+@router.patch(
+    "/{uuid}/motion",
+    dependencies=[Depends(audited(AuditAction.CAMERA_CONTROL, "camera")), Depends(require_admin)],
+    response_model=MotionRead,
+)
 async def update_motion_settings(
     uuid: UUID,
     payload: MotionUpdate,
@@ -199,7 +233,7 @@ async def list_presets(uuid: UUID, service: CameraControlService = Depends(get_c
 
 @router.post(
     "/{uuid}/presets",
-    dependencies=[Depends(require_admin)],
+    dependencies=[Depends(audited(AuditAction.CAMERA_CONTROL, "camera")), Depends(require_admin)],
     response_model=PresetsRead,
     status_code=status.HTTP_201_CREATED,
 )
@@ -221,7 +255,11 @@ async def create_preset(
     return await service.create_preset(uuid, payload.name)
 
 
-@router.patch("/{uuid}/presets/{token}", dependencies=[Depends(require_admin)], response_model=PresetsRead)
+@router.patch(
+    "/{uuid}/presets/{token}",
+    dependencies=[Depends(audited(AuditAction.CAMERA_CONTROL, "camera")), Depends(require_admin)],
+    response_model=PresetsRead,
+)
 async def rename_preset(
     uuid: UUID,
     token: str,
@@ -242,7 +280,11 @@ async def rename_preset(
     return await service.rename_preset(uuid, token, payload.name)
 
 
-@router.delete("/{uuid}/presets/{token}", dependencies=[Depends(require_admin)], response_model=PresetsRead)
+@router.delete(
+    "/{uuid}/presets/{token}",
+    dependencies=[Depends(audited(AuditAction.CAMERA_CONTROL, "camera")), Depends(require_admin)],
+    response_model=PresetsRead,
+)
 async def remove_preset(
     uuid: UUID,
     token: str,
@@ -298,7 +340,11 @@ async def goto_home(uuid: UUID, service: CameraControlService = Depends(get_cont
     return no_content()
 
 
-@router.post("/{uuid}/home/set", dependencies=[Depends(require_admin)], status_code=status.HTTP_204_NO_CONTENT)
+@router.post(
+    "/{uuid}/home/set",
+    dependencies=[Depends(audited(AuditAction.CAMERA_CONTROL, "camera")), Depends(require_admin)],
+    status_code=status.HTTP_204_NO_CONTENT,
+)
 async def set_home(uuid: UUID, service: CameraControlService = Depends(get_control_service)) -> Response:
     """Store the camera's current position as its PTZ home position.
 
@@ -401,7 +447,11 @@ async def get_camera_extras(uuid: UUID, service: CameraControlService = Depends(
     return await service.extras(uuid)
 
 
-@router.post("/{uuid}/extras/light", dependencies=[Depends(require_operator)], status_code=status.HTTP_204_NO_CONTENT)
+@router.post(
+    "/{uuid}/extras/light",
+    dependencies=[Depends(audited(AuditAction.CAMERA_CONTROL, "camera")), Depends(require_operator)],
+    status_code=status.HTTP_204_NO_CONTENT,
+)
 async def set_light(
     uuid: UUID,
     payload: LightRequest,
@@ -421,7 +471,11 @@ async def set_light(
     return no_content()
 
 
-@router.post("/{uuid}/extras/siren", dependencies=[Depends(require_operator)], status_code=status.HTTP_204_NO_CONTENT)
+@router.post(
+    "/{uuid}/extras/siren",
+    dependencies=[Depends(audited(AuditAction.CAMERA_CONTROL, "camera")), Depends(require_operator)],
+    status_code=status.HTTP_204_NO_CONTENT,
+)
 async def set_siren(
     uuid: UUID,
     payload: SirenRequest,

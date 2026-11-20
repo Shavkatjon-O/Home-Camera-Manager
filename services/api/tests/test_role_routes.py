@@ -8,11 +8,12 @@ from fastapi.responses import JSONResponse
 from app.api.v1_routers import v1_routers
 from app.core.database import get_db
 from app.core.exceptions import ServiceError
+from app.modules.billing.deps import get_entitlements
 from app.modules.investigation import deps as people_deps
 from app.modules.investigation.schemas import PersonList
 from app.modules.tenancy.deps import get_site_access
 from app.modules.tenancy.enums import Role
-from tests.fakes import site_access
+from tests.fakes import entitlements, site_access
 
 UUID = uuid4()
 
@@ -47,6 +48,7 @@ def build(role):
         return JSONResponse(status_code=exc.status_code, content={"detail": {"code": exc.code, "message": exc.message}})
 
     application.include_router(v1_routers, prefix="/api/v1")
+    application.dependency_overrides[get_entitlements] = lambda: entitlements()
     application.dependency_overrides[get_site_access] = lambda: site_access(role=role)
     application.dependency_overrides[get_db] = FakeSession
     application.dependency_overrides[people_deps.get_person_service] = FakePeople

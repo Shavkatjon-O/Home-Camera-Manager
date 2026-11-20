@@ -1,0 +1,44 @@
+{
+  "name": "smart-surveillance-docs",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.34.9",
+  "scripts": {
+    "generate": "node generators/index.ts",
+    "dev": "pnpm generate && next dev",
+    "build": "pnpm generate && next build",
+    "lint": "eslint --max-warnings=0",
+    "typecheck": "fumadocs-mdx && next typegen && tsc --noEmit",
+    "check:links": "linkinator $(cd out && find . -name '*.html' | sed 's|^\\./||') --server-root out --check-fragments --skip '^https?://(?!localhost|127\\.0\\.0\\.1)' --verbosity error"
+  },
+  "dependencies": {
+    "clsx": "2.1.1",
+    "fumadocs-core": "16.19.5",
+    "fumadocs-mdx": "15.6.4",
+    "fumadocs-openapi": "12.6.6",
+    "fumadocs-ui": "16.19.5",
+    "geist": "1.9.2",
+    "lucide-react": "1.75.0",
+    "mermaid": "12.3.0",
+    "next": "16.4.6",
+    "next-themes": "0.4.6",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "tailwind-merge": "3.7.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.3.5",
+    "@types/mdx": "2.0.14",
+    "@types/node": "24.19.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.4.6",
+    "eslint-plugin-jsdoc": "65.5.0",
+    "linkinator": "8.1.0",
+    "tailwindcss": "4.3.5",
+    "typescript": "5.9.3",
+    "yaml": "2.9.1"
+  }
+}

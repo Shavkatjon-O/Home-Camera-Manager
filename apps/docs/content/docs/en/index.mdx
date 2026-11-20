@@ -1,0 +1,52 @@
+---
+title: Overview
+description: What Smart Surveillance System is, which products it is made of and how they fit together.
+icon: House
+---
+
+Smart Surveillance System is a video surveillance platform for IP cameras with its own video analytics. It shows every camera live in the browser, on a TV and on the phone, drives PTZ cameras and their settings over ONVIF, keeps the events the cameras report, and runs analytics on an NVIDIA GPU with DeepStream: people, vehicles and animals in zones and across lines, faces, tampering, counts, objects left behind, falls, number plates and a person's way across the cameras.
+
+It runs today as a self-hosted installation on one computer in a site's own network. The platform API is multi-tenant: people sign up, belong to organisations, and see the sites their role and scope allow, so the same backend can later run centrally for many homes, stores, offices and warehouses.
+
+## Product map
+
+<ProductMap />
+
+<Status kind="live" /> runs in the repository's main stack. <Status kind="beta" /> works but is new or verified only on synthetic input. <Status kind="planned" /> is designed and not built yet.
+
+## How the pieces fit
+
+```mermaid
+flowchart LR
+  cams["Cameras: ONVIF, EZVIZ, RTSP, V380"]
+  bridge["V380 bridge"]
+  go2rtc["go2rtc"]
+  analytics["Analytics engine"]
+  api["Platform API"]
+  db[("Postgres")]
+  console["Console"]
+  mobile["Mobile app"]
+  tv["TV app"]
+  cams --> go2rtc
+  cams -- "V380 protocol" --> bridge
+  bridge --> go2rtc
+  go2rtc -- "original streams" --> analytics
+  analytics -- "configuration, events" --> api
+  api --> db
+  console -- "API, video" --> api
+  mobile -- "API, WebRTC" --> api
+  cams -. "on the local Wi-Fi" .-> tv
+```
+
+- go2rtc pulls each camera once and serves the original stream to the analytics engine and a browser-friendly H.264 stream to the console.
+- The analytics engine reads its configuration from the API every 5 s and posts events back, so zone and rule changes apply without a restart.
+- The console and the mobile app talk only to the API; the TV app talks to the cameras itself on the local Wi-Fi.
+
+## Where to go next
+
+<Cards>
+  <Card title="Self-hosting" href="/en/docs/getting-started/self-hosting/">Run the whole stack on one computer with Docker Compose.</Card>
+  <Card title="Analytics" href="/en/docs/analytics/">Zones, lines, rules, faces, counts, tamper and the beta features.</Card>
+  <Card title="Cameras" href="/en/docs/cameras/compatibility/">Which cameras work, through which adapter, and how they are added.</Card>
+  <Card title="API reference" href="/en/docs/reference/api/">Every route of the platform API, generated from its OpenAPI document.</Card>
+</Cards>

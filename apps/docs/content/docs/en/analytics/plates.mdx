@@ -1,0 +1,21 @@
+---
+title: Number plates
+description: Plates read on vehicle events from full-resolution pictures, in daylight.
+icon: RectangleHorizontal
+---
+
+<Status kind="beta" />
+
+On views with plates turned on, the engine reads number plates on vehicle events:
+
+1. It cuts the vehicle a few times from the recording buffer at full resolution, because the 1080p detector frame shrinks distant plates.
+2. A text detector, PaddleOCR's PP-OCRv4 DB detector, finds plate-shaped lines of text; NVIDIA LPDNet is an optional finder under its own licence (SSS_ANALYTICS_PLATE_FINDER).
+3. Each line is levelled into a straight band, because a plate seen from above leans, and read by the PP-OCRv4 English recogniser.
+4. The text is fitted to the Uzbek formats, such as 01 A 123 BC and 01 123 ABC, swapping look-alike letters and digits only where the format needs the other kind, and the reads of an event vote.
+
+Plates are searchable on the Search page and shown as candidates on the event.
+
+## Limits
+
+- Daylight only: infrared light makes plates glare white at night, so nearly colourless pictures are refused instead of storing garbage.
+- The region code is rarely read, and distant cars are too small.

@@ -4,6 +4,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Response, status
 
+from app.modules.operations.deps import audited_account
+from app.modules.operations.enums import AuditAction
 from app.modules.tenancy.deps import get_member_service
 from app.modules.tenancy.schemas import MemberList, MemberRead, MemberUpdate
 from app.modules.tenancy.services import MemberService
@@ -25,7 +27,11 @@ async def list_members(organisation: UUID, service: MemberService = Depends(get_
     return await service.list(organisation)
 
 
-@router.patch("/{organisation}/members/{member}", response_model=MemberRead)
+@router.patch(
+    "/{organisation}/members/{member}",
+    response_model=MemberRead,
+    dependencies=[Depends(audited_account(AuditAction.MEMBER_UPDATE, "member", target="member"))],
+)
 async def update_member(
     organisation: UUID, member: UUID, payload: MemberUpdate, service: MemberService = Depends(get_member_service)
 ) -> MemberRead:
@@ -43,7 +49,12 @@ async def update_member(
     return await service.update(organisation, member, payload)
 
 
-@router.delete("/{organisation}/members/{member}", status_code=status.HTTP_204_NO_CONTENT, response_class=Response)
+@router.delete(
+    "/{organisation}/members/{member}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+    dependencies=[Depends(audited_account(AuditAction.MEMBER_REMOVE, "member", target="member"))],
+)
 async def remove_member(
     organisation: UUID, member: UUID, service: MemberService = Depends(get_member_service)
 ) -> Response:

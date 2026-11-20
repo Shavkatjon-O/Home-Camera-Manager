@@ -9,8 +9,9 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.context import UserContext
+from app.core.config import settings
 from app.core.database import async_session_maker, get_db
-from app.core.exceptions import TooManyRequests, Unauthorized
+from app.core.exceptions import Forbidden, TooManyRequests, Unauthorized
 from app.core.rate_limit import RateLimiter
 from app.core.security import SESSION_COOKIE, decode_session_token
 from app.core.tokens import decode_access_token
@@ -161,8 +162,8 @@ async def get_stream_user(
         return await authenticate(token, credentials, session)
 
 
-CREDENTIAL_ATTEMPTS = 20
-MAIL_ATTEMPTS = 5
+CREDENTIAL_ATTEMPTS = settings.rate_limit_credentials
+MAIL_ATTEMPTS = settings.rate_limit_mail
 WINDOW_SECONDS = 60.0
 
 credential_limiter = RateLimiter(CREDENTIAL_ATTEMPTS, WINDOW_SECONDS)
@@ -271,3 +272,24 @@ def get_account_service(
         The service.
     """
     return AccountService(session, actor)
+
+
+async def require_platform_admin(
+    user: UserContext = Depends(get_current_user), session: AsyncSession = Depends(get_db)
+) -> UserContext:
+    """Require a platform admin, whatever their organisation roles.
+
+    Args:
+        user: Signed-in user.
+        session: Request-scoped database session.
+
+    Returns:
+        The user.
+
+    Raises:
+        Forbidden: The user is not a platform admin.
+    """
+    allowed = await session.scalar(select(User.is_platform_admin).where(User.id == user.id))
+    if not allowed:
+        raise Forbidden("not_platform_admin", "Only platform admins may do this")
+    return user

@@ -2,6 +2,8 @@
 
 from fastapi import APIRouter
 
+from .admin import router as admin_router
+from .audit import router as audit_router
 from .devices import router as devices_router
 from .floorplans import router as floorplans_router
 from .links import router as links_router
@@ -14,4 +16,4 @@ health_router.include_router(outages_router)
 health_router.include_router(devices_router, prefix="/devices")
 health_router.include_router(links_router, prefix="/camera-links")
 
-__all__ = ["floorplans_router", "health_router"]
+__all__ = ["admin_router", "audit_router", "floorplans_router", "health_router"]

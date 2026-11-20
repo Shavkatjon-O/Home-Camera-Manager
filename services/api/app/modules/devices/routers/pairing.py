@@ -24,6 +24,8 @@ from app.modules.devices.schemas.pairing import (
 from app.modules.devices.services.pairing_catalog import PairingCatalogService
 from app.modules.devices.services.pairing_devices import DevicePairingService
 from app.modules.devices.services.pairing_telemetry import PairingTelemetryService
+from app.modules.operations.deps import audited
+from app.modules.operations.enums import AuditAction
 from app.modules.tenancy.deps import require_admin
 
 router = APIRouter()
@@ -80,7 +82,12 @@ async def identify_device(
     return await service.identify(payload)
 
 
-@router.post("/devices", response_model=DeviceRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/devices",
+    response_model=DeviceRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(audited(AuditAction.DEVICE_PAIR, "device"))],
+)
 async def create_paired_device(
     payload: PairingDeviceCreate, service: DevicePairingService = Depends(get_device_pairing_service)
 ) -> DeviceRead:

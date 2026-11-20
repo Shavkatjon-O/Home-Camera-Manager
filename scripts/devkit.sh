@@ -40,6 +40,7 @@ init() {
   fill SSS_ANALYTICS_TOKEN "$(secret)"
   fill SSS_DEV_CAMERA_PASSWORD "$(secret)"
   fill SSS_DEMO_PASSWORD "$(secret)"
+  fill SSS_TELEGRAM_WEBHOOK_SECRET "$(secret)"
   sh scripts/devkit-samples.sh
 }
 

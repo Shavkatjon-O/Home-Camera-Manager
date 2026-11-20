@@ -1,0 +1,50 @@
+---
+title: Mobile app
+description: The screens of the Flutter app, from the home tab to zones drawn on the phone.
+icon: Smartphone
+---
+
+<Status kind="beta" /> The app in apps/mobile talks only to the platform API. It speaks English, Russian and Uzbek, and follows the phone's light or dark theme unless set otherwise. [Getting started](../getting-started/mobile.mdx) covers building it and the first start.
+
+## Home
+
+The current site at a glance: the site switcher, the arm mode control, alerts today and how many are still to review, events today, cameras online, connectors and cameras that need attention, visitors today with people inside now, and the recent events.
+
+## Live
+
+A grid of every camera, one tile per lens, with automatic, one column, two by two and three by three layouts. Live video comes over WebRTC: the app sends its offer to the API, which checks the member's access to the camera and passes it to go2rtc, with no transcoding by default. A camera opens fullscreen with its main or sub stream, sound, the PTZ pad with presets and home, the light and siren where the camera has them, and its recent events. The app shows only the controls in the camera's capability manifest.
+
+## Events
+
+The event inbox of the site with filters, updated live while the app is open. An event opens with its snapshot and boxes, its clip, plate candidates, the person's journey and Find this person, and can be acknowledged.
+
+## Search
+
+Search over every event of the site, faces (find similar from a face or a photo), People with known people and unknown clusters, and Find this person.
+
+## More
+
+- This site: counts and occupancy charts by hour and day, site settings with the arm schedule and time zone, cameras, analytics per view, connectors and health.
+- Organisation: members with their roles and site scope, invitations, faces and the plan.
+- You: notifications, account with sessions and account deletion, an optional app lock with the phone's biometrics, language and theme, and about with the licences of the app's packages.
+
+## Analytics on the phone
+
+Zones and lines are drawn with a finger over a fresh picture of the view, in the same normalised coordinates the console uses, so a zone drawn on the phone is the same zone on the web. Presets such as perimeter, entrance, counting and tamper only fill in a view's analytics settings in one step.
+
+## Roles
+
+What a member can do depends on the role in the organisation and the site scope of the membership:
+
+| Permission | Owner | Admin | Operator | Viewer |
+|---|---|---|---|---|
+| Live view, events, snapshots and clips | yes | yes | yes | yes |
+| PTZ, light and siren | yes | yes | yes | no |
+| Arm, disarm, acknowledge alerts | yes | yes | yes | no |
+| Zones, lines, rules and schedules | yes | yes | no | no |
+| Cameras and connectors | yes | yes | no | no |
+| People and faces | yes | yes | no | no |
+| Members and invitations | yes | yes, except owners | no | no |
+| Delete the organisation, transfer ownership | yes | no | no | no |
+
+The API checks role and scope on every request, so a change of membership takes effect at once, on the web and on the phone alike.

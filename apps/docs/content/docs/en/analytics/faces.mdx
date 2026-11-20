@@ -1,0 +1,27 @@
+---
+title: Faces and people
+description: Face recognition on chosen views, known people and unknown clusters, enrolment, and the thresholds behind them.
+icon: ScanFace
+---
+
+Face recognition is an organisation-level choice. It is off for a new organisation until an admin or owner turns it on and accepts the consent text, and it then runs on views whose profile is identity or that turn faces on. The face models are published for non-commercial research only; see [licences](../licences.mdx).
+
+## Known people and unknown clusters
+
+- A known person is named on their events and, for 8 s, on the wall tile that saw them.
+- Other faces gather into unknown clusters, such as Unknown 3, seen 5 times. Who is this? turns a cluster into a person and relabels its past events.
+- The People page lists known people with their sample faces and latest sightings, enrols people from photos that must each show exactly one face, merges and deletes them. Deleting a person wipes their faces, embeddings and crops.
+- The gallery of known people and unknown clusters belongs to the organisation and never crosses organisations.
+
+## How a face is decided
+
+- SCRFD 10G finds faces on the tracked person boxes of those views, not on whole frames, so it costs nothing on empty frames, gives a face far more detector pixels and hands every face its person's track id.
+- Each face is judged by size, frontality, sharpness and score and aligned to a 112 by 112 template. A track sends its first usable face at once, a clearly better one at any time, a comparable one every 2 s and at most 12 in all.
+- The engine keeps the 5 best faces of each track, embeds them with glintr100 and decides after 3 faces or 3 s from their quality-weighted mean. A track that ends unknown is checked again with all its faces.
+- A face is known at a similarity of 0.45 to one of the person's samples, 0.50 when it is grey from night vision, with a lead of 0.08 over the next person. Everything else joins the closest unknown cluster at 0.45 or starts one, but only from a track whose faces average at least 0.35 in quality. The same person or cluster makes at most one event per view in 10 minutes.
+
+The thresholds come from 6000 pairs of a public face verification benchmark, with every face also shrunk to a 40 pixel door-camera face and turned grey: different people never scored above 0.27, so 0.45 keeps a wide gap to strangers while accepting about 98 percent of small daylight faces and 92 percent of small grey faces against an enrolled photo. The SSS_FACES_ settings in the [configuration reference](../reference/configuration.mdx) change them; change them only after a new calibration.
+
+## Where faces are kept
+
+Face samples seen by the cameras follow the event retention. Enrolled photos stay until their person is deleted. Embeddings are 512 numbers stored in Postgres, and similarity search ranks them in the API.

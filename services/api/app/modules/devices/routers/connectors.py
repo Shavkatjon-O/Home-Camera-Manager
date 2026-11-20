@@ -16,6 +16,8 @@ from app.modules.devices.schemas import (
     StreamTestResult,
 )
 from app.modules.devices.services import ConnectorService, PairingService
+from app.modules.operations.deps import audited
+from app.modules.operations.enums import AuditAction
 from app.modules.tenancy.deps import require_admin
 from app.modules.tenancy.services.access import SiteAccess
 
@@ -35,7 +37,12 @@ async def list_connectors(service: ConnectorService = Depends(get_connector_serv
     return await service.list()
 
 
-@router.post("/claim", response_model=PairingRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/claim",
+    response_model=PairingRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(audited(AuditAction.CONNECTOR_CLAIM, "connector"))],
+)
 async def claim_connector(
     payload: ConnectorClaim,
     access: SiteAccess = Depends(require_admin),
@@ -89,7 +96,11 @@ async def get_connector(uuid: UUID, service: ConnectorService = Depends(get_conn
     return await service.read(uuid)
 
 
-@router.patch("/{uuid}", response_model=ConnectorRead, dependencies=[Depends(require_admin)])
+@router.patch(
+    "/{uuid}",
+    response_model=ConnectorRead,
+    dependencies=[Depends(audited(AuditAction.CONNECTOR_UPDATE, "connector")), Depends(require_admin)],
+)
 async def update_connector(
     uuid: UUID, payload: ConnectorUpdate, service: ConnectorService = Depends(get_connector_service)
 ) -> ConnectorRead:
@@ -107,7 +118,10 @@ async def update_connector(
 
 
 @router.delete(
-    "/{uuid}", status_code=status.HTTP_204_NO_CONTENT, response_class=Response, dependencies=[Depends(require_admin)]
+    "/{uuid}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+    dependencies=[Depends(audited(AuditAction.CONNECTOR_REVOKE, "connector")), Depends(require_admin)],
 )
 async def remove_connector(uuid: UUID, service: ConnectorService = Depends(get_connector_service)) -> Response:
     """Unpair a connector and remove its cameras; admins and owners only.

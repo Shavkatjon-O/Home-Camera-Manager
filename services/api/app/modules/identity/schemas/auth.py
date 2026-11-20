@@ -85,6 +85,7 @@ class AccountRead(BaseModel):
         email: Email address, if the account has one.
         name: Display name, if given.
         email_verified: Whether the email address is confirmed.
+        is_platform_admin: Whether the account administers the whole platform.
         created_at: When the account was created.
     """
 
@@ -93,6 +94,7 @@ class AccountRead(BaseModel):
     email: str | None
     name: str | None
     email_verified: bool
+    is_platform_admin: bool = False
     created_at: datetime
 
 

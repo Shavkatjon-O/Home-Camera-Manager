@@ -1,0 +1,21 @@
+---
+title: Search and journeys
+description: Search over every event, similar faces, Find this person and journeys across cameras.
+icon: Search
+---
+
+## Search
+
+The Search page, and the Search tab of the mobile app, filter every event by time, cameras, views, kinds, labels, zones, lines, person or cluster and alerts, as a list or a grid. Find similar ranks faces like a chosen face or an uploaded photo.
+
+## Find this person and journeys
+
+<Status kind="beta" />
+
+Find this person, on any person event, finds the same person on other cameras by appearance, and a journey links a person's tracks across cameras, such as yard, then entrance, then corridor.
+
+- The engine embeds person boxes about once a second with OSNet-AIN. Raw similarity between any two people is about 0.5 on typical cameras, so tracks are compared after taking away the running mean of all tracks; unrelated tracks then score near 0.
+- A finished track links to the mutual best match of another view that ended within 3 minutes above 0.35, and nothing links before 20 tracks have been seen.
+- Daylight colour and infrared night pictures of the same person do not match, so journeys and Find this person work within the same light only.
+
+Appearances and journeys are deleted with their events, so Find this person never offers a sighting whose event is gone.
