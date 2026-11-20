@@ -81,6 +81,56 @@ Face recognition runs on every view whose profile is identity and on any view th
 The models are the InsightFace antelopev2 pack, which the InsightFace model zoo publishes for non-commercial research
 use only; scripts/download-face-models.sh fetches and checks them.
 
+## Features beyond zones and lines
+
+The hub in app/features.py runs these per view, beside the rules engine, and hands their events to the service like
+any other event.
+
+- Tamper (app/tampering): every view, sampled from the keyframe thumbnails at most every 5 s. Covered means flat
+  against what the view normally shows at that brightness, too dark means below an absolute floor and well below the
+  darkest regime learned, blurred means the edges collapsed while the place still matches, and moved means the edge
+  structure no longer lines up. A reference is learned per lighting regime, day and infrared night, and a regime
+  switch starts a grace. Views with too little structure, such as a blank wall, never report blur or movement, and
+  moving lenses never report movement.
+- Counts (app/counts): every counted line crossing goes into a minute bucket per line, direction and label; the
+  backend upserts the absolute totals of each run of the service and sums them into hours, days and area occupancy.
+- Objects left and taken (app/objects): per zone with left_seconds or taken_seconds. Still objects are tracked by
+  place rather than tracker id. Objects already there when a view starts never raise left, and taken needs a person
+  near the place or the object seen leaving, so parked cars and boxes stay silent. Zones with background set also
+  compare the keyframes with a slow background model for objects the detector has no class for.
+- Animals (app/rules/animals.py): dogs, cats and birds open animal events. A zone or line sets animals to record
+  (the default: events without alerts in any arm mode), include (events that may alert) or exclude (no events).
+- Falls, beta (app/falls): RTMPose-m on the person box widened by a quarter to 3 by 4, cropped from the RGB frame in
+  the pipeline process because nvinfer can only feed the bare box; on real crops the widened box found 72 percent of
+  the keypoints above 0.3 against 45 percent for the bare box. A fall is a change from upright to lying within 1.5 s
+  with the hips dropping, then lying still for 8 s.
+- Number plates, beta (app/plates): read on vehicle events from full-resolution pictures of the recording buffer,
+  because the 1080p muxer frame shrinks Camera B's plates by a third. PaddleOCR's DB text detector finds plate-shaped
+  text lines, the PP-OCRv4 English recogniser reads them, the text is fitted to the Uzbek formats (01 A 123 BC and
+  01 123 ABC) with look-alike letters and digits swapped only where the format needs the other kind, and the reads
+  of an event vote. Grey infrared pictures are not read.
+- Journeys, beta (app/reid): OSNet-AIN x1.0 embeds person boxes about once a second in the pipeline process. Raw
+  cosine similarity is about 0.5 between any two people on these cameras, so tracks are compared after taking away
+  the running mean of all tracks; then unrelated tracks score near 0 and the same person in the same light 0.2 to
+  0.5. A finished track links to the mutual best match of another view within 3 minutes above 0.35, and nothing
+  links before 20 tracks have been seen. Colour and infrared pictures of the same person do not match.
+- Auto-follow (app/follow): off by default. The controller keeps the chosen person centred with a dead zone,
+  proportional speed between 0.15 and 0.5 and a stop after 1 s without the person, saves the position when it starts
+  and returns there after 30 s without anyone, to a reserved preset or by retracing its moves on cameras without
+  presets. The backend sends the moves to the camera's own ONVIF device when it offers PTZ and to the bridge
+  otherwise.
+
+| Model | Use | Licence | Engine memory | Batch time |
+|---|---|---|---|---|
+| OSNet-AIN x1.0 MSMT17 | appearance | MIT | 118 MiB | 0.8 ms for 1, 2.5 ms for 16 |
+| RTMPose-m body7 256x192 | pose | Apache 2.0 | 26 MiB | 0.7 ms for 1, 1.8 ms for 8 |
+| PaddleOCR PP-OCRv4 det mobile | plate finder | Apache 2.0 | measured with the plates | single pictures |
+| PaddleOCR PP-OCRv4 en rec mobile | plate text | Apache 2.0 | 42 MiB | 0.4 ms for 1, 0.8 ms for 8 |
+| NVIDIA LPDNet USA pruned v2.2 | optional plate finder | NVIDIA AI Enterprise EULA | 78 MiB | 0.4 ms for 1 |
+
+scripts/download-secondary-models.sh downloads them with pinned checksums; LPDNet only with --all. Engines are built
+on first use into the engine volume after the ONNX digest is checked.
+
 ## Run
 
 The service runs as the analytics service of the repository's compose.yml, which reads its views, zones and lines
@@ -109,6 +159,10 @@ the engine volume, which takes about a minute.
 | HC_ANALYTICS_CLIP_AFTER | 5 | Seconds a clip runs after its event |
 | HC_ANALYTICS_CLIP_MAX | 60 | Longest clip in seconds |
 | HC_ANALYTICS_BUFFER_SECONDS | 120 | Seconds of segments kept per camera |
+| HC_ANALYTICS_APPEARANCE | true | Appearance vectors and journeys on views that allow them |
+| HC_ANALYTICS_POSE | true | Pose and fall detection on views with falls on |
+| HC_ANALYTICS_PLATES | true | Plate reading on views with plates on |
+| HC_ANALYTICS_PLATE_FINDER | text | text for the DB text detector, lpdnet for NVIDIA LPDNet |
 | HC_TIMEZONE | UTC | Time zone of schedules |
 | HC_ANALYTICS_BACKEND_URL | empty | Backend the configuration comes from and events go to |
 | HC_ANALYTICS_TOKEN | empty | Shared token of the backend's internal routes and the status endpoint |
