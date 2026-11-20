@@ -1,0 +1,46 @@
+name: connector
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "services/connector/**"
+      - "packages/camera-adapters/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/connector.yml"
+  pull_request:
+    paths:
+      - "services/connector/**"
+      - "packages/camera-adapters/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/connector.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  connector:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.13"
+      - name: Install the workspace
+        run: uv sync --frozen --all-packages
+      - name: Lint
+        working-directory: services/connector
+        run: uv run --frozen ruff check .
+      - name: Check formatting
+        working-directory: services/connector
+        run: uv run --frozen ruff format --check .
+      - name: Test
+        working-directory: services/connector
+        run: uv run --frozen pytest -q
