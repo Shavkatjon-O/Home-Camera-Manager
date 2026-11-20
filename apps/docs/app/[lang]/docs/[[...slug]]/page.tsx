@@ -1,10 +1,10 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
-import { createRelativeLink } from "fumadocs-ui/mdx"
 import { DocsBody, DocsDescription, DocsPage, DocsTitle, EditOnGitHub } from "fumadocs-ui/layouts/docs/page"
 
 import { OpenAPIPage } from "@/components/api-page"
 import { getMDXComponents } from "@/components/mdx"
+import { relativeLink } from "@/lib/links"
 import { openapi } from "@/lib/openapi"
 import { repository } from "@/lib/site"
 import { source } from "@/lib/source"
@@ -34,7 +34,7 @@ export default async function Page({ params }: PageProps<"/[lang]/docs/[[...slug
       <DocsBody>
         <MDX
           components={getMDXComponents({
-            a: createRelativeLink(source, page),
+            a: relativeLink(page),
             OpenAPIPage: async (props) => <OpenAPIPage {...await openapi.preloadOpenAPIPage(page)} {...props} />,
           })}
         />
