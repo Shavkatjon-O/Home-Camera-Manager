@@ -12,7 +12,7 @@ from camera_adapters.base import Fingerprint
 
 __all__ = ["CATALOG_PATH", "CONFIDENCE", "Catalog", "Entry", "load_catalog", "render_path"]
 
-CATALOG_PATH = Path(__file__).resolve().parents[1] / "catalog" / "models.yaml"
+CATALOG_PATH = Path(__file__).resolve().parent / "catalog" / "models.yaml"
 CONFIDENCE = ("tested", "documented", "guessed")
 
 

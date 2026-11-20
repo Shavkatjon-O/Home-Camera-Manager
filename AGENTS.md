@@ -13,7 +13,7 @@ docker compose down
 The host has no Node or project Python environment; run tools in containers as your own user, from the repository root.
 
 ```
-docker run --rm -u $(id -u):$(id -g) -e HOME=/tmp -e UV_PROJECT_ENVIRONMENT=/tmp/venv -e UV_CACHE_DIR=/tmp/uv-cache -e PYTHONPATH=/repo/packages/camera-adapters -v $PWD:/repo -w /repo/services/api ghcr.io/astral-sh/uv:python3.13-bookworm-slim sh -c "uv sync --frozen && uv run --frozen ruff check . && uv run --frozen ruff format --check . && uv run --frozen pytest -q"
+docker run --rm -u $(id -u):$(id -g) -e HOME=/tmp -e UV_PROJECT_ENVIRONMENT=/tmp/venv -e UV_CACHE_DIR=/tmp/uv-cache -v $PWD:/repo -w /repo/services/api ghcr.io/astral-sh/uv:python3.13-bookworm-slim sh -c "uv sync --frozen --all-packages && uv run --frozen ruff check . && uv run --frozen ruff format --check . && uv run --frozen pytest -q"
 
 docker build --target test -t smart-surveillance-system-analytics:test services/analytics
 docker run --rm -u $(id -u):$(id -g) -e RUFF_CACHE_DIR=/tmp/ruff-cache -v $PWD/services/analytics:/work:ro -w /work --entrypoint sh smart-surveillance-system-analytics:test -c "ruff check . && ruff format --check . && pytest -q -p no:cacheprovider"

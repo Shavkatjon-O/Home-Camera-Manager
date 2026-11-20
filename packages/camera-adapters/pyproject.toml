@@ -15,8 +15,13 @@ dev = [
     "ruff>=0.12",
 ]
 
-[tool.uv]
-package = false
+[build-system]
+requires = ["uv_build>=0.9,<0.12"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "camera_adapters"
+module-root = ""
 
 [tool.ruff]
 line-length = 120

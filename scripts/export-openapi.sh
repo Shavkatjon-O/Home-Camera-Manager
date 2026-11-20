@@ -10,10 +10,10 @@ OUT=${1:-$ROOT/packages/contracts/openapi.json}
 
 docker run --rm -i --memory=2g -u "$(id -u):$(id -g)" \
   -e HOME=/tmp -e UV_PROJECT_ENVIRONMENT=/tmp/venv -e UV_CACHE_DIR=/tmp/uv-cache -e PYTHONDONTWRITEBYTECODE=1 \
-  -e SSS_SECRET_KEY=openapi-export -e PYTHONPATH=/repo/packages/camera-adapters \
+  -e SSS_SECRET_KEY=openapi-export \
   -v "$ROOT:/repo:ro" -w /repo/services/api \
   ghcr.io/astral-sh/uv:python3.13-bookworm-slim \
-  sh -c 'uv sync --frozen --quiet && uv run --frozen --quiet python -' > "$OUT.tmp" <<'PY'
+  sh -c 'uv sync --frozen --quiet --all-packages && uv run --frozen --quiet python -' > "$OUT.tmp" <<'PY'
 import json
 
 from app.main import app

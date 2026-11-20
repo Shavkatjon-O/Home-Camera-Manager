@@ -6,19 +6,20 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     UV_LINK_MODE=copy \
     UV_PYTHON_DOWNLOADS=never \
     UV_PROJECT_ENVIRONMENT=/opt/venv \
-    PATH="/opt/venv/bin:${PATH}" \
-    PYTHONPATH=/opt/camera-adapters
+    PATH="/opt/venv/bin:${PATH}"
+
+WORKDIR /workspace
+
+COPY pyproject.toml uv.lock ./
+COPY services/api/pyproject.toml services/api/
+COPY packages/camera-adapters packages/camera-adapters
+RUN uv sync --frozen --no-dev --no-editable --package smart-surveillance-backend --no-install-project
 
 WORKDIR /app
-
-COPY services/api/pyproject.toml services/api/uv.lock ./
-RUN uv sync --frozen --no-dev --no-install-project
 
 COPY services/api/alembic.ini ./
 COPY services/api/migrations ./migrations
 COPY services/api/app ./app
-COPY packages/camera-adapters/camera_adapters /opt/camera-adapters/camera_adapters
-COPY packages/camera-adapters/catalog /opt/camera-adapters/catalog
 
 RUN groupadd --system --gid 10001 cameras \
     && useradd --system --uid 10001 --gid cameras --no-create-home --shell /usr/sbin/nologin cameras \
