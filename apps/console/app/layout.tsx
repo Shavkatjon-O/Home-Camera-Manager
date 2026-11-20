@@ -4,6 +4,7 @@ import { GeistSans } from "geist/font/sans"
 
 import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import { THEME_SCRIPT } from "@/lib/theme"
 
 import "./globals.css"
 
@@ -25,9 +26,16 @@ export const viewport: Viewport = {
   ],
 }
 
+/**
+ * The document of every page. A small script applies the theme this browser chose before the first paint, so a
+ * page never flashes in the other theme.
+ */
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
       <body className={`${GeistSans.variable} ${GeistMono.variable} antialiased`}>
         <TooltipProvider>{children}</TooltipProvider>
         <Toaster position="bottom-right" />

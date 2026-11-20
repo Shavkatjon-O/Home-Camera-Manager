@@ -17,7 +17,11 @@ const ARM_ICONS: Record<ArmMode, LucideIcon> = {
   schedule: CalendarClockIcon,
 }
 
-export function ArmModeSelect({ className }: { className?: string }) {
+/**
+ * The arm mode control of the top bar. It loads the site's mode and follows changes; a member who may not change
+ * the mode sees it read only.
+ */
+export function ArmModeSelect({ className, readOnly = false }: { className?: string; readOnly?: boolean }) {
   const mode = useArmMode()
   const [busy, setBusy] = React.useState(false)
 
@@ -49,9 +53,9 @@ export function ArmModeSelect({ className }: { className?: string }) {
 
   const Icon = ARM_ICONS[mode]
   return (
-    <Select value={mode} disabled={busy} onValueChange={(value) => void change(value)}>
+    <Select value={mode} disabled={busy || readOnly} onValueChange={(value) => void change(value)}>
       <SelectTrigger
-        aria-label={`Arm mode, ${ARM_MODE_LABELS[mode]}`}
+        aria-label={`Arm mode, ${ARM_MODE_LABELS[mode]}${readOnly ? ", read only" : ""}`}
         className={cn("w-auto gap-1.5 px-2 font-mono text-[11px] sm:px-2.5", className)}
       >
         <SelectValue>

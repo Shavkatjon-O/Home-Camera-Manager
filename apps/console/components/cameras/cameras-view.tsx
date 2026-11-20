@@ -16,10 +16,10 @@ import {
 import { CameraFormDialog } from "@/components/cameras/camera-form-dialog"
 import { DeleteCameraDialog } from "@/components/cameras/delete-camera-dialog"
 import { WallOrder } from "@/components/cameras/wall-order"
-import { AppFrame } from "@/components/shell/app-frame"
+import { PageFrame } from "@/components/shell/page-frame"
 import { IconButton } from "@/components/shell/icon-button"
 import { Chip, EmptyState, LoadingState, StatusDot } from "@/components/shell/primitives"
-import { useSession } from "@/components/shell/session"
+import { useCan, useSession } from "@/components/shell/session"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { cameraHref } from "@/components/wall/wall-tile"
@@ -30,8 +30,10 @@ import type { Camera, Page } from "@/lib/types"
 
 const PAGE_SIZE = 20
 
+/** The Cameras page: every camera of the site in a table, and their order on the wall. */
 export function CamerasView() {
   const { refresh: refreshSession } = useSession()
+  const canManage = useCan("admin")
   const [page, setPage] = React.useState(1)
   const [reload, setReload] = React.useState(0)
   const [data, setData] = React.useState<Page<Camera> | null>(null)
@@ -78,15 +80,13 @@ export function CamerasView() {
   const first = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1
   const last = Math.min(page * PAGE_SIZE, total)
 
-  const actions = (
-    <>
-      <Button onClick={openAdd}>
-        <PlusIcon />
-        <span className="hidden sm:inline">Add camera</span>
-        <span className="sm:hidden">Add</span>
-      </Button>
-    </>
-  )
+  const actions = canManage ? (
+    <Button onClick={openAdd}>
+      <PlusIcon />
+      <span className="hidden sm:inline">Add camera</span>
+      <span className="sm:hidden">Add</span>
+    </Button>
+  ) : null
 
   let content: React.ReactNode
   if (!data && error) {
@@ -103,10 +103,16 @@ export function CamerasView() {
   } else if (data.total === 0) {
     content = (
       <EmptyState icon={<CctvOffIcon />} title="No cameras yet">
-        <span>Add one by hand, or scan the network and add what it finds.</span>
-        <Button asChild variant="outline">
-          <Link href="/discover/">Scan the network</Link>
-        </Button>
+        {canManage ? (
+          <>
+            <span>Add one by hand, or scan the network and add what it finds.</span>
+            <Button asChild variant="outline">
+              <Link href="/discover/">Scan the network</Link>
+            </Button>
+          </>
+        ) : (
+          <span>An admin of this site adds its cameras.</span>
+        )}
       </EmptyState>
     )
   } else {
@@ -163,12 +169,16 @@ export function CamerasView() {
                         <ArrowUpRightIcon />
                       </Link>
                     </IconButton>
-                    <IconButton label="Edit" size="icon-sm" onClick={() => openEdit(camera)}>
-                      <PencilIcon />
-                    </IconButton>
-                    <IconButton label="Delete" size="icon-sm" onClick={() => setDeleting(camera)}>
-                      <Trash2Icon />
-                    </IconButton>
+                    {canManage ? (
+                      <IconButton label="Edit" size="icon-sm" onClick={() => openEdit(camera)}>
+                        <PencilIcon />
+                      </IconButton>
+                    ) : null}
+                    {canManage ? (
+                      <IconButton label="Delete" size="icon-sm" onClick={() => setDeleting(camera)}>
+                        <Trash2Icon />
+                      </IconButton>
+                    ) : null}
                   </div>
                 </TableCell>
               </TableRow>
@@ -208,7 +218,7 @@ export function CamerasView() {
   }
 
   return (
-    <AppFrame actions={actions}>
+    <PageFrame actions={actions}>
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-auto lg:flex-row lg:overflow-hidden">
         <main className="min-w-0 shrink-0 lg:min-h-0 lg:flex-1 lg:overflow-auto">{content}</main>
         <aside className="shrink-0 border-t border-hairline lg:w-[300px] lg:overflow-y-auto lg:border-t-0 lg:border-l">
@@ -231,6 +241,6 @@ export function CamerasView() {
         }}
         onDeleted={() => changed()}
       />
-    </AppFrame>
+    </PageFrame>
   )
 }

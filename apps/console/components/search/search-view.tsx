@@ -19,10 +19,10 @@ import {
 } from "@/components/search/search-params"
 import { SearchResults } from "@/components/search/search-results"
 import { SimilarResults, type SimilarSource } from "@/components/search/similar-results"
-import { AppFrame } from "@/components/shell/app-frame"
+import { PageFrame } from "@/components/shell/page-frame"
 import { LoadingState, Spinner } from "@/components/shell/primitives"
 import { Segmented } from "@/components/shell/segmented"
-import { useSession } from "@/components/shell/session"
+import { useCan, useSession } from "@/components/shell/session"
 import { Button } from "@/components/ui/button"
 import { errorMessage, eventImageUrl } from "@/lib/api"
 import { downscalePhoto, peopleApi, sampleCropUrl, type Facets } from "@/lib/people"
@@ -41,6 +41,7 @@ function SearchView() {
   const params = useSearchParams()
   const router = useRouter()
   const { cameras } = useSession()
+  const canManage = useCan("admin")
   const state = React.useMemo(() => readSearchState(params), [params])
   const [facets, setFacets] = React.useState<Facets | null>(null)
   const [photo, setPhoto] = React.useState<PhotoQuery | null>(null)
@@ -142,7 +143,7 @@ function SearchView() {
     <Segmented<Layout> label="Layout" value={state.layout} options={LAYOUT_OPTIONS} onChange={changeLayout} />
   )
 
-  const actions = (
+  const actions = canManage ? (
     <>
       <input
         ref={fileRef}
@@ -162,10 +163,25 @@ function SearchView() {
         <span className="hidden sm:inline lg:hidden">From a photo</span>
       </Button>
     </>
-  )
+  ) : null
+
+  const filtering = !(state.appearance && !photo) && !source
 
   return (
-    <AppFrame actions={actions}>
+    <PageFrame
+      actions={actions}
+      toolbar={
+        filtering ? (
+          <SearchFiltersBar
+            filters={state.filters}
+            facets={facets}
+            cameras={cameras}
+            onChange={changeFilters}
+            onClear={clear}
+          />
+        ) : null
+      }
+    >
       <main className="@container min-h-0 min-w-0 flex-1 overflow-y-auto">
         {state.appearance && !photo ? (
           <AppearanceResults
@@ -188,15 +204,6 @@ function SearchView() {
           />
         ) : (
           <div className="flex min-h-full flex-col">
-            <div className="border-b border-hairline px-3 py-3 sm:px-4">
-              <SearchFiltersBar
-                filters={state.filters}
-                facets={facets}
-                cameras={cameras}
-                onChange={changeFilters}
-                onClear={clear}
-              />
-            </div>
             <div className="min-h-0 flex-1">
               <SearchResults
                 filters={state.filters}
@@ -211,19 +218,20 @@ function SearchView() {
           </div>
         )}
       </main>
-    </AppFrame>
+    </PageFrame>
   )
 }
 
+/** The Search page: recorded events filtered by time, camera, view, kind and person, and similar-looking matches. */
 export function SearchPage() {
   return (
     <React.Suspense
       fallback={
-        <AppFrame>
+        <PageFrame>
           <main className="min-w-0 flex-1">
             <LoadingState label="Loading search" />
           </main>
-        </AppFrame>
+        </PageFrame>
       }
     >
       <SearchView />

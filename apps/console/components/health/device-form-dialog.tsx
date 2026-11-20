@@ -23,6 +23,7 @@ import { DEVICE_KINDS, DEVICE_KIND_LABELS, LINKS, LINK_LABELS } from "@/lib/heal
 import type { DeviceKind, LinkKind, NetworkDeviceCreate, NetworkDeviceUpdate, TargetHealth } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
+/** The select value that stands for no upstream device. */
 export const NONE = "none"
 
 const HOST_PATTERN = /^[A-Za-z0-9._-]+$/
@@ -56,6 +57,7 @@ function initialState(device: TargetHealth | null): FormState {
   return { name: "", kind: "router", host: "", port: "80", parent: NONE, link: NONE, notes: "", enabled: true }
 }
 
+/** The devices that sit behind a device, itself included, so it cannot be chosen as their own upstream. */
 export function behind(devices: TargetHealth[], uuid: string): Set<string> {
   const blocked = new Set([uuid])
   let grew = true
@@ -185,7 +187,7 @@ function DeviceForm({
   return (
     <form onSubmit={submit} noValidate className="flex min-h-0 flex-1 flex-col">
       <DialogHeader>
-        <DialogTitle>{device ? "Edit device" : "Add device"}</DialogTitle>
+        <DialogTitle>{device ? "Edit network device" : "Add network device"}</DialogTitle>
         <DialogDescription>
           A router, access point or repeater the cameras connect through. Its address is checked over TCP every few
           seconds.
@@ -309,13 +311,14 @@ function DeviceForm({
         </Button>
         <Button type="submit" disabled={saving}>
           {saving ? <Spinner className="size-3.5 text-primary-foreground" /> : null}
-          {device ? "Save changes" : "Add device"}
+          {device ? "Save changes" : "Add network device"}
         </Button>
       </DialogFooter>
     </form>
   )
 }
 
+/** The dialog that adds a network device to watch or edits one. */
 export function DeviceFormDialog({
   open,
   onOpenChange,

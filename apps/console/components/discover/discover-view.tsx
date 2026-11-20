@@ -5,7 +5,8 @@ import Link from "next/link"
 import { ArrowUpRightIcon, CircleAlertIcon, PlusIcon, RadarIcon } from "lucide-react"
 
 import { CameraFormDialog, type CameraPrefill } from "@/components/cameras/camera-form-dialog"
-import { AppFrame } from "@/components/shell/app-frame"
+import { PageFrame } from "@/components/shell/page-frame"
+import { RoleGate } from "@/components/shell/role-gate"
 import { Chip, EmptyState, LoadingState, Spinner } from "@/components/shell/primitives"
 import { useSession } from "@/components/shell/session"
 import { Button } from "@/components/ui/button"
@@ -17,7 +18,16 @@ import { brandLabel } from "@/lib/brands"
 import { formatDuration, formatTime } from "@/lib/format"
 import type { Camera, ScanItem, ScanResult } from "@/lib/types"
 
+/** The Add camera page for admins: scans the site's network for cameras and registers the ones found. */
 export function DiscoverView() {
+  return (
+    <RoleGate minRole="admin">
+      <DiscoverScan />
+    </RoleGate>
+  )
+}
+
+function DiscoverScan() {
   const { refresh: refreshSession } = useSession()
   const [subnet, setSubnet] = React.useState("")
   const [scanning, setScanning] = React.useState(false)
@@ -85,8 +95,12 @@ export function DiscoverView() {
     body = (
       <EmptyState icon={<RadarIcon />} title="No cameras found">
         <span>
-          Nothing on <span className="font-data">{result.subnet}</span> answered on a camera port.
+          Nothing on <span className="font-data">{result.subnet}</span> answered on a camera port. Check that the
+          cameras are powered and on this network, or add one by its address.
         </span>
+        <Button asChild variant="outline">
+          <Link href="/cameras/">Go to cameras</Link>
+        </Button>
       </EmptyState>
     )
   } else {
@@ -133,7 +147,7 @@ export function DiscoverView() {
   }
 
   return (
-    <AppFrame
+    <PageFrame
       status={
         result ? (
           <Chip>
@@ -141,12 +155,8 @@ export function DiscoverView() {
           </Chip>
         ) : null
       }
-    >
-      <main className="flex min-h-0 min-w-0 flex-1 flex-col">
-        <form
-          onSubmit={scan}
-          className="flex shrink-0 flex-wrap items-center gap-2 border-b border-hairline px-3 py-3 sm:px-4"
-        >
+      toolbar={
+        <form onSubmit={scan} className="flex flex-wrap items-center gap-2">
           <Input
             aria-label="Subnet"
             value={subnet}
@@ -167,6 +177,9 @@ export function DiscoverView() {
           ) : null}
           {error && result ? <span className="text-[12px] text-danger">{error}</span> : null}
         </form>
+      }
+    >
+      <main className="flex min-h-0 min-w-0 flex-1 flex-col">
         <div className="min-h-0 flex-1 overflow-auto">{body}</div>
       </main>
       <CameraFormDialog
@@ -177,6 +190,6 @@ export function DiscoverView() {
         prefill={prefill}
         onSaved={added}
       />
-    </AppFrame>
+    </PageFrame>
   )
 }

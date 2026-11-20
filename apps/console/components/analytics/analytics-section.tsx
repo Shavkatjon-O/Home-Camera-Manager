@@ -7,6 +7,7 @@ import { toast } from "sonner"
 import { ViewFeatures } from "@/components/analytics/view-features"
 import { ControlSection } from "@/components/camera/control-sections"
 import { Spinner } from "@/components/shell/primitives"
+import { useCan } from "@/components/shell/session"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
@@ -30,6 +31,7 @@ function Note({ children }: { children: React.ReactNode }) {
   return <p className="text-[12px] text-text-3">{children}</p>
 }
 
+/** A highlighted warning line inside an analytics view. */
 export function Warning({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-start gap-1.5 text-[12px] text-status-warn">
@@ -128,6 +130,8 @@ function ViewCard({
   onEdit: (uuid: string) => void
 }) {
   const [busy, setBusy] = React.useState(false)
+  const canManage = useCan("admin")
+  const locked = busy || !canManage
   const title = viewTitle(view)
 
   const update = async (changes: AnalyticsViewUpdate) => {
@@ -151,7 +155,7 @@ function ViewCard({
           <Switch
             aria-label={`Detection, ${title}`}
             checked={view.enabled}
-            disabled={busy}
+            disabled={locked}
             onCheckedChange={(checked) => void update({ enabled: checked })}
           />
         </div>
@@ -160,7 +164,7 @@ function ViewCard({
         <span className="text-text-3">Profile</span>
         <Select
           value={view.profile}
-          disabled={busy}
+          disabled={locked}
           onValueChange={(value) => void update({ profile: value as AnalyticsProfile })}
         >
           <SelectTrigger aria-label={`Profile, ${title}`} className="w-32">
@@ -180,7 +184,7 @@ function ViewCard({
         <Switch
           aria-label={`Faces, ${title}`}
           checked={view.faces ?? view.profile === "identity"}
-          disabled={busy}
+          disabled={locked}
           onCheckedChange={(checked) => void update({ faces: checked })}
         />
       </div>
@@ -189,25 +193,31 @@ function ViewCard({
         <Switch
           aria-label={`Moving lens, ${title}`}
           checked={view.moving}
-          disabled={busy}
+          disabled={locked}
           onCheckedChange={(checked) => void update({ moving: checked })}
         />
       </div>
       <ViewFeatures
         value={{ appearance: view.appearance, falls: view.falls, plates: view.plates, follow: view.follow }}
         moving={view.moving}
-        disabled={busy}
+        disabled={locked}
         onChange={(patch) => void update(patch)}
       />
       <ViewStatusBlock view={view} />
-      <Button variant="outline" size="sm" className="self-start" onClick={() => onEdit(view.uuid)}>
-        <PentagonIcon />
-        Edit zones
-      </Button>
+      {canManage ? (
+        <Button variant="outline" size="sm" className="self-start" onClick={() => onEdit(view.uuid)}>
+          <PentagonIcon />
+          Edit zones
+        </Button>
+      ) : null}
     </div>
   )
 }
 
+/**
+ * The camera's analytics views with their status, counts and switches. Admins change the switches and edit zones
+ * and lines; other roles see them read only.
+ */
 export function AnalyticsSection({
   views,
   error,

@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from uuid import uuid4
 
 import httpx
@@ -5,11 +6,12 @@ from fastapi import Depends, FastAPI, Request
 from fastapi.responses import JSONResponse
 
 from app.core.exceptions import NotFound, ServiceError
+from app.models import AuditRecord
 from app.modules.identity.deps import get_current_user
 from app.modules.operations import deps as operations_deps
 from app.modules.operations.deps import audited, audited_account, path_uuid
 from app.modules.operations.enums import AuditAction
-from app.modules.operations.services.audit import record_audit
+from app.modules.operations.services.audit import audit_read, record_audit
 from app.modules.tenancy.deps import get_site_access
 from tests.fakes import site_access
 
@@ -40,6 +42,20 @@ async def test_a_record_keeps_the_actor_and_what_was_done():
     assert session.added == [record]
     assert (record.actor_id, record.actor, record.action) == (1, "owner@example.com", "camera_delete")
     assert (record.organisation_id, record.site_id, record.target_uuid) == (1, 1, target)
+
+
+def test_the_api_view_names_the_acting_account():
+    record = AuditRecord(uuid=uuid4(), action="camera_delete", actor="demo-owner", details={}, ip=None)
+    record.created_at = datetime.now(UTC)
+    view = audit_read(record, None, None, "Demo owner", "owner@example.com")
+    assert (view.actor, view.actor_name, view.actor_email) == ("demo-owner", "Demo owner", "owner@example.com")
+
+
+def test_the_api_view_of_a_removed_account_keeps_only_the_sign_in_name():
+    record = AuditRecord(uuid=uuid4(), action="sign_in", actor="gone@example.com", details={}, ip=None)
+    record.created_at = datetime.now(UTC)
+    view = audit_read(record, None, None)
+    assert (view.actor, view.actor_name, view.actor_email) == ("gone@example.com", None, None)
 
 
 def application(written):

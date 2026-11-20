@@ -1,15 +1,17 @@
 "use client"
 
 import * as React from "react"
-import { ActivityIcon, CircleAlertIcon, PlusIcon } from "lucide-react"
+import Link from "next/link"
+import { ActivityIcon, CctvIcon, CircleAlertIcon, PlusIcon, RouterIcon } from "lucide-react"
 
 import { DeviceFormDialog } from "@/components/health/device-form-dialog"
 import { OUTAGE_PAGE_SIZE, OutageLog } from "@/components/health/outage-log"
 import { TargetCard } from "@/components/health/target-card"
 import { TargetPanel } from "@/components/health/target-panel"
-import { AppFrame } from "@/components/shell/app-frame"
+import { CardGrid, PageContent, PageFrame } from "@/components/shell/page-frame"
 import { Chip, EmptyState, LoadingState } from "@/components/shell/primitives"
 import { Segmented } from "@/components/shell/segmented"
+import { useCan } from "@/components/shell/session"
 import { Button } from "@/components/ui/button"
 import { api, errorMessage, isAbort } from "@/lib/api"
 import { RANGE_OPTIONS, RANGE_OPTIONS_SHORT, TONE_CLASSES, formatSpan, isHealthy, type Tone } from "@/lib/health"
@@ -45,12 +47,23 @@ function Group({ title, count, children }: { title: string; count: number; child
         <h2 className="text-xs text-text-3">{title}</h2>
         <span className="font-data text-[11px] text-text-3">{count}</span>
       </div>
-      <div className="grid grid-cols-1 gap-3 @2xl:grid-cols-2 @5xl:grid-cols-3">{children}</div>
+      {count > 0 ? <CardGrid>{children}</CardGrid> : children}
     </section>
   )
 }
 
+function GroupEmpty({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className="flex items-start gap-3 rounded-lg border border-hairline bg-surface p-4">
+      <div className="mt-0.5 text-text-3 [&_svg]:size-4">{icon}</div>
+      <div className="flex min-w-0 flex-col items-start gap-3 text-[13px] text-text-3">{children}</div>
+    </div>
+  )
+}
+
+/** The Health page: reachability and latency of cameras and network devices, and the outage log. */
 export function HealthView() {
+  const canManage = useCan("admin")
   const [range, setRange] = React.useState<HealthRange>("1h")
   const [tick, setTick] = React.useState(0)
   const [reload, setReload] = React.useState(0)
@@ -160,19 +173,21 @@ export function HealthView() {
         value={range}
         options={RANGE_OPTIONS}
         onChange={setRange}
-        className="hidden xl:flex"
+        className="hidden md:flex"
       />
       <Segmented<HealthRange>
         label="Range"
         value={range}
         options={RANGE_OPTIONS_SHORT}
         onChange={setRange}
-        className="hidden sm:flex xl:hidden"
+        className="md:hidden"
       />
-      <Button onClick={openAdd} aria-label="Add device">
-        <PlusIcon />
-        <span className="hidden xl:inline">Add device</span>
-      </Button>
+      {canManage ? (
+        <Button onClick={openAdd} aria-label="Add network device">
+          <PlusIcon />
+          <span className="hidden sm:inline">Add network device</span>
+        </Button>
+      ) : null}
     </>
   )
 
@@ -192,28 +207,21 @@ export function HealthView() {
     content = (
       <EmptyState icon={<ActivityIcon />} title="Nothing to watch yet">
         <span>Add the routers and access points the cameras connect through, then each camera shows up here too.</span>
-        <Button variant="outline" onClick={openAdd}>
-          <PlusIcon />
-          Add device
-        </Button>
+        {canManage ? (
+          <Button variant="outline" onClick={openAdd}>
+            <PlusIcon />
+            Add network device
+          </Button>
+        ) : null}
       </EmptyState>
     )
   } else {
     content = (
-      <div className="flex flex-col gap-6 p-3 sm:p-4">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="font-data text-[11px] text-text-3">
-            Probed every {formatSpan(overview.interval_seconds)}, bars of {formatSpan(overview.bucket_seconds)}
-            {overviewError ? <span className="ml-3 text-danger">{overviewError}</span> : null}
-          </p>
-          <Segmented<HealthRange>
-            label="Range"
-            value={range}
-            options={RANGE_OPTIONS_SHORT}
-            onChange={setRange}
-            className="sm:hidden"
-          />
-        </div>
+      <PageContent>
+        <p className="font-data text-[11px] text-text-3">
+          Probed every {formatSpan(overview.interval_seconds)}, bars of {formatSpan(overview.bucket_seconds)}
+          {overviewError ? <span className="ml-3 text-danger">{overviewError}</span> : null}
+        </p>
         <Group title="Routers" count={devices.length}>
           {devices.length > 0 ? (
             devices.map((target) => (
@@ -226,7 +234,18 @@ export function HealthView() {
               />
             ))
           ) : (
-            <p className="text-[13px] text-text-3">No network devices yet.</p>
+            <GroupEmpty icon={<RouterIcon />}>
+              <span>
+                No network devices yet. Add the routers and access points the cameras connect through, so an outage
+                shows where it starts.
+              </span>
+              {canManage ? (
+                <Button variant="outline" onClick={openAdd}>
+                  <PlusIcon />
+                  Add network device
+                </Button>
+              ) : null}
+            </GroupEmpty>
           )}
         </Group>
         <Group title="Cameras" count={cameras.length}>
@@ -241,16 +260,21 @@ export function HealthView() {
               />
             ))
           ) : (
-            <p className="text-[13px] text-text-3">No cameras yet.</p>
+            <GroupEmpty icon={<CctvIcon />}>
+              <span>No cameras yet. Every camera registered at this site is watched here.</span>
+              <Button asChild variant="outline">
+                <Link href="/cameras/">Go to cameras</Link>
+              </Button>
+            </GroupEmpty>
           )}
         </Group>
         <OutageLog data={outages} error={outagesError} page={outagePage} onPage={setOutagePage} onSelect={select} />
-      </div>
+      </PageContent>
     )
   }
 
   return (
-    <AppFrame status={<HealthyChip targets={targets} />} actions={actions}>
+    <PageFrame status={<HealthyChip targets={targets} />} actions={actions} contained>
       <div className="flex min-h-0 min-w-0 flex-1">
         <main className="@container min-h-0 min-w-0 flex-1 overflow-y-auto">{content}</main>
         {selectedTarget ? (
@@ -286,6 +310,6 @@ export function HealthView() {
         devices={devices}
         onSaved={changed}
       />
-    </AppFrame>
+    </PageFrame>
   )
 }

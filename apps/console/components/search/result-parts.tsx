@@ -7,6 +7,7 @@ import { ImageOffIcon, UserRoundSearchIcon, UserSearchIcon } from "lucide-react"
 import { overlayButton } from "@/components/people/face-parts"
 import { IconButton } from "@/components/shell/icon-button"
 import { Chip } from "@/components/shell/primitives"
+import { useCan } from "@/components/shell/session"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 
@@ -15,6 +16,7 @@ export interface SimilarTarget {
   event?: string | null
 }
 
+/** A small tag on a search result, red for alerts. */
 export function TagChip({ tone, className, children }: { tone?: "alert"; className?: string; children: React.ReactNode }) {
   return (
     <Chip className={cn("h-5 px-1.5 text-[10px]", tone === "alert" && "bg-status-err/15 text-status-err", className)}>
@@ -23,6 +25,7 @@ export function TagChip({ tone, className, children }: { tone?: "alert"; classNa
   )
 }
 
+/** The thumbnail of a search result, with a placeholder when it has none. */
 export function ResultImage({
   src,
   fit,
@@ -55,6 +58,7 @@ export function ResultImage({
   )
 }
 
+/** Starts a search for faces or vehicles that look like this result; shown to admins only. */
 export function SimilarButton({
   target,
   onFind,
@@ -64,6 +68,8 @@ export function SimilarButton({
   onFind: (target: SimilarTarget) => void
   overlay?: boolean
 }) {
+  const canManage = useCan("admin")
+  if (!canManage) return null
   if (overlay) {
     return (
       <Tooltip>
@@ -83,6 +89,7 @@ export function SimilarButton({
   )
 }
 
+/** Starts a search for other sightings of the person in this result. */
 export function FindPersonButton({
   eventUuid,
   onFindPerson,

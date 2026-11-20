@@ -6,14 +6,17 @@ import { Select as SelectPrimitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
 
+/** Holds the chosen value of a list of options. */
 function Select(props: React.ComponentProps<typeof SelectPrimitive.Root>) {
   return <SelectPrimitive.Root data-slot="select" {...props} />
 }
 
+/** Shows the chosen option inside the trigger. */
 function SelectValue(props: React.ComponentProps<typeof SelectPrimitive.Value>) {
   return <SelectPrimitive.Value data-slot="select-value" {...props} />
 }
 
+/** The button that opens the list of options. */
 function SelectTrigger({
   className,
   children,
@@ -36,6 +39,7 @@ function SelectTrigger({
   )
 }
 
+/** The list of options, portalled to the body. */
 function SelectContent({
   className,
   children,
@@ -60,6 +64,7 @@ function SelectContent({
   )
 }
 
+/** One option, marked with a check while chosen. */
 function SelectItem({
   className,
   children,
@@ -84,4 +89,40 @@ function SelectItem({
   )
 }
 
-export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue }
+/** Groups related options under a label. */
+function SelectGroup(props: React.ComponentProps<typeof SelectPrimitive.Group>) {
+  return <SelectPrimitive.Group data-slot="select-group" {...props} />
+}
+
+/** The heading of a group of options. */
+function SelectLabel({ className, ...props }: React.ComponentProps<typeof SelectPrimitive.Label>) {
+  return (
+    <SelectPrimitive.Label
+      data-slot="select-label"
+      className={cn("px-2 py-1.5 text-[11px] text-text-3", className)}
+      {...props}
+    />
+  )
+}
+
+/** A hairline between groups of options. */
+function SelectSeparator({ className, ...props }: React.ComponentProps<typeof SelectPrimitive.Separator>) {
+  return (
+    <SelectPrimitive.Separator
+      data-slot="select-separator"
+      className={cn("-mx-1 my-1 h-px bg-hairline", className)}
+      {...props}
+    />
+  )
+}
+
+export {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+}

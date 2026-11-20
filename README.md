@@ -31,7 +31,7 @@ The camera page's sidebar reads and writes what the camera itself offers over ON
 
 - Camera events: the backend keeps an ONVIF PullPoint subscription per camera and turns motion, tamper, storage failure and reboot messages into events with a snapshot.
 - Analytics events: intrusion into a zone, line crossing in or out, loitering, crowding, vehicles, animals, tamper, objects left and taken, falls and faces, each with a snapshot, the boxes of its objects and a clip from 5 s before it starts to 5 s after it ends, at most 60 s.
-- Alerts: a global arm mode in the top bar (Disarmed, Home, Away, Schedule) and an alert policy per zone and line decide which events alert. Alerts raise a toast on every page unless muted in the top bar, and count on the Events tab.
+- Alerts: the site's arm mode in the top bar (Disarmed, Home, Away, Schedule) and an alert policy per zone and line decide which events alert. Alerts raise a toast on every page unless pop-up alerts are off, and the notifications bell in the top bar counts the ones not yet seen.
 - Events page: live list with filters for camera, kind, label and day, counts for the filtered events, and a side panel with the snapshot, boxes, clip, plate candidates, the person's journey and Find this person.
 - Notifications: alerts go to the members' phones by FCM or ntfy push, and to Telegram chats or groups an admin links through a single-use bot link, with the snapshot, camera, site and a link to the event.
 
@@ -59,7 +59,7 @@ services/analytics/README.md describes the pipeline, the rules and every feature
 
 ### Network
 
-- Discover scans the local subnet for cameras and opens the add form prefilled for any it finds.
+- Add camera scans the local subnet for cameras and opens the add form prefilled for any it finds.
 - Coverage plans Wi-Fi coverage on a floor plan with routers, walls by material and devices, shows a heatmap per band and suggests router placement.
 - Health probes every router and camera every 10 s and shows uptime, latency, outages and the device that caused each outage; cameras behind a connector report their reachability with its heartbeats.
 
@@ -187,7 +187,7 @@ A Jetson Orin Nano profile exists but has not run on a Jetson; see Jetson Orin N
 
 4. Open http://127.0.0.1:8750 and sign in with SSS_ADMIN_USERNAME and SSS_ADMIN_PASSWORD. The backend creates that user on first start and never overwrites its password afterwards. That user is the first platform admin, and its own organisation is on the unlimited internal plan; other organisations start on the free plan.
 
-5. Add cameras on the Cameras page or find them with Discover, then turn on analytics per view on each camera's page and draw zones and lines there.
+5. Add cameras on the Cameras page or find them with Add camera, then turn on analytics per view on each camera's page and draw zones and lines there.
 
 ## Configuration reference
 

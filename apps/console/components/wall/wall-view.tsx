@@ -5,7 +5,7 @@ import Link from "next/link"
 import { ChevronLeftIcon, ChevronRightIcon, CircleAlertIcon, CctvOffIcon, MaximizeIcon, MinimizeIcon } from "lucide-react"
 import { toast } from "sonner"
 
-import { AppFrame } from "@/components/shell/app-frame"
+import { PageFrame } from "@/components/shell/page-frame"
 import { IconButton } from "@/components/shell/icon-button"
 import { Chip, EmptyState, LoadingState } from "@/components/shell/primitives"
 import { Segmented } from "@/components/shell/segmented"
@@ -54,6 +54,7 @@ function LayoutPicker({ value, onChange }: { value: WallLayout; onChange: (value
   )
 }
 
+/** The Wall page: live video of every enabled camera in a paged grid, with layout and fullscreen controls. */
 export function WallView() {
   const { cameras, loaded, error, refresh } = useSession()
   const layout = useWallLayout()
@@ -177,10 +178,10 @@ export function WallView() {
   }
 
   return (
-    <AppFrame actions={actions}>
+    <PageFrame actions={actions} compact>
       <main ref={setWall} className="relative min-h-0 min-w-0 flex-1 overflow-hidden bg-background">
         {content}
       </main>
-    </AppFrame>
+    </PageFrame>
   )
 }

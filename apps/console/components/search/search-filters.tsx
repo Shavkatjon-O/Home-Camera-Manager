@@ -5,6 +5,7 @@ import { XIcon } from "lucide-react"
 import { ColorDot } from "@/components/people/face-parts"
 import { MultiSelect, type MultiOption } from "@/components/search/multi-select"
 import { hasFilters, type DateMode, type SearchFilters } from "@/components/search/search-params"
+import { ToolbarRow } from "@/components/shell/page-frame"
 import { Segmented } from "@/components/shell/segmented"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -45,6 +46,7 @@ function changeDates(filters: SearchFilters, dates: DateMode): Partial<SearchFil
   return { dates, day, from: "", to: "" }
 }
 
+/** The Search page's filters, shown in its page header. */
 export function SearchFiltersBar({
   filters,
   facets,
@@ -121,7 +123,7 @@ export function SearchFiltersBar({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <ToolbarRow>
       <Segmented<DateMode>
         label="Dates"
         value={filters.dates}
@@ -262,6 +264,6 @@ export function SearchFiltersBar({
           Clear
         </Button>
       ) : null}
-    </div>
+    </ToolbarRow>
   )
 }

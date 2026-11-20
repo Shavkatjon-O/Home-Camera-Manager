@@ -99,16 +99,21 @@ export function AdminOrganisations({ notAdminMessage }: { notAdminMessage: strin
   return (
     <div className="flex flex-col gap-3 p-3 sm:p-4">
       <form
-        className="flex items-end gap-2"
+        className="flex flex-wrap items-end gap-2"
         onSubmit={(event) => {
           event.preventDefault()
           setPage(1)
           setTerm(search.trim())
         }}
       >
-        <label className="flex flex-col gap-1 text-xs text-text-3">
+        <label className="flex min-w-0 flex-1 basis-48 flex-col gap-1 text-xs text-text-3 sm:flex-none">
           Search organisations
-          <Input value={search} className="w-72" placeholder="Name" onChange={(event) => setSearch(event.target.value)} />
+          <Input
+            value={search}
+            className="w-full sm:w-72"
+            placeholder="Name"
+            onChange={(event) => setSearch(event.target.value)}
+          />
         </label>
         <Button type="submit" variant="outline">
           Search

@@ -2,12 +2,14 @@ import type { Face } from "@/lib/people"
 
 export type CameraBrand = "ezviz" | "v380" | "onvif" | "rtsp"
 
+/** The signed-in account, as the API returns it. */
 export interface User {
   uuid: string
   username: string
   email?: string
   name?: string
   email_verified?: boolean
+  is_platform_admin?: boolean
   created_at?: string
 }
 
@@ -845,11 +847,14 @@ export interface OrganisationUsage {
   series: UsagePoint[]
 }
 
+/** One audit record: what was done, by whom, where and when. */
 export interface AuditRecord {
   uuid: string
   at: string
   action: string
   actor: string | null
+  actor_name: string | null
+  actor_email: string | null
   organisation: string | null
   site: string | null
   target_kind: string | null

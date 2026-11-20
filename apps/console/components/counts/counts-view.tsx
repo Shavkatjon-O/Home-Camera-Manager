@@ -1,14 +1,16 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import { ChevronLeftIcon, ChevronRightIcon, CircleAlertIcon, PlusIcon, SigmaIcon } from "lucide-react"
 
 import { AreaCard } from "@/components/counts/area-card"
 import { AreaFormDialog, DeleteAreaDialog, OccupancyDialog } from "@/components/counts/area-dialogs"
 import { DailySection } from "@/components/counts/daily-section"
 import { LineCard } from "@/components/counts/line-card"
-import { AppFrame } from "@/components/shell/app-frame"
+import { CardGrid, PageContent, PageFrame } from "@/components/shell/page-frame"
 import { IconButton } from "@/components/shell/icon-button"
+import { useCan } from "@/components/shell/session"
 import { Chip, EmptyState, LoadingState } from "@/components/shell/primitives"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -31,7 +33,9 @@ import { labelName } from "@/lib/events"
 const REFRESH_MS = 30000
 const ALL = "all"
 
+/** The Counts page: line crossings by hour for one day, and how many are inside each area. */
 export function CountsView() {
+  const canManage = useCan("admin")
   const [day, setDay] = React.useState(() => startOfDay(new Date()))
   const [label, setLabel] = React.useState(ALL)
   const [tick, setTick] = React.useState(0)
@@ -131,10 +135,27 @@ export function CountsView() {
           Today
         </Button>
       </div>
-      <Button onClick={openAdd} aria-label="Add area">
-        <PlusIcon />
-        <span className="hidden xl:inline">Add area</span>
-      </Button>
+      <Select value={label} onValueChange={setLabel}>
+        <SelectTrigger aria-label="Label" className="w-36 font-mono text-xs">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value={ALL} className="font-mono text-xs">
+            All labels
+          </SelectItem>
+          {labels.map((item) => (
+            <SelectItem key={item} value={item} className="font-mono text-xs">
+              {labelName(item)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {canManage ? (
+        <Button onClick={openAdd} aria-label="Add area">
+          <PlusIcon />
+          <span className="hidden sm:inline">Add area</span>
+        </Button>
+      ) : null}
     </>
   )
 
@@ -152,31 +173,11 @@ export function CountsView() {
     content = <LoadingState label="Loading counts" />
   } else {
     content = (
-      <div className="flex flex-col gap-6 p-3 sm:p-4">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="font-data text-[11px] text-text-3">
-            {formatDay(day)}
-            {error ? <span className="ml-3 text-danger">{error}</span> : null}
-          </p>
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] text-text-3">Label</span>
-            <Select value={label} onValueChange={setLabel}>
-              <SelectTrigger aria-label="Label" className="w-40 font-mono text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={ALL} className="font-mono text-xs">
-                  All labels
-                </SelectItem>
-                {labels.map((item) => (
-                  <SelectItem key={item} value={item} className="font-mono text-xs">
-                    {labelName(item)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+      <PageContent>
+        <p className="font-data text-[11px] text-text-3">
+          {formatDay(day)}
+          {error ? <span className="ml-3 text-danger">{error}</span> : null}
+        </p>
         <section className="flex flex-col gap-2">
           <h2 className="text-xs text-text-3">Areas</h2>
           {areasError && !areas ? (
@@ -189,13 +190,15 @@ export function CountsView() {
                 An area is a place bounded by lines, such as a house behind its entrance door, and shows how many are
                 inside.
               </span>
-              <Button variant="outline" onClick={openAdd}>
-                <PlusIcon />
-                Add area
-              </Button>
+              {canManage ? (
+                <Button variant="outline" onClick={openAdd}>
+                  <PlusIcon />
+                  Add area
+                </Button>
+              ) : null}
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-3 @2xl:grid-cols-2 @5xl:grid-cols-3">
+            <CardGrid>
               {areas.map((area) => (
                 <AreaCard
                   key={area.uuid}
@@ -208,12 +211,21 @@ export function CountsView() {
                   onSet={setSetting}
                 />
               ))}
-            </div>
+            </CardGrid>
           )}
         </section>
         {lines.length === 0 ? (
           <EmptyState icon={<SigmaIcon />} title="No lines to count yet">
-            <span>Draw a line on a camera&apos;s analytics view to count crossings</span>
+            {canManage ? (
+              <>
+                <span>Draw a line on a camera&apos;s analytics view to count crossings</span>
+                <Button asChild variant="outline">
+                  <Link href="/cameras/">Go to cameras</Link>
+                </Button>
+              </>
+            ) : (
+              <span>An admin draws counting lines on a camera&apos;s analytics view</span>
+            )}
           </EmptyState>
         ) : (
           <>
@@ -223,11 +235,11 @@ export function CountsView() {
                 <span className="font-data text-[11px] text-text-3">{lines.length}</span>
               </div>
               {shown ? (
-                <div className="grid grid-cols-1 gap-3 @2xl:grid-cols-2 @5xl:grid-cols-3">
+                <CardGrid>
                   {shown.lines.map((line) => (
                     <LineCard key={line.uuid} line={line} response={shown} label={activeLabel} />
                   ))}
-                </div>
+                </CardGrid>
               ) : (
                 <LoadingState label="Loading counts" className="min-h-24" />
               )}
@@ -240,18 +252,22 @@ export function CountsView() {
             />
           </>
         )}
-      </div>
+      </PageContent>
     )
   }
 
   return (
-    <AppFrame status={areas && areas.length > 0 ? <Chip>{areas.length === 1 ? "1 area" : `${areas.length} areas`}</Chip> : null} actions={actions}>
+    <PageFrame
+      status={areas && areas.length > 0 ? <Chip>{areas.length === 1 ? "1 area" : `${areas.length} areas`}</Chip> : null}
+      actions={actions}
+      contained
+    >
       <div className="flex min-h-0 min-w-0 flex-1">
         <main className="@container min-h-0 min-w-0 flex-1 overflow-y-auto">{content}</main>
       </div>
       <AreaFormDialog open={formOpen} onOpenChange={setFormOpen} area={editing} lines={lines} onSaved={changed} />
       <OccupancyDialog area={setting} onOpenChange={(open) => !open && setSetting(null)} onSaved={changed} />
       <DeleteAreaDialog area={deleting} onOpenChange={(open) => !open && setDeleting(null)} onDeleted={changed} />
-    </AppFrame>
+    </PageFrame>
   )
 }

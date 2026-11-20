@@ -4,6 +4,7 @@ import { PencilIcon, SlidersHorizontalIcon, Trash2Icon } from "lucide-react"
 
 import { Chip } from "@/components/shell/primitives"
 import { IconButton } from "@/components/shell/icon-button"
+import { useCan } from "@/components/shell/session"
 import { formatDateTime } from "@/lib/format"
 import { labelName } from "@/lib/events"
 import type { Area } from "@/lib/counts"
@@ -17,6 +18,10 @@ function Figure({ label, value }: { label: string; value: number }) {
   )
 }
 
+/**
+ * One area with how many are inside and the lines that bound it. Operators set the occupancy; admins also edit and
+ * delete the area.
+ */
 export function AreaCard({
   area,
   onEdit,
@@ -29,6 +34,8 @@ export function AreaCard({
   onSet: (area: Area) => void
 }) {
   const since = area.since ? formatDateTime(area.since) : null
+  const canOperate = useCan("operator")
+  const canManage = useCan("admin")
   return (
     <article
       aria-label={`${area.name} occupancy`}
@@ -67,17 +74,23 @@ export function AreaCard({
           ))
         )}
       </div>
-      <div className="flex items-center justify-end gap-1">
-        <IconButton label={`Set occupancy of ${area.name}`} size="icon-sm" onClick={() => onSet(area)}>
-          <SlidersHorizontalIcon />
-        </IconButton>
-        <IconButton label={`Edit ${area.name}`} size="icon-sm" onClick={() => onEdit(area)}>
-          <PencilIcon />
-        </IconButton>
-        <IconButton label={`Delete ${area.name}`} size="icon-sm" onClick={() => onDelete(area)}>
-          <Trash2Icon />
-        </IconButton>
-      </div>
+      {canOperate ? (
+        <div className="flex items-center justify-end gap-1">
+          <IconButton label={`Set occupancy of ${area.name}`} size="icon-sm" onClick={() => onSet(area)}>
+            <SlidersHorizontalIcon />
+          </IconButton>
+          {canManage ? (
+            <IconButton label={`Edit ${area.name}`} size="icon-sm" onClick={() => onEdit(area)}>
+              <PencilIcon />
+            </IconButton>
+          ) : null}
+          {canManage ? (
+            <IconButton label={`Delete ${area.name}`} size="icon-sm" onClick={() => onDelete(area)}>
+              <Trash2Icon />
+            </IconButton>
+          ) : null}
+        </div>
+      ) : null}
     </article>
   )
 }

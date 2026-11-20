@@ -27,6 +27,6 @@ Dogs, cats and birds open animal events. A zone or line sets animals to record, 
 
 ## Delivery
 
-- The console raises a toast on every page unless muted in the top bar, and counts new alerts on the Events tab.
+- The console raises a toast on every page unless pop-up alerts are off, and the notifications bell in its top bar counts the alerts not yet seen.
 - The mobile app receives push notifications through Firebase Cloud Messaging when the server has a Firebase project (SSS_FCM_PROJECT_ID) or through an ntfy server (SSS_NTFY_URL). Push targets are registered per signed-in session, and a notification carries ids only; the app then fetches the snapshot with its own token, so no picture passes through the push service.
 - While the app is open, the event stream delivers events without any push service.
