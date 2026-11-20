@@ -12,6 +12,7 @@ from dataclasses import dataclass, field
 from sqlalchemy import event, select
 from sqlalchemy.orm import ORMExecuteState, Session, with_loader_criteria
 
+from app.core.database import UNSCOPED_OPTION
 from app.models import (
     AnalyticsAppearance,
     AnalyticsArea,
@@ -54,7 +55,6 @@ __all__ = [
 ]
 
 SCOPE_KEY = "tenancy_scope"
-UNSCOPED_OPTION = "unscoped"
 
 SITE_SCOPED = (
     AnalyticsAppearance,

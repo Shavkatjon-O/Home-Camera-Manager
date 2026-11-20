@@ -5,6 +5,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 
+from app.modules.billing.deps import require_feature
+from app.modules.billing.enums import Feature
 from app.modules.investigation.deps import get_journey_service
 from app.modules.investigation.schemas.journeys import (
     JourneyList,
@@ -17,7 +19,7 @@ from app.modules.investigation.services.journeys import JourneyService
 router = APIRouter()
 
 
-@router.get("/journeys", response_model=JourneyList)
+@router.get("/journeys", response_model=JourneyList, dependencies=[Depends(require_feature(Feature.JOURNEYS))])
 async def list_journeys(
     start: datetime | None = None,
     end: datetime | None = None,
@@ -39,7 +41,9 @@ async def list_journeys(
     return await service.journeys(start or end - timedelta(days=1), end, limit)
 
 
-@router.get("/journeys/event/{uuid}", response_model=JourneyRead)
+@router.get(
+    "/journeys/event/{uuid}", response_model=JourneyRead, dependencies=[Depends(require_feature(Feature.JOURNEYS))]
+)
 async def read_event_journey(uuid: UUID, service: JourneyService = Depends(get_journey_service)) -> JourneyRead:
     """Return the journey of an event's person.
 
@@ -53,7 +57,11 @@ async def read_event_journey(uuid: UUID, service: JourneyService = Depends(get_j
     return await service.journey_of_event(uuid)
 
 
-@router.post("/appearances/similar", response_model=SimilarAppearances)
+@router.post(
+    "/appearances/similar",
+    response_model=SimilarAppearances,
+    dependencies=[Depends(require_feature(Feature.APPEARANCE_SEARCH))],
+)
 async def find_person(
     query: SimilarAppearanceQuery, service: JourneyService = Depends(get_journey_service)
 ) -> SimilarAppearances:

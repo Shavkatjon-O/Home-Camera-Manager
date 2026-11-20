@@ -6,6 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import AnalyticsLine, AnalyticsSettings, AnalyticsView, AnalyticsZone, Camera, Organisation, Site
 from app.modules.analytics.enums import ArmMode, ViewStream
 from app.modules.analytics.services.views import rules_of, sync_views, view_stream
+from app.modules.billing.enums import Feature
+from app.modules.billing.services.entitlements import Entitlements, entitlements_for
 from app.streaming.names import MAIN, SUB, stream_name
 
 __all__ = ["AnalyticsConfigService", "service_config", "view_config"]
@@ -70,6 +72,7 @@ def view_config(
     owner: dict | None = None,
     stream: ViewStream = ViewStream.MAIN,
     faces_allowed: bool = True,
+    granted: Entitlements | None = None,
 ) -> dict:
     """Return a view in the analytics service's form.
 
@@ -83,10 +86,12 @@ def view_config(
         owner: Site and organisation ids of the view, as text.
         stream: Camera stream the view is analysed on.
         faces_allowed: Whether the view's organisation has face recognition on; faces stay off when it has not.
+        granted: Entitlements of the view's organisation; a feature its plan leaves out is not run.
 
     Returns:
         The view configuration.
     """
+    allows = granted.allows if granted is not None else (lambda feature: True)
     data = {
         "id": str(view.uuid),
         "name": view.name,
@@ -95,10 +100,10 @@ def view_config(
         "enabled": view.enabled,
         "fps": view.fps,
         "moving": view.moving,
-        "appearance": view.appearance,
-        "falls": {"enabled": view.falls},
-        "plates": {"enabled": view.plates},
-        "follow": {"enabled": view.follow},
+        "appearance": view.appearance and (allows(Feature.APPEARANCE_SEARCH) or allows(Feature.JOURNEYS)),
+        "falls": {"enabled": view.falls and allows(Feature.FALLS)},
+        "plates": {"enabled": view.plates and allows(Feature.PLATES)},
+        "follow": {"enabled": view.follow and allows(Feature.FOLLOW)},
         "zones": [zone_config(zone) for zone in zones],
         "lines": [line_config(line) for line in lines],
         "stream": stream.value,
@@ -107,9 +112,14 @@ def view_config(
     if not view.moving:
         for item in data["zones"] + data["lines"]:
             item["reference"] = None
+    if not allows(Feature.OBJECTS):
+        for zone in data["zones"]:
+            zone["left_seconds"] = 0.0
+            zone["taken_seconds"] = 0.0
+            zone["object_labels"] = []
     if view.tamper is not None:
         data["tamper"] = view.tamper
-    if not faces_allowed:
+    if not faces_allowed or not allows(Feature.FACES):
         data["faces"] = False
     elif view.faces is not None:
         data["faces"] = view.faces
@@ -157,8 +167,9 @@ async def service_config(session: AsyncSession) -> dict:
     """Build the analytics service configuration.
 
     Every camera carries its site and organisation with the site's arm mode and time zone, and every view its site,
-    organisation and stream. The top-level arm mode is that of the oldest site, for an analytics service that does
-    not read the arm mode of each camera yet.
+    organisation and stream. Features an organisation's plan leaves out are turned off in its views, and the
+    cameras of a suspended organisation are left out. The top-level arm mode is that of the oldest site, for an
+    analytics service that does not read the arm mode of each camera yet.
 
     Args:
         session: Database session.
@@ -180,8 +191,11 @@ async def service_config(session: AsyncSession) -> dict:
     zones, lines = await rules_of(session, [view.id for view in views])
     sites, organisations, modes = await site_context(session, cameras)
     first_site = min(sites) if sites else None
+    granted = {organisation_id: await entitlements_for(session, organisation_id) for organisation_id in organisations}
     entries = []
     for camera in cameras:
+        if camera.organisation_id in granted and granted[camera.organisation_id].suspended:
+            continue
         site = sites.get(camera.site_id)
         organisation = organisations.get(camera.organisation_id)
         owner = {
@@ -200,7 +214,15 @@ async def service_config(session: AsyncSession) -> dict:
                 "arm_mode": modes.get(camera.site_id, ArmMode.DISARMED.value),
                 "timezone": site.timezone if site else None,
                 "views": [
-                    view_config(view, zones[view.id], lines[view.id], owner, streams[view.id], faces_allowed)
+                    view_config(
+                        view,
+                        zones[view.id],
+                        lines[view.id],
+                        owner,
+                        streams[view.id],
+                        faces_allowed,
+                        granted.get(camera.organisation_id),
+                    )
                     for view in by_camera[camera.uuid]
                 ],
             }

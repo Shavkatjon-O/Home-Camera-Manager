@@ -11,6 +11,8 @@ from app.core.base_service import BaseModelService
 from app.core.exceptions import BadGateway, Conflict, NotFound, Unprocessable
 from app.core.security import decrypt_secret, encrypt_secret
 from app.models import Camera, Connector, Device
+from app.modules.billing.enums import Limit
+from app.modules.billing.services.entitlements import require_capacity
 from app.modules.devices.agent import AgentClient
 from app.modules.devices.enums import CameraBrand, CameraSort
 from app.modules.devices.schemas import (
@@ -25,6 +27,7 @@ from app.modules.devices.schemas import (
 from app.modules.devices.schemas.capabilities import CapabilitiesRead, capabilities_read
 from app.modules.devices.services.defaults import DEFAULT_RTSP_PORT, apply_brand_defaults
 from app.modules.devices.services.manifests import camera_manifest
+from app.modules.tenancy.services.scope import scope_of
 from app.streaming.names import MAIN, SUB, stream_name
 from app.streaming.supervisor import CameraSupervisor, supervisor
 from camera_adapters.onvif.cache import OnvifCache, PtzTarget, onvif_cache
@@ -395,6 +398,9 @@ class CameraService(BaseModelService[Camera]):
             Unprocessable: No main stream path is given or found.
             Conflict: A live camera already has that host and main path.
         """
+        scope = scope_of(self.session)
+        if scope is not None:
+            await require_capacity(self.session, scope.organisation_id, Limit.CAMERAS)
         values = payload.model_dump(exclude={"password", "connector"})
         values = apply_brand_defaults(payload.brand, values)
         connector = await self.connector(payload.connector) if payload.connector else None

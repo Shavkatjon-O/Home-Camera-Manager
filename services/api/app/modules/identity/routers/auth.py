@@ -35,6 +35,8 @@ from app.modules.identity.schemas import (
     VerifyEmail,
 )
 from app.modules.identity.services import AccountService, TokenService, UserService
+from app.modules.operations.enums import AuditAction
+from app.modules.operations.services.audit import write_audit
 
 router = APIRouter()
 
@@ -50,9 +52,29 @@ def no_content() -> Response:
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
+async def audit_sign_in(user, request: Request, via: str) -> None:
+    """Record a successful sign-in in the audit log.
+
+    Args:
+        user: The user who signed in.
+        request: The request.
+        via: web, or the platform of the app.
+    """
+    await write_audit(
+        AuditAction.SIGN_IN,
+        actor_id=user.id,
+        actor_label=user.email or user.username,
+        target_kind="user",
+        target_uuid=user.uuid,
+        details={"via": via},
+        ip=request.client.host if request.client else None,
+    )
+
+
 @router.post("/login", response_model=SessionUser, dependencies=[Depends(limit_credentials)])
 async def login(
     payload: LoginRequest,
+    request: Request,
     response: Response,
     service: UserService = Depends(get_user_service),
 ) -> SessionUser:
@@ -60,6 +82,7 @@ async def login(
 
     Args:
         payload: Credentials to check.
+        request: The request.
         response: Response the session cookie is set on.
         service: User service for the request.
 
@@ -67,6 +90,7 @@ async def login(
         The signed-in user.
     """
     user = await service.authenticate(payload.username, payload.password)
+    await audit_sign_in(user, request, "web")
     set_session_cookie(response, create_session_token(user.uuid))
     return SessionUser.model_validate(user)
 
@@ -204,6 +228,7 @@ async def change_password(payload: PasswordChange, service: AccountService = Dep
 @router.post("/token", response_model=TokenPair, dependencies=[Depends(limit_credentials)])
 async def create_token(
     payload: TokenRequest,
+    request: Request,
     users: UserService = Depends(get_user_service),
     tokens: TokenService = Depends(get_token_service),
 ) -> TokenPair:
@@ -211,6 +236,7 @@ async def create_token(
 
     Args:
         payload: Credentials and the device.
+        request: The request.
         users: User service.
         tokens: Token service.
 
@@ -218,7 +244,9 @@ async def create_token(
         The token pair.
     """
     user = await users.authenticate(payload.email, payload.password)
-    return await tokens.open(user, payload.device_name, payload.platform)
+    pair = await tokens.open(user, payload.device_name, payload.platform)
+    await audit_sign_in(user, request, payload.platform)
+    return pair
 
 
 @router.post("/token/refresh", response_model=TokenPair, dependencies=[Depends(limit_credentials)])

@@ -149,17 +149,17 @@ def client_address(request: Request) -> str | None:
     return request.client.host if request.client else None
 
 
-def path_uuid(request: Request, name: str) -> UUID | None:
+def path_uuid(request: Request, name: str | None) -> UUID | None:
     """Read a public id from the request path.
 
     Args:
         request: The request.
-        name: Name of the path parameter.
+        name: Name of the path parameter, None for none.
 
     Returns:
         The id, None when the path has no such parameter or it is not an id.
     """
-    value = request.path_params.get(name)
+    value = request.path_params.get(name) if name else None
     try:
         return UUID(str(value)) if value is not None else None
     except ValueError:
@@ -207,14 +207,14 @@ def audited(action: AuditAction, target_kind: str | None = None, target: str = "
 
 
 def audited_account(
-    action: AuditAction, target_kind: str | None = None, target: str = "uuid", organisation: str = "organisation"
+    action: AuditAction, target_kind: str | None = None, target: str | None = "uuid", organisation: str = "organisation"
 ) -> Callable:
     """Build a dependency that records an action outside a site, such as a member change, after it succeeded.
 
     Args:
         action: What the route does.
         target_kind: Kind of the thing the route acts on.
-        target: Path parameter holding the public id of that thing.
+        target: Path parameter holding the public id of that thing, None when the path has none.
         organisation: Path parameter holding the public id of the organisation, if the route has one.
 
     Returns:

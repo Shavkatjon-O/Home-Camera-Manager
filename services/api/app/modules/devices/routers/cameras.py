@@ -8,6 +8,8 @@ from app.modules.devices.deps import get_camera_service
 from app.modules.devices.enums import CameraSort
 from app.modules.devices.schemas import CameraCreate, CameraList, CameraOrder, CameraRead, CameraUpdate, PtzMove
 from app.modules.devices.services import CameraService
+from app.modules.operations.deps import audited
+from app.modules.operations.enums import AuditAction
 from app.modules.tenancy.deps import require_admin, require_operator
 
 router = APIRouter()
@@ -46,7 +48,12 @@ async def list_cameras(
     return await service.list_page(page, page_size, order)
 
 
-@router.post("", dependencies=[Depends(require_admin)], response_model=CameraRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    dependencies=[Depends(audited(AuditAction.CAMERA_CREATE, "camera")), Depends(require_admin)],
+    response_model=CameraRead,
+    status_code=status.HTTP_201_CREATED,
+)
 async def create_camera(payload: CameraCreate, service: CameraService = Depends(get_camera_service)) -> CameraRead:
     """Register a camera.
 
@@ -60,7 +67,11 @@ async def create_camera(payload: CameraCreate, service: CameraService = Depends(
     return await service.create(payload)
 
 
-@router.put("/order", dependencies=[Depends(require_admin)], status_code=status.HTTP_204_NO_CONTENT)
+@router.put(
+    "/order",
+    dependencies=[Depends(audited(AuditAction.CAMERA_UPDATE, "camera")), Depends(require_admin)],
+    status_code=status.HTTP_204_NO_CONTENT,
+)
 async def order_cameras(payload: CameraOrder, service: CameraService = Depends(get_camera_service)) -> Response:
     """Set the wall order of the cameras.
 
@@ -89,7 +100,11 @@ async def get_camera(uuid: UUID, service: CameraService = Depends(get_camera_ser
     return await service.detail(uuid)
 
 
-@router.patch("/{uuid}", dependencies=[Depends(require_admin)], response_model=CameraRead)
+@router.patch(
+    "/{uuid}",
+    dependencies=[Depends(audited(AuditAction.CAMERA_UPDATE, "camera")), Depends(require_admin)],
+    response_model=CameraRead,
+)
 async def update_camera(
     uuid: UUID,
     payload: CameraUpdate,
@@ -108,7 +123,11 @@ async def update_camera(
     return await service.update(uuid, payload)
 
 
-@router.delete("/{uuid}", dependencies=[Depends(require_admin)], status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{uuid}",
+    dependencies=[Depends(audited(AuditAction.CAMERA_DELETE, "camera")), Depends(require_admin)],
+    status_code=status.HTTP_204_NO_CONTENT,
+)
 async def delete_camera(uuid: UUID, service: CameraService = Depends(get_camera_service)) -> Response:
     """Remove a camera from the registry.
 

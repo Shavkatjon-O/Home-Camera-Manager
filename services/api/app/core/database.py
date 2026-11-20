@@ -100,3 +100,7 @@ async def get_db() -> AsyncGenerator[AsyncSession]:
     """
     async with async_session_maker() as session:
         yield session
+
+
+UNSCOPED_OPTION = "unscoped"
+"""str: Execution option that lets a statement read past the tenancy scope of its session."""

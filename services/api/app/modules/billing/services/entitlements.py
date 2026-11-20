@@ -5,11 +5,11 @@ from dataclasses import dataclass, field
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.database import UNSCOPED_OPTION
 from app.core.exceptions import Forbidden, NotFound
 from app.models import Camera, Invitation, Membership, Organisation, Plan, Site
 from app.modules.billing.enums import Feature, Limit
 from app.modules.billing.services.catalog import DEFAULT_PLAN, PLAN_CATALOG
-from app.modules.tenancy.services.scope import UNSCOPED_OPTION
 
 __all__ = ["Entitlements", "current_usage", "entitlements_for", "merge_entitlements", "require_capacity"]
 

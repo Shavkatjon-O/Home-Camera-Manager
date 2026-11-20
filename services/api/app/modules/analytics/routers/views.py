@@ -9,6 +9,8 @@ from app.analytics import client
 from app.modules.analytics.deps import get_view_service
 from app.modules.analytics.schemas import LiveObjects, RulesUpdate, ViewList, ViewRead, ViewUpdate
 from app.modules.analytics.services import AnalyticsViewService
+from app.modules.operations.deps import audited
+from app.modules.operations.enums import AuditAction
 from app.modules.tenancy.deps import require_admin
 
 router = APIRouter()
@@ -31,7 +33,11 @@ async def list_views(
     return await service.list(camera_uuid)
 
 
-@router.patch("/views/{uuid}", dependencies=[Depends(require_admin)], response_model=ViewRead)
+@router.patch(
+    "/views/{uuid}",
+    dependencies=[Depends(audited(AuditAction.RULES_UPDATE, "view")), Depends(require_admin)],
+    response_model=ViewRead,
+)
 async def update_view(
     uuid: UUID,
     data: ViewUpdate,
@@ -50,7 +56,11 @@ async def update_view(
     return await service.update(uuid, data)
 
 
-@router.put("/views/{uuid}/rules", dependencies=[Depends(require_admin)], response_model=ViewRead)
+@router.put(
+    "/views/{uuid}/rules",
+    dependencies=[Depends(audited(AuditAction.RULES_UPDATE, "view")), Depends(require_admin)],
+    response_model=ViewRead,
+)
 async def replace_rules(
     uuid: UUID,
     data: RulesUpdate,

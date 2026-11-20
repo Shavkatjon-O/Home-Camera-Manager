@@ -8,6 +8,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Response, status
 
+from app.modules.billing.deps import require_feature
+from app.modules.billing.enums import Feature
 from app.modules.investigation.deps import get_person_service, get_sample_service
 from app.modules.investigation.schemas import (
     PersonCreate,
@@ -19,12 +21,14 @@ from app.modules.investigation.schemas import (
     PhotoUploadResult,
 )
 from app.modules.investigation.services import PersonService, SampleService
+from app.modules.operations.deps import audited
+from app.modules.operations.enums import AuditAction
 from app.modules.tenancy.deps import require_admin
 
 from .clusters import router as clusters_router
 from .samples import router as samples_router
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(require_feature(Feature.FACES))])
 router.include_router(clusters_router, prefix="/clusters")
 router.include_router(samples_router, prefix="/samples")
 
@@ -51,7 +55,12 @@ async def list_people(
     return await service.list_page(page, page_size)
 
 
-@router.post("", dependencies=[Depends(require_admin)], response_model=PersonRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    dependencies=[Depends(audited(AuditAction.FACE_ENROL, "person")), Depends(require_admin)],
+    response_model=PersonRead,
+    status_code=status.HTTP_201_CREATED,
+)
 async def create_person(payload: PersonCreate, service: PersonService = Depends(get_person_service)) -> PersonRead:
     """Create a person.
 
@@ -98,7 +107,11 @@ async def update_person(
     return await service.update(uuid, payload)
 
 
-@router.delete("/{uuid}", dependencies=[Depends(require_admin)], status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{uuid}",
+    dependencies=[Depends(audited(AuditAction.FACE_DELETE, "person")), Depends(require_admin)],
+    status_code=status.HTTP_204_NO_CONTENT,
+)
 async def delete_person(uuid: UUID, service: PersonService = Depends(get_person_service)) -> Response:
     """Delete a person with every sample and crop.
 
@@ -113,7 +126,11 @@ async def delete_person(uuid: UUID, service: PersonService = Depends(get_person_
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@router.post("/{uuid}/photos", dependencies=[Depends(require_admin)], response_model=PhotoUploadResult)
+@router.post(
+    "/{uuid}/photos",
+    dependencies=[Depends(audited(AuditAction.FACE_ENROL, "person")), Depends(require_admin)],
+    response_model=PhotoUploadResult,
+)
 async def add_photos(
     uuid: UUID,
     payload: PhotoUploadRequest,
@@ -133,7 +150,9 @@ async def add_photos(
 
 
 @router.delete(
-    "/{uuid}/samples/{sample_uuid}", dependencies=[Depends(require_admin)], status_code=status.HTTP_204_NO_CONTENT
+    "/{uuid}/samples/{sample_uuid}",
+    dependencies=[Depends(audited(AuditAction.FACE_DELETE, "person")), Depends(require_admin)],
+    status_code=status.HTTP_204_NO_CONTENT,
 )
 async def delete_sample(
     uuid: UUID,
@@ -154,7 +173,11 @@ async def delete_sample(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@router.post("/{uuid}/merge", dependencies=[Depends(require_admin)], response_model=PersonRead)
+@router.post(
+    "/{uuid}/merge",
+    dependencies=[Depends(audited(AuditAction.FACE_ENROL, "person")), Depends(require_admin)],
+    response_model=PersonRead,
+)
 async def merge_person(
     uuid: UUID,
     payload: PersonMerge,

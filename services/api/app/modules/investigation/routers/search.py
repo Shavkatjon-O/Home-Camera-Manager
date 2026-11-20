@@ -5,6 +5,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 
+from app.modules.billing.deps import require_feature
+from app.modules.billing.enums import Feature
 from app.modules.investigation.deps import get_event_search_service, get_facet_service, get_similar_service
 from app.modules.investigation.schemas import EventFilters, Facets, ResultPage, SimilarPage, SimilarQuery
 from app.modules.investigation.services import EventSearchService, FacetService, SimilarService
@@ -72,7 +74,11 @@ async def search_events(
     return await service.search(filters, page, page_size)
 
 
-@router.post("/similar", dependencies=[Depends(require_admin)], response_model=SimilarPage)
+@router.post(
+    "/similar",
+    dependencies=[Depends(require_admin), Depends(require_feature(Feature.FACES))],
+    response_model=SimilarPage,
+)
 async def search_similar(
     payload: SimilarQuery,
     service: SimilarService = Depends(get_similar_service),

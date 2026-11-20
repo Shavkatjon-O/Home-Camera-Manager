@@ -4,12 +4,16 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Response, status
 
+from app.modules.billing.deps import require_feature
+from app.modules.billing.enums import Feature
 from app.modules.investigation.deps import get_cluster_service
 from app.modules.investigation.schemas import ClusterList, ClusterMerge, ClusterName, ClusterRead, PersonRead
 from app.modules.investigation.services import ClusterService
+from app.modules.operations.deps import audited
+from app.modules.operations.enums import AuditAction
 from app.modules.tenancy.deps import require_admin
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(require_feature(Feature.FACES))])
 
 PAGE_SIZE_DEFAULT = 50
 PAGE_SIZE_MAX = 200
@@ -34,7 +38,11 @@ async def list_clusters(
     return await service.list_page(page, page_size)
 
 
-@router.post("/{uuid}/name", dependencies=[Depends(require_admin)], response_model=PersonRead)
+@router.post(
+    "/{uuid}/name",
+    dependencies=[Depends(audited(AuditAction.FACE_ENROL, "cluster")), Depends(require_admin)],
+    response_model=PersonRead,
+)
 async def name_cluster(
     uuid: UUID,
     payload: ClusterName,
@@ -53,7 +61,11 @@ async def name_cluster(
     return await service.name(uuid, payload)
 
 
-@router.post("/{uuid}/merge", dependencies=[Depends(require_admin)], response_model=ClusterRead)
+@router.post(
+    "/{uuid}/merge",
+    dependencies=[Depends(audited(AuditAction.FACE_ENROL, "cluster")), Depends(require_admin)],
+    response_model=ClusterRead,
+)
 async def merge_cluster(
     uuid: UUID,
     payload: ClusterMerge,
@@ -72,7 +84,11 @@ async def merge_cluster(
     return await service.merge(uuid, payload.into)
 
 
-@router.delete("/{uuid}", dependencies=[Depends(require_admin)], status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{uuid}",
+    dependencies=[Depends(audited(AuditAction.FACE_DELETE, "cluster")), Depends(require_admin)],
+    status_code=status.HTTP_204_NO_CONTENT,
+)
 async def delete_cluster(uuid: UUID, service: ClusterService = Depends(get_cluster_service)) -> Response:
     """Delete an unknown cluster with its samples and crops.
 

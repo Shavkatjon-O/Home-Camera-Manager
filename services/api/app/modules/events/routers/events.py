@@ -13,6 +13,8 @@ from app.modules.events.deps import get_event_service
 from app.modules.events.enums import EventKind, EventSource
 from app.modules.events.schemas import EventCounts, EventList, EventRead, EventSourceList
 from app.modules.events.services import EventFilters, EventService, site_cameras, stream_hello
+from app.modules.operations.deps import audited
+from app.modules.operations.enums import AuditAction
 from app.modules.tenancy.deps import get_stream_site_access, require_operator, site_scope
 from app.modules.tenancy.services.access import SiteAccess
 
@@ -243,7 +245,12 @@ async def get_event_thumbnail(uuid: UUID, service: EventService = Depends(get_ev
     return FileResponse(await service.image(uuid, thumbnail=True), media_type="image/jpeg", headers=IMAGE_HEADERS)
 
 
-@router.get("/{uuid}/clip", response_class=FileResponse, responses=MP4_RESPONSE)
+@router.get(
+    "/{uuid}/clip",
+    response_class=FileResponse,
+    responses=MP4_RESPONSE,
+    dependencies=[Depends(audited(AuditAction.CLIP_VIEW, "event"))],
+)
 async def get_event_clip(uuid: UUID, service: EventService = Depends(get_event_service)) -> FileResponse:
     """Return an event's clip; range requests let the browser seek.
 

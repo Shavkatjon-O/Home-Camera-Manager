@@ -7,12 +7,12 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.context import UserContext
+from app.core.database import UNSCOPED_OPTION
 from app.models import Plan, UsageRollup
 from app.modules.billing.schemas.plans import EntitlementsRead, PlanList, PlanRead, UsagePoint, UsageRead, UsageTotal
 from app.modules.billing.services.entitlements import Entitlements, current_usage, entitlements_for
 from app.modules.tenancy.enums import Role
 from app.modules.tenancy.services.access import resolve_organisation_access
-from app.modules.tenancy.services.scope import UNSCOPED_OPTION
 
 __all__ = ["PlanService", "entitlements_read", "usage_of"]
 

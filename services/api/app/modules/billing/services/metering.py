@@ -11,10 +11,9 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.core.database import async_session_maker
+from app.core.database import UNSCOPED_OPTION, async_session_maker
 from app.models import AnalyticsView, Camera, Connector, Event, HealthSample, UsageRollup
 from app.modules.billing.enums import UsageMetric
-from app.modules.tenancy.services.scope import UNSCOPED_OPTION
 
 __all__ = ["UsageMeter", "hour_start", "measure_hour", "record_usage", "usage_meter"]
 
