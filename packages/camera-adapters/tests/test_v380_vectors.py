@@ -490,3 +490,11 @@ def test_marker_bytes_in_media_do_not_capture_the_search():
     out = reader.feed(bytes([0x00, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x28, 0x00, 0x03, 0x00]) + stream)
     assert [item.header.type for item in out] == [0x29]
     assert len(out[0].payload) == 116
+
+
+async def test_a_password_outside_printable_ascii_is_refused_before_connecting():
+    from camera_adapters.v380.client import Camera, login
+    from camera_adapters.v380.errors import ProtocolError
+
+    with pytest.raises(ProtocolError):
+        await login(Camera("127.0.0.1", DEVICE, "p" + chr(0xE4) + "ss", port=1))

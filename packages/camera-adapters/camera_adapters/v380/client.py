@@ -377,10 +377,14 @@ async def login(camera: Camera, timeouts: Timeouts = Timeouts(), key: bytes | No
     Raises:
         Unreachable: The camera did not accept the connection.
         ReplyTimeout: It did not reply.
-        ProtocolError: The reply was short or of another command.
+        ProtocolError: The reply was short or of another command, or the password is not printable ASCII.
         LoginRefused: It refused the login.
     """
-    request = records.login_request(camera.device_id, camera.username, password_field(camera.password, key))
+    try:
+        field = password_field(camera.password, key)
+    except ValueError as exc:
+        raise ProtocolError(str(exc))
+    request = records.login_request(camera.device_id, camera.username, field)
     reader, writer = await connect(camera, timeouts)
     try:
         writer.write(request)
