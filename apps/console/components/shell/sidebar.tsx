@@ -56,8 +56,8 @@ function NavLink({
  */
 export function SidebarNav({ rail = false, onNavigate }: { rail?: boolean; onNavigate?: () => void }) {
   const path = normalizePath(usePathname())
-  const { role, user } = useSession()
-  const groups = visibleGroups(role, Boolean(user.is_platform_admin))
+  const { role, platformAdmin } = useSession()
+  const groups = visibleGroups(role, platformAdmin)
   return (
     <div className={cn("flex flex-col", rail ? "items-center gap-3" : "gap-5")}>
       {groups.map((group, index) => (

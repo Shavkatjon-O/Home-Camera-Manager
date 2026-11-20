@@ -25,7 +25,7 @@ function initials(name: string): string {
 
 /** The account menu of the top bar: who is signed in, their role at the current site, and sign out. */
 export function UserMenu() {
-  const { user, site, role } = useSession()
+  const { user, site, role, platformAdmin } = useSession()
   const [busy, setBusy] = React.useState(false)
   const display = user.name || user.username
 
@@ -61,7 +61,7 @@ export function UserMenu() {
               {ROLE_LABELS[role]} at {site.name}
             </span>
           ) : null}
-          {user.is_platform_admin ? <span className="text-[12px] text-text-2">Platform admin</span> : null}
+          {platformAdmin ? <span className="text-[12px] text-text-2">Platform admin</span> : null}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem disabled={busy} onSelect={() => void signOut()}>
