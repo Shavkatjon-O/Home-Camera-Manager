@@ -6,7 +6,7 @@ usage() {
   echo
   echo "Downloads the InsightFace antelopev2 pack from the InsightFace model zoo release, checks the archive and"
   echo "the two models the face stage uses against their pinned checksums, extracts them into"
-  echo "SSS_ANALYTICS_FACE_MODELS_DIR (default analytics/models/face) and prints their licence."
+  echo "SSS_ANALYTICS_FACE_MODELS_DIR (default services/analytics/models/face) and prints their licence."
   echo "--keep-archive keeps the downloaded zip next to the models."
 }
 
@@ -18,7 +18,7 @@ case "${1:-}" in
 esac
 
 root=$(cd "$(dirname "$0")/.." && pwd)
-models=${SSS_ANALYTICS_FACE_MODELS_DIR:-$root/analytics/models/face}
+models=${SSS_ANALYTICS_FACE_MODELS_DIR:-$root/services/analytics/models/face}
 mkdir -p "$models"
 models=$(cd "$models" && pwd)
 

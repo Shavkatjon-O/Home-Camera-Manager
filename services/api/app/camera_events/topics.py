@@ -3,8 +3,8 @@
 import re
 from dataclasses import dataclass
 
-from adapters.onvif.notifications import Notification, TopicInfo
 from app.modules.events.enums import EventKind
+from camera_adapters.onvif.notifications import Notification, TopicInfo
 
 TRUE_VALUES = {"true", "1", "on", "yes"}
 FALSE_VALUES = {"false", "0", "off", "no"}

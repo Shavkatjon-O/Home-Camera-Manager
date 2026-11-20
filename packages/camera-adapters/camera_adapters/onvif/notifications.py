@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
-from adapters.onvif.soap import child, descendant, descendants, local_name, text
+from camera_adapters.onvif.soap import child, descendant, descendants, local_name, text
 
 ELEMENT_TEXT_LIMIT = 2000
 

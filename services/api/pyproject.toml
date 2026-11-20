@@ -40,7 +40,7 @@ select = ["E", "F", "I", "D"]
 convention = "google"
 
 [tool.ruff.lint.isort]
-known-first-party = ["app", "adapters", "tests"]
+known-first-party = ["app", "camera_adapters", "tests"]
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401", "F403"]
@@ -49,6 +49,6 @@ known-first-party = ["app", "adapters", "tests"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = [".", "../connector"]
+pythonpath = [".", "../../packages/camera-adapters"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"

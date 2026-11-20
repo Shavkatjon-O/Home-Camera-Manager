@@ -5,8 +5,8 @@ from datetime import UTC, datetime
 from xml.etree.ElementTree import Element
 from xml.sax.saxutils import escape
 
-from adapters.onvif.client import parse_device_time
-from adapters.onvif.soap import child, descendant, descendant_text, text
+from camera_adapters.onvif.client import parse_device_time
+from camera_adapters.onvif.soap import child, descendant, descendant_text, text
 
 DEVICE_INFORMATION = "<tds:GetDeviceInformation/>"
 DATE_AND_TIME = "<tds:GetSystemDateAndTime/>"

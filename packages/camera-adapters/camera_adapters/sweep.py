@@ -5,10 +5,10 @@ from collections import defaultdict
 from dataclasses import dataclass
 from ipaddress import IPv4Address, IPv4Network, ip_network
 
-from adapters.base import AdapterName
-from adapters.classifier import guess_brand, guess_onvif_port
-from adapters.onvif.client import OnvifClient
-from adapters.onvif.soap import OnvifError, OnvifFault
+from camera_adapters.base import AdapterName
+from camera_adapters.classifier import guess_brand, guess_onvif_port
+from camera_adapters.onvif.client import OnvifClient
+from camera_adapters.onvif.soap import OnvifError, OnvifFault
 
 SCAN_PORTS = (80, 443, 554, 8000, 8800, 8899, 34567)
 CAMERA_PORTS = frozenset({554, 8000, 8800, 8899})

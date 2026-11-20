@@ -9,13 +9,13 @@ from datetime import UTC, datetime
 from urllib.parse import urlsplit
 from uuid import UUID
 
-from adapters.onvif.client import OnvifClient
-from adapters.onvif.notifications import Notification, Subscription, parse_notifications, parse_subscription
-from adapters.onvif.notifications import parse_topics as parse_topic_set
-from adapters.onvif.soap import OnvifError, OnvifFault, OnvifRefused
 from app.camera_events.topics import supported
 from app.modules.events.enums import EventKind, SourceMode, SourceState
 from app.onvif.endpoints import OnvifEndpoint
+from camera_adapters.onvif.client import OnvifClient
+from camera_adapters.onvif.notifications import Notification, Subscription, parse_notifications, parse_subscription
+from camera_adapters.onvif.notifications import parse_topics as parse_topic_set
+from camera_adapters.onvif.soap import OnvifError, OnvifFault, OnvifRefused
 
 logger = logging.getLogger(__name__)
 

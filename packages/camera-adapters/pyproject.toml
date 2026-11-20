@@ -1,15 +1,11 @@
 [project]
-name = "smart-surveillance-connector"
+name = "camera-adapters"
 version = "0.1.0"
-description = "Site agent of Smart Surveillance System and the camera adapters it shares with the backend"
+description = "Camera adapters of Smart Surveillance System, shared by the connector and the API"
 requires-python = ">=3.13,<3.14"
 dependencies = [
-    "cryptography>=45.0",
-    "fastapi>=0.120",
     "httpx>=0.28",
     "pyyaml>=6.0",
-    "qrcode>=8.0",
-    "uvicorn>=0.35",
 ]
 
 [dependency-groups]
@@ -33,14 +29,14 @@ select = ["E", "F", "I", "D"]
 convention = "google"
 
 [tool.ruff.lint.isort]
-known-first-party = ["adapters", "agent"]
+known-first-party = ["camera_adapters"]
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401", "F403"]
 "**/tests/**" = ["D"]
 
 [tool.pytest.ini_options]
-testpaths = ["adapters/tests", "agent/tests"]
+testpaths = ["tests"]
 pythonpath = ["."]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"

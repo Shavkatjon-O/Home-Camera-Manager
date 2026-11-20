@@ -1,6 +1,6 @@
-from adapters.onvif.notifications import Notification, TopicInfo
 from app.camera_events.topics import classify, condition_name, is_condition, supported
 from app.modules.events.enums import EventKind
+from camera_adapters.onvif.notifications import Notification, TopicInfo
 
 
 def note(topic: str, data: dict | None = None, operation: str | None = "Changed", **extra) -> Notification:

@@ -2,8 +2,8 @@ from xml.etree import ElementTree
 
 import pytest
 
-from adapters.onvif.client import Profile, parse_device_time, parse_profiles, pick_streams, uri_path
-from adapters.onvif.soap import OnvifError, OnvifFault, parse_response
+from camera_adapters.onvif.client import Profile, parse_device_time, parse_profiles, pick_streams, uri_path
+from camera_adapters.onvif.soap import OnvifError, OnvifFault, parse_response
 
 PROFILES_RESPONSE = b"""<?xml version="1.0" encoding="UTF-8"?>
 <s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:trt="http://www.onvif.org/ver10/media/wsdl"

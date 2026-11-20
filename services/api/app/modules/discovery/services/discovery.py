@@ -7,9 +7,6 @@ from datetime import UTC, datetime
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from adapters.onvif.client import DeviceInfo, OnvifClient
-from adapters.onvif.soap import OnvifError
-from adapters.sweep import SubnetError, parse_subnet, scan
 from app.auth.context import UserContext
 from app.core.config import settings
 from app.core.exceptions import BadGateway, Unprocessable
@@ -22,6 +19,9 @@ from app.modules.discovery.schemas import (
     ScanRequest,
     ScanResult,
 )
+from camera_adapters.onvif.client import DeviceInfo, OnvifClient
+from camera_adapters.onvif.soap import OnvifError
+from camera_adapters.sweep import SubnetError, parse_subnet, scan
 
 __all__ = ["DiscoveryService", "index_hosts"]
 

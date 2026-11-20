@@ -1,8 +1,8 @@
 import pytest
 
-from adapters.classifier import guess_brand, guess_onvif_port
-from adapters.sweep import SubnetError, parse_subnet
 from app.modules.cameras.enums import CameraBrand
+from camera_adapters.classifier import guess_brand, guess_onvif_port
+from camera_adapters.sweep import SubnetError, parse_subnet
 
 
 @pytest.mark.parametrize(

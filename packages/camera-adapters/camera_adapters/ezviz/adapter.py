@@ -1,10 +1,10 @@
 """The EZVIZ adapter: ONVIF with EZVIZ's stream paths, encoding report and motion sensitivity quirk."""
 
-from adapters.base import AdapterName, Fingerprint, Identity, LabelInfo, Streams, Target
-from adapters.classifier import EZVIZ_PORT
-from adapters.ezviz.labels import parse_ezviz_label
-from adapters.manifest import CapabilityManifest
-from adapters.onvif.adapter import OnvifAdapter
+from camera_adapters.base import AdapterName, Fingerprint, Identity, LabelInfo, Streams, Target
+from camera_adapters.classifier import EZVIZ_PORT
+from camera_adapters.ezviz.labels import parse_ezviz_label
+from camera_adapters.manifest import CapabilityManifest
+from camera_adapters.onvif.adapter import OnvifAdapter
 
 __all__ = ["EzvizAdapter"]
 

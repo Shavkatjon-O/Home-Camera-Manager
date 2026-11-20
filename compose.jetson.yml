@@ -3,8 +3,8 @@ services:
     image: alexxit/go2rtc:1.9.14
     deploy: !reset {}
     volumes: !override
-      - ./go2rtc.jetson.yaml:/config/go2rtc.yaml:ro
-      - ./go2rtc-tv.sh:/config/tv.sh:ro
+      - ./deploy/go2rtc/go2rtc.jetson.yaml:/config/go2rtc.yaml:ro
+      - ./deploy/go2rtc/go2rtc-tv.sh:/config/tv.sh:ro
 
   analytics:
     runtime: nvidia
@@ -29,7 +29,7 @@ services:
         limits:
           memory: 3g
     volumes: !override
-      - ${SSS_ANALYTICS_MODELS_DIR:-./analytics/models}:/models:ro
+      - ${SSS_ANALYTICS_MODELS_DIR:-./services/analytics/models}:/models:ro
       - analytics-engines:/engines
       - events:/data/events
       - type: tmpfs

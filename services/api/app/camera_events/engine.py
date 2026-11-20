@@ -9,7 +9,6 @@ from uuid import UUID
 
 from sqlalchemy import delete, select
 
-from adapters.onvif.notifications import Notification, parse_time
 from app.camera_events.broker import EventBroker
 from app.camera_events.snapshots import SnapshotStore
 from app.camera_events.subscriber import CameraSubscriber, SourceStatus
@@ -26,6 +25,7 @@ from app.modules.events.schemas import EventRead, EventSourceRead, event_read
 from app.modules.people.services import purge_expired_samples
 from app.onvif.endpoints import device_endpoint, endpoint_key
 from app.streaming.names import MAIN, SUB, stream_name
+from camera_adapters.onvif.notifications import Notification, parse_time
 
 logger = logging.getLogger(__name__)
 

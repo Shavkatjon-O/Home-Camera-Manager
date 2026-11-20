@@ -3,10 +3,10 @@
 import time
 from dataclasses import dataclass
 
-from adapters.onvif.client import OnvifClient
 from app.core.config import settings
 from app.core.security import decrypt_secret
 from app.models import Camera
+from camera_adapters.onvif.client import OnvifClient
 
 DIRECTORY_TTL_SECONDS = 600.0
 CONTROL_TIMEOUT_SECONDS = 8.0

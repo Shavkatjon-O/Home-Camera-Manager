@@ -8,7 +8,7 @@ alone, one named by an id or device parameter of a link that names V380, or one 
 import re
 from urllib.parse import parse_qs, urlsplit
 
-from adapters.base import AdapterName, LabelInfo
+from camera_adapters.base import AdapterName, LabelInfo
 
 __all__ = ["parse_v380_label"]
 

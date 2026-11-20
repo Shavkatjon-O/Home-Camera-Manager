@@ -2,7 +2,7 @@
 
 from collections.abc import Iterable
 
-from adapters.base import AdapterName
+from camera_adapters.base import AdapterName
 
 V380_MANUFACTURER = "macro-video"
 

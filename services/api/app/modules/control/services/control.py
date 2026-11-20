@@ -8,11 +8,6 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from adapters.ezviz.quirks import ENCODER_SERVICES, corrected_sensitivity
-from adapters.onvif import analytics, imaging, media, ptz, recordings, system
-from adapters.onvif.media import Encoder, EncodingOptions, Range, StreamProfile
-from adapters.onvif.soap import OnvifError, OnvifFault, OnvifRefused, descendant, descendants, text
-from adapters.v380.bridge import BridgeClient, BridgeError
 from app.auth.context import UserContext
 from app.core.base_service import BaseModelService
 from app.core.config import settings
@@ -43,6 +38,11 @@ from app.modules.control.schemas import (
 from app.onvif.endpoints import Connection, Directory, OnvifEndpoint, bridge_endpoint, device_endpoint, directory
 from app.streaming.go2rtc import Go2rtcError
 from app.streaming.replay import ReplayBusy, ReplayStreams, replay_streams
+from camera_adapters.ezviz.quirks import ENCODER_SERVICES, corrected_sensitivity
+from camera_adapters.onvif import analytics, imaging, media, ptz, recordings, system
+from camera_adapters.onvif.media import Encoder, EncodingOptions, Range, StreamProfile
+from camera_adapters.onvif.soap import OnvifError, OnvifFault, OnvifRefused, descendant, descendants, text
+from camera_adapters.v380.bridge import BridgeClient, BridgeError
 
 __all__ = ["CameraControlService", "NotOffered"]
 

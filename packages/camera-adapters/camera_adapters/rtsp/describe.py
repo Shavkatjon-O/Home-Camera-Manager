@@ -7,7 +7,7 @@ import re
 from dataclasses import dataclass
 from urllib.parse import unquote, urlsplit
 
-from adapters.base import AdapterError
+from camera_adapters.base import AdapterError
 
 __all__ = ["StreamInfo", "authorization", "describe", "parse_challenge", "parse_sdp", "parse_url"]
 

@@ -4,7 +4,7 @@ set -eu
 usage() {
   echo "usage: scripts/download-secondary-models.sh [--all]"
   echo
-  echo "Downloads the models of the secondary analytics stages into SSS_ANALYTICS_MODELS_DIR (default analytics/models):"
+  echo "Downloads the models of the secondary analytics stages into SSS_ANALYTICS_MODELS_DIR (default services/analytics/models):"
   echo "person re-identification, body pose for falls, and text detection and recognition for number plates."
   echo "Every file is checked against its pinned checksum and each licence is printed."
   echo "--all also fetches NVIDIA LPDNet, an optional plate finder under the NVIDIA AI Enterprise EULA."
@@ -18,7 +18,7 @@ case "${1:-}" in
 esac
 
 root=$(cd "$(dirname "$0")/.." && pwd)
-models=${SSS_ANALYTICS_MODELS_DIR:-$root/analytics/models}
+models=${SSS_ANALYTICS_MODELS_DIR:-$root/services/analytics/models}
 mkdir -p "$models"
 models=$(cd "$models" && pwd)
 

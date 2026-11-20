@@ -1,5 +1,5 @@
-from adapters.onvif.notifications import clean_topic, parse_notifications, parse_subscription, parse_topics
-from adapters.onvif.soap import parse_response
+from camera_adapters.onvif.notifications import clean_topic, parse_notifications, parse_subscription, parse_topics
+from camera_adapters.onvif.soap import parse_response
 
 NAMESPACES = (
     'xmlns:env="http://www.w3.org/2003/05/soap-envelope" xmlns:tt="http://www.onvif.org/ver10/schema" '

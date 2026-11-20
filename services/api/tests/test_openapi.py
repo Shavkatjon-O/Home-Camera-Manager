@@ -4,7 +4,7 @@ from pathlib import Path
 
 from app.main import app, public_description
 
-EXPORT = Path(__file__).resolve().parents[1] / "openapi.json"
+EXPORT = Path(__file__).resolve().parents[3] / "packages" / "contracts" / "openapi.json"
 
 
 def operations():

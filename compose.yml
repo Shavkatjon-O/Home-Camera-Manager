@@ -33,8 +33,8 @@ services:
       SSS_TV_RTSP_USERNAME: ${SSS_TV_RTSP_USERNAME:-tv}
       SSS_TV_RTSP_PASSWORD: ${SSS_TV_RTSP_PASSWORD:?set SSS_TV_RTSP_PASSWORD}
     volumes:
-      - ./go2rtc.yaml:/config/go2rtc.yaml:ro
-      - ./go2rtc-tv.sh:/config/tv.sh:ro
+      - ./deploy/go2rtc/go2rtc.yaml:/config/go2rtc.yaml:ro
+      - ./deploy/go2rtc/go2rtc-tv.sh:/config/tv.sh:ro
     ports:
       - "${SSS_LAN_BIND:?set SSS_LAN_BIND to this machine LAN address}:8554:8554"
     networks: [cams]
@@ -42,7 +42,7 @@ services:
   backend:
     build:
       context: .
-      dockerfile: backend/Dockerfile
+      dockerfile: services/api/Dockerfile
     image: smart-surveillance-system-backend:local
     container_name: smart-surveillance-system-backend
     restart: unless-stopped
@@ -58,7 +58,7 @@ services:
 
   analytics:
     build:
-      context: ./analytics
+      context: ./services/analytics
       target: runtime
     image: smart-surveillance-system-analytics:local
     container_name: smart-surveillance-system-analytics
@@ -78,8 +78,8 @@ services:
               count: all
               capabilities: [gpu, compute, utility, video]
     volumes:
-      - ${SSS_ANALYTICS_MODELS_DIR:-./analytics/models}:/models:ro
-      - ${SSS_ANALYTICS_FACE_MODELS_DIR:-./analytics/models/face}:/face-models:ro
+      - ${SSS_ANALYTICS_MODELS_DIR:-./services/analytics/models}:/models:ro
+      - ${SSS_ANALYTICS_FACE_MODELS_DIR:-./services/analytics/models/face}:/face-models:ro
       - analytics-engines:/engines
       - events:/data/events
       - type: tmpfs
@@ -95,7 +95,7 @@ services:
     networks: [cams]
 
   v380-ptz-1:
-    build: ./v380-bridge
+    build: ./services/v380-bridge
     image: smart-surveillance-system-v380-bridge:local
     container_name: smart-surveillance-system-v380-ptz-1
     restart: unless-stopped
@@ -119,7 +119,7 @@ services:
     networks: [cams]
 
   v380-ptz-2:
-    build: ./v380-bridge
+    build: ./services/v380-bridge
     image: smart-surveillance-system-v380-bridge:local
     container_name: smart-surveillance-system-v380-ptz-2
     restart: unless-stopped
@@ -143,7 +143,7 @@ services:
     networks: [cams]
 
   web:
-    build: ./frontend
+    build: ./apps/console
     image: smart-surveillance-system-web:local
     container_name: smart-surveillance-system-web
     restart: unless-stopped

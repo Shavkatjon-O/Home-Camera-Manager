@@ -12,12 +12,12 @@ import time
 from dataclasses import dataclass
 from uuid import UUID
 
-from adapters.onvif import media, ptz
-from adapters.onvif.soap import OnvifError
 from app.core.exceptions import BadGateway, Conflict
 from app.models import Camera
 from app.modules.control.services import CameraControlService, NotOffered
 from app.onvif.endpoints import Connection, bridge_endpoint, device_endpoint
+from camera_adapters.onvif import media, ptz
+from camera_adapters.onvif.soap import OnvifError
 
 __all__ = ["FOLLOW_PRESET", "FollowPtzService", "MoveTarget"]
 

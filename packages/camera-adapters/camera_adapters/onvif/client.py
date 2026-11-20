@@ -9,8 +9,8 @@ from xml.sax.saxutils import escape
 
 import httpx
 
-from adapters.onvif.digest import security_header
-from adapters.onvif.soap import (
+from camera_adapters.onvif.digest import security_header
+from camera_adapters.onvif.soap import (
     OnvifError,
     OnvifFault,
     OnvifRefused,

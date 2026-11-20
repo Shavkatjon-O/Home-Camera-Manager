@@ -6,7 +6,7 @@ every interface, answers WS-Discovery and has no authentication. The target of a
 
 from dataclasses import replace
 
-from adapters.base import (
+from camera_adapters.base import (
     Adapter,
     AdapterError,
     AdapterName,
@@ -18,12 +18,12 @@ from adapters.base import (
     Streams,
     Target,
 )
-from adapters.classifier import V380_MANUFACTURER, V380_PORT
-from adapters.manifest import CapabilityManifest, ControlManifest, MediaManifest
-from adapters.onvif.adapter import OnvifAdapter
-from adapters.sweep import port_open
-from adapters.v380.bridge import BridgeClient, BridgeError
-from adapters.v380.labels import parse_v380_label
+from camera_adapters.classifier import V380_MANUFACTURER, V380_PORT
+from camera_adapters.manifest import CapabilityManifest, ControlManifest, MediaManifest
+from camera_adapters.onvif.adapter import OnvifAdapter
+from camera_adapters.sweep import port_open
+from camera_adapters.v380.bridge import BridgeClient, BridgeError
+from camera_adapters.v380.labels import parse_v380_label
 
 __all__ = ["BRIDGE_ONVIF_PORT", "BRIDGE_PATH", "BRIDGE_RTSP_PORT", "V380Adapter"]
 

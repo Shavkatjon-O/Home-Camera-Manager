@@ -9,7 +9,7 @@ the vendor's name.
 import re
 from urllib.parse import parse_qs, urlsplit
 
-from adapters.base import AdapterName, LabelInfo
+from camera_adapters.base import AdapterName, LabelInfo
 
 __all__ = ["parse_ezviz_label"]
 

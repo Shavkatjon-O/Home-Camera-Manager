@@ -8,7 +8,7 @@ from pathlib import Path
 
 import yaml
 
-from adapters.base import Fingerprint
+from camera_adapters.base import Fingerprint
 
 __all__ = ["CATALOG_PATH", "CONFIDENCE", "Catalog", "Entry", "load_catalog", "render_path"]
 

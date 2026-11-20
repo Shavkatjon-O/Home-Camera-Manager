@@ -7,8 +7,8 @@ from dataclasses import dataclass
 from xml.etree.ElementTree import Element
 from xml.sax.saxutils import escape
 
-from adapters.onvif.media import whole
-from adapters.onvif.soap import child, children, descendant, descendants, local_name, serialize
+from camera_adapters.onvif.media import whole
+from camera_adapters.onvif.soap import child, children, descendant, descendants, local_name, serialize
 
 CELL_ENGINE = "CellMotionEngine"
 CELL_DETECTOR = "CellMotionDetector"

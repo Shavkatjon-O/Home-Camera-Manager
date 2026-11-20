@@ -2,9 +2,19 @@
 
 from urllib.parse import urlsplit
 
-from adapters.base import Adapter, AdapterError, AdapterName, Channel, Fingerprint, Identity, LabelInfo, Streams, Target
-from adapters.manifest import CapabilityManifest, MediaManifest
-from adapters.rtsp.describe import describe, parse_url
+from camera_adapters.base import (
+    Adapter,
+    AdapterError,
+    AdapterName,
+    Channel,
+    Fingerprint,
+    Identity,
+    LabelInfo,
+    Streams,
+    Target,
+)
+from camera_adapters.manifest import CapabilityManifest, MediaManifest
+from camera_adapters.rtsp.describe import describe, parse_url
 
 __all__ = ["DEFAULT_RTSP_PORT", "RtspAdapter", "stream_url"]
 

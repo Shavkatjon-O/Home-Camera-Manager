@@ -5,7 +5,7 @@ from datetime import datetime
 from urllib.parse import urlsplit
 from xml.sax.saxutils import escape
 
-from adapters.base import (
+from camera_adapters.base import (
     Adapter,
     AdapterError,
     AdapterName,
@@ -20,7 +20,7 @@ from adapters.base import (
     Streams,
     Target,
 )
-from adapters.manifest import (
+from camera_adapters.manifest import (
     CapabilityManifest,
     ControlManifest,
     EventsManifest,
@@ -29,9 +29,9 @@ from adapters.manifest import (
     MediaManifest,
     PlaybackManifest,
 )
-from adapters.onvif import media, ptz, system
-from adapters.onvif.client import OnvifClient, Profile, parse_device_time, pick_streams, uri_path
-from adapters.onvif.soap import OnvifError, OnvifFault, OnvifRefused, descendant_text
+from camera_adapters.onvif import media, ptz, system
+from camera_adapters.onvif.client import OnvifClient, Profile, parse_device_time, pick_streams, uri_path
+from camera_adapters.onvif.soap import OnvifError, OnvifFault, OnvifRefused, descendant_text
 
 __all__ = ["DEFAULT_ONVIF_PORT", "OnvifAdapter", "group_channels", "normalise_topic", "stream_port"]
 

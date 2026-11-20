@@ -1,6 +1,6 @@
 """Quirks of EZVIZ cameras that the ONVIF code allows for."""
 
-from adapters.onvif import media
+from camera_adapters.onvif import media
 
 __all__ = ["ENCODER_SERVICES", "SENSITIVITY_MAX", "SENSITIVITY_MIN", "corrected_sensitivity"]
 

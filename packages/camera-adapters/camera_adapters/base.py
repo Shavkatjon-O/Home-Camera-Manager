@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import StrEnum
 
-from adapters.manifest import CapabilityManifest
+from camera_adapters.manifest import CapabilityManifest
 
 __all__ = [
     "Adapter",

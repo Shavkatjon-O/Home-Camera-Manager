@@ -12,10 +12,8 @@
 **/node_modules
 **/.next
 **/out
-analytics
-cv
-tv
-mobile
-devkit/samples
-frontend
-v380-bridge
+apps
+services/analytics
+services/v380-bridge
+tools/cv-viewer
+tools/devkit/samples

@@ -7,18 +7,18 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     UV_PYTHON_DOWNLOADS=never \
     UV_PROJECT_ENVIRONMENT=/opt/venv \
     PATH="/opt/venv/bin:${PATH}" \
-    PYTHONPATH=/opt/connector
+    PYTHONPATH=/opt/camera-adapters
 
 WORKDIR /app
 
-COPY backend/pyproject.toml backend/uv.lock ./
+COPY services/api/pyproject.toml services/api/uv.lock ./
 RUN uv sync --frozen --no-dev --no-install-project
 
-COPY backend/alembic.ini ./
-COPY backend/migrations ./migrations
-COPY backend/app ./app
-COPY connector/adapters /opt/connector/adapters
-COPY connector/catalog /opt/connector/catalog
+COPY services/api/alembic.ini ./
+COPY services/api/migrations ./migrations
+COPY services/api/app ./app
+COPY packages/camera-adapters/camera_adapters /opt/camera-adapters/camera_adapters
+COPY packages/camera-adapters/catalog /opt/camera-adapters/catalog
 
 RUN groupadd --system --gid 10001 cameras \
     && useradd --system --uid 10001 --gid cameras --no-create-home --shell /usr/sbin/nologin cameras \
