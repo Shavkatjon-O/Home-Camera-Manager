@@ -7,21 +7,25 @@ import { BellRingIcon, ImageOffIcon } from "lucide-react"
 import { Chip } from "@/components/shell/primitives"
 import { eventImageUrl } from "@/lib/api"
 import { KIND_LABELS, labelName } from "@/lib/events"
+import { isBetaKind } from "@/lib/extras"
 import { formatSpan } from "@/lib/health"
 import type { CameraEvent } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
 export function KindChip({ event, className }: { event: Pick<CameraEvent, "kind" | "ongoing">; className?: string }) {
   return (
-    <Chip
-      className={cn(
-        "h-5 px-1.5 text-[10px]",
-        event.ongoing && "bg-status-err/15 text-status-err",
-        className,
-      )}
-    >
-      {KIND_LABELS[event.kind]}
-    </Chip>
+    <>
+      <Chip
+        className={cn(
+          "h-5 px-1.5 text-[10px]",
+          event.ongoing && "bg-status-err/15 text-status-err",
+          className,
+        )}
+      >
+        {KIND_LABELS[event.kind]}
+      </Chip>
+      {isBetaKind(event.kind) ? <Chip className={cn("h-5 px-1.5 text-[10px]", className)}>Beta</Chip> : null}
+    </>
   )
 }
 

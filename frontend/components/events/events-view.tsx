@@ -33,11 +33,14 @@ import { cn } from "@/lib/utils"
 
 const PAGE_SIZE = 50
 const ALL = "all"
+const PLATE_MAX = 20
+const PLATE_DELAY = 400
 
 function matches(event: CameraEvent, query: EventQuery): boolean {
   if (query.camera_uuid && event.camera_uuid !== query.camera_uuid) return false
   if (query.kind && event.kind !== query.kind) return false
   if (query.label && event.label !== query.label) return false
+  if (query.plate) return false
   const started = Date.parse(event.started_at)
   if (query.from && started < Date.parse(query.from)) return false
   if (query.to && started >= Date.parse(query.to)) return false
@@ -88,25 +91,29 @@ function Filters({
   camera,
   kind,
   label,
+  plate,
   day,
   onCamera,
   onKind,
   onLabel,
+  onPlate,
   onDay,
   onClear,
 }: {
   camera: string
   kind: string
   label: string
+  plate: string
   day: string
   onCamera: (value: string) => void
   onKind: (value: string) => void
   onLabel: (value: string) => void
+  onPlate: (value: string) => void
   onDay: (value: string) => void
   onClear: () => void
 }) {
   const { cameras } = useSession()
-  const filtered = camera !== ALL || kind !== ALL || label !== ALL || day !== ""
+  const filtered = camera !== ALL || kind !== ALL || label !== ALL || plate !== "" || day !== ""
   return (
     <div className="flex flex-wrap items-center gap-2">
       <Select value={camera} onValueChange={onCamera}>
@@ -149,6 +156,15 @@ function Filters({
         </SelectContent>
       </Select>
       <Input
+        aria-label="Plate"
+        placeholder="Plate"
+        value={plate}
+        maxLength={PLATE_MAX}
+        autoComplete="off"
+        onChange={(event) => onPlate(event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
+        className="h-8 w-28 font-data text-[12px]"
+      />
+      <Input
         type="date"
         aria-label="Day"
         value={day}
@@ -171,6 +187,8 @@ function EventsView() {
   const [camera, setCamera] = React.useState(params.get("camera") ?? ALL)
   const [kind, setKind] = React.useState(ALL)
   const [label, setLabel] = React.useState(ALL)
+  const [plate, setPlate] = React.useState("")
+  const [plateQuery, setPlateQuery] = React.useState("")
   const [day, setDay] = React.useState("")
   const [page, setPage] = React.useState(1)
   const [reload, setReload] = React.useState(0)
@@ -185,10 +203,19 @@ function EventsView() {
       camera_uuid: camera === ALL ? undefined : camera,
       kind: kind === ALL ? undefined : (kind as EventKind),
       label: label === ALL ? undefined : label,
+      plate: plateQuery || undefined,
       from: range?.from,
       to: range?.to,
     }
-  }, [camera, kind, label, day])
+  }, [camera, kind, label, plateQuery, day])
+
+  React.useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setPlateQuery(plate)
+      setPage(1)
+    }, PLATE_DELAY)
+    return () => window.clearTimeout(timer)
+  }, [plate])
 
   React.useEffect(() => {
     clearUnseenAlerts()
@@ -259,6 +286,8 @@ function EventsView() {
     setCamera(ALL)
     setKind(ALL)
     setLabel(ALL)
+    setPlate("")
+    setPlateQuery("")
     setDay("")
     setPage(1)
   }
@@ -297,7 +326,7 @@ function EventsView() {
     list = (
       <EmptyState icon={<ScanEyeIcon />} title="No events">
         <span>
-          {query.camera_uuid || query.kind || query.label || query.from
+          {query.camera_uuid || query.kind || query.label || query.plate || query.from
             ? "Nothing matches these filters."
             : "Events appear here as soon as a camera reports motion or a problem."}
         </span>
@@ -362,10 +391,12 @@ function EventsView() {
               camera={camera}
               kind={kind}
               label={label}
+              plate={plate}
               day={day}
               onCamera={changeFilter(setCamera)}
               onKind={changeFilter(setKind)}
               onLabel={changeFilter(setLabel)}
+              onPlate={setPlate}
               onDay={changeFilter(setDay)}
               onClear={clear}
             />
@@ -385,7 +416,7 @@ function EventsView() {
             aria-label="Event details"
             className="fixed inset-x-0 top-[58px] bottom-0 z-30 overflow-y-auto bg-surface lg:static lg:z-auto lg:w-[360px] lg:shrink-0 lg:border-l lg:border-hairline"
           >
-            <EventPanel event={selectedEvent} onClose={() => setSelected(null)} />
+            <EventPanel event={selectedEvent} onClose={() => setSelected(null)} onOpenEvent={setSelected} />
           </aside>
         ) : null}
       </div>

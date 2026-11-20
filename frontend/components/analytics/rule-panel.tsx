@@ -4,6 +4,7 @@ import * as React from "react"
 import { ArrowLeftRightIcon, CheckIcon, PlusIcon, Trash2Icon, TriangleAlertIcon } from "lucide-react"
 
 import { Warning } from "@/components/analytics/analytics-section"
+import { AnimalsField, ZoneObjectFields } from "@/components/analytics/zone-object-fields"
 import { IconButton } from "@/components/shell/icon-button"
 import { Chip } from "@/components/shell/primitives"
 import { Segmented } from "@/components/shell/segmented"
@@ -354,6 +355,16 @@ function ZoneSettings({
         value={zone.labels}
         onChange={(labels) => onChange({ labels })}
       />
+      <ZoneObjectFields
+        value={{
+          left_seconds: zone.left_seconds,
+          taken_seconds: zone.taken_seconds,
+          object_labels: zone.object_labels,
+          background: zone.background,
+          animals: zone.animals,
+        }}
+        onChange={onChange}
+      />
       <NumberRow
         id={`${id}-dwell`}
         label="Minimum dwell"
@@ -444,6 +455,7 @@ function LineSettings({
         value={line.labels}
         onChange={(labels) => onChange({ labels })}
       />
+      <AnimalsField value={line.animals} onChange={(animals) => onChange({ animals })} />
       <WindowsEditor
         id={`${id}-schedule`}
         label="Active"

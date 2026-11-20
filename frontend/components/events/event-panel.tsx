@@ -5,6 +5,9 @@ import Image from "next/image"
 import Link from "next/link"
 import { ArrowUpRightIcon, ImageOffIcon, XIcon } from "lucide-react"
 
+import { EventJourney } from "@/components/events/event-journey"
+import { FindPerson } from "@/components/events/find-person"
+import { PlateDetails } from "@/components/events/plate-details"
 import { BoxLayer, FitBox, type DrawnBox } from "@/components/analytics/box-layer"
 import { AlertMark, EventDuration, KindChip, LabelChip } from "@/components/events/event-parts"
 import { FaceSummary } from "@/components/people/face-parts"
@@ -138,7 +141,15 @@ function AnalyticsReadOuts({ event, details }: { event: CameraEvent; details: An
   )
 }
 
-export function EventPanel({ event, onClose }: { event: CameraEvent; onClose: () => void }) {
+export function EventPanel({
+  event,
+  onClose,
+  onOpenEvent,
+}: {
+  event: CameraEvent
+  onClose: () => void
+  onOpenEvent: (uuid: string) => void
+}) {
   const details = analyticsDetails(event)
   const messages = (Array.isArray(event.details.messages) ? event.details.messages : []) as MessageDetail[]
   const topics = (Array.isArray(event.details.topics) ? event.details.topics : []) as string[]
@@ -173,6 +184,13 @@ export function EventPanel({ event, onClose }: { event: CameraEvent; onClose: ()
         </Section>
       ) : null}
       {details ? <AnalyticsReadOuts event={event} details={details} /> : null}
+      {details && event.kind === "vehicle" ? <PlateDetails details={event.details} /> : null}
+      {details && event.label === "person" ? (
+        <>
+          <EventJourney eventUuid={event.uuid} onOpenEvent={onOpenEvent} />
+          <FindPerson eventUuid={event.uuid} onOpenEvent={onOpenEvent} />
+        </>
+      ) : null}
       <Section title="Times">
         <ReadOut label="Started" value={formatMoment(event.started_at)} />
         <ReadOut label="Ended" value={event.ongoing ? "Ongoing" : formatMoment(event.ended_at)} />
