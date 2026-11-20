@@ -847,11 +847,14 @@ export interface OrganisationUsage {
   series: UsagePoint[]
 }
 
+/** One audit record: what was done, by whom, where and when. */
 export interface AuditRecord {
   uuid: string
   at: string
   action: string
   actor: string | null
+  actor_name: string | null
+  actor_email: string | null
   organisation: string | null
   site: string | null
   target_kind: string | null

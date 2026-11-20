@@ -2,10 +2,10 @@
 
 import * as React from "react"
 
-import { AuditTable } from "@/components/business/audit-table"
+import { AuditFilterBar, AuditTable, NO_AUDIT_FILTERS } from "@/components/business/audit-table"
 import { PageError, PageLoading, PageRestricted } from "@/components/business/panels"
-import { useCurrentSite } from "@/components/business/use-current-site"
 import { PageFrame } from "@/components/shell/page-frame"
+import { useCan, useSession } from "@/components/shell/session"
 import { api } from "@/lib/api"
 import type { AuditQuery } from "@/lib/types"
 
@@ -15,7 +15,9 @@ import type { AuditQuery } from "@/lib/types"
  * @returns The page inside the application frame.
  */
 export function ActivityView() {
-  const { site, loaded, error, isManager } = useCurrentSite()
+  const { site, sitesLoaded: loaded, sitesError: error } = useSession()
+  const isManager = useCan("admin")
+  const [filters, setFilters] = React.useState(NO_AUDIT_FILTERS)
   const organisation = site?.organisation
   const load = React.useCallback(
     (params: AuditQuery, signal: AbortSignal) => api.organisationAudit(organisation ?? "", params, signal),
@@ -28,11 +30,11 @@ export function ActivityView() {
   else if (!site) content = <PageRestricted title="No site yet" message="Pair a connector or add a site to see activity." />
   else if (!isManager) content = <PageRestricted title="Activity is restricted" message="Only admins and owners see the activity." />
   else {
-    content = <AuditTable load={load} restrictedMessage="Only admins and owners see the activity." />
+    content = <AuditTable load={load} filters={filters} restrictedMessage="Only admins and owners see the activity." />
   }
 
   return (
-    <PageFrame>
+    <PageFrame toolbar={site && isManager ? <AuditFilterBar value={filters} onChange={setFilters} /> : null}>
       <main className="@container min-h-0 min-w-0 flex-1 overflow-y-auto">{content}</main>
     </PageFrame>
   )

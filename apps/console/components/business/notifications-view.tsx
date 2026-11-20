@@ -6,8 +6,8 @@ import { toast } from "sonner"
 
 import { humanise } from "@/components/business/labels"
 import { PageError, PageLoading, PageRestricted } from "@/components/business/panels"
-import { useCurrentSite } from "@/components/business/use-current-site"
 import { PageContent, PageFrame } from "@/components/shell/page-frame"
+import { useCan, useSession } from "@/components/shell/session"
 import { Chip, EmptyState } from "@/components/shell/primitives"
 import {
   AlertDialog,
@@ -30,7 +30,8 @@ import type { TelegramChat, TelegramChatList, TelegramLink } from "@/lib/types"
  * @returns The page inside the application frame.
  */
 export function NotificationsView() {
-  const { site, loaded, error: siteError, isManager } = useCurrentSite()
+  const { site, sitesLoaded: loaded, sitesError: siteError } = useSession()
+  const isManager = useCan("admin")
   const [list, setList] = React.useState<TelegramChatList | null>(null)
   const [error, setError] = React.useState<ApiError | Error | null>(null)
   const [reload, setReload] = React.useState(0)

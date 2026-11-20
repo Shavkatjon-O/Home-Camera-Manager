@@ -21,6 +21,8 @@ export interface SessionValue {
   error: string | null
   refresh: () => Promise<void>
   sites: Site[]
+  sitesLoaded: boolean
+  sitesError: string | null
   site: Site | null
   role: SiteRole | null
   platformAdmin: boolean
@@ -63,6 +65,8 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [loaded, setLoaded] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
   const [sites, setSites] = React.useState<Site[]>([])
+  const [sitesLoaded, setSitesLoaded] = React.useState(false)
+  const [sitesError, setSitesError] = React.useState<string | null>(null)
   const [siteUuid, setSiteUuid] = React.useState<string | null>(null)
 
   const refresh = React.useCallback(async () => {
@@ -99,9 +103,14 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         const saved = readSiteCookie()
         setSites(items)
         setSiteUuid(items.find((item) => item.uuid === saved)?.uuid ?? items[0]?.uuid ?? null)
+        setSitesError(null)
+        setSitesLoaded(true)
       })
       .catch((err: unknown) => {
-        if (!isAbort(err)) setSites([])
+        if (isAbort(err)) return
+        setSites([])
+        setSitesError(errorMessage(err))
+        setSitesLoaded(true)
       })
     return () => controller.abort()
   }, [user])
@@ -137,8 +146,21 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     if (!user) return null
     const site = sites.find((item) => item.uuid === siteUuid) ?? null
     const platformAdmin = user.is_platform_admin === true
-    return { user, cameras, loaded, error, refresh, sites, site, role: site?.role ?? null, platformAdmin, switchSite }
-  }, [user, cameras, loaded, error, refresh, sites, siteUuid, switchSite])
+    return {
+      user,
+      cameras,
+      loaded,
+      error,
+      refresh,
+      sites,
+      sitesLoaded,
+      sitesError,
+      site,
+      role: site?.role ?? null,
+      platformAdmin,
+      switchSite,
+    }
+  }, [user, cameras, loaded, error, refresh, sites, sitesLoaded, sitesError, siteUuid, switchSite])
 
   if (authError) {
     return (

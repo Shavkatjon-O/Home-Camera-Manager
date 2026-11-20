@@ -4,8 +4,8 @@ import * as React from "react"
 
 import { featureLabel, limitLabel, limitText, metricLabel, usageText } from "@/components/business/labels"
 import { PageError, PageLoading, PageRestricted } from "@/components/business/panels"
-import { useCurrentSite } from "@/components/business/use-current-site"
-import { PageContent, PageFrame } from "@/components/shell/page-frame"
+import { CardGrid, PageContent, PageFrame } from "@/components/shell/page-frame"
+import { useCan, useSession } from "@/components/shell/session"
 import { Chip } from "@/components/shell/primitives"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { api, errorMessage, isAbort } from "@/lib/api"
@@ -36,14 +36,14 @@ function UsageSection({ usage }: { usage: OrganisationUsage }) {
       <h2 id="usage-title" className="text-xs text-text-3">
         Usage over the last {USAGE_DAYS} days
       </h2>
-      <div className="grid grid-cols-2 gap-3 @2xl:grid-cols-5">
+      <CardGrid>
         {usage.totals.map((total) => (
           <div key={total.metric} className="flex flex-col gap-1 rounded-lg border border-hairline p-3">
             <span className="text-xs text-text-3">{metricLabel(total.metric)}</span>
             <span className="font-data text-[15px] text-foreground">{usageText(total.metric, total.value)}</span>
           </div>
         ))}
-      </div>
+      </CardGrid>
       <div className="overflow-x-auto rounded-lg border border-hairline">
         <Table>
           <TableHeader>
@@ -89,7 +89,8 @@ function UsageSection({ usage }: { usage: OrganisationUsage }) {
  * @returns The page inside the application frame.
  */
 export function PlanView() {
-  const { site, loaded, error: siteError, isManager } = useCurrentSite()
+  const { site, sitesLoaded: loaded, sitesError: siteError } = useSession()
+  const isManager = useCan("admin")
   const organisation = site?.organisation
   const [plan, setPlan] = React.useState<OrganisationPlan | null>(null)
   const [usage, setUsage] = React.useState<OrganisationUsage | null>(null)

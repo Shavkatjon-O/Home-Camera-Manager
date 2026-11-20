@@ -4,7 +4,7 @@ import * as React from "react"
 
 import { AdminConnectors } from "@/components/business/admin-connectors"
 import { AdminOrganisations } from "@/components/business/admin-organisations"
-import { AuditTable } from "@/components/business/audit-table"
+import { AuditFilterBar, AuditTable, NO_AUDIT_FILTERS } from "@/components/business/audit-table"
 import { PageFrame } from "@/components/shell/page-frame"
 import { RoleGate } from "@/components/shell/role-gate"
 import { Segmented } from "@/components/shell/segmented"
@@ -40,12 +40,18 @@ export function AdminView() {
 
 function AdminSections() {
   const [section, setSection] = React.useState<Section>("organisations")
+  const [filters, setFilters] = React.useState(NO_AUDIT_FILTERS)
   return (
-    <PageFrame actions={<Segmented<Section> label="Section" value={section} options={SECTIONS} onChange={setSection} />}>
+    <PageFrame
+      actions={<Segmented<Section> label="Section" value={section} options={SECTIONS} onChange={setSection} />}
+      toolbar={section === "audit" ? <AuditFilterBar value={filters} onChange={setFilters} withOrganisation /> : null}
+    >
       <main className="@container min-h-0 min-w-0 flex-1 overflow-y-auto">
         {section === "organisations" ? <AdminOrganisations notAdminMessage={NOT_ADMIN} /> : null}
         {section === "connectors" ? <AdminConnectors notAdminMessage={NOT_ADMIN} /> : null}
-        {section === "audit" ? <AuditTable load={loadAudit} withOrganisation restrictedMessage={NOT_ADMIN} /> : null}
+        {section === "audit" ? (
+          <AuditTable load={loadAudit} filters={filters} withOrganisation restrictedMessage={NOT_ADMIN} />
+        ) : null}
       </main>
     </PageFrame>
   )
