@@ -7,7 +7,8 @@ import 'package:smart_surveillance/features/tenancy/domain/models.dart';
 part 'current_site.g.dart';
 @Riverpod(keepAlive: true)
 Future<List<Organisation>> organisations(Ref ref) async {
-  final session = await ref.watch(sessionProvider.future);
+  // Watch the value, not the future: signing in replaces data with data, which leaves the future unchanged.
+  final session = ref.watch(sessionProvider).value;
   if (session is! SignedIn) return const [];
   return ref.read(backendProvider).tenancy.organisations();
 }

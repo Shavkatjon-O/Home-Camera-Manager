@@ -48,7 +48,7 @@ final class OrganisationsProvider
   }
 }
 
-String _$organisationsHash() => r'180337782f3db49007d8ab64997a670d5707f6e5';
+String _$organisationsHash() => r'6c17ffdf549a77d07330ea29413e6e95d6191952';
 
 @ProviderFor(allSites)
 final allSitesProvider = AllSitesProvider._();

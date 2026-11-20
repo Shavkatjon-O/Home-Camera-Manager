@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,13 +11,35 @@ import 'package:smart_surveillance/features/events/domain/models.dart';
 import 'package:smart_surveillance/features/events/presentation/labels.dart';
 import 'package:smart_surveillance/features/events/presentation/providers.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
-class AppShell extends ConsumerWidget {
+/// The tab shell with the bottom navigation, live alert banners and notifications.
+class AppShell extends ConsumerStatefulWidget {
+  /// Creates the shell around the router's [shell].
   const AppShell({super.key, required this.shell});
 
+  /// The router's tab navigation.
   final StatefulNavigationShell shell;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AppShell> createState() => _AppShellState();
+}
+
+class _AppShellState extends ConsumerState<AppShell> {
+  bool started = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (started) return;
+    started = true;
+    final l10n = context.l10n;
+    unawaited(
+      ref.read(alertCenterProvider).start(channelName: l10n.notificationChannelName, channelBody: l10n.notificationChannelBody),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final shell = widget.shell;
     final l10n = context.l10n;
     final p = context.palette;
     final site = ref.watch(currentSiteProvider).value;

@@ -34,7 +34,11 @@ String? redirectFor(Ref ref, GoRouterState state) {
     return VerifyRoute(email: current.email).location;
   }
   final organisations = ref.read(organisationsProvider);
-  if (!organisations.hasValue) return location == '/splash' ? null : '/splash';
+  final arriving = auth || location == '/splash' || location.startsWith('/verify');
+  // Right after signing in the list still holds the signed-out value, so wait for the reload.
+  if (!organisations.hasValue || (organisations.isLoading && arriving)) {
+    return location == '/splash' ? null : '/splash';
+  }
   if (invite) {
     ref.read(pendingLinkProvider.notifier).set(null);
     return null;
@@ -55,7 +59,11 @@ String? redirectFor(Ref ref, GoRouterState state) {
 @Riverpod(keepAlive: true)
 GoRouter router(Ref ref) {
   final refresh = ValueNotifier<int>(0);
-  ref.listen(sessionProvider, (_, _) => refresh.value++);
+  ref.listen(sessionProvider, (_, _) {
+    // The session listener can run before the list notices its dependency changed.
+    ref.invalidate(organisationsProvider);
+    refresh.value++;
+  });
   ref.listen(organisationsProvider, (_, _) => refresh.value++);
   final router = GoRouter(
     navigatorKey: rootNavigatorKey,
