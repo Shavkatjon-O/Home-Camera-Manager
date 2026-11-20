@@ -155,7 +155,7 @@ class RulesEngine:
     """Rules of one view applied to its tracked objects frame by frame.
 
     Attributes:
-        view: View name.
+        view: View id.
         rules: Zones, lines and tuning.
         timezone: Time zone of the schedules.
         arm: Callable returning the current arm mode.
@@ -183,7 +183,7 @@ class RulesEngine:
         """Create the engine for one view.
 
         Args:
-            view: View name.
+            view: View id.
             rules: Zones, lines and tuning.
             started_at: Time the view started, which ends the warm up.
             timezone: Time zone of the schedules.

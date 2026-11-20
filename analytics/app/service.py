@@ -35,7 +35,7 @@ from app.pipeline.plan import PipelinePlan, SourcePlan, ViewPlan
 from app.plates.ctc import load_characters
 from app.plates.detect import LpdFinder
 from app.plates.frames import picture_at
-from app.plates.reader import PlateReader, PlateSettings
+from app.plates.reader import LPD_FINDER, PlateReader, PlateSettings
 from app.plates.textboxes import TextFinder
 from app.plates.watch import PlateJob
 from app.recorder import CameraRecorder, ClipMaker, latest_frame
@@ -185,8 +185,50 @@ class Service:
 
     Attributes:
         settings: Environment settings.
+        timezone: Time zone of schedules.
+        backend: Client of the backend's internal routes, None when running from a file.
+        outbox_backend: Queue of reports to the backend, None when running from a file.
+        source: Where the configuration comes from, the backend or a JSON file.
+        scenes: Matcher of moving-lens pictures against zone reference pictures.
+        identity: Face recognition settings.
+        faces: The face stage: embedding, matching and clustering.
+        gallery_sync: Keeps the face gallery in step with the backend, None without a backend.
+        faces_note: Why faces are off, if they are.
+        media_events: Media paths written for recent events, by event id.
+        observed: Time observations were last sent.
+        references_pruned: Time unused zone reference pictures were last pruned.
         config: Current configuration.
         views: Runtime state per view id.
+        recorders: Recording buffer per camera id.
+        sizes: Frame size per camera id.
+        lock: Guards the views, the pending clips and the configuration.
+        started_at: Time the service started.
+        context: Multiprocessing context the pipeline process starts from.
+        process: The pipeline process, if running.
+        outbox: Queue the pipeline process sends its messages on.
+        plan: Plan of the running pipeline.
+        plan_key: What the plan depends on, to tell when the pipeline must restart.
+        pipeline_state: State the pipeline last reported.
+        pipeline_message: Last message about the pipeline.
+        pipeline_started: Time the pipeline last started.
+        pipeline_restarts: Restarts since the service started.
+        pipeline_failures: Failures in a row, for the restart backoff.
+        retry_at: Earliest time of the next restart.
+        dropped_batches: Frame batches dropped because the queue was full.
+        clips: Cuts snapshots and clips out of the buffers.
+        media_jobs: Snapshots waiting to be cut.
+        pending: Clips waiting for their events to end, by event id.
+        recent: Recent event changes for the status endpoint.
+        tamper_events: Open tamper events by view id and subtype.
+        gpu: Latest GPU reading.
+        gpu_polled: Time of that reading.
+        stopping: Set when the service should stop.
+        person_views: View of each muxer pad that feeds the person stages.
+        persons_note: Why appearance and pose are off, if they are.
+        plates_note: Why plate reading is off, if it is.
+        plate_reader_built: True once building the plate reader was tried.
+        plate_reader_instance: The plate reader, None until built or when it cannot be built.
+        features: Hub of tamper, counts, objects, falls, follow, plates and journeys.
     """
 
     def __init__(self, settings: Settings):
@@ -718,7 +760,7 @@ class Service:
         if plan is None:
             return
         views = plan.views
-        for index, _number, ntp, objects in frames:
+        for index, frame_number, ntp, objects in frames:
             if index >= len(views):
                 continue
             with self.lock:
@@ -765,7 +807,7 @@ class Service:
 
         Args:
             view: The view the events belong to.
-            updates: Event changes from a rules engine or the tamper watch.
+            updates: Event changes from a rules engine, the tamper watch or the feature hub.
         """
         for update in updates:
             self.features.on_update(update)
@@ -781,8 +823,8 @@ class Service:
                 self.pending[event["id"]] = PendingClip(
                     event, view.camera, view.lens, view.lenses, start, start + self.settings.clip_max
                 )
-            if update.action in ("close", "instant") and event["id"] in self.pending:
-                pending = self.pending[event["id"]]
+            pending = self.pending.get(event["id"]) if update.action in ("close", "instant") else None
+            if pending is not None:
                 pending.event = event
                 ended = event["ended_at"] or update.event.started_at
                 pending.deadline = min(pending.deadline, ended + self.settings.clip_after)
@@ -850,10 +892,11 @@ class Service:
                     waiting.append((now + SNAPSHOT_RETRIES[attempt], event, view, attempt + 1))
                 else:
                     logger.warning("Snapshot of event %s gave up: the buffer has no picture of its time", event["id"])
-            for event_id, pending in list(self.pending.items()):
-                if now >= pending.deadline:
-                    del self.pending[event_id]
-                    self.cut_clip(pending)
+            with self.lock:
+                ended = [event_id for event_id, item in self.pending.items() if now >= item.deadline]
+                due = [self.pending.pop(event_id) for event_id in ended]
+            for pending in due:
+                self.cut_clip(pending)
             self.stopping.wait(0.5)
 
     def cut_snapshot(self, event: dict, view: ViewConfig) -> bool:
@@ -951,12 +994,12 @@ class Service:
         settings = self.settings
         try:
             cuda = Cuda()
-            finder_model = PLATE_DETECTOR if settings.plate_finder == "lpdnet" else PLATE_TEXT
+            finder_model = PLATE_DETECTOR if settings.plate_finder == LPD_FINDER else PLATE_TEXT
             finder_engine = engines.ensure(
                 finder_model, settings.models_dir, settings.engines_dir, settings.workspace_mb
             )
             finder_runner = EngineRunner(finder_engine, cuda)
-            finder = LpdFinder(finder_runner) if settings.plate_finder == "lpdnet" else TextFinder(finder_runner)
+            finder = LpdFinder(finder_runner) if settings.plate_finder == LPD_FINDER else TextFinder(finder_runner)
             reader_engine = engines.ensure(
                 PLATE_READER, settings.models_dir, settings.engines_dir, settings.workspace_mb
             )
@@ -1040,8 +1083,10 @@ class Service:
         """
         if self.gallery_sync is not None:
             self.gallery_sync.poll(now)
+        with self.lock:
+            pending = list(self.pending.values())
         for camera_id, recorder in list(self.recorders.items()):
-            starts = [pending.start for pending in self.pending.values() if pending.camera == camera_id]
+            starts = [item.start for item in pending if item.camera == camera_id]
             recorder.prune(min(starts) if starts else None)
             recorder.check()
         if now - self.gpu_polled >= GPU_POLL_SECONDS:

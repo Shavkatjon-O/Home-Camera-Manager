@@ -42,6 +42,7 @@ logger = logging.getLogger(__name__)
 COUNTS_PATH = "/internal/analytics/counts"
 JOURNEYS_PATH = "/internal/analytics/journeys"
 MEAN_FILE = "reid-mean.json"
+APPEARANCE_SIZE = 512
 
 REPORT_SECONDS = 5.0
 MEAN_SECONDS = 600.0
@@ -54,7 +55,7 @@ class Follower:
 
     Attributes:
         controller: The follow controller.
-        mover: The camera mover, retracing moves when the camera keeps no presets.
+        mover: The camera mover, which returns by retracing its moves unless the view turns on a preset return.
         commands: Commands waiting for the worker; only the newest move is kept.
         thread: The worker thread.
     """
@@ -308,6 +309,17 @@ class FeatureHub:
             appearance: Tuples of pad, track, time, box, height in pixels and unit vector.
             poses: Tuples of pad, track, time, box and 17 by 3 keypoints.
         """
+        with self.lock:
+            self.add_persons(views, appearance, poses)
+
+    def add_persons(self, views: dict[int, ViewConfig], appearance: list[tuple], poses: list[tuple]) -> None:
+        """Hand person crop results to the journey linker and the fall detectors; the caller holds the lock.
+
+        Args:
+            views: View of each muxer pad.
+            appearance: Tuples of pad, track, time, box, height in pixels and unit vector.
+            poses: Tuples of pad, track, time, box and 17 by 3 keypoints.
+        """
         if self.appearance:
             for pad, track, at, box, height, vector in appearance:
                 view = views.get(pad)
@@ -384,8 +396,9 @@ class FeatureHub:
         if now - self.reported < REPORT_SECONDS:
             return
         self.reported = now
-        journeys, appearances = self.linker.tick(now)
-        appearances = [item for item in appearances if len(item.get("embedding") or []) == 512]
+        with self.lock:
+            journeys, appearances = self.linker.tick(now)
+        appearances = [item for item in appearances if len(item.get("embedding") or []) == APPEARANCE_SIZE]
         if self.send is not None:
             report = self.ledger.report(now)
             if report is not None:

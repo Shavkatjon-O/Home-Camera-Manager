@@ -90,7 +90,7 @@ class StatusServer:
                     True when the request may go on.
                 """
                 if owner.token and not hmac.compare_digest(
-                    self.headers.get("Authorization", ""), f"Bearer {owner.token}"
+                    self.headers.get("Authorization", "").encode(), f"Bearer {owner.token}".encode()
                 ):
                     self.reply(401, b'{"detail": "unauthorized"}', "application/json")
                     return False
