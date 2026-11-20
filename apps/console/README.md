@@ -32,4 +32,5 @@ docker run --rm -u $(id -u):$(id -g) -e HOME=/tmp -e COREPACK_HOME=/tmp/corepack
 |---|---|
 | app | Routes and layouts |
 | components | Components per area, and the shadcn/ui primitives in ui |
+| components/shell | The application shell: the top bar, the sidebar grouped by business domain, and the page frame every page renders its header in; a new page adds its sidebar entry to navigation.ts |
 | lib | API client, types and shared logic |
