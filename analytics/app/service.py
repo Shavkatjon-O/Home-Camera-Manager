@@ -836,8 +836,12 @@ class Service:
             for job in [job for job in waiting if job[0] <= now]:
                 waiting.remove(job)
                 due, event, view, attempt = job
-                if not self.cut_snapshot(event, view) and attempt < len(SNAPSHOT_RETRIES):
+                if self.cut_snapshot(event, view):
+                    continue
+                if attempt < len(SNAPSHOT_RETRIES):
                     waiting.append((now + SNAPSHOT_RETRIES[attempt], event, view, attempt + 1))
+                else:
+                    logger.warning("Snapshot of event %s gave up: the buffer has no picture of its time", event["id"])
             for event_id, pending in list(self.pending.items()):
                 if now >= pending.deadline:
                     del self.pending[event_id]

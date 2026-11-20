@@ -25,3 +25,27 @@ def test_crop_filter_cuts_lens_bands():
     assert crop_filter(0, 1) == []
     assert crop_filter(1, 2) == ["crop=iw:ih/2:0:ih*0/2"]
     assert crop_filter(2, 2) == ["crop=iw:ih/2:0:ih*1/2"]
+
+
+def test_a_snapshot_past_the_last_frame_of_a_segment_also_tries_the_next_one():
+    from app.recorder import ClipMaker
+
+    segments = [Segment("a", 0.0, 5.3), Segment("b", 5.3, 10.4), Segment("c", 10.4, 11.0)]
+    candidates = ClipMaker.snapshot_candidates(segments, 5.2)
+    assert [(segment.path, round(offset, 3)) for segment, offset in candidates] == [("a", 5.2), ("b", 0.0)]
+    newest = ClipMaker.snapshot_candidates(segments, 10.6)
+    assert [(segment.path, round(offset, 3)) for segment, offset in newest] == [("c", 0.2)]
+
+
+def test_a_snapshot_before_the_buffer_falls_back_to_the_first_following_frame():
+    import pytest
+
+    from app.recorder import ClipMaker
+
+    segments = [Segment("a", 100.0, 103.0), Segment("b", 103.0, 106.0)]
+    candidates = ClipMaker.snapshot_candidates(segments, 96.5)
+    assert [(segment.path, offset) for segment, offset in candidates] == [("a", 0.0)]
+    with pytest.raises(FileNotFoundError):
+        ClipMaker.snapshot_candidates(segments, 80.0)
+    with pytest.raises(FileNotFoundError):
+        ClipMaker.snapshot_candidates([], 80.0)

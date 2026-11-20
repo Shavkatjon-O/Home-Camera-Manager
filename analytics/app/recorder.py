@@ -36,6 +36,7 @@ WATCH_SECONDS = 0.2
 CLIP_TIMEOUT_SECONDS = 180
 CLIP_WIDTH = 1920
 SNAPSHOT_THUMB_WIDTH = 320
+SNAPSHOT_FALLBACK_SECONDS = 10.0
 
 
 @dataclass(frozen=True)
@@ -386,6 +387,36 @@ class ClipMaker:
                 listing.write(f"file '{segment.path}'\n")
         return name
 
+    @staticmethod
+    def snapshot_candidates(segments: list[Segment], at: float) -> list[tuple[Segment, float]]:
+        """Choose where in the buffer to take the picture of a moment.
+
+        The segment start times are estimates, so a moment near the end of a segment can lie past its last frame;
+        the first frame of the next segment is then the nearest picture. A moment before the oldest buffered
+        segment, as after a restart, falls back to the first frame that follows it within a few seconds.
+
+        Args:
+            segments: Buffered segments in time order.
+            at: Wall clock time of the picture.
+
+        Returns:
+            Segment and offset pairs to try in order.
+
+        Raises:
+            FileNotFoundError: No buffered video covers the time or follows it closely.
+        """
+        found = covering(segments, at - 0.01, at + 0.01)
+        if found:
+            index = segments.index(found[0])
+            candidates = [(found[0], max(0.0, at - found[0].start))]
+            if index + 1 < len(segments):
+                candidates.append((segments[index + 1], 0.0))
+            return candidates
+        following = [segment for segment in segments if 0.0 <= segment.start - at <= SNAPSHOT_FALLBACK_SECONDS]
+        if not following:
+            raise FileNotFoundError("No buffered video covers the time of the snapshot")
+        return [(following[0], 0.0)]
+
     def snapshot(
         self,
         folder: Path,
@@ -396,7 +427,7 @@ class ClipMaker:
         thumbnail: Path | None = None,
         seen: dict[str, float] | None = None,
     ) -> bool:
-        """Write a JPEG of the frame at a time.
+        """Write a JPEG of the frame at a time, or of the nearest buffered frame after it.
 
         Args:
             folder: Camera buffer folder.
@@ -408,7 +439,8 @@ class ClipMaker:
             seen: Times the segment files appeared.
 
         Returns:
-            True when the snapshot was written; False when the buffer does not reach the time yet.
+            True when the snapshot was written; False when the buffer does not reach the time yet or no frame
+            could be decoded.
 
         Raises:
             FileNotFoundError: The buffer no longer holds the time.
@@ -416,20 +448,21 @@ class ClipMaker:
         listed = list_segments(folder, seen)
         if not listed or listed[-1].end < at + 0.5:
             return False
-        segments = covering(listed, at - 0.01, at + 0.01)
-        if not segments:
-            raise FileNotFoundError("No buffered video covers the time of the snapshot")
-        segment = segments[0]
         filters = crop_filter(lens, lenses)
         target.parent.mkdir(parents=True, exist_ok=True)
-        command = ["ffmpeg", "-nostdin", "-hide_banner", "-loglevel", "error", "-y", "-i", str(segment.path)]
-        command += ["-ss", f"{max(0.0, at - segment.start):.3f}", "-frames:v", "1"]
-        command += ["-vf", ",".join(filters + [f"scale='min({CLIP_WIDTH},iw)':-2"]), "-q:v", "3", str(target)]
-        if thumbnail is not None:
-            command += ["-ss", f"{max(0.0, at - segment.start):.3f}", "-frames:v", "1"]
-            command += ["-vf", ",".join(filters + [f"scale={SNAPSHOT_THUMB_WIDTH}:-2"]), "-q:v", "5", str(thumbnail)]
-        result = subprocess.run(command, capture_output=True, timeout=60, check=False)
-        return result.returncode == 0 and target.is_file()
+        for segment, offset in self.snapshot_candidates(listed, at):
+            command = ["ffmpeg", "-nostdin", "-hide_banner", "-loglevel", "error", "-y", "-i", str(segment.path)]
+            command += ["-ss", f"{offset:.3f}", "-frames:v", "1"]
+            command += ["-vf", ",".join(filters + [f"scale='min({CLIP_WIDTH},iw)':-2"]), "-q:v", "3", str(target)]
+            if thumbnail is not None:
+                command += ["-ss", f"{offset:.3f}", "-frames:v", "1"]
+                command += ["-vf", ",".join(filters + [f"scale={SNAPSHOT_THUMB_WIDTH}:-2"]), "-q:v", "5"]
+                command += [str(thumbnail)]
+            target.unlink(missing_ok=True)
+            result = subprocess.run(command, capture_output=True, timeout=60, check=False)
+            if result.returncode == 0 and target.is_file():
+                return True
+        return False
 
     def clip(
         self,
