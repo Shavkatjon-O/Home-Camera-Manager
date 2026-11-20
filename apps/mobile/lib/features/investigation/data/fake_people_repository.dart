@@ -6,9 +6,12 @@ import 'package:smart_surveillance/app/demo/fixtures.dart';
 import 'package:smart_surveillance/core/media/media_source.dart';
 import 'package:smart_surveillance/features/investigation/domain/models.dart';
 import 'package:smart_surveillance/features/investigation/domain/people_repository.dart';
+/// An in-memory [PeopleRepository] backed by demo data.
 class FakePeopleRepository implements PeopleRepository {
+  /// Creates a repository reading and writing [store].
   FakePeopleRepository(this.store);
 
+  /// The demo data store this repository works on.
   final FakeStore store;
 
   @override

@@ -13,7 +13,9 @@ import 'package:smart_surveillance/features/devices/presentation/providers.dart'
 import 'package:smart_surveillance/features/media/presentation/live_video.dart';
 import 'package:smart_surveillance/features/tenancy/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
+/// The grid of live pictures of the current site's cameras.
 class LiveScreen extends ConsumerStatefulWidget {
+  /// Creates the screen.
   const LiveScreen({super.key});
 
   @override
@@ -112,9 +114,12 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   }
 }
 
+/// A placeholder grid shown while the cameras load.
 class GridSkeleton extends StatelessWidget {
+  /// Creates a placeholder with [columns] columns.
   const GridSkeleton({super.key, required this.columns});
 
+  /// The number of columns.
   final int columns;
 
   @override
@@ -129,10 +134,14 @@ class GridSkeleton extends StatelessWidget {
   );
 }
 
+/// One camera lens in the live grid with its name and status.
 class LiveTile extends StatelessWidget {
+  /// Creates the tile for [tile], in a smaller layout when [compact] is true.
   const LiveTile({super.key, required this.tile, this.compact = false});
 
+  /// The camera lens shown.
   final CameraTile tile;
+  /// Whether the tile uses the smaller layout.
   final bool compact;
 
   @override
@@ -196,10 +205,14 @@ class LiveTile extends StatelessWidget {
   }
 }
 
+/// The framed live picture of a camera.
 class LiveFrame extends StatelessWidget {
+  /// Creates the frame for [camera], showing [lens] of it when given.
   const LiveFrame({super.key, required this.camera, this.lens});
 
+  /// The camera shown.
   final Camera camera;
+  /// The lens shown, or null for all lenses.
   final int? lens;
 
   @override

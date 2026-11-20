@@ -14,13 +14,17 @@ import 'package:smart_surveillance/features/identity/presentation/session.dart';
 import 'package:smart_surveillance/features/tenancy/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/labels.dart';
+/// What an invitation offers, loaded by its token.
 final invitationProvider = FutureProvider.autoDispose.family<InvitationPreview, String>(
   (ref, token) => ref.read(backendProvider).tenancy.previewInvitation(token),
 );
 
+/// The screen where an invited person reviews and accepts an invitation.
 class InviteScreen extends ConsumerStatefulWidget {
+  /// Creates the screen for the invitation identified by [token].
   const InviteScreen({super.key, required this.token});
 
+  /// The token of the invitation.
   final String token;
 
   @override

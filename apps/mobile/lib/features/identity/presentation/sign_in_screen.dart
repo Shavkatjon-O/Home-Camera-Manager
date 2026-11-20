@@ -11,9 +11,12 @@ import 'package:smart_surveillance/core/widgets/flow_scaffold.dart';
 import 'package:smart_surveillance/core/widgets/states.dart';
 import 'package:smart_surveillance/features/identity/presentation/session.dart';
 import 'package:smart_surveillance/features/identity/presentation/validators.dart';
+/// The screen where a user signs in with an email address and password.
 class SignInScreen extends ConsumerStatefulWidget {
+  /// Creates the screen, showing [notice] above the form when given.
   const SignInScreen({super.key, this.notice});
 
+  /// A message shown above the form, such as why the user was signed out.
   final String? notice;
 
   @override
@@ -137,7 +140,9 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   }
 }
 
+/// A tile that shows and changes the server the app connects to.
 class ServerTile extends ConsumerStatefulWidget {
+  /// Creates the tile.
   const ServerTile({super.key});
 
   @override

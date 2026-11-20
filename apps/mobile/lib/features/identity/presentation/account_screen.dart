@@ -12,11 +12,14 @@ import 'package:smart_surveillance/core/widgets/states.dart';
 import 'package:smart_surveillance/core/widgets/surfaces.dart';
 import 'package:smart_surveillance/features/identity/domain/models.dart';
 import 'package:smart_surveillance/features/identity/presentation/session.dart';
+/// The devices signed in to the user's account.
 final sessionsProvider = FutureProvider.autoDispose<List<DeviceSession>>(
   (ref) => ref.read(backendProvider).auth.sessions(),
 );
 
+/// The account page with the profile, signed-in devices, sign out and account deletion.
 class AccountScreen extends ConsumerStatefulWidget {
+  /// Creates the screen.
   const AccountScreen({super.key});
 
   @override

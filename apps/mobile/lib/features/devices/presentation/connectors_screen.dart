@@ -12,7 +12,9 @@ import 'package:smart_surveillance/core/widgets/surfaces.dart';
 import 'package:smart_surveillance/features/devices/domain/models.dart';
 import 'package:smart_surveillance/features/devices/presentation/providers.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
+/// The list of the current site's connectors with their state.
 class ConnectorsScreen extends ConsumerWidget {
+  /// Creates the screen.
   const ConnectorsScreen({super.key});
 
   @override

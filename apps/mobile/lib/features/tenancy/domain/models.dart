@@ -2,19 +2,39 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:smart_surveillance/features/alerting/domain/models.dart';
 
 part 'models.freezed.dart';
+/// What a member may do, from the least to the most.
 enum Role {
+  /// Can watch cameras and events.
   viewer,
+  /// Can also control cameras and the arm mode.
   operator,
+  /// Can also manage cameras, members and settings.
   admin,
+  /// Has full control, including the organisation itself.
   owner;
 
+  /// Returns whether this role is at least as powerful as [other].
   bool atLeast(Role other) => index >= other.index;
 }
 
-enum SiteKind { home, store, office, warehouse, other }
+/// The kind of place a site is.
+enum SiteKind {
+  /// A home.
+  home,
+  /// A shop.
+  store,
+  /// An office.
+  office,
+  /// A warehouse.
+  warehouse,
+  /// Any other kind of place.
+  other,
+}
 
+/// An organisation that owns sites and has members.
 @freezed
 abstract class Organisation with _$Organisation {
+  /// Creates the organisation [id] named [name] where the user has [role].
   const factory Organisation({
     required String id,
     required String name,
@@ -24,8 +44,10 @@ abstract class Organisation with _$Organisation {
   }) = _Organisation;
 }
 
+/// A place with cameras, such as a home or a shop.
 @freezed
 abstract class Site with _$Site {
+  /// Creates the site [id] named [name] of the organisation [organisationId].
   const factory Site({
     required String id,
     required String organisationId,
@@ -37,8 +59,10 @@ abstract class Site with _$Site {
   }) = _Site;
 }
 
+/// A person who belongs to an organisation.
 @freezed
 abstract class Member with _$Member {
+  /// Creates the member [userId] named [name] with [email] and [role].
   const factory Member({
     required String userId,
     required String name,
@@ -50,10 +74,22 @@ abstract class Member with _$Member {
   }) = _Member;
 }
 
-enum InvitationState { pending, accepted, expired, revoked }
+/// Where an invitation stands.
+enum InvitationState {
+  /// The invitation can still be accepted.
+  pending,
+  /// The invitation was accepted.
+  accepted,
+  /// The invitation ran out of time.
+  expired,
+  /// The invitation was cancelled by an administrator.
+  revoked,
+}
 
+/// An invitation to join an organisation.
 @freezed
 abstract class Invitation with _$Invitation {
+  /// Creates the invitation [id] sent to [email] for [role] by [invitedBy].
   const factory Invitation({
     required String id,
     required String email,
@@ -65,8 +101,10 @@ abstract class Invitation with _$Invitation {
   }) = _Invitation;
 }
 
+/// What an invited person sees before accepting.
 @freezed
 abstract class InvitationPreview with _$InvitationPreview {
+  /// Creates a preview of the invitation identified by [token].
   const factory InvitationPreview({
     required String token,
     required String organisationName,

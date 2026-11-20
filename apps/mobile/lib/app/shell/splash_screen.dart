@@ -4,7 +4,11 @@ import 'package:smart_surveillance/core/widgets/logo.dart';
 import 'package:smart_surveillance/core/widgets/states.dart';
 import 'package:smart_surveillance/features/identity/presentation/session.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
+/// The start-up screen shown while the session and organisations load, or when loading fails.
+/// The start-up screen shown while the session and organisations load, or when loading fails.
+/// Creates the splash screen.
 class SplashScreen extends ConsumerWidget {
+  /// Creates the splash screen.
   const SplashScreen({super.key});
 
   @override

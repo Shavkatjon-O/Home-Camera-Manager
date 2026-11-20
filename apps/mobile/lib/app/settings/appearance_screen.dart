@@ -5,10 +5,16 @@ import 'package:smart_surveillance/app/settings/appearance.dart';
 import 'package:smart_surveillance/core/design/palette.dart';
 import 'package:smart_surveillance/core/design/tokens.dart';
 import 'package:smart_surveillance/core/widgets/surfaces.dart';
+/// The display names of the supported languages, keyed by language code, in their own language.
+/// The display names of the supported languages, keyed by language code, in their own language.
 const languageNames = {'en': 'English', 'ru': '\u0420\u0443\u0441\u0441\u043A\u0438\u0439', 'uz': 'O\u02BBzbekcha'};
+/// Returns the display name of the language [code], or [code] itself when it is unknown.
 
+/// Returns the display name of the language [code], or [code] itself when it is unknown.
+/// Opens a bottom sheet for choosing the app language.
 String languageName(String code) => languageNames[code] ?? code;
 
+/// Opens a bottom sheet for choosing the app language.
 Future<void> showLanguageSheet(BuildContext context, WidgetRef ref) => showModalBottomSheet<void>(
   context: context,
   builder: (context) => Consumer(
@@ -43,10 +49,14 @@ Future<void> showLanguageSheet(BuildContext context, WidgetRef ref) => showModal
         ),
       );
     },
+  /// The screen for choosing the theme mode and language.
   ),
+/// Creates the appearance screen.
 );
 
+/// The screen for choosing the theme mode and language.
 class AppearanceScreen extends ConsumerWidget {
+  /// Creates the appearance screen.
   const AppearanceScreen({super.key});
 
   @override

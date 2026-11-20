@@ -1,6 +1,7 @@
 import 'dart:ui';
 final _token = RegExp(r'[MmLlHhVvCcAaZz]|-?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?');
 
+/// Parses SVG path [data] into a [Path], supporting the M, L, H, V, C, A and Z commands.
 Path parseSvgPath(String data) {
   final tokens = _token.allMatches(data).map((m) => m.group(0)!).toList();
   final path = Path();

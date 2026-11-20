@@ -7,9 +7,12 @@ import 'package:smart_surveillance/features/alerting/domain/models.dart';
 import 'package:smart_surveillance/features/billing/domain/business_repository.dart';
 import 'package:smart_surveillance/features/billing/domain/models.dart';
 import 'package:smart_surveillance/features/operations/domain/models.dart';
+/// An in-memory business repository backed by a [FakeStore].
 class FakeBusinessRepository implements BusinessRepository {
+  /// Creates a repository that keeps its data in [store].
   FakeBusinessRepository(this.store);
 
+  /// The shared fake data store.
   final FakeStore store;
 
   @override

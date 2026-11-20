@@ -8,7 +8,9 @@ import 'package:smart_surveillance/core/design/palette.dart';
 import 'package:smart_surveillance/core/design/tokens.dart';
 import 'package:smart_surveillance/core/widgets/logo.dart';
 import 'package:smart_surveillance/core/widgets/surfaces.dart';
+/// The first screen, with the choice to sign in or create an account.
 class WelcomeScreen extends ConsumerWidget {
+  /// Creates the screen.
   const WelcomeScreen({super.key});
 
   @override

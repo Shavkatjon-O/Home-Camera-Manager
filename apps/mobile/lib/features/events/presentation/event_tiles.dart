@@ -11,12 +11,18 @@ import 'package:smart_surveillance/core/widgets/media_view.dart';
 import 'package:smart_surveillance/core/widgets/surfaces.dart';
 import 'package:smart_surveillance/features/events/domain/models.dart';
 import 'package:smart_surveillance/features/events/presentation/labels.dart';
+/// A small preview image of an event, with its object boxes drawn over it.
 class EventThumb extends ConsumerWidget {
+  /// Creates a preview of [event] that is [width] wide, with rounded corners of [radius].
   const EventThumb({super.key, required this.event, this.width = 104, this.boxes = true, this.radius = 8});
 
+  /// The event to preview.
   final CameraEvent event;
+  /// The width of the preview in logical pixels.
   final double width;
+  /// Whether the detected objects are outlined on the image.
   final bool boxes;
+  /// The corner radius of the preview.
   final double radius;
 
   @override
@@ -43,10 +49,14 @@ class EventThumb extends ConsumerWidget {
   }
 }
 
+/// The status tags of an event, such as alert, reviewed, ongoing and beta.
 class EventTags extends StatelessWidget {
+  /// Creates the tags for [event], using the compact style when [dense] is true.
   const EventTags({super.key, required this.event, this.dense = true});
 
+  /// The event the tags describe.
   final CameraEvent event;
+  /// Whether the tags use the compact style.
   final bool dense;
 
   @override
@@ -65,10 +75,14 @@ class EventTags extends StatelessWidget {
   }
 }
 
+/// A list row summarizing one event, opening its details when tapped.
 class EventRow extends ConsumerWidget {
+  /// Creates a row for [event]; [onTap] replaces the default of opening the event.
   const EventRow({super.key, required this.event, this.onTap});
 
+  /// The event shown in the row.
   final CameraEvent event;
+  /// Called when the row is tapped, or null to open the event screen.
   final VoidCallback? onTap;
 
   @override
@@ -138,10 +152,14 @@ class EventRow extends ConsumerWidget {
   }
 }
 
+/// A card summarizing one event, for horizontal lists.
 class EventCard extends ConsumerWidget {
+  /// Creates a card for [event] that is [width] wide.
   const EventCard({super.key, required this.event, this.width = 220});
 
+  /// The event shown on the card.
   final CameraEvent event;
+  /// The width of the card in logical pixels.
   final double width;
 
   @override

@@ -9,9 +9,12 @@ import 'package:smart_surveillance/core/design/tokens.dart';
 import 'package:smart_surveillance/core/providers.dart';
 import 'package:smart_surveillance/core/widgets/logo.dart';
 import 'package:smart_surveillance/features/identity/presentation/session.dart';
+/// A wrapper that asks for device authentication before showing its [child].
 class AppLock extends ConsumerStatefulWidget {
+  /// Creates a lock around [child].
   const AppLock({super.key, required this.child});
 
+  /// The content that is shown once the app is unlocked.
   final Widget child;
 
   @override

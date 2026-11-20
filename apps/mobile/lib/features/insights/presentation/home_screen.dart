@@ -20,7 +20,9 @@ import 'package:smart_surveillance/features/insights/domain/models.dart';
 import 'package:smart_surveillance/features/insights/presentation/providers.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/site_switcher.dart';
+/// The home tab showing the current site's state, attention items, recent events and visitors.
 class HomeScreen extends ConsumerWidget {
+  /// Creates the home screen.
   const HomeScreen({super.key});
 
   @override
@@ -58,9 +60,12 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
+/// The scrollable content of the home screen for [site], refreshed by pulling down.
 class HomeBody extends ConsumerWidget {
+  /// Creates the content for [site].
   const HomeBody({super.key, required this.site});
 
+  /// The site shown.
   final SiteContext site;
 
   @override
@@ -93,9 +98,12 @@ class HomeBody extends ConsumerWidget {
   }
 }
 
+/// The row of today's totals for events, alerts and the most frequent kinds.
 class TodayMetrics extends ConsumerWidget {
+  /// Creates the metrics for [site].
   const TodayMetrics({super.key, required this.site});
 
+  /// The site whose counts are shown.
   final SiteContext site;
 
   @override
@@ -152,15 +160,19 @@ class TodayMetrics extends ConsumerWidget {
     );
   }
 
+  /// Returns the two most frequent kinds in [kinds] with their counts, as a short text.
   String topKinds(AppLocalizations l10n, Map<EventKind, int> kinds) {
     final entries = kinds.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
     return entries.take(2).map((e) => '${l10n.kind(e.key)} ${e.value}').join(', ');
   }
 }
 
+/// The section listing alerts that still need to be reviewed.
 class AttentionSection extends ConsumerWidget {
+  /// Creates the section for the site [siteId].
   const AttentionSection({super.key, required this.siteId});
 
+  /// The id of the site whose alerts are listed.
   final String siteId;
 
   @override
@@ -218,9 +230,12 @@ class AttentionSection extends ConsumerWidget {
   }
 }
 
+/// The horizontal strip of the latest events.
 class RecentStrip extends ConsumerWidget {
+  /// Creates the strip for the site [siteId].
   const RecentStrip({super.key, required this.siteId});
 
+  /// The id of the site whose events are shown.
   final String siteId;
 
   @override
@@ -264,6 +279,7 @@ class RecentStrip extends ConsumerWidget {
   }
 }
 
+/// Returns the in and out counts of [report] for each hour of the day, for one line or all lines.
 CountsSeries hourlySeries(CountsReport report, {String? lineId}) {
   final inward = List<int>.filled(24, 0);
   final outward = List<int>.filled(24, 0);
@@ -275,9 +291,12 @@ CountsSeries hourlySeries(CountsReport report, {String? lineId}) {
   return CountsSeries(labels: [for (var h = 0; h < 24; h++) h.toString().padLeft(2, '0')], inward: inward, outward: outward);
 }
 
+/// The section charting today's visitor counts.
 class VisitorsSection extends ConsumerWidget {
+  /// Creates the section for the site [siteId].
   const VisitorsSection({super.key, required this.siteId});
 
+  /// The id of the site whose visitors are shown.
   final String siteId;
 
   @override

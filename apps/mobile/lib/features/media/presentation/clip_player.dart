@@ -10,10 +10,14 @@ import 'package:smart_surveillance/core/media/media_source.dart';
 import 'package:smart_surveillance/core/widgets/synthetic_scene.dart';
 import 'package:smart_surveillance/features/media/domain/media_repository.dart';
 import 'package:video_player/video_player.dart';
+/// A player for a recorded clip with its detection boxes.
 class ClipPlayer extends ConsumerStatefulWidget {
+  /// Creates a player of [clip] that fits the width to height ratio [aspect].
   const ClipPlayer({super.key, required this.clip, required this.aspect});
 
+  /// The clip that is played.
   final ClipSource clip;
+  /// The width to height ratio of the picture.
   final double aspect;
 
   @override

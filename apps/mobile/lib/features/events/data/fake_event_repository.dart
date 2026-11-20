@@ -7,11 +7,15 @@ import 'package:smart_surveillance/core/network/failure.dart';
 import 'package:smart_surveillance/features/events/domain/event_repository.dart';
 import 'package:smart_surveillance/features/events/domain/models.dart';
 import 'package:smart_surveillance/features/media/domain/media_repository.dart';
+/// An in-memory [EventRepository] backed by demo data.
 class FakeEventRepository implements EventRepository {
+  /// Creates a repository reading and writing [store].
   FakeEventRepository(this.store);
 
+  /// The demo data store this repository works on.
   final FakeStore store;
 
+  /// Returns whether [event] satisfies every condition set in [filter].
   bool matches(CameraEvent event, EventFilter filter) {
     if (filter.day != null) {
       final day = filter.day!;

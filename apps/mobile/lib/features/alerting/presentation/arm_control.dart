@@ -10,9 +10,12 @@ import 'package:smart_surveillance/features/alerting/domain/models.dart';
 import 'package:smart_surveillance/features/alerting/presentation/labels.dart';
 import 'package:smart_surveillance/features/tenancy/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
+/// A card that shows and changes the arm mode of a site.
 class ArmControl extends ConsumerStatefulWidget {
+  /// Creates the control for [site].
   const ArmControl({super.key, required this.site});
 
+  /// The site whose arm mode is controlled.
   final SiteContext site;
 
   @override

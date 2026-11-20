@@ -10,7 +10,11 @@ import 'package:smart_surveillance/features/identity/presentation/session.dart';
 import 'package:smart_surveillance/features/tenancy/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/labels.dart';
+/// The tab listing account, site and settings entries that have no tab of their own.
+/// The tab listing account, site and settings entries that have no tab of their own.
+/// Creates the more screen.
 class MoreScreen extends ConsumerWidget {
+  /// Creates the more screen.
   const MoreScreen({super.key});
 
   @override

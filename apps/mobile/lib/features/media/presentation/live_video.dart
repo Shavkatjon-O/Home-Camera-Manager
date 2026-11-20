@@ -11,9 +11,21 @@ import 'package:smart_surveillance/core/widgets/media_view.dart';
 import 'package:smart_surveillance/core/widgets/synthetic_scene.dart';
 import 'package:smart_surveillance/features/devices/domain/models.dart';
 import 'package:smart_surveillance/features/media/domain/media_repository.dart';
-enum LiveState { connecting, playing, failed, offline }
+/// The connection state of a live picture.
+enum LiveState {
+  /// The picture is being set up.
+  connecting,
+  /// The picture is playing.
+  playing,
+  /// The picture could not be started.
+  failed,
+  /// The camera is offline.
+  offline,
+}
 
+/// A live picture of a camera that reports its connection state.
 class LiveVideo extends ConsumerStatefulWidget {
+  /// Creates a live picture of [camera] at [quality], with sound when [audio] is true.
   const LiveVideo({
     super.key,
     required this.camera,
@@ -24,11 +36,17 @@ class LiveVideo extends ConsumerStatefulWidget {
     this.onState,
   });
 
+  /// The camera shown.
   final Camera camera;
+  /// The lens shown, or null for all lenses.
   final int? lens;
+  /// The stream that is played.
   final StreamQuality quality;
+  /// Whether sound is played.
   final bool audio;
+  /// A widget drawn over the picture.
   final Widget? overlay;
+  /// Called when the connection state changes.
   final ValueChanged<LiveState>? onState;
 
   @override

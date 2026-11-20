@@ -6,7 +6,9 @@ import 'package:smart_surveillance/app/router.dart';
 import 'package:smart_surveillance/app/settings/appearance.dart';
 import 'package:smart_surveillance/app/theme/theme.dart';
 import 'package:smart_surveillance/features/identity/presentation/app_lock.dart';
+/// The root widget of the app, wiring the router, themes, locale and app lock.
 class SurveillanceApp extends ConsumerWidget {
+  /// Creates the root widget.
   const SurveillanceApp({super.key});
 
   @override

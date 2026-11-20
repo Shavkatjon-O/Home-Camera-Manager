@@ -9,9 +9,12 @@ import 'package:smart_surveillance/features/analytics/domain/analytics_repositor
 import 'package:smart_surveillance/features/analytics/domain/models.dart';
 import 'package:smart_surveillance/features/insights/domain/models.dart';
 import 'package:smart_surveillance/features/investigation/domain/models.dart';
+/// An in-memory [AnalyticsRepository] backed by demo data.
 class FakeAnalyticsRepository implements AnalyticsRepository {
+  /// Creates a repository reading and writing [store].
   FakeAnalyticsRepository(this.store);
 
+  /// The demo data store this repository works on.
   final FakeStore store;
 
   @override

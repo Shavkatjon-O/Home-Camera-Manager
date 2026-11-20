@@ -19,9 +19,12 @@ import 'package:smart_surveillance/features/events/presentation/labels.dart';
 import 'package:smart_surveillance/features/investigation/domain/models.dart';
 import 'package:smart_surveillance/features/investigation/presentation/people_screens.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
+/// The search screen with tabs for events, faces and license plates.
 class SearchScreen extends ConsumerStatefulWidget {
+  /// Creates the screen opened on the tab with index [tab].
   const SearchScreen({super.key, this.tab = 0});
 
+  /// The index of the tab shown first.
   final int tab;
 
   @override
@@ -80,7 +83,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
   }
 }
 
+/// A message shown in place of face search when face recognition is turned off.
 class FacesOff extends StatelessWidget {
+  /// Creates the message.
   const FacesOff({super.key});
 
   @override
@@ -92,9 +97,12 @@ class FacesOff extends StatelessWidget {
   );
 }
 
+/// The tab for searching events with filters.
 class EventSearch extends ConsumerStatefulWidget {
+  /// Creates the tab for the site [siteId].
   const EventSearch({super.key, required this.siteId});
 
+  /// The id of the site whose events are searched.
   final String siteId;
 
   @override
@@ -209,9 +217,12 @@ class _EventSearchState extends ConsumerState<EventSearch> with AutomaticKeepAli
   }
 }
 
+/// The tab for finding faces similar to a photo or a saved face.
 class FaceSearch extends ConsumerStatefulWidget {
+  /// Creates the tab for the organisation [organisationId].
   const FaceSearch({super.key, required this.organisationId});
 
+  /// The id of the organisation whose faces are searched.
   final String organisationId;
 
   @override
@@ -332,9 +343,12 @@ class _FaceSearchState extends ConsumerState<FaceSearch> with AutomaticKeepAlive
   }
 }
 
+/// A result row showing a face that resembles the searched one.
 class SimilarFaceTile extends ConsumerWidget {
+  /// Creates a row for [face].
   const SimilarFaceTile({super.key, required this.face});
 
+  /// The matching face shown.
   final SimilarFace face;
 
   @override
@@ -387,9 +401,12 @@ class SimilarFaceTile extends ConsumerWidget {
   }
 }
 
+/// The tab for finding events by license plate text.
 class PlateSearch extends ConsumerStatefulWidget {
+  /// Creates the tab for the site [siteId].
   const PlateSearch({super.key, required this.siteId});
 
+  /// The id of the site whose events are searched.
   final String siteId;
 
   @override
@@ -484,9 +501,12 @@ class _PlateSearchState extends ConsumerState<PlateSearch> with AutomaticKeepAli
   }
 }
 
+/// A result showing the plate readings of one event.
 class PlateResult extends StatelessWidget {
+  /// Creates a result for [event].
   const PlateResult({super.key, required this.event});
 
+  /// The event whose plates are shown.
   final CameraEvent event;
 
   @override

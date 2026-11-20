@@ -18,11 +18,14 @@ import 'package:smart_surveillance/features/analytics/presentation/zone_editor_s
 import 'package:smart_surveillance/features/devices/domain/models.dart';
 import 'package:smart_surveillance/features/events/presentation/labels.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
+/// Loads the still image of the analytics view with the given id.
 final viewSnapshotProvider = FutureProvider.autoDispose.family<MediaSource, String>(
   (ref, viewId) => ref.read(backendProvider).analytics.viewSnapshot(viewId),
 );
 
+/// The list of a site's cameras with their analytics status, opening each one's settings.
 class AnalyticsScreen extends ConsumerWidget {
+  /// Creates the analytics list screen.
   const AnalyticsScreen({super.key});
 
   @override
@@ -96,10 +99,14 @@ class AnalyticsScreen extends ConsumerWidget {
   }
 }
 
+/// A snapshot of an analytics view, optionally with its zones and lines drawn over it.
 class ViewThumb extends ConsumerWidget {
+  /// Creates a thumbnail of [view], drawing its zones and lines when [rules] is true.
   const ViewThumb({super.key, required this.view, this.rules = true});
 
+  /// The view shown in the thumbnail.
   final AnalyticsView view;
+  /// Whether the view's zones and lines are drawn over the snapshot.
   final bool rules;
 
   @override
@@ -122,9 +129,12 @@ class ViewThumb extends ConsumerWidget {
   }
 }
 
+/// The settings screen of one analytics view: profile, stream, features and rules.
 class ViewScreen extends ConsumerStatefulWidget {
+  /// Creates the settings screen for the view [viewId].
   const ViewScreen({super.key, required this.viewId});
 
+  /// The id of the analytics view being edited.
   final String viewId;
 
   @override

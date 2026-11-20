@@ -12,10 +12,12 @@ import 'package:smart_surveillance/core/widgets/surfaces.dart';
 import 'package:smart_surveillance/features/devices/domain/models.dart';
 import 'package:smart_surveillance/features/devices/presentation/providers.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
+/// The device, encoder, image and motion settings of a camera, loaded by camera id.
 final cameraSettingsProvider = FutureProvider.autoDispose.family<CameraSettings, String>(
   (ref, id) => ref.read(backendProvider).devices.settings(id),
 );
 
+/// Returns the display name of [brand].
 String brandName(CameraBrand brand) => switch (brand) {
   CameraBrand.ezviz => 'EZVIZ',
   CameraBrand.v380 => 'V380',
@@ -23,6 +25,8 @@ String brandName(CameraBrand brand) => switch (brand) {
   CameraBrand.rtsp => 'RTSP',
 };
 
+/// Opens the pairing flow that adds a camera to [siteId], starting with a connector when none is
+/// online.
 Future<void> addCamera(BuildContext context, WidgetRef ref, String siteId) async {
   final connectors = await ref.read(connectorsProvider(siteId).future);
   if (!context.mounted) return;
@@ -35,7 +39,9 @@ Future<void> addCamera(BuildContext context, WidgetRef ref, String siteId) async
   ref.invalidate(camerasProvider(siteId));
 }
 
+/// The list of the current site's cameras with their status.
 class CamerasScreen extends ConsumerStatefulWidget {
+  /// Creates the screen.
   const CamerasScreen({super.key});
 
   @override
@@ -118,9 +124,12 @@ class _CamerasScreenState extends ConsumerState<CamerasScreen> {
   }
 }
 
+/// The settings of one camera: device details, image, motion and reboot.
 class CameraSettingsScreen extends ConsumerStatefulWidget {
+  /// Creates the screen for the camera [cameraId].
   const CameraSettingsScreen({super.key, required this.cameraId});
 
+  /// The camera whose settings are shown.
   final String cameraId;
 
   @override
@@ -403,6 +412,8 @@ class _CameraSettingsScreenState extends ConsumerState<CameraSettingsScreen> {
   }
 }
 
+/// Adds the page's horizontal padding to a widget.
 extension PagePadding on Widget {
+  /// Returns this widget wrapped in the standard horizontal page padding.
   Widget paddedPage() => Padding(padding: const EdgeInsets.symmetric(horizontal: Gaps.page), child: this);
 }

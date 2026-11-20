@@ -8,7 +8,9 @@ import 'package:smart_surveillance/core/widgets/flow_scaffold.dart';
 import 'package:smart_surveillance/core/widgets/states.dart';
 import 'package:smart_surveillance/features/identity/presentation/session.dart';
 import 'package:smart_surveillance/features/identity/presentation/validators.dart';
+/// The screen where a new user creates an account.
 class SignUpScreen extends ConsumerStatefulWidget {
+  /// Creates the screen.
   const SignUpScreen({super.key});
 
   @override

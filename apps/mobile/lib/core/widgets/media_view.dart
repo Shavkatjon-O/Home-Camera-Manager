@@ -7,11 +7,16 @@ import 'package:smart_surveillance/app/backend.dart';
 import 'package:smart_surveillance/core/design/palette.dart';
 import 'package:smart_surveillance/core/media/media_source.dart';
 import 'package:smart_surveillance/core/widgets/synthetic_scene.dart';
+/// A widget that shows a [MediaSource] filling its space, with a placeholder while it loads.
 class MediaView extends ConsumerWidget {
+  /// Creates a view of [source] fitted with [fit].
   const MediaView({super.key, required this.source, this.fit = BoxFit.cover, this.showStamp = true});
 
+  /// The media to show, or null to show an empty frame.
   final MediaSource? source;
+  /// How the media is fitted into the available space.
   final BoxFit fit;
+  /// Whether synthetic scenes draw their camera stamp.
   final bool showStamp;
 
   @override
@@ -39,11 +44,16 @@ class MediaView extends ConsumerWidget {
   }
 }
 
+/// A widget that shows one lens of a stacked multi-lens camera image.
 class LensCrop extends StatelessWidget {
+  /// Creates a crop of [child] showing [lens] out of [lenses].
   const LensCrop({super.key, required this.lens, required this.lenses, required this.child});
 
+  /// The index of the lens to show, from the top.
   final int lens;
+  /// The number of lenses stacked vertically in the image.
   final int lenses;
+  /// The stacked image to crop.
   final Widget child;
 
   @override
@@ -63,12 +73,18 @@ class LensCrop extends StatelessWidget {
   }
 }
 
+/// A rounded frame with a fixed aspect ratio, used around camera pictures.
 class Frame extends StatelessWidget {
+  /// Creates a frame of aspect ratio [aspect] around [child].
   const Frame({super.key, required this.aspect, required this.child, this.radius = 12, this.border = true});
 
+  /// The width divided by the height of the frame.
   final double aspect;
+  /// The content shown inside the frame.
   final Widget child;
+  /// The corner radius of the frame.
   final double radius;
+  /// Whether a thin border is drawn around the frame.
   final bool border;
 
   @override
@@ -91,10 +107,14 @@ class Frame extends StatelessWidget {
   }
 }
 
+/// An overlay that draws labelled boxes over a camera picture, such as detected objects.
 class BoxOverlay extends StatelessWidget {
+  /// Creates an overlay drawing [boxes].
   const BoxOverlay({super.key, required this.boxes, this.captions = const {}});
 
+  /// The boxes to draw, as fractions of the picture, each with a label and an optional caption.
   final List<({Rect box, String label, String? caption})> boxes;
+  /// Captions keyed by object label.
   final Map<String, String> captions;
 
 

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:smart_surveillance/core/design/palette.dart';
 import 'package:smart_surveillance/core/design/tokens.dart';
+/// Builds the text theme for [p] using the app's fonts and sizes.
+/// Builds the text theme for [p] using the app's fonts and sizes.
 TextTheme buildTextTheme(Palette p) {
   TextStyle style(double size, FontWeight weight, Color color, {double height = 1.35, double tracking = 0}) =>
       TextStyle(
@@ -30,7 +32,9 @@ TextTheme buildTextTheme(Palette p) {
     labelSmall: style(11.5, FontWeight.w500, p.text3, height: 1.25, tracking: 0.1),
   );
 }
+/// Builds the Material theme for [brightness] from the app's palette and tokens.
 
+/// Builds the Material theme for [brightness] from the app's palette and tokens.
 ThemeData buildTheme(Brightness brightness) {
   final p = brightness == Brightness.dark ? Palette.dark : Palette.light;
   final text = buildTextTheme(p);

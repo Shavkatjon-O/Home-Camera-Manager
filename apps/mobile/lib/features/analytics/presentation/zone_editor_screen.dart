@@ -16,7 +16,9 @@ import 'package:smart_surveillance/features/analytics/presentation/labels.dart';
 import 'package:smart_surveillance/features/analytics/presentation/providers.dart';
 import 'package:smart_surveillance/features/events/presentation/labels.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
+/// Paints the zones and lines of an analytics view over its picture, with name labels and arrows.
 class RulesPainter extends CustomPainter {
+  /// Creates a painter for [zones] and [lines] using [palette].
   RulesPainter({
     required this.zones,
     required this.lines,
@@ -28,20 +30,32 @@ class RulesPainter extends CustomPainter {
     this.linePoints,
   });
 
+  /// The zones to draw.
   final List<Zone> zones;
+  /// The lines to draw.
   final List<Line> lines;
+  /// The colors used for outlines and handles.
   final Palette palette;
+  /// The index in [zones] of the zone being edited, drawn highlighted.
   final int? selectedZone;
+  /// The index in [lines] of the line being edited, drawn highlighted.
   final int? selectedLine;
+  /// Whether to draw a compact version without labels or handles.
   final bool thin;
+  /// Replacement polygons for [zones] while they are being dragged, indexed like [zones].
   final List<List<Offset>>? zonePoints;
+  /// Replacement end points for [lines] while they are being dragged, indexed like [lines].
   final List<List<Offset>>? linePoints;
 
+  /// The label boxes already drawn in this pass, used to keep labels from overlapping.
   final List<Rect> placed = [];
+  /// The size of the area painted last.
   Size area = Size.zero;
 
+  /// Returns the pixel position of the normalized [point] in an area of [size].
   Offset px(Offset point, Size size) => Offset(point.dx * size.width, point.dy * size.height);
 
+  /// Draws [text] on a pill of [color] centered at [at], moving it clear of earlier labels.
   void label(Canvas canvas, String text, Offset at, Color color) {
     final painter = TextPainter(
       text: TextSpan(
@@ -63,6 +77,7 @@ class RulesPainter extends CustomPainter {
     painter.paint(canvas, box.topLeft + const Offset(5, 2));
   }
 
+  /// Draws a draggable handle at each of [points].
   void handles(Canvas canvas, List<Offset> points) {
     for (final p in points) {
       canvas.drawCircle(p, 9, Paint()..color = const Color(0x66000000));
@@ -174,23 +189,34 @@ class RulesPainter extends CustomPainter {
   bool shouldRepaint(RulesPainter oldDelegate) => true;
 }
 
+/// A zone being edited together with its on-screen outline.
 class DraftZone {
+  /// Creates a draft of [zone] drawn along [points].
   DraftZone(this.zone, this.points);
 
+  /// The zone settings being edited.
   Zone zone;
+  /// The corner points of the zone in normalized view coordinates.
   List<Offset> points;
 }
 
+/// A line being edited together with its on-screen end points.
 class DraftLine {
+  /// Creates a draft of [line] drawn between [points].
   DraftLine(this.line, this.points);
 
+  /// The line settings being edited.
   Line line;
+  /// The end points of the line in normalized view coordinates.
   List<Offset> points;
 }
 
+/// The screen where zones and lines are drawn and configured over a view's snapshot.
 class ZoneEditorScreen extends ConsumerStatefulWidget {
+  /// Creates the editor for the view [viewId].
   const ZoneEditorScreen({super.key, required this.viewId});
 
+  /// The id of the analytics view whose rules are edited.
   final String viewId;
 
   @override
@@ -531,12 +557,18 @@ class _ZoneEditorScreenState extends ConsumerState<ZoneEditorScreen> {
   }
 }
 
+/// A choice of how many seconds a condition must last, shown as chips.
 class DurationPicker extends StatelessWidget {
+  /// Creates a picker titled [label] offering [options] with [value] selected.
   const DurationPicker({super.key, required this.label, required this.value, required this.options, required this.onChanged});
 
+  /// The title shown above the options.
   final String label;
+  /// The selected duration in seconds.
   final double value;
+  /// The durations offered, in seconds.
   final List<double> options;
+  /// Called with the duration the user picks.
   final ValueChanged<double> onChanged;
 
   @override
@@ -561,11 +593,16 @@ class DurationPicker extends StatelessWidget {
   }
 }
 
+/// A set of chips for choosing which object kinds apply.
 class LabelChips extends StatelessWidget {
+  /// Creates chips for [options] with those in [selected] turned on.
   const LabelChips({super.key, required this.selected, required this.options, required this.onChanged});
 
+  /// The object kinds currently turned on.
   final List<String> selected;
+  /// The object kinds that can be chosen.
   final List<String> options;
+  /// Called with the new selection when a chip is toggled.
   final ValueChanged<List<String>> onChanged;
 
   @override
@@ -586,12 +623,17 @@ class LabelChips extends StatelessWidget {
   }
 }
 
+/// The form fields for an alert policy: mode, schedule windows and object kinds.
 class AlertPolicyField extends StatelessWidget {
+  /// Creates the fields for [policy].
   const AlertPolicyField({super.key, required this.policy, required this.onChanged});
 
+  /// The alert policy being edited.
   final AlertPolicy policy;
+  /// Called with the updated policy after each change.
   final ValueChanged<AlertPolicy> onChanged;
 
+  /// Asks the user to pick a time and returns it as HH:MM, or null if cancelled.
   Future<String?> pickTime(BuildContext context, String value) async {
     final parts = value.split(':');
     final picked = await showTimePicker(
@@ -645,10 +687,14 @@ class AlertPolicyField extends StatelessWidget {
   }
 }
 
+/// The form for the settings of one zone.
 class ZoneForm extends StatefulWidget {
+  /// Creates the form for [draft].
   const ZoneForm({super.key, required this.draft, required this.onChanged});
 
+  /// The zone being edited.
   final DraftZone draft;
+  /// Called with the updated zone after each change.
   final ValueChanged<Zone> onChanged;
 
   @override
@@ -776,10 +822,14 @@ class _ZoneFormState extends State<ZoneForm> {
   }
 }
 
+/// The form for the settings of one line.
 class LineForm extends StatefulWidget {
+  /// Creates the form for [draft].
   const LineForm({super.key, required this.draft, required this.onChanged});
 
+  /// The line being edited.
   final DraftLine draft;
+  /// Called with the updated line after each change.
   final ValueChanged<Line> onChanged;
 
   @override

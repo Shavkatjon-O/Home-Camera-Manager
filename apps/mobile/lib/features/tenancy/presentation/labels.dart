@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:smart_surveillance/app/l10n/l10n.dart';
 import 'package:smart_surveillance/features/tenancy/domain/models.dart';
 
+/// Localised labels for sites and roles.
 extension TenancyLabels on AppLocalizations {
+  /// Returns the name of [kind].
   String siteKind(SiteKind kind) => switch (kind) {
     SiteKind.home => siteKindHome,
     SiteKind.store => siteKindStore,
@@ -11,6 +13,7 @@ extension TenancyLabels on AppLocalizations {
     SiteKind.other => siteKindOther,
   };
 
+  /// Returns the name of [role].
   String role(Role role) => switch (role) {
     Role.owner => roleOwner,
     Role.admin => roleAdmin,
@@ -18,6 +21,7 @@ extension TenancyLabels on AppLocalizations {
     Role.viewer => roleViewer,
   };
 
+  /// Returns the explanation of what [role] may do.
   String roleBody(Role role) => switch (role) {
     Role.owner => roleOwnerBody,
     Role.admin => roleAdminBody,
@@ -26,6 +30,7 @@ extension TenancyLabels on AppLocalizations {
   };
 }
 
+/// Returns the icon that represents [kind].
 IconData siteKindIcon(SiteKind kind) => switch (kind) {
   SiteKind.home => Icons.home_outlined,
   SiteKind.store => Icons.storefront_outlined,

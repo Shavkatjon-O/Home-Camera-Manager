@@ -11,13 +11,17 @@ import 'package:smart_surveillance/core/widgets/media_view.dart';
 import 'package:smart_surveillance/core/widgets/states.dart';
 import 'package:smart_surveillance/core/widgets/surfaces.dart';
 import 'package:smart_surveillance/features/investigation/domain/models.dart';
+/// Loads the sightings that look like the person in the event with the given id.
 final findPersonProvider = FutureProvider.autoDispose.family<List<AppearanceMatch>, String>(
   (ref, eventId) => ref.read(backendProvider).analytics.findPerson(eventId),
 );
 
+/// The screen listing other sightings that resemble the person in one event.
 class FindPersonScreen extends ConsumerWidget {
+  /// Creates the screen for the event [eventId].
   const FindPersonScreen({super.key, required this.eventId});
 
+  /// The id of the event whose person is searched for.
   final String eventId;
 
   @override
@@ -86,9 +90,12 @@ class FindPersonScreen extends ConsumerWidget {
   }
 }
 
+/// A bar showing how closely a match resembles the searched person.
 class SimilarityMeter extends StatelessWidget {
+  /// Creates a meter for the similarity [value] between 0 and 1.
   const SimilarityMeter({super.key, required this.value});
 
+  /// The similarity as a fraction between 0 and 1.
   final double value;
 
   @override

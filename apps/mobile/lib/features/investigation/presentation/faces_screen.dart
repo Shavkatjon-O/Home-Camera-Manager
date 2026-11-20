@@ -8,7 +8,9 @@ import 'package:smart_surveillance/core/widgets/states.dart';
 import 'package:smart_surveillance/core/widgets/surfaces.dart';
 import 'package:smart_surveillance/features/tenancy/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
+/// The screen where face recognition is turned on or off for the organisation, with its consent.
 class FacesScreen extends ConsumerStatefulWidget {
+  /// Creates the faces screen.
   const FacesScreen({super.key});
 
   @override

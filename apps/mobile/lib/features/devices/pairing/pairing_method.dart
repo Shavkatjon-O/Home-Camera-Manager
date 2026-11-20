@@ -7,7 +7,16 @@ import 'package:smart_surveillance/features/devices/domain/pairing_models.dart';
 import 'package:smart_surveillance/features/devices/domain/pairing_repository.dart';
 
 /// A phone permission that a pairing method needs before it starts.
-enum PairingPermission { camera, bluetooth, nearbyWifi, location }
+enum PairingPermission {
+  /// Access to the camera.
+  camera,
+  /// Access to Bluetooth.
+  bluetooth,
+  /// Access to nearby Wi-Fi devices.
+  nearbyWifi,
+  /// Access to the location.
+  location,
+}
 
 /// What a pairing method knows when it starts: the site, its connectors and
 /// anything an earlier method found out.

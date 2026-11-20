@@ -6,9 +6,12 @@ import 'package:smart_surveillance/core/media/media_source.dart';
 import 'package:smart_surveillance/features/analytics/domain/models.dart';
 import 'package:smart_surveillance/features/devices/domain/device_repository.dart';
 import 'package:smart_surveillance/features/devices/domain/models.dart';
+/// An in-memory device repository backed by a [FakeStore].
 class FakeDeviceRepository implements DeviceRepository {
+  /// Creates a repository that keeps its data in [store].
   FakeDeviceRepository(this.store);
 
+  /// The shared fake data store.
   final FakeStore store;
 
   @override

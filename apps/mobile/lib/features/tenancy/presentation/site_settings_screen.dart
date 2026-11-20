@@ -11,7 +11,9 @@ import 'package:smart_surveillance/features/alerting/presentation/labels.dart';
 import 'package:smart_surveillance/features/tenancy/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/site_setup_screen.dart';
+/// The settings of the current site, such as its name and how long events are kept.
 class SiteSettingsScreen extends ConsumerStatefulWidget {
+  /// Creates the screen.
   const SiteSettingsScreen({super.key});
 
   @override

@@ -6,11 +6,16 @@ import 'package:smart_surveillance/features/devices/data/fake_device_repository.
 import 'package:smart_surveillance/features/devices/domain/models.dart';
 import 'package:smart_surveillance/features/devices/domain/pairing_models.dart';
 import 'package:smart_surveillance/features/devices/domain/pairing_repository.dart';
+/// An in-memory pairing repository backed by a [FakeStore].
 class FakePairingRepository implements PairingRepository {
+  /// Creates a repository that keeps pairing data in [store] and adds cameras through [devices].
   FakePairingRepository(this.store, this.devices);
 
+  /// The shared fake data store.
   final FakeStore store;
+  /// The fake device repository that receives cameras added by pairing.
   final FakeDeviceRepository devices;
+  /// The pairing reports received so far.
   final reports = <PairingReport>[];
 
   @override

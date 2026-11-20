@@ -15,13 +15,16 @@ import 'package:smart_surveillance/features/insights/domain/models.dart';
 import 'package:smart_surveillance/features/insights/presentation/providers.dart';
 import 'package:smart_surveillance/features/tenancy/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
+/// Identifies a counts report by site, first day and bucket size.
 typedef ReportKey = ({String siteId, DateTime start, Bucket bucket});
 
+/// Loads the line crossing counts for a day or week, depending on the bucket size.
 final reportProvider = FutureProvider.autoDispose.family<CountsReport, ReportKey>((ref, key) {
   final end = key.bucket == Bucket.hour ? key.start.add(const Duration(days: 1)) : key.start.add(const Duration(days: 7));
   return ref.read(backendProvider).analytics.counts(key.siteId, start: key.start, end: end, bucket: key.bucket);
 });
 
+/// Returns the in and out counts of line [lineId] in [report], ready to chart.
 CountsSeries seriesFor(CountsReport report, String lineId, Formats format) {
   if (report.bucket == Bucket.hour) {
     final inward = List<int>.filled(24, 0);
@@ -44,7 +47,9 @@ CountsSeries seriesFor(CountsReport report, String lineId, Formats format) {
   return CountsSeries(labels: [for (final day in days) format.weekday(day)], inward: inward, outward: outward);
 }
 
+/// The screen showing how many people crossed each count line and how many are in each area.
 class CountsScreen extends ConsumerStatefulWidget {
+  /// Creates the counts screen.
   const CountsScreen({super.key});
 
   @override
@@ -156,11 +161,16 @@ class _CountsScreenState extends ConsumerState<CountsScreen> {
   }
 }
 
+/// A card charting the crossings of one count line.
 class LineCard extends StatelessWidget {
+  /// Creates a card for [line] charting [series], by hour when [hourly] is true.
   const LineCard({super.key, required this.line, required this.series, required this.hourly});
 
+  /// The count line shown.
   final CountLine line;
+  /// The in and out counts to chart.
   final CountsSeries series;
+  /// Whether the series is grouped by hour rather than by day.
   final bool hourly;
 
   @override
@@ -207,12 +217,17 @@ class LineCard extends StatelessWidget {
   }
 }
 
+/// A card showing the occupancy of one area, with an option to reset it.
 class AreaCard extends ConsumerWidget {
+  /// Creates a card for [area]; [canReset] allows the user to correct the occupancy.
   const AreaCard({super.key, required this.area, required this.canReset});
 
+  /// The area shown.
   final Area area;
+  /// Whether the user may reset the occupancy.
   final bool canReset;
 
+  /// Asks for a new occupancy and sets the area to it.
   Future<void> reset(BuildContext context, WidgetRef ref) async {
     final l10n = context.l10n;
     final controller = TextEditingController(text: '${area.occupancy}');

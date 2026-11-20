@@ -16,27 +16,36 @@ import 'package:smart_surveillance/features/identity/presentation/validators.dar
 import 'package:smart_surveillance/features/investigation/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
+/// Loads the saved people of the organisation with the given id.
 final peopleProvider = FutureProvider.autoDispose.family<List<Person>, String>(
   (ref, organisationId) => ref.read(backendProvider).people.people(organisationId),
 );
 
+/// Loads the face clusters of the organisation with the given id.
 final clustersProvider = FutureProvider.autoDispose.family<List<FaceCluster>, String>(
   (ref, organisationId) => ref.read(backendProvider).people.clusters(organisationId),
 );
 
+/// Loads the person with the given id.
 final personProvider = FutureProvider.autoDispose.family<Person, String>(
   (ref, id) => ref.read(backendProvider).people.person(id),
 );
 
+/// Loads the face cluster with the given id.
 final clusterProvider = FutureProvider.autoDispose.family<FaceCluster, String>(
   (ref, id) => ref.read(backendProvider).people.cluster(id),
 );
 
+/// A round face picture, or a colored placeholder when there is none.
 class FaceAvatar extends StatelessWidget {
+  /// Creates an avatar of [size] showing [source], with a placeholder tinted by [color].
   const FaceAvatar({super.key, required this.source, this.size = 48, this.color});
 
+  /// The face image to show, or null for the placeholder.
   final MediaSource? source;
+  /// The diameter of the avatar in logical pixels.
   final double size;
+  /// The placeholder tint as an ARGB value, or null for the default.
   final int? color;
 
   @override
@@ -55,11 +64,15 @@ class FaceAvatar extends StatelessWidget {
   }
 }
 
+/// The list of saved people and unnamed face clusters of an organisation.
 class PeopleTab extends ConsumerWidget {
+  /// Creates the tab for the organisation [organisationId].
   const PeopleTab({super.key, required this.organisationId});
 
+  /// The id of the organisation whose people are listed.
   final String organisationId;
 
+  /// Asks for a name and notes and creates a new person.
   Future<void> add(BuildContext context, WidgetRef ref) async {
     final l10n = context.l10n;
     final name = TextEditingController();
@@ -192,10 +205,14 @@ class PeopleTab extends ConsumerWidget {
   }
 }
 
+/// A grid of face samples, each with an optional delete action.
 class SampleGrid extends StatelessWidget {
+  /// Creates a grid of [samples]; [onDelete] adds a delete button to each.
   const SampleGrid({super.key, required this.samples, this.onDelete});
 
+  /// The face samples shown.
   final List<FaceSample> samples;
+  /// Called with the sample the user chooses to delete, or null to hide the delete buttons.
   final ValueChanged<FaceSample>? onDelete;
 
   @override
@@ -230,9 +247,12 @@ class SampleGrid extends StatelessWidget {
   );
 }
 
+/// A list of the places and times a person or cluster was seen.
 class SightingList extends ConsumerWidget {
+  /// Creates a list of [sightings].
   const SightingList({super.key, required this.sightings});
 
+  /// The sightings shown.
   final List<Sighting> sightings;
 
   @override
@@ -268,11 +288,15 @@ class SightingList extends ConsumerWidget {
   }
 }
 
+/// The details of one saved person: samples, sightings and actions.
 class PersonScreen extends ConsumerWidget {
+  /// Creates the screen for the person [personId].
   const PersonScreen({super.key, required this.personId});
 
+  /// The id of the person shown.
   final String personId;
 
+  /// Lets the user pick photos and adds them as face samples of the person.
   Future<void> addPhotos(BuildContext context, WidgetRef ref) async {
     final l10n = context.l10n;
     final files = await ImagePicker().pickMultiImage(maxWidth: 1600, imageQuality: 90);
@@ -292,6 +316,7 @@ class PersonScreen extends ConsumerWidget {
     }
   }
 
+  /// Asks which person to merge [person] into and merges them.
   Future<void> merge(BuildContext context, WidgetRef ref, Person person, String organisationId) async {
     final l10n = context.l10n;
     final others = (await ref.read(peopleProvider(organisationId).future)).where((p) => p.id != person.id).toList();
@@ -326,6 +351,7 @@ class PersonScreen extends ConsumerWidget {
     }
   }
 
+  /// Asks for confirmation and deletes [person].
   Future<void> delete(BuildContext context, WidgetRef ref, Person person, String organisationId) async {
     final l10n = context.l10n;
     final ok = await confirm(
@@ -445,9 +471,12 @@ class PersonScreen extends ConsumerWidget {
   }
 }
 
+/// The details of one unnamed face cluster, with options to name or delete it.
 class ClusterScreen extends ConsumerStatefulWidget {
+  /// Creates the screen for the cluster [clusterId].
   const ClusterScreen({super.key, required this.clusterId});
 
+  /// The id of the cluster shown.
   final String clusterId;
 
   @override

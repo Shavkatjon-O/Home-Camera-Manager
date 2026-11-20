@@ -10,15 +10,19 @@ import 'package:smart_surveillance/core/design/tokens.dart';
 import 'package:smart_surveillance/core/providers.dart';
 import 'package:smart_surveillance/core/widgets/logo.dart';
 import 'package:smart_surveillance/core/widgets/surfaces.dart';
+/// The provider of the installed app's name and version.
 final packageInfoProvider = FutureProvider<PackageInfo>((ref) => PackageInfo.fromPlatform());
 
+/// Registers the licence of the bundled font with the licence page.
 void registerLicences() {
   LicenseRegistry.addLicense(() async* {
     yield LicenseEntryWithLineBreaks(['Geist'], await rootBundle.loadString('assets/licenses/geist-ofl.txt'));
   });
 }
 
+/// The screen showing the app version, server and legal information.
 class AboutScreen extends ConsumerWidget {
+  /// Creates the about screen.
   const AboutScreen({super.key});
 
   @override

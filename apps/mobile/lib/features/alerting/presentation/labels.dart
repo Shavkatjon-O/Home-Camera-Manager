@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:smart_surveillance/app/l10n/l10n.dart';
 import 'package:smart_surveillance/features/alerting/domain/models.dart';
 
+/// Localised labels for arm modes.
 extension AlertingLabels on AppLocalizations {
+  /// Returns the short name of [mode].
   String arm(ArmMode mode) => switch (mode) {
     ArmMode.disarmed => armDisarmed,
     ArmMode.home => armHome,
@@ -10,6 +12,7 @@ extension AlertingLabels on AppLocalizations {
     ArmMode.schedule => armSchedule,
   };
 
+  /// Returns the explanation of what [mode] does.
   String armBody(ArmMode mode) => switch (mode) {
     ArmMode.disarmed => armDisarmedBody,
     ArmMode.home => armHomeBody,
@@ -18,6 +21,7 @@ extension AlertingLabels on AppLocalizations {
   };
 }
 
+/// Returns the icon that represents [mode].
 IconData armIcon(ArmMode mode) => switch (mode) {
   ArmMode.disarmed => Icons.shield_outlined,
   ArmMode.home => Icons.home_outlined,

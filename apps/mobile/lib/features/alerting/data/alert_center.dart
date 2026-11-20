@@ -10,24 +10,42 @@ import 'package:smart_surveillance/app/routes.dart';
 import 'package:smart_surveillance/features/events/domain/models.dart';
 
 part 'alert_center.g.dart';
+/// Delivers local and push notifications for camera events and opens the tapped event.
 class AlertCenter with WidgetsBindingObserver {
+  /// Creates an alert center that reads events from [backend] and navigates through [open].
   AlertCenter(this.backend, this.open, {this.enabled = true});
 
+  /// The backend used to register push targets and load events.
   final Backend backend;
+  /// Navigates the app to a route location.
   final void Function(String location) open;
+  /// Whether notifications are shown at all.
   final bool enabled;
+  /// The local notifications plugin that displays alerts.
   final plugin = FlutterLocalNotificationsPlugin();
+  /// The platform push bridge that supplies tokens and incoming messages.
   final PushBridge push = createPushBridge();
+  /// The last known app lifecycle state, used to skip alerts while the app is in the foreground.
   AppLifecycleState lifecycle = AppLifecycleState.resumed;
+  /// Whether [start] has already initialised the plugin.
   bool ready = false;
+  /// The subscription to incoming push messages.
   StreamSubscription<PushMessage>? messages;
+  /// The subscription to push token changes.
   StreamSubscription<String>? tokens;
+  /// The id given to the next notification shown.
   int next = 1;
 
+  /// The name of the push provider in use.
   String get provider => push.provider;
 
+  /// Whether the platform offers a push provider.
   bool get pushAvailable => push.available;
 
+  /// Initialises notifications, creates the alert channel and starts listening for push messages.
+  ///
+  /// [channelName] and [channelBody] label the Android notification channel. Does nothing when
+  /// notifications are disabled or already started.
   Future<void> start({required String channelName, required String channelBody}) async {
     if (!enabled || ready) return;
     ready = true;
@@ -62,11 +80,13 @@ class AlertCenter with WidgetsBindingObserver {
     });
   }
 
+  /// Asks the user for notification permission and returns whether it was granted.
   Future<bool> requestPermission() async {
     final android = plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
     return await android?.requestNotificationsPermission() ?? false;
   }
 
+  /// Loads the event [eventId] and shows a notification for it, ignoring failures.
   Future<void> fetchAndShow(String eventId) async {
     try {
       final event = await backend.events.event(eventId);
@@ -74,6 +94,7 @@ class AlertCenter with WidgetsBindingObserver {
     } catch (_) {}
   }
 
+  /// Shows a notification for [event] under [title].
   Future<void> show(CameraEvent event, String title) async {
     if (!enabled || !ready) return;
     await plugin.show(
@@ -93,6 +114,7 @@ class AlertCenter with WidgetsBindingObserver {
     );
   }
 
+  /// Shows a notification for [event] on [siteName] unless the app is in the foreground.
   void alert(CameraEvent event, String siteName) {
     if (lifecycle == AppLifecycleState.resumed) return;
     unawaited(show(event, siteName));
@@ -101,6 +123,7 @@ class AlertCenter with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) => lifecycle = state;
 
+  /// Stops listening for push messages and token changes.
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     unawaited(messages?.cancel());
@@ -108,6 +131,7 @@ class AlertCenter with WidgetsBindingObserver {
   }
 }
 
+/// Provides the alert center for the signed-in backend.
 @Riverpod(keepAlive: true)
 AlertCenter alertCenter(Ref ref) {
   final center = AlertCenter(
@@ -119,5 +143,6 @@ AlertCenter alertCenter(Ref ref) {
   return center;
 }
 
+/// Provides whether notifications are enabled.
 @Riverpod(keepAlive: true)
 bool notificationsEnabled(Ref ref) => true;

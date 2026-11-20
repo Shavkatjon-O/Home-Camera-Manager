@@ -16,13 +16,20 @@ import 'package:smart_surveillance/features/events/presentation/labels.dart';
 import 'package:smart_surveillance/features/events/presentation/providers.dart';
 import 'package:smart_surveillance/features/tenancy/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
+/// The searchable, filterable list of events at the current site.
 class EventsScreen extends ConsumerStatefulWidget {
+  /// Creates the list, optionally preset to [camera], [kind], [person], [cluster] or [alertsOnly].
   const EventsScreen({super.key, this.camera, this.kind, this.person, this.cluster, this.alertsOnly = false});
 
+  /// The id of a camera to filter by.
   final String? camera;
+  /// The name of an event kind to filter by.
   final String? kind;
+  /// The id of a saved person whose face events are shown.
   final String? person;
+  /// The id of an unknown-face cluster whose events are shown.
   final String? cluster;
+  /// Whether only alerts are shown.
   final bool alertsOnly;
 
   @override
@@ -166,10 +173,14 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
   }
 }
 
+/// The row of shortcut chips for common filters, such as today and alerts.
 class QuickFilters extends ConsumerWidget {
+  /// Creates the chips for the filter [filter] of site [siteId].
   const QuickFilters({super.key, required this.siteId, required this.filter});
 
+  /// The id of the site whose filter is changed.
   final String siteId;
+  /// The filter currently applied.
   final EventFilter filter;
 
   @override
@@ -223,11 +234,16 @@ class QuickFilters extends ConsumerWidget {
   }
 }
 
+/// The scrolling list of events with a pending-events banner and paging.
 class EventList extends ConsumerWidget {
+  /// Creates the list for [state], controlled by [scroll]; [filtered] tells it a filter is active.
   const EventList({super.key, required this.state, required this.scroll, required this.filtered});
 
+  /// The loaded events and paging state.
   final FeedState state;
+  /// The scroll controller used to detect when the next page is needed.
   final ScrollController scroll;
+  /// Whether a filter is applied, which changes the empty message.
   final bool filtered;
 
   @override
@@ -295,4 +311,5 @@ class EventList extends ConsumerWidget {
   }
 }
 
+/// Returns the localized name of [kind].
 String eventKindName(AppLocalizations l10n, EventKind kind) => l10n.kind(kind);

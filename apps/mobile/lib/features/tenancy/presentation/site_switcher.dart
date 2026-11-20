@@ -7,7 +7,9 @@ import 'package:smart_surveillance/core/design/tokens.dart';
 import 'package:smart_surveillance/features/alerting/presentation/labels.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/labels.dart';
+/// A button that shows the current site and opens the site sheet.
 class SiteSwitcherButton extends ConsumerWidget {
+  /// Creates the button.
   const SiteSwitcherButton({super.key});
 
   @override
@@ -48,13 +50,16 @@ class SiteSwitcherButton extends ConsumerWidget {
   }
 }
 
+/// Opens the sheet where the user picks a site.
 Future<void> showSiteSheet(BuildContext context, WidgetRef ref) => showModalBottomSheet<void>(
   context: context,
   isScrollControlled: true,
   builder: (context) => const SiteSheet(),
 );
 
+/// A sheet that lists the user's sites to choose from.
 class SiteSheet extends ConsumerWidget {
+  /// Creates the sheet.
   const SiteSheet({super.key});
 
   @override

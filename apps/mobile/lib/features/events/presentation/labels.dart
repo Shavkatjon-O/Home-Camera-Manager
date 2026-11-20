@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:smart_surveillance/app/l10n/l10n.dart';
 import 'package:smart_surveillance/features/events/domain/models.dart';
 
+/// Localized names and titles for events.
 extension EventLabels on AppLocalizations {
+  /// Returns the localized name of [kind].
   String kind(EventKind kind) => switch (kind) {
     EventKind.motion => kindMotion,
     EventKind.person => kindPerson,
@@ -22,6 +24,7 @@ extension EventLabels on AppLocalizations {
     EventKind.fall => kindFall,
   };
 
+  /// Returns the localized name of an object label, or a generic word when [label] is null.
   String label(String? label) => switch (label) {
     'person' => labelPerson,
     'car' => labelCar,
@@ -41,6 +44,7 @@ extension EventLabels on AppLocalizations {
     _ => label[0].toUpperCase() + label.substring(1).replaceAll('_', ' '),
   };
 
+  /// Returns the localized description of how the camera was disturbed, from the tamper [label].
   String tamper(String? label) => switch (label) {
     'covered' => tamperCovered,
     'blurred' => tamperBlurred,
@@ -49,6 +53,7 @@ extension EventLabels on AppLocalizations {
     _ => tamperDisturbed,
   };
 
+  /// Returns a headline for [event] naming what happened and where.
   String eventTitle(CameraEvent event) {
     final camera = event.cameraName;
     final what = label(event.label);
@@ -75,6 +80,7 @@ extension EventLabels on AppLocalizations {
   }
 }
 
+/// Returns the icon that represents [kind].
 IconData kindIcon(EventKind kind) => switch (kind) {
   EventKind.motion => Icons.motion_photos_on_outlined,
   EventKind.person => Icons.person_outline_rounded,

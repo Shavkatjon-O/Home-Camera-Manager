@@ -4,15 +4,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:smart_surveillance/app/l10n/l10n.dart';
 import 'package:smart_surveillance/core/design/palette.dart';
+/// Moves a camera by pan, tilt and zoom speeds.
 typedef PtzMove = Future<void> Function(double pan, double tilt, double zoom);
 
+/// A directional pad that pans and tilts a camera while it is held.
 class PtzPad extends StatefulWidget {
+  /// Creates a pad of [size] that calls [onMove] and [onStop], and [onHome] when given.
   const PtzPad({super.key, required this.onMove, required this.onStop, this.onHome, required this.speed, this.size = 196});
 
+  /// Called with the speeds to apply while a direction is held.
   final PtzMove onMove;
+  /// Called when the direction is released.
   final Future<void> Function() onStop;
+  /// Called when the centre button asks for the home position, or null to hide it.
   final VoidCallback? onHome;
+  /// The speed applied to a movement.
   final double speed;
+  /// The width and height of the pad.
   final double size;
 
   @override
@@ -105,11 +113,16 @@ class _PtzPadState extends State<PtzPad> {
   }
 }
 
+/// A pair of buttons that zoom a camera in and out while held.
 class ZoomButtons extends StatelessWidget {
+  /// Creates buttons that call [onMove] and [onStop] at [speed].
   const ZoomButtons({super.key, required this.onMove, required this.onStop, required this.speed});
 
+  /// Called with the speeds to apply while a button is held.
   final PtzMove onMove;
+  /// Called when the button is released.
   final Future<void> Function() onStop;
+  /// The speed applied to a zoom movement.
   final double speed;
 
   @override

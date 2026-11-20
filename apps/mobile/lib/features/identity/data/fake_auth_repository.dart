@@ -4,9 +4,12 @@ import 'package:smart_surveillance/app/demo/fake_store.dart';
 import 'package:smart_surveillance/core/network/failure.dart';
 import 'package:smart_surveillance/features/identity/domain/auth_repository.dart';
 import 'package:smart_surveillance/features/identity/domain/models.dart';
+/// An in-memory authentication repository backed by a [FakeStore].
 class FakeAuthRepository implements AuthRepository {
+  /// Creates a repository that keeps its accounts in [store].
   FakeAuthRepository(this.store);
 
+  /// The shared fake data store.
   final FakeStore store;
 
   @override

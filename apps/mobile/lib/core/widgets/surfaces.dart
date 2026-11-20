@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:smart_surveillance/core/design/palette.dart';
 import 'package:smart_surveillance/core/design/tokens.dart';
+/// A bordered card that holds [child] and is tappable when [onTap] is set.
 class Panel extends StatelessWidget {
+  /// Creates a panel around [child] with the given [padding] and fill [color].
   const Panel({super.key, required this.child, this.padding = const EdgeInsets.all(Gaps.lg), this.onTap, this.color});
 
+  /// The content of the panel.
   final Widget child;
+  /// The space between the border and [child].
   final EdgeInsetsGeometry padding;
+  /// The callback for taps, or null when the panel is not tappable.
   final VoidCallback? onTap;
+  /// The fill colour, defaulting to the surface colour.
   final Color? color;
 
   @override
@@ -22,11 +28,16 @@ class Panel extends StatelessWidget {
   }
 }
 
+/// A small heading above a group of content, with an optional widget at its end.
 class SectionHeader extends StatelessWidget {
+  /// Creates a heading with [title] and an optional [action].
   const SectionHeader(this.title, {super.key, this.action, this.padding});
 
+  /// The heading text.
   final String title;
+  /// The widget shown at the end of the heading, such as a button.
   final Widget? action;
+  /// The padding around the heading, defaulting to the standard section spacing.
   final EdgeInsetsGeometry? padding;
 
   @override
@@ -46,14 +57,34 @@ class SectionHeader extends StatelessWidget {
   );
 }
 
-enum TagTone { neutral, alert, ok, warning, info, muted }
+/// The colour treatment of a [Tag].
+enum TagTone {
+  /// A plain grey tag.
+  neutral,
+  /// A red tag for alerts and errors.
+  alert,
+  /// A green tag for success.
+  ok,
+  /// An amber tag for warnings.
+  warning,
+  /// A blue tag for information.
+  info,
+  /// A dimmed tag for secondary information.
+  muted,
+}
 
+/// A small rounded label such as a status or kind.
 class Tag extends StatelessWidget {
+  /// Creates a tag showing [text] in the colour of [tone].
   const Tag(this.text, {super.key, this.tone = TagTone.neutral, this.icon, this.dense = false});
 
+  /// The text of the tag.
   final String text;
+  /// The colour treatment of the tag.
   final TagTone tone;
+  /// The icon shown before the text, if any.
   final IconData? icon;
+  /// Whether the tag is drawn smaller.
   final bool dense;
 
   @override
@@ -90,10 +121,14 @@ class Tag extends StatelessWidget {
   }
 }
 
+/// A small circle showing whether something is online.
 class StatusDot extends StatelessWidget {
+  /// Creates a dot of [size] for [online]: green when true, red when false, grey when unknown.
   const StatusDot({super.key, required this.online, this.size = 8});
 
+  /// Whether the item is online, or null when its state is unknown.
   final bool? online;
+  /// The diameter of the dot.
   final double size;
 
   @override
@@ -108,14 +143,22 @@ class StatusDot extends StatelessWidget {
   }
 }
 
+/// A card showing one headline value with a label, such as a count or uptime.
 class MetricTile extends StatelessWidget {
+  /// Creates a tile showing [value] under [label].
   const MetricTile({super.key, required this.label, required this.value, this.detail, this.tone, this.onTap, this.icon});
 
+  /// The name of the measurement.
   final String label;
+  /// The headline value.
   final String value;
+  /// A line of extra context under the value.
   final String? detail;
+  /// The colour of the value, defaulting to the text colour.
   final Color? tone;
+  /// The callback for taps, or null when the tile is not tappable.
   final VoidCallback? onTap;
+  /// The icon shown beside the label.
   final IconData? icon;
 
   @override
@@ -147,11 +190,16 @@ class MetricTile extends StatelessWidget {
   }
 }
 
+/// A row with a muted label at the start and its value at the end.
 class ReadOut extends StatelessWidget {
+  /// Creates a row showing [value] for [label], in the data font when [mono] is true.
   const ReadOut({super.key, required this.label, required this.value, this.mono = false});
 
+  /// The name of the value.
   final String label;
+  /// The value shown at the end of the row.
   final String value;
+  /// Whether the value uses the monospace data font.
   final bool mono;
 
   @override
@@ -173,10 +221,14 @@ class ReadOut extends StatelessWidget {
   );
 }
 
+/// A rounded, bordered card that stacks [children] with dividers between them.
 class TileGroup extends StatelessWidget {
+  /// Creates a group of [children] with the given outer [margin].
   const TileGroup({super.key, required this.children, this.margin});
 
+  /// The rows to stack, usually list tiles.
   final List<Widget> children;
+  /// The space around the group, defaulting to the page margins.
   final EdgeInsetsGeometry? margin;
 
   @override
@@ -199,11 +251,16 @@ class TileGroup extends StatelessWidget {
   }
 }
 
+/// A rounded square holding an icon.
 class IconBadge extends StatelessWidget {
+  /// Creates a badge showing [icon] at [size].
   const IconBadge({super.key, required this.icon, this.color, this.size = 36});
 
+  /// The icon to show.
   final IconData icon;
+  /// The icon colour, defaulting to the secondary text colour.
   final Color? color;
+  /// The width and height of the badge.
   final double size;
 
   @override
@@ -218,10 +275,14 @@ class IconBadge extends StatelessWidget {
   }
 }
 
+/// A numbered step with explanatory text.
 class Bullet extends StatelessWidget {
+  /// Creates a step numbered [number] with [text].
   const Bullet({super.key, required this.number, required this.text});
 
+  /// The number shown in the circle.
   final int number;
+  /// The text of the step.
   final String text;
 
   @override

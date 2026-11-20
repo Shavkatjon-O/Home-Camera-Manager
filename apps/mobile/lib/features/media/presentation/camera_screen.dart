@@ -22,10 +22,12 @@ import 'package:smart_surveillance/features/events/presentation/labels.dart';
 import 'package:smart_surveillance/features/media/presentation/live_video.dart';
 import 'package:smart_surveillance/features/tenancy/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
+/// The preset positions and light state of a camera, loaded by camera id.
 final cameraControlsProvider = FutureProvider.autoDispose.family<CameraControls, String>(
   (ref, id) => ref.read(backendProvider).devices.controls(id),
 );
 
+/// The latest events of a camera, loaded by a pair of site id and camera id.
 final cameraEventsProvider = FutureProvider.autoDispose.family<List<CameraEvent>, (String, String)>((ref, key) async {
   final page = await ref
       .read(backendProvider)
@@ -34,14 +36,19 @@ final cameraEventsProvider = FutureProvider.autoDispose.family<List<CameraEvent>
   return page.items;
 });
 
+/// The objects detected right now in a live view, streamed by view id.
 final liveObjectsProvider = StreamProvider.autoDispose.family<List<LiveObject>, String>(
   (ref, viewId) => ref.read(backendProvider).analytics.liveObjects(viewId),
 );
 
+/// The page of one camera with its live picture, controls and recent events.
 class CameraScreen extends ConsumerStatefulWidget {
+  /// Creates the screen for [cameraId], showing [lens] of a multi-lens camera.
   const CameraScreen({super.key, required this.cameraId, this.lens = 0});
 
+  /// The camera shown.
   final String cameraId;
+  /// The lens of the camera that is shown first.
   final int lens;
 
   @override
@@ -293,12 +300,18 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
   }
 }
 
+/// An icon button that shows a labelled on or off state.
 class ToggleIcon extends StatelessWidget {
+  /// Creates a button with [icon] and [label], highlighted when [selected].
   const ToggleIcon({super.key, required this.icon, required this.label, required this.selected, this.onTap});
 
+  /// The icon of the button.
   final IconData icon;
+  /// The text that names the button.
   final String label;
+  /// Whether the button is in its on state.
   final bool selected;
+  /// Called when the button is tapped, or null to disable it.
   final VoidCallback? onTap;
 
   @override
@@ -328,9 +341,12 @@ class ToggleIcon extends StatelessWidget {
   }
 }
 
+/// Detection boxes drawn over a live picture.
 class LiveBoxes extends ConsumerWidget {
+  /// Creates the overlay for the live view [viewId].
   const LiveBoxes({super.key, required this.viewId});
 
+  /// The live view whose detections are drawn.
   final String viewId;
 
   @override
@@ -345,10 +361,14 @@ class LiveBoxes extends ConsumerWidget {
   }
 }
 
+/// A row of preset positions the user can send a camera to.
 class PresetsRow extends ConsumerWidget {
+  /// Creates the row for [camera] with its [presets].
   const PresetsRow({super.key, required this.camera, required this.presets});
 
+  /// The camera that is moved.
   final Camera camera;
+  /// The preset positions to offer.
   final List<PtzPreset> presets;
 
   @override
@@ -418,10 +438,14 @@ class PresetsRow extends ConsumerWidget {
   }
 }
 
+/// A short list of the latest events of one camera.
 class RecentForCamera extends ConsumerWidget {
+  /// Creates the list for [cameraId] in the site [siteId].
   const RecentForCamera({super.key, required this.siteId, required this.cameraId});
 
+  /// The site that owns the camera.
   final String siteId;
+  /// The camera whose events are listed.
   final String cameraId;
 
   @override
@@ -448,12 +472,18 @@ class RecentForCamera extends ConsumerWidget {
   }
 }
 
+/// A full-screen live picture of a camera.
 class FullscreenLive extends StatefulWidget {
+  /// Creates the view of [camera] at [quality].
   const FullscreenLive({super.key, required this.camera, this.lens, required this.quality, this.viewId});
 
+  /// The camera shown.
   final Camera camera;
+  /// The lens shown, or null for all lenses.
   final int? lens;
+  /// The stream that is played.
   final StreamQuality quality;
+  /// The live view whose detections are drawn, if any.
   final String? viewId;
 
   @override

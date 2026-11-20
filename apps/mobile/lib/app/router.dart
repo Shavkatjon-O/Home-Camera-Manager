@@ -6,16 +6,20 @@ import 'package:smart_surveillance/features/identity/presentation/session.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
 
 part 'router.g.dart';
+/// The path prefixes of screens reachable while signed out.
 const authPaths = ['/welcome', '/sign-in', '/sign-up', '/forgot', '/reset', '/verify-email', '/reset-password'];
 
+/// The deep link saved while signed out, so it can be opened after signing in.
 @Riverpod(keepAlive: true)
 class PendingLink extends _$PendingLink {
   @override
   String? build() => null;
 
+  /// Saves [location] as the pending link, or clears it when null.
   void set(String? location) => state = location;
 }
 
+/// Returns the path to redirect to for [state], or null to stay, given session and organisations.
 String? redirectFor(Ref ref, GoRouterState state) {
   final location = state.matchedLocation;
   final session = ref.read(sessionProvider);
@@ -56,6 +60,7 @@ String? redirectFor(Ref ref, GoRouterState state) {
   return null;
 }
 
+/// The provider of the app's router.
 @Riverpod(keepAlive: true)
 GoRouter router(Ref ref) {
   final refresh = ValueNotifier<int>(0);

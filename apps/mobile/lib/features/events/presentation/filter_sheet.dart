@@ -9,10 +9,12 @@ import 'package:smart_surveillance/core/providers.dart';
 import 'package:smart_surveillance/features/devices/presentation/providers.dart';
 import 'package:smart_surveillance/features/events/domain/models.dart';
 import 'package:smart_surveillance/features/events/presentation/labels.dart';
+/// Loads the values available to filter by at the site with the given id.
 final facetsProvider = FutureProvider.autoDispose.family(
   (ref, String siteId) => ref.read(backendProvider).search.facets(siteId),
 );
 
+/// Shows the filter sheet and returns the filter the user applied, or null if dismissed.
 Future<EventFilter?> showFilterSheet(
   BuildContext context, {
   required String siteId,
@@ -25,11 +27,16 @@ Future<EventFilter?> showFilterSheet(
   builder: (context) => FilterSheet(siteId: siteId, initial: filter, extended: extended),
 );
 
+/// The bottom sheet where an event filter is edited.
 class FilterSheet extends ConsumerStatefulWidget {
+  /// Creates a sheet for [siteId] starting from [initial]; [extended] adds the facet filters.
   const FilterSheet({super.key, required this.siteId, required this.initial, this.extended = false});
 
+  /// The id of the site whose cameras and facets are offered.
   final String siteId;
+  /// The filter the sheet starts with.
   final EventFilter initial;
+  /// Whether the extra filters from the site's facets are offered.
   final bool extended;
 
   @override

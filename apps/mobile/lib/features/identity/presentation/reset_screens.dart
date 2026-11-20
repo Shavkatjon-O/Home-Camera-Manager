@@ -9,7 +9,9 @@ import 'package:smart_surveillance/core/widgets/states.dart';
 import 'package:smart_surveillance/features/identity/presentation/token.dart';
 import 'package:smart_surveillance/features/identity/presentation/validators.dart';
 import 'package:smart_surveillance/features/identity/presentation/verify_screen.dart';
+/// The screen where the user asks for a password reset email.
 class ForgotScreen extends ConsumerStatefulWidget {
+  /// Creates the screen.
   const ForgotScreen({super.key});
 
   @override

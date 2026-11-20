@@ -3,7 +3,9 @@ import 'package:smart_surveillance/app/backend.dart';
 import 'package:smart_surveillance/features/events/domain/models.dart';
 
 part 'event_feed.g.dart';
+/// The loaded part of the event list together with its paging and pending state.
 class FeedState {
+  /// Creates a state holding [items] out of [total] events, with [page] pages loaded.
   const FeedState({
     required this.items,
     required this.total,
@@ -13,15 +15,23 @@ class FeedState {
     this.counts,
   });
 
+  /// The events loaded so far, newest first.
   final List<CameraEvent> items;
+  /// The number of events matching the filter on the server.
   final int total;
+  /// The number of the last page loaded.
   final int page;
+  /// Whether the next page is being loaded.
   final bool loadingMore;
+  /// New events held back so the list does not jump while the user is scrolled down.
   final List<CameraEvent> pending;
+  /// The totals for the current filter, or null while unknown.
   final EventCounts? counts;
 
+  /// Whether more events remain on the server.
   bool get more => items.length < total;
 
+  /// Returns a copy with the given fields replaced.
   FeedState copyWith({
     List<CameraEvent>? items,
     int? total,
@@ -39,14 +49,17 @@ class FeedState {
   );
 }
 
+/// Holds the event filter chosen for a site.
 @riverpod
 class EventFilterState extends _$EventFilterState {
   @override
   EventFilter build(String siteId) => const EventFilter();
 
+  /// Replaces the current filter with [filter].
   void set(EventFilter filter) => state = filter;
 }
 
+/// Returns whether [event] passes the parts of [filter] that can be checked on the device.
 bool matches(CameraEvent event, EventFilter filter) {
   if (filter.alertsOnly && !event.alert) return false;
   if (filter.cameraIds.isNotEmpty && !filter.cameraIds.contains(event.cameraId)) return false;
@@ -61,8 +74,10 @@ bool matches(CameraEvent event, EventFilter filter) {
   return filter.zones.isEmpty && filter.lines.isEmpty && filter.personId == null && filter.clusterId == null;
 }
 
+/// Loads and updates the paged list of events at a site for the current filter.
 @riverpod
 class EventFeed extends _$EventFeed {
+  /// The number of events requested per page.
   static const pageSize = 30;
 
   @override
@@ -77,6 +92,7 @@ class EventFeed extends _$EventFeed {
     return FeedState(items: page.items, total: page.total, page: 1, counts: results[1] as EventCounts);
   }
 
+  /// Loads the next page and appends it, unless one is loading or everything is loaded.
   Future<void> loadMore() async {
     final current = state.value;
     if (current == null || current.loadingMore || !current.more) return;
@@ -98,6 +114,7 @@ class EventFeed extends _$EventFeed {
     }
   }
 
+  /// Applies a live change to [event], inserting a new one at the top or holding it as pending.
   void receive(CameraEvent event, {required bool created, required bool atTop}) {
     final current = state.value;
     if (current == null) return;
@@ -115,6 +132,7 @@ class EventFeed extends _$EventFeed {
     }
   }
 
+  /// Moves the pending events to the top of the list.
   void showPending() {
     final current = state.value;
     if (current == null || current.pending.isEmpty) return;
@@ -127,5 +145,6 @@ class EventFeed extends _$EventFeed {
     );
   }
 
+  /// Replaces the loaded copy of [event] with the given one.
   void replace(CameraEvent event) => receive(event, created: false, atTop: false);
 }

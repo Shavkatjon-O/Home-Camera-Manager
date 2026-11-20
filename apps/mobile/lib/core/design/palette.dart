@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+/// The app's colours for one brightness, exposed as a theme extension.
 @immutable
 class Palette extends ThemeExtension<Palette> {
+  /// Creates a palette from every colour role.
   const Palette({
     required this.background,
     required this.surface,
@@ -27,30 +29,54 @@ class Palette extends ThemeExtension<Palette> {
     required this.frame,
   });
 
+  /// The page background.
   final Color background;
+  /// The fill of cards and panels.
   final Color surface;
+  /// A raised fill above [surface], such as inputs and pressed rows.
   final Color surface2;
+  /// The strongest neutral fill, such as skeleton shimmer, avatars and chart tooltips.
   final Color surface3;
+  /// The hairline border of cards and dividers.
   final Color border;
+  /// The border of text fields.
   final Color borderInput;
+  /// A stronger border for emphasis and hover.
   final Color borderStrong;
+  /// The primary text colour.
   final Color text;
+  /// The secondary text colour.
   final Color text2;
+  /// The muted text colour for hints and captions.
   final Color text3;
+  /// The accent colour for focus rings and links.
   final Color focus;
+  /// The overlay colour of selected rows.
   final Color selection;
+  /// The fill of chips and tags.
   final Color chip;
+  /// The colour for success and online states.
   final Color ok;
+  /// The colour for error states.
   final Color error;
+  /// The colour for warnings.
   final Color warning;
+  /// The colour for unknown, disabled and offline-unknown states.
   final Color off;
+  /// The fill of destructive actions.
   final Color danger;
+  /// The colour of text on a destructive surface, such as an error message.
   final Color dangerText;
+  /// The box colour for detected people.
   final Color person;
+  /// The box colour for detected vehicles.
   final Color vehicle;
+  /// The box colour for detected animals.
   final Color animal;
+  /// The background behind camera frames and video.
   final Color frame;
 
+  /// The palette for dark mode.
   static const dark = Palette(
     background: Color(0xFF000000),
     surface: Color(0xFF0A0A0A),
@@ -77,6 +103,7 @@ class Palette extends ThemeExtension<Palette> {
     frame: Color(0xFF050505),
   );
 
+  /// The palette for light mode.
   static const light = Palette(
     background: Color(0xFFFFFFFF),
     surface: Color(0xFFFAFAFA),
@@ -103,6 +130,7 @@ class Palette extends ThemeExtension<Palette> {
     frame: Color(0xFF0A0A0A),
   );
 
+  /// Returns the box colour for a detected object [label], white when the label has no category.
   Color labelColor(String label) {
     if (label == 'person') return person;
     if (vehicleLabels.contains(label)) return vehicle;
@@ -110,7 +138,9 @@ class Palette extends ThemeExtension<Palette> {
     return const Color(0xFFFFFFFF);
   }
 
+  /// The labels treated as vehicles.
   static const vehicleLabels = {'car', 'truck', 'bus', 'motorcycle', 'bicycle', 'vehicle'};
+  /// The labels treated as animals.
   static const animalLabels = {'dog', 'cat', 'bird', 'animal'};
 
   @override
@@ -172,8 +202,11 @@ class Palette extends ThemeExtension<Palette> {
   }
 }
 
+/// Adds shortcut access to the palette and text theme from a [BuildContext].
 extension PaletteContext on BuildContext {
+  /// The palette of the active theme.
   Palette get palette => Theme.of(this).extension<Palette>()!;
 
+  /// The text theme of the active theme.
   TextTheme get text => Theme.of(this).textTheme;
 }

@@ -11,11 +11,14 @@ import 'package:smart_surveillance/core/widgets/states.dart';
 import 'package:smart_surveillance/core/widgets/surfaces.dart';
 import 'package:smart_surveillance/features/operations/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
+/// The health report of a site, loaded by site id.
 final healthProvider = FutureProvider.autoDispose.family<HealthReport, String>(
   (ref, siteId) => ref.read(backendProvider).health.health(siteId),
 );
 
+/// The page that shows uptime, latency and outages of the site's devices.
 class HealthScreen extends ConsumerWidget {
+  /// Creates the screen.
   const HealthScreen({super.key});
 
   @override

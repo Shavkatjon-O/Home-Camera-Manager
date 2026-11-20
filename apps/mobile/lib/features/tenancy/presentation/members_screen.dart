@@ -12,15 +12,19 @@ import 'package:smart_surveillance/features/identity/presentation/validators.dar
 import 'package:smart_surveillance/features/tenancy/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/labels.dart';
+/// The members of an organisation, loaded by organisation id.
 final membersProvider = FutureProvider.autoDispose.family<List<Member>, String>(
   (ref, id) => ref.read(backendProvider).tenancy.members(id),
 );
 
+/// The invitations of an organisation, loaded by organisation id.
 final invitationsProvider = FutureProvider.autoDispose.family<List<Invitation>, String>(
   (ref, id) => ref.read(backendProvider).tenancy.invitations(id),
 );
 
+/// The page that lists members and invitations and lets administrators change them.
 class MembersScreen extends ConsumerWidget {
+  /// Creates the screen.
   const MembersScreen({super.key});
 
   @override
@@ -131,11 +135,16 @@ class MembersScreen extends ConsumerWidget {
   }
 }
 
+/// A sheet for inviting a member or editing the role and sites of [member].
 class MemberSheet extends ConsumerStatefulWidget {
+  /// Creates the sheet for [organisation], offering [sites], to edit [member] or invite when null.
   const MemberSheet({super.key, required this.organisation, required this.sites, this.member});
 
+  /// The organisation the member belongs to.
   final Organisation organisation;
+  /// The sites a member can be limited to.
   final List<Site> sites;
+  /// The member being edited, or null to invite a new one.
   final Member? member;
 
   @override

@@ -8,10 +8,14 @@ import 'package:smart_surveillance/features/events/domain/models.dart';
 import 'package:smart_surveillance/features/investigation/domain/models.dart';
 import 'package:smart_surveillance/features/investigation/domain/search_models.dart';
 import 'package:smart_surveillance/features/investigation/domain/search_repository.dart';
+/// An in-memory [SearchRepository] backed by demo data.
 class FakeSearchRepository implements SearchRepository {
+  /// Creates a repository reading [store] and filtering through [events].
   FakeSearchRepository(this.store, this.events);
 
+  /// The demo data store this repository works on.
   final FakeStore store;
+  /// The event repository whose filtering the search reuses.
   final FakeEventRepository events;
 
   @override

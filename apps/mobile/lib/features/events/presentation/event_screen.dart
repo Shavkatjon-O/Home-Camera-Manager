@@ -19,17 +19,22 @@ import 'package:smart_surveillance/features/investigation/domain/models.dart';
 import 'package:smart_surveillance/features/media/presentation/clip_player.dart';
 import 'package:smart_surveillance/features/tenancy/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
+/// Loads the event with the given id.
 final eventProvider = FutureProvider.autoDispose.family<CameraEvent, String>(
   (ref, id) => ref.read(backendProvider).events.event(id),
 );
 
+/// Loads the cross-camera journey for the event with the given id, or null when none exists.
 final journeyProvider = FutureProvider.autoDispose.family<Journey?, String>(
   (ref, id) => ref.read(backendProvider).analytics.journey(id),
 );
 
+/// The details of one event: media, facts and actions.
 class EventScreen extends ConsumerStatefulWidget {
+  /// Creates the screen for the event [eventId].
   const EventScreen({super.key, required this.eventId});
 
+  /// The id of the event shown.
   final String eventId;
 
   @override
@@ -237,9 +242,12 @@ class _EventScreenState extends ConsumerState<EventScreen> {
   }
 }
 
+/// The section of an event screen describing the recognized or unknown face.
 class FaceSection extends ConsumerWidget {
+  /// Creates the section for the face of [event].
   const FaceSection({super.key, required this.event});
 
+  /// The event whose face is shown; it must have face information.
   final CameraEvent event;
 
   @override
@@ -274,9 +282,12 @@ class FaceSection extends ConsumerWidget {
   }
 }
 
+/// The section of an event screen listing the license plate readings.
 class PlatesSection extends StatelessWidget {
+  /// Creates the section for the plates of [event].
   const PlatesSection({super.key, required this.event});
 
+  /// The event whose plates are shown.
   final CameraEvent event;
 
   @override
@@ -332,9 +343,12 @@ class PlatesSection extends StatelessWidget {
   }
 }
 
+/// The section of an event screen showing where the person was seen on other cameras.
 class JourneySection extends ConsumerWidget {
+  /// Creates the section for the journey of event [eventId].
   const JourneySection({super.key, required this.eventId});
 
+  /// The id of the event whose journey is shown.
   final String eventId;
 
   @override

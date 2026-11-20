@@ -7,9 +7,12 @@ import 'package:smart_surveillance/features/alerting/domain/models.dart';
 import 'package:smart_surveillance/features/events/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/domain/tenancy_repository.dart';
+/// An in-memory tenancy repository backed by a [FakeStore].
 class FakeTenancyRepository implements TenancyRepository {
+  /// Creates a repository that keeps its data in [store].
   FakeTenancyRepository(this.store);
 
+  /// The shared fake data store.
   final FakeStore store;
 
   @override

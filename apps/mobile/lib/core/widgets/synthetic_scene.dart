@@ -3,11 +3,16 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:smart_surveillance/core/design/tokens.dart';
 import 'package:smart_surveillance/core/media/media_source.dart';
+/// A widget that draws a synthetic camera scene, used by the demo cameras instead of real video.
 class SyntheticScene extends StatelessWidget {
+  /// Creates a scene for [media], stamped with [clock] or the media's own time.
   const SyntheticScene({super.key, required this.media, this.clock, this.showStamp = true});
 
+  /// The scene to draw.
   final SyntheticMedia media;
+  /// The time shown in the camera stamp, overriding the time of [media].
   final DateTime? clock;
+  /// Whether the date and time stamp is drawn in the corner.
   final bool showStamp;
 
   @override
@@ -17,21 +22,29 @@ class SyntheticScene extends StatelessWidget {
   );
 }
 
+/// A painter that draws a [SyntheticMedia] scene with its figures, grain and camera stamp.
 class ScenePainter extends CustomPainter {
+  /// Creates a painter for [media], stamping [clock] when [showStamp] is true.
   ScenePainter(this.media, this.clock, {this.showStamp = true});
 
+  /// The scene to draw.
   final SyntheticMedia media;
+  /// The time shown in the camera stamp, or null for no stamp.
   final DateTime? clock;
+  /// Whether the date and time stamp is drawn.
   final bool showStamp;
 
+  /// Returns [color] as seen by the camera: desaturated to grey at night, unchanged by day.
   Color tone(Color color) {
     if (!media.night) return color;
     final grey = (0.299 * color.r + 0.587 * color.g + 0.114 * color.b) * 0.82;
     return Color.from(alpha: color.a, red: grey * 0.96, green: grey, blue: grey * 1.02);
   }
 
+  /// Returns a solid paint of [color], adjusted for night.
   Paint fill(Color color) => Paint()..color = tone(color);
 
+  /// Returns a paint that blends [colors] from [begin] to [end] across [rect], adjusted for night.
   Paint gradient(Rect rect, List<Color> colors, {Alignment begin = Alignment.topCenter, Alignment end = Alignment.bottomCenter}) =>
       Paint()..shader = LinearGradient(begin: begin, end: end, colors: [for (final c in colors) tone(c)]).createShader(rect);
 
@@ -72,6 +85,7 @@ class ScenePainter extends CustomPainter {
     canvas.restore();
   }
 
+  /// Draws a street scene with buildings along a road.
   void street(Canvas canvas, Size size, Random random) {
     final w = size.width;
     final h = size.height;
@@ -112,6 +126,7 @@ class ScenePainter extends CustomPainter {
     canvas.drawRect(Rect.fromLTWH(0, horizon + h * 0.02, w * 0.18, h * 0.012), fill(const Color(0xFF7A7F84)));
   }
 
+  /// Draws a yard scene.
   void yard(Canvas canvas, Size size, Random random) {
     final w = size.width;
     final h = size.height;
@@ -135,6 +150,7 @@ class ScenePainter extends CustomPainter {
     }
   }
 
+  /// Draws a driveway scene.
   void driveway(Canvas canvas, Size size, Random random) {
     final w = size.width;
     final h = size.height;
@@ -152,6 +168,7 @@ class ScenePainter extends CustomPainter {
     }
   }
 
+  /// Draws the walls and floor of a room whose far wall has the relative width [depth].
   void indoorBox(Canvas canvas, Size size, Color wall, Color floor, {double depth = 0.36}) {
     final w = size.width;
     final h = size.height;
@@ -184,6 +201,7 @@ class ScenePainter extends CustomPainter {
     }
   }
 
+  /// Draws an indoor hallway scene.
   void hallway(Canvas canvas, Size size) {
     indoorBox(canvas, size, const Color(0xFF9C9488), const Color(0xFF6D5F50));
     final w = size.width;
@@ -191,6 +209,7 @@ class ScenePainter extends CustomPainter {
     canvas.drawRect(Rect.fromLTWH(w * 0.45, h * 0.32, w * 0.1, h * 0.28), fill(const Color(0xFF5A4636)));
   }
 
+  /// Draws a building entrance scene.
   void entrance(Canvas canvas, Size size) {
     indoorBox(canvas, size, const Color(0xFFA7A39B), const Color(0xFF5F5B55), depth: 0.5);
     final w = size.width;
@@ -206,6 +225,7 @@ class ScenePainter extends CustomPainter {
     canvas.drawRect(Rect.fromLTWH(w * 0.3, h * 0.78, w * 0.4, h * 0.1), fill(const Color(0xFF3A3632)));
   }
 
+  /// Draws a shop checkout scene.
   void checkout(Canvas canvas, Size size, Random random) {
     indoorBox(canvas, size, const Color(0xFFB4ADA2), const Color(0xFF8A8278), depth: 0.6);
     final w = size.width;
@@ -230,6 +250,7 @@ class ScenePainter extends CustomPainter {
     canvas.drawRect(Rect.fromLTWH(w * 0.4, h * 0.56, w * 0.08, h * 0.07), fill(const Color(0xFF222222)));
   }
 
+  /// Draws a shop aisle scene.
   void aisle(Canvas canvas, Size size, Random random) {
     indoorBox(canvas, size, const Color(0xFFADA79C), const Color(0xFF8D877E), depth: 0.2);
     final w = size.width;
@@ -266,6 +287,7 @@ class ScenePainter extends CustomPainter {
     }
   }
 
+  /// Draws a stockroom scene.
   void stockroom(Canvas canvas, Size size, Random random) {
     indoorBox(canvas, size, const Color(0xFF7F7A72), const Color(0xFF5B5852), depth: 0.55);
     final w = size.width;
@@ -279,6 +301,7 @@ class ScenePainter extends CustomPainter {
     }
   }
 
+  /// Draws a face on a plain background.
   void face(Canvas canvas, Size size, Random random) {
     final w = size.width;
     final h = size.height;
@@ -301,6 +324,7 @@ class ScenePainter extends CustomPainter {
     );
   }
 
+  /// Draws a simple person, vehicle, animal or generic shape for [figure], chosen by its label.
   void drawFigure(Canvas canvas, Size size, SceneFigure figure) {
     final box = Rect.fromLTRB(
       figure.box.left * size.width,
@@ -332,6 +356,7 @@ class ScenePainter extends CustomPainter {
     }
   }
 
+  /// Draws film grain noise over the whole frame.
   void grain(Canvas canvas, Size size, Random random) {
     final dot = Paint()..color = const Color(0x16FFFFFF);
     final dark = Paint()..color = const Color(0x14000000);
@@ -341,6 +366,7 @@ class ScenePainter extends CustomPainter {
     }
   }
 
+  /// Draws a darkening of the frame edges.
   void vignette(Canvas canvas, Rect rect) {
     canvas.drawRect(
       rect,
@@ -353,6 +379,7 @@ class ScenePainter extends CustomPainter {
     );
   }
 
+  /// Draws the date and time [at] in the top left corner of the frame.
   void stamp(Canvas canvas, Size size, DateTime at) {
     String two(int value) => value.toString().padLeft(2, '0');
     final text = '${at.year}-${two(at.month)}-${two(at.day)} ${two(at.hour)}:${two(at.minute)}:${two(at.second)}';

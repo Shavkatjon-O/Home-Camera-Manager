@@ -4,17 +4,25 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_surveillance/core/design/palette.dart';
 import 'package:smart_surveillance/core/design/tokens.dart';
+/// Inward and outward counts for a run of time buckets, ready to chart.
 class CountsSeries {
+  /// Creates a series from per-bucket [labels], [inward] counts and [outward] counts.
   const CountsSeries({required this.labels, required this.inward, required this.outward});
 
+  /// The label of each bucket, such as the hour or day.
   final List<String> labels;
+  /// The number of objects that crossed inward in each bucket.
   final List<int> inward;
+  /// The number of objects that crossed outward in each bucket.
   final List<int> outward;
 
+  /// Returns the total inward count over all buckets.
   int get totalIn => inward.fold(0, (a, b) => a + b);
 
+  /// Returns the total outward count over all buckets.
   int get totalOut => outward.fold(0, (a, b) => a + b);
 
+  /// Returns the index of the bucket with the most crossings in both directions.
   int get peak {
     var best = 0;
     for (var i = 1; i < inward.length; i++) {
@@ -24,7 +32,9 @@ class CountsSeries {
   }
 }
 
+/// A bar chart of inward and outward counts per bucket.
 class CountsChart extends StatelessWidget {
+  /// Creates a chart of [series], [height] logical pixels tall.
   const CountsChart({
     super.key,
     required this.series,
@@ -34,10 +44,15 @@ class CountsChart extends StatelessWidget {
     this.semanticLabel,
   });
 
+  /// The counts to draw.
   final CountsSeries series;
+  /// The height of the chart.
   final double height;
+  /// Whether the outward bars are drawn beside the inward ones.
   final bool showOut;
+  /// How many buckets apart the labels under the bars are shown.
   final int labelEvery;
+  /// The description read out by screen readers.
   final String? semanticLabel;
 
   @override
@@ -131,10 +146,14 @@ class CountsChart extends StatelessWidget {
   }
 }
 
+/// A legend naming the two bar colours of [CountsChart].
 class ChartLegend extends StatelessWidget {
+  /// Creates a legend with the given labels.
   const ChartLegend({super.key, required this.inLabel, required this.outLabel});
 
+  /// The label of the inward bars.
   final String inLabel;
+  /// The label of the outward bars.
   final String outLabel;
 
   @override
@@ -155,11 +174,16 @@ class ChartLegend extends StatelessWidget {
   }
 }
 
+/// A row of thin bars showing a value between 0 and 1 over time, coloured by how low it is.
 class Sparkline extends StatelessWidget {
+  /// Creates a sparkline of [values], [height] tall, where null marks a bucket with no data.
   const Sparkline({super.key, required this.values, this.height = 28, this.color});
 
+  /// The value of each bucket from 0 to 1, or null when there is no data.
   final List<double?> values;
+  /// The height of the tallest bar.
   final double height;
+  /// The colour of healthy bars, defaulting to the success colour.
   final Color? color;
 
   @override

@@ -13,6 +13,7 @@ class NotificationsSetupScreen extends ConsumerWidget {
   /// Creates the screen.
   const NotificationsSetupScreen({super.key});
 
+  /// Requests notification permission when [ask] is true, then continues onboarding.
   Future<void> finish(BuildContext context, WidgetRef ref, {required bool ask}) async {
     if (ask) await Permission.notification.request();
     await ref.read(preferencesProvider).setOnboardedNotifications(true);

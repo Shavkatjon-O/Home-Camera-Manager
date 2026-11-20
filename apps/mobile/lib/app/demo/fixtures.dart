@@ -11,43 +11,72 @@ import 'package:smart_surveillance/features/insights/domain/models.dart';
 import 'package:smart_surveillance/features/investigation/domain/models.dart';
 import 'package:smart_surveillance/features/operations/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/domain/models.dart';
+/// A demo camera together with the scene types drawn for each of its lenses.
 class CameraFixture {
+  /// Creates a fixture for [camera] drawing [scenes], one per lens.
   const CameraFixture(this.camera, this.scenes);
 
+  /// The camera record served by the fake device repository.
   final Camera camera;
+  /// The synthetic scene shown for each lens of the camera.
   final List<SceneKind> scenes;
 }
 
+/// The generated demo data set that backs the fake repositories.
 class Fixtures {
+  /// Creates the data set with all times relative to [now].
   Fixtures(this.now) {
     build();
   }
 
+  /// The current time at which the data was generated; events and history count back from it.
   final DateTime now;
 
+  /// The signed-in demo user.
   late User user;
+  /// The demo organisations.
   final organisations = <Organisation>[];
+  /// The demo sites across all organisations.
   final sites = <Site>[];
+  /// The demo connectors, which bridge cameras to the cloud.
   final connectors = <Connector>[];
+  /// The demo cameras with their scene types.
   final cameras = <CameraFixture>[];
+  /// The demo analytics views, one or more per camera.
   final views = <AnalyticsView>[];
+  /// The demo events, newest first once live events are inserted.
   final events = <CameraEvent>[];
+  /// The known people.
   final people = <Person>[];
+  /// The clusters of similar unnamed faces.
   final clusters = <FaceCluster>[];
+  /// The members of each organisation, keyed by organisation id.
   final members = <String, List<Member>>{};
+  /// The pending invitations of each organisation, keyed by organisation id.
   final invitations = <String, List<Invitation>>{};
+  /// The devices the user is signed in on.
   final sessions = <DeviceSession>[];
+  /// The areas of each site, keyed by site id.
   final areas = <String, List<Area>>{};
+  /// The cameras found by network discovery for each connector, keyed by connector id.
   final discovered = <String, List<DiscoveredCamera>>{};
+  /// The PTZ presets of each camera, keyed by camera id.
   final presets = <String, List<PtzPreset>>{};
+  /// The notification preferences for each site, keyed by site id.
   final prefs = <String, NotificationPrefs>{};
+  /// The linked Telegram chats for each organisation, keyed by organisation id.
   final telegram = <String, List<TelegramChat>>{};
+  /// The audit log entries for each organisation, keyed by organisation id.
   final audit = <String, List<AuditEntry>>{};
 
+  /// The id of the demo home site.
   static const homeSite = 'site-home';
+  /// The id of the demo store site.
   static const storeSite = 'site-store';
+  /// The id of the main demo organisation.
   static const demoOrg = 'org-demo';
 
+  /// Generates all the demo data in dependency order.
   void build() {
     user = const User(id: 'user-demo', name: 'Demo owner', email: 'owner@demo.example');
     organisations.addAll(const [
@@ -486,8 +515,10 @@ class Fixtures {
     buildAudit();
   }
 
+  /// Returns a synthetic face image drawn from [seed].
   SyntheticMedia face(int seed) => SyntheticMedia(SceneKind.face, seed: seed);
 
+  /// Generates the known people and face clusters.
   void buildPeople() {
     FaceSample sample(String id, int seed, int minutes, {SampleSource source = SampleSource.event}) => FaceSample(
       id: id,
@@ -560,11 +591,15 @@ class Fixtures {
     ]);
   }
 
+  /// Returns the camera fixture with [id], throwing when it does not exist.
   CameraFixture camera(String id) => cameras.firstWhere((c) => c.camera.id == id);
 
+  /// Returns the analytics view of lens [lens] of camera [cameraId], throwing when it does not
+  /// exist.
   AnalyticsView viewFor(String cameraId, [int lens = 0]) =>
       views.firstWhere((v) => v.cameraId == cameraId && v.lens == lens);
 
+  /// Generates a spread of events over the past days from the cameras and views.
   void buildEvents() {
     final random = Random(7);
     var counter = 0;
@@ -745,6 +780,7 @@ class Fixtures {
     events.sort((a, b) => b.startedAt.compareTo(a.startedAt));
   }
 
+  /// Generates the members, invitations, sessions and areas.
   void buildTenancy() {
     members[demoOrg] = [
       Member(
@@ -814,6 +850,7 @@ class Fixtures {
     ]);
   }
 
+  /// Generates the audit log entries.
   void buildAudit() {
     AuditEntry entry(int minutes, String actor, String action, AuditCategory category, {String? target, String? site}) => AuditEntry(
       id: 'audit-$minutes-${action.hashCode}',
@@ -842,6 +879,7 @@ class Fixtures {
     ];
   }
 
+  /// Returns a count report for [siteId] from [start] to [end], grouped by [bucket].
   CountsReport counts(String siteId, DateTime start, DateTime end, Bucket bucket) {
     final siteViews = views.where((v) => camera(v.cameraId).camera.siteId == siteId);
     final lines = <CountLine>[];
@@ -872,6 +910,7 @@ class Fixtures {
     return CountsReport(start: start, end: end, bucket: bucket, lines: lines, buckets: buckets);
   }
 
+  /// Returns a relative activity level for [hour], with a store day curve when [store] is true.
   double shape(int hour, bool store) {
     if (store) {
       if (hour < 8 || hour > 21) return 0.02;
@@ -882,6 +921,7 @@ class Fixtures {
     return hour < home.length ? home[hour] : (hour > 16 && hour < 21 ? 1.2 : 0.4);
   }
 
+  /// Returns a health report for [siteId] with uptime, outages and per-target history.
   HealthReport health(String siteId) {
     final targets = <HealthTarget>[];
     final outages = <Outage>[];

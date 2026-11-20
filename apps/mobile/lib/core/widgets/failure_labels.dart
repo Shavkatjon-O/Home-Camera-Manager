@@ -1,7 +1,9 @@
 import 'package:smart_surveillance/app/l10n/l10n.dart';
 import 'package:smart_surveillance/core/network/failure.dart';
 
+/// Adds translated messages for failures to [AppLocalizations].
 extension FailureLabels on AppLocalizations {
+  /// Returns the message describing [error], or a generic one when it is not an [ApiFailure].
   String failure(Object error) {
     if (error is! ApiFailure) return errorUnknown;
     return switch (error.kind) {
