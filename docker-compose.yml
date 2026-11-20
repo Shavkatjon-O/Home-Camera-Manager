@@ -1,10 +1,52 @@
 name: smart-surveillance-system
 
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: "3"
+
+x-restart: &restart
+  restart: unless-stopped
+
+x-hardening: &hardening
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+
+x-v380-bridge: &v380-bridge
+  <<: [*restart, *hardening]
+  build: ./services/v380-bridge
+  image: smart-surveillance-system-v380-bridge:local
+  logging: *logging
+  mem_limit: 512m
+  healthcheck:
+    test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/8554"]
+    interval: 30s
+    timeout: 5s
+    retries: 3
+    start_period: 30s
+  networks: [cams]
+
 services:
   postgres:
+    <<: [*restart, *hardening]
     image: postgres:17.6-alpine
     container_name: smart-surveillance-system-postgres
-    restart: unless-stopped
+    logging: *logging
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+    read_only: true
+    tmpfs:
+      - /var/run/postgresql
+      - /tmp
+    mem_limit: 1g
+    shm_size: 256m
     environment:
       POSTGRES_DB: ${SSS_DB_NAME:-surveillance}
       POSTGRES_USER: ${SSS_DB_USER:-surveillance}
@@ -16,12 +58,18 @@ services:
       interval: 5s
       timeout: 3s
       retries: 20
-    networks: [cams]
+    networks: [database]
 
   go2rtc:
+    <<: [*restart, *hardening]
     image: alexxit/go2rtc:1.9.14-hardware
     container_name: smart-surveillance-system-go2rtc
-    restart: unless-stopped
+    logging: *logging
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp
+    mem_limit: 2g
     deploy:
       resources:
         reservations:
@@ -37,32 +85,50 @@ services:
       - ./deploy/go2rtc/go2rtc-tv.sh:/config/tv.sh:ro
     ports:
       - "${SSS_LAN_BIND:?set SSS_LAN_BIND to this machine LAN address}:8554:8554"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:1984/api"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
     networks: [cams]
 
   backend:
+    <<: [*restart, *hardening]
     build:
       context: .
       dockerfile: services/api/Dockerfile
     image: smart-surveillance-system-backend:local
     container_name: smart-surveillance-system-backend
-    restart: unless-stopped
+    logging: *logging
+    read_only: true
+    tmpfs:
+      - /tmp
+    mem_limit: 1g
     env_file: .env
     volumes:
       - events:/data/events
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/version', timeout=4)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
     depends_on:
       postgres:
         condition: service_healthy
       go2rtc:
-        condition: service_started
-    networks: [cams]
+        condition: service_healthy
+    networks: [cams, database]
 
   analytics:
+    <<: [*restart, *hardening]
     build:
       context: ./services/analytics
       target: runtime
     image: smart-surveillance-system-analytics:local
     container_name: smart-surveillance-system-analytics
-    restart: unless-stopped
+    logging: *logging
+    init: true
     env_file: .env
     environment:
       SSS_ANALYTICS_BACKEND_URL: http://backend:8000
@@ -87,18 +153,22 @@ services:
         tmpfs:
           size: 1073741824
           mode: 01777
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=4)"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 600s
     depends_on:
       backend:
-        condition: service_started
+        condition: service_healthy
       go2rtc:
-        condition: service_started
-    networks: [cams]
+        condition: service_healthy
+    networks: [cams, database]
 
   v380-ptz-1:
-    build: ./services/v380-bridge
-    image: smart-surveillance-system-v380-bridge:local
+    <<: *v380-bridge
     container_name: smart-surveillance-system-v380-ptz-1
-    restart: unless-stopped
     command:
       - --id
       - ${V380_PTZ_1_ID:?set V380_PTZ_1_ID}
@@ -116,13 +186,10 @@ services:
       - "8554"
       - --http-port
       - "8080"
-    networks: [cams]
 
   v380-ptz-2:
-    build: ./services/v380-bridge
-    image: smart-surveillance-system-v380-bridge:local
+    <<: *v380-bridge
     container_name: smart-surveillance-system-v380-ptz-2
-    restart: unless-stopped
     command:
       - --id
       - ${V380_PTZ_2_ID:?set V380_PTZ_2_ID}
@@ -140,17 +207,30 @@ services:
       - "8554"
       - --http-port
       - "8080"
-    networks: [cams]
 
   web:
+    <<: [*restart, *hardening]
     build: ./apps/console
     image: smart-surveillance-system-web:local
     container_name: smart-surveillance-system-web
-    restart: unless-stopped
-    depends_on: [backend, go2rtc]
+    logging: *logging
+    read_only: true
+    tmpfs:
+      - /tmp
+    mem_limit: 128m
     ports:
-      - "127.0.0.1:${SSS_WEB_PORT:-8750}:80"
-      - "${SSS_LAN_BIND:?set SSS_LAN_BIND to this machine LAN address}:${SSS_WEB_PORT:-8750}:80"
+      - "127.0.0.1:${SSS_WEB_PORT:-8750}:8080"
+      - "${SSS_LAN_BIND:?set SSS_LAN_BIND to this machine LAN address}:${SSS_WEB_PORT:-8750}:8080"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      backend:
+        condition: service_healthy
+      go2rtc:
+        condition: service_healthy
     networks: [cams]
 
 volumes:
@@ -160,3 +240,5 @@ volumes:
 
 networks:
   cams:
+  database:
+    internal: true

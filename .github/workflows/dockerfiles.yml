@@ -29,6 +29,6 @@ jobs:
           status=0
           for file in $(git ls-files '*Dockerfile'); do
             echo "== $file"
-            docker run --rm -i hadolint/hadolint:v2.12.0 < "$file" || status=1
+            docker run --rm -i -v "$PWD/.hadolint.yaml:/.config/hadolint.yaml:ro" hadolint/hadolint:v2.12.0 < "$file" || status=1
           done
           exit $status

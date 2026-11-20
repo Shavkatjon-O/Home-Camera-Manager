@@ -11,6 +11,12 @@ RUN make
 
 FROM nvcr.io/nvidia/deepstream:9.1-samples-multiarch AS runtime
 
+ARG REVISION=unknown
+LABEL org.opencontainers.image.title="smart-surveillance-analytics" \
+      org.opencontainers.image.description="DeepStream analytics engine of Smart Surveillance System" \
+      org.opencontainers.image.source="https://github.com/Shavkatjon-O/Smart-Surveillance-System" \
+      org.opencontainers.image.revision="${REVISION}"
+
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_BREAK_SYSTEM_PACKAGES=1 \
@@ -30,7 +36,7 @@ COPY pyproject.toml ./
 COPY app ./app
 COPY scripts ./scripts
 RUN sh scripts/tracker-config.sh \
-    && pip3 install --no-deps . && rm -rf build *.egg-info
+    && pip3 install --no-deps . && rm -rf build ./*.egg-info
 
 RUN groupadd --system --gid 10001 analytics \
     && useradd --system --uid 10001 --gid analytics --no-create-home --shell /usr/sbin/nologin analytics \

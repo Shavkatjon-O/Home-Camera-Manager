@@ -1,4 +1,6 @@
-"""Application settings read from SSS_ environment variables and the .env file."""
+"""Application settings read from SSS_ environment variables, the .env file and Docker secrets."""
+
+from pathlib import Path
 
 from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -6,10 +8,14 @@ from sqlalchemy.engine import URL
 
 APP_NAME = "smart-surveillance-system"
 APP_VERSION = "0.1.0"
+SECRETS_DIR = "/run/secrets"
 
 
 class Settings(BaseSettings):
     """Every setting of the backend.
+
+    A setting comes from its SSS_ environment variable, the .env file, or a Docker secret file named after the
+    variable in lower case under /run/secrets, such as sss_db_password, in that order.
 
     Attributes:
         lan_bind: Local network address the web app and the TV streams are published on.
@@ -73,7 +79,13 @@ class Settings(BaseSettings):
         device_onvif_port: ONVIF port of bridged V380 cameras on their own address.
     """
 
-    model_config = SettingsConfigDict(env_prefix="SSS_", env_file=".env", case_sensitive=False, extra="ignore")
+    model_config = SettingsConfigDict(
+        env_prefix="SSS_",
+        env_file=".env",
+        case_sensitive=False,
+        extra="ignore",
+        secrets_dir=SECRETS_DIR if Path(SECRETS_DIR).is_dir() else None,
+    )
 
     lan_bind: str = ""
 

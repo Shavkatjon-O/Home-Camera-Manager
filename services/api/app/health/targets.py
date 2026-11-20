@@ -16,6 +16,8 @@ class Target:
         host: Address to probe.
         port: TCP port to probe.
         parent_uuid: Public id of the device this target connects through, if any.
+        site_id: Site the target belongs to, which its samples are stored under.
+        organisation_id: Organisation the target belongs to.
     """
 
     kind: str
@@ -23,6 +25,8 @@ class Target:
     host: str
     port: int
     parent_uuid: UUID | None = None
+    site_id: int | None = None
+    organisation_id: int | None = None
 
 
 def camera_address(host: str, device_host: str | None, rtsp_port: int) -> tuple[str, int]:

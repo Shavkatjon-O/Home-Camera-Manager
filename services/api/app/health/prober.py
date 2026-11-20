@@ -67,6 +67,8 @@ def build_targets(devices: list[NetworkDevice], cameras: list[Camera], links: li
             host=device.host,
             port=device.probe_port,
             parent_uuid=device.parent_uuid,
+            site_id=device.site_id,
+            organisation_id=device.organisation_id,
         )
         for device in devices
     ]
@@ -79,6 +81,8 @@ def build_targets(devices: list[NetworkDevice], cameras: list[Camera], links: li
                 host=host,
                 port=port,
                 parent_uuid=parents.get(camera.uuid),
+                site_id=camera.site_id,
+                organisation_id=camera.organisation_id,
             )
         )
     return targets
@@ -279,7 +283,8 @@ class HealthProber:
     async def save(self, targets: list[Target], outcomes: dict[UUID, ProbeOutcome]) -> None:
         """Store a round's samples and outage changes in one transaction.
 
-        Does nothing when there are no targets and no open outages.
+        The samples are inserted in bulk, which skips the session's owner stamping, so each row carries its
+        target's site and organisation itself. Does nothing when there are no targets and no open outages.
 
         Args:
             targets: Targets that were probed.
@@ -296,6 +301,8 @@ class HealthProber:
                     "ok": outcomes[target.uuid].ok,
                     "latency_ms": outcomes[target.uuid].latency_ms,
                     "error": outcomes[target.uuid].error,
+                    "site_id": target.site_id,
+                    "organisation_id": target.organisation_id,
                 }
                 for target in targets
                 if target.uuid in outcomes

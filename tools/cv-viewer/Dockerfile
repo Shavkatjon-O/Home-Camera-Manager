@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       libxkbcommon0 libxkbcommon-x11-0 libfontconfig1 libdbus-1-3 \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir opencv-python==4.11.0.86 numpy
+RUN pip install --no-cache-dir opencv-python==4.11.0.86 numpy==2.5.5
 
 WORKDIR /app
 COPY cv_viewer.py /app/cv_viewer.py
