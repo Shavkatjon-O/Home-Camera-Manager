@@ -128,6 +128,17 @@ class AgentClient:
         """
         return await self.call("POST", "/cameras/test", request)
 
+    async def identify(self, request: dict) -> dict:
+        """Ask the connector to identify a device on its network with the adapter registry.
+
+        Args:
+            request: Address, ports, credentials, adapter and stream address of the device.
+
+        Returns:
+            The identity: adapter, kind, vendor, model, RTSP port, channels and manifest.
+        """
+        return await self.call("POST", "/identify", request)
+
     async def ptz(self, camera_uuid: UUID, pan: float, tilt: float, zoom: float) -> None:
         """Start a continuous PTZ move through the connector.
 

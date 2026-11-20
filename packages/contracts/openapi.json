@@ -14240,6 +14240,1154 @@
         }
       }
     },
+    "/api/v1/devices": {
+      "get": {
+        "tags": [
+          "devices"
+        ],
+        "summary": "List Devices",
+        "description": "List the devices of the site with the channels added as cameras.",
+        "operationId": "list_devices",
+        "security": [
+          {
+            "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-Site",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Site the request acts on; the member's first site when omitted.",
+              "title": "X-Site"
+            },
+            "description": "Site the request acts on; the member's first site when omitted."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in without the role or site this needs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflicts with the current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "A camera, connector or go2rtc did not answer",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Not available right now",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/devices/{uuid}": {
+      "get": {
+        "tags": [
+          "devices"
+        ],
+        "summary": "Get Device",
+        "description": "Return one device of the site.",
+        "operationId": "get_device",
+        "security": [
+          {
+            "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Uuid"
+            }
+          },
+          {
+            "name": "X-Site",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Site the request acts on; the member's first site when omitted.",
+              "title": "X-Site"
+            },
+            "description": "Site the request acts on; the member's first site when omitted."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceRead"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in without the role or site this needs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflicts with the current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "A camera, connector or go2rtc did not answer",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Not available right now",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pairing/methods": {
+      "get": {
+        "tags": [
+          "pairing"
+        ],
+        "summary": "List Pairing Methods",
+        "description": "List the ways to add a device or a connector that work now, best first, for an optional context.",
+        "operationId": "list_pairing_methods",
+        "security": [
+          {
+            "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "label",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 2048
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "A scanned label payload",
+              "title": "Label"
+            },
+            "description": "A scanned label payload"
+          },
+          {
+            "name": "discovered",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "A camera a connector found",
+              "title": "Discovered"
+            },
+            "description": "A camera a connector found"
+          },
+          {
+            "name": "X-Site",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Site the request acts on; the member's first site when omitted.",
+              "title": "X-Site"
+            },
+            "description": "Site the request acts on; the member's first site when omitted."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PairingMethodList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in without the role or site this needs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflicts with the current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "A camera, connector or go2rtc did not answer",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Not available right now",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pairing/label": {
+      "post": {
+        "tags": [
+          "pairing"
+        ],
+        "summary": "Read Label",
+        "description": "Read a device's label QR code with the adapters' parsers; admins and owners only.",
+        "operationId": "read_label",
+        "security": [
+          {
+            "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-Site",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Site the request acts on; the member's first site when omitted.",
+              "title": "X-Site"
+            },
+            "description": "Site the request acts on; the member's first site when omitted."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LabelRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabelRead"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in without the role or site this needs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflicts with the current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "A camera, connector or go2rtc did not answer",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Not available right now",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pairing/identify": {
+      "post": {
+        "tags": [
+          "pairing"
+        ],
+        "summary": "Identify Device",
+        "description": "Identify a device through a connector, or directly, with the adapter registry; admins and owners only.",
+        "operationId": "identify_device",
+        "security": [
+          {
+            "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-Site",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Site the request acts on; the member's first site when omitted.",
+              "title": "X-Site"
+            },
+            "description": "Site the request acts on; the member's first site when omitted."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IdentifyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdentifyResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in without the role or site this needs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflicts with the current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "A camera, connector or go2rtc did not answer",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Not available right now",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pairing/devices": {
+      "post": {
+        "tags": [
+          "pairing"
+        ],
+        "summary": "Create Paired Device",
+        "description": "Add a device and the chosen channels as cameras, by any device pairing method; admins and owners only.",
+        "operationId": "create_paired_device",
+        "security": [
+          {
+            "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-Site",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Site the request acts on; the member's first site when omitted.",
+              "title": "X-Site"
+            },
+            "description": "Site the request acts on; the member's first site when omitted."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PairingDeviceCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceRead"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in without the role or site this needs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflicts with the current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "A camera, connector or go2rtc did not answer",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Not available right now",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pairing/attempts": {
+      "post": {
+        "tags": [
+          "pairing"
+        ],
+        "summary": "Report Pairing Attempt",
+        "description": "Record a pairing step the app took itself, such as a scan the member abandoned; it carries no personal data.",
+        "operationId": "report_pairing_attempt",
+        "security": [
+          {
+            "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-Site",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Site the request acts on; the member's first site when omitted.",
+              "title": "X-Site"
+            },
+            "description": "Site the request acts on; the member's first site when omitted."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PairingAttemptCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PairingAttemptRead"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in without the role or site this needs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflicts with the current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "A camera, connector or go2rtc did not answer",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Not available right now",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pairing/stats": {
+      "get": {
+        "tags": [
+          "pairing"
+        ],
+        "summary": "Read Pairing Stats",
+        "description": "Sum up the organisation's pairing attempts per method; admins and owners only.",
+        "operationId": "read_pairing_stats",
+        "security": [
+          {
+            "APIKeyCookie": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 365,
+              "minimum": 1,
+              "default": 30,
+              "title": "Days"
+            }
+          },
+          {
+            "name": "X-Site",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Site the request acts on; the member's first site when omitted.",
+              "title": "X-Site"
+            },
+            "description": "Site the request acts on; the member's first site when omitted."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PairingStats"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in without the role or site this needs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflicts with the current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "A camera, connector or go2rtc did not answer",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Not available right now",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/events": {
       "get": {
         "tags": [
@@ -22546,6 +23694,17 @@
         "title": "ArmMode",
         "description": "Global arm mode that decides which analytics events raise an alert."
       },
+      "AttemptOutcome": {
+        "type": "string",
+        "enum": [
+          "started",
+          "succeeded",
+          "failed",
+          "abandoned"
+        ],
+        "title": "AttemptOutcome",
+        "description": "Outcome of a pairing attempt."
+      },
       "AudioRead": {
         "properties": {
           "camera_uuid": {
@@ -23043,6 +24202,39 @@
               }
             ],
             "title": "Connector"
+          },
+          "device": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Device"
+          },
+          "channel": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Channel"
+          },
+          "capabilities": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CapabilitiesRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -23069,7 +24261,7 @@
           "updated_at"
         ],
         "title": "CameraRead",
-        "description": "Camera as returned by the API; the password is never included.\n\nAttributes:\n    uuid: Public id of the camera.\n    name: Display name.\n    brand: Camera brand.\n    host: Address the streams are pulled from.\n    device_host: Address of the camera itself when it differs from host.\n    rtsp_port: RTSP port of host.\n    onvif_port: ONVIF port, or None when the camera has none.\n    username: Camera login name.\n    has_password: Whether a password is stored.\n    main_path: RTSP path of the main stream.\n    sub_path: RTSP path of the sub stream, or None when there is none.\n    lenses: Number of lenses the camera has.\n    ptz_enabled: Whether pan, tilt and zoom control is on.\n    location: Free-text place the camera watches.\n    position: Place of the camera in the wall order.\n    enabled: Whether the camera is streamed.\n    status: Last known reachability.\n    streams: Stream names in the stream server.\n    created_at: When the camera was registered.\n    updated_at: When the camera last changed.\n    connector: Connector that reaches the camera on its site's network, None when the backend reaches it."
+        "description": "Camera as returned by the API; the password is never included.\n\nAttributes:\n    uuid: Public id of the camera.\n    name: Display name.\n    brand: Camera brand.\n    host: Address the streams are pulled from.\n    device_host: Address of the camera itself when it differs from host.\n    rtsp_port: RTSP port of host.\n    onvif_port: ONVIF port, or None when the camera has none.\n    username: Camera login name.\n    has_password: Whether a password is stored.\n    main_path: RTSP path of the main stream.\n    sub_path: RTSP path of the sub stream, or None when there is none.\n    lenses: Number of lenses the camera has.\n    ptz_enabled: Whether pan, tilt and zoom control is on.\n    location: Free-text place the camera watches.\n    position: Place of the camera in the wall order.\n    enabled: Whether the camera is streamed.\n    status: Last known reachability.\n    streams: Stream names in the stream server.\n    created_at: When the camera was registered.\n    updated_at: When the camera last changed.\n    connector: Connector that reaches the camera on its site's network, None when the backend reaches it.\n    device: Device the camera is a channel of.\n    channel: Channel number of the camera on its device.\n    capabilities: What the camera can do, so the apps show only its real controls."
       },
       "CameraSort": {
         "type": "string",
@@ -23328,81 +24520,151 @@
         "title": "CameraUpdate",
         "description": "Request to change a camera; only the fields that are sent change.\n\nAttributes:\n    name: Display name.\n    brand: Camera brand.\n    host: Address the streams are pulled from.\n    device_host: Address of the camera itself when it differs from host.\n    location: Free-text place the camera watches.\n    rtsp_port: RTSP port of host.\n    onvif_port: ONVIF port.\n    username: Camera login name.\n    password: New camera password; an empty string removes the stored one.\n    main_path: RTSP path of the main stream.\n    sub_path: RTSP path of the sub stream.\n    lenses: Number of lenses the camera has.\n    ptz_enabled: Whether pan, tilt and zoom control is on.\n    enabled: Whether the camera is streamed."
       },
-      "ClockRead": {
+      "CapabilitiesRead": {
         "properties": {
-          "camera_utc": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Camera Utc"
-          },
-          "server_utc": {
+          "adapter": {
             "type": "string",
-            "format": "date-time",
-            "title": "Server Utc"
+            "title": "Adapter"
           },
-          "offset_seconds": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Offset Seconds"
+          "version": {
+            "type": "integer",
+            "title": "Version"
           },
-          "mode": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Mode"
+          "kind": {
+            "type": "string",
+            "title": "Kind"
           },
-          "timezone": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Timezone"
+          "channels": {
+            "type": "integer",
+            "title": "Channels"
           },
-          "daylight_savings": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Daylight Savings"
+          "identify": {
+            "type": "boolean",
+            "title": "Identify"
+          },
+          "media": {
+            "$ref": "#/components/schemas/MediaCapabilities"
+          },
+          "control": {
+            "$ref": "#/components/schemas/ControlCapabilities"
+          },
+          "imaging": {
+            "$ref": "#/components/schemas/ImagingCapabilities"
+          },
+          "events": {
+            "$ref": "#/components/schemas/EventCapabilities"
+          },
+          "playback": {
+            "$ref": "#/components/schemas/PlaybackCapabilities"
+          },
+          "maintenance": {
+            "$ref": "#/components/schemas/MaintenanceCapabilities"
+          },
+          "provisioning": {
+            "$ref": "#/components/schemas/ProvisioningCapabilities"
           }
         },
         "type": "object",
         "required": [
-          "camera_utc",
-          "server_utc",
-          "offset_seconds",
-          "mode",
-          "timezone",
-          "daylight_savings"
+          "adapter",
+          "version",
+          "kind",
+          "channels",
+          "identify",
+          "media",
+          "control",
+          "imaging",
+          "events",
+          "playback",
+          "maintenance",
+          "provisioning"
         ],
-        "title": "ClockRead",
-        "description": "Camera clock compared with this server's clock.\n\nAttributes:\n    camera_utc: Camera time in UTC, or None when the camera reported none.\n    server_utc: This server's time in UTC when the camera was read.\n    offset_seconds: Camera time minus server time in seconds, or None when the camera time is unknown.\n    mode: Time setting mode the camera reports, such as manual or NTP.\n    timezone: Time zone the camera reports.\n    daylight_savings: Whether the camera applies daylight saving time."
+        "title": "CapabilitiesRead",
+        "description": "The capability manifest of a camera or device.\n\nAttributes:\n    adapter: Adapter that reaches it.\n    version: Manifest format version.\n    kind: camera, nvr or dvr.\n    channels: Video channels of its device.\n    identify: Whether its vendor and model can be read.\n    media: Its streams.\n    control: Its movement and switches.\n    imaging: Its picture settings.\n    events: Its own events.\n    playback: Its own recordings.\n    maintenance: Its clock and restart.\n    provisioning: Its Wi-Fi provisioning."
+      },
+      "ChannelRead": {
+        "properties": {
+          "index": {
+            "type": "integer",
+            "title": "Index"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "main_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Main Path"
+          },
+          "sub_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sub Path"
+          },
+          "width": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Width"
+          },
+          "height": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Height"
+          },
+          "encoding": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Encoding"
+          },
+          "ptz": {
+            "type": "boolean",
+            "title": "Ptz"
+          }
+        },
+        "type": "object",
+        "required": [
+          "index",
+          "name",
+          "main_path",
+          "sub_path",
+          "width",
+          "height",
+          "encoding",
+          "ptz"
+        ],
+        "title": "ChannelRead",
+        "description": "A video channel an adapter found.\n\nAttributes:\n    index: Channel number from 1.\n    name: Name the device gives it.\n    main_path: Main stream path.\n    sub_path: Sub stream path.\n    width: Width of the main stream.\n    height: Height of the main stream.\n    encoding: Codec of the main stream.\n    ptz: Whether it can be moved."
       },
       "ClusterFacet": {
         "properties": {
@@ -23952,6 +25214,43 @@
         "title": "ConnectorUpdate",
         "description": "Request to change a connector; only the fields sent change.\n\nAttributes:\n    name: Display name.\n    address: Address central reaches it at in direct mode, replacing the reported one."
       },
+      "ControlCapabilities": {
+        "properties": {
+          "ptz": {
+            "type": "boolean",
+            "title": "Ptz",
+            "default": false
+          },
+          "zoom": {
+            "type": "boolean",
+            "title": "Zoom",
+            "default": false
+          },
+          "presets": {
+            "type": "boolean",
+            "title": "Presets",
+            "default": false
+          },
+          "home": {
+            "type": "boolean",
+            "title": "Home",
+            "default": false
+          },
+          "light": {
+            "type": "boolean",
+            "title": "Light",
+            "default": false
+          },
+          "siren": {
+            "type": "boolean",
+            "title": "Siren",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "ControlCapabilities",
+        "description": "What the camera can be moved or switched with.\n\nAttributes:\n    ptz: Continuous pan and tilt.\n    zoom: Continuous zoom.\n    presets: Stored positions.\n    home: A home position.\n    light: A light.\n    siren: A siren."
+      },
       "CountBucketRead": {
         "properties": {
           "line_uuid": {
@@ -24222,6 +25521,36 @@
         "title": "DeviceAuthorization",
         "description": "The RFC 8628 device authorization answer.\n\nAttributes:\n    device_code: Code the connector polls the token endpoint with; kept secret on the connector.\n    user_code: Code the connector shows, which a member types or scans in the app.\n    verification_uri: Address of the claim page.\n    verification_uri_complete: The same with the code, for the QR code.\n    expires_in: Seconds both codes stay valid.\n    interval: Seconds to wait between polls."
       },
+      "DeviceChannelRead": {
+        "properties": {
+          "camera": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Camera"
+          },
+          "channel": {
+            "type": "integer",
+            "title": "Channel"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          }
+        },
+        "type": "object",
+        "required": [
+          "camera",
+          "channel",
+          "name",
+          "enabled"
+        ],
+        "title": "DeviceChannelRead",
+        "description": "A channel of a device and the camera it is.\n\nAttributes:\n    camera: Public id of the camera.\n    channel: Channel number from 1.\n    name: Name of the camera.\n    enabled: Whether the camera is streamed."
+      },
       "DeviceCodeRequest": {
         "properties": {
           "name": {
@@ -24314,18 +25643,43 @@
         "title": "DeviceKind",
         "description": "Kinds of network device."
       },
+      "DeviceList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/DeviceRead"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "DeviceList",
+        "description": "Devices of the site.\n\nAttributes:\n    items: The devices, oldest first."
+      },
       "DeviceRead": {
         "properties": {
-          "camera_uuid": {
+          "uuid": {
             "type": "string",
             "format": "uuid",
-            "title": "Camera Uuid"
+            "title": "Uuid"
           },
-          "supported": {
-            "type": "boolean",
-            "title": "Supported"
+          "kind": {
+            "type": "string",
+            "title": "Kind"
           },
-          "reason": {
+          "adapter": {
+            "type": "string",
+            "title": "Adapter"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "vendor": {
             "anyOf": [
               {
                 "type": "string"
@@ -24334,29 +25688,7 @@
                 "type": "null"
               }
             ],
-            "title": "Reason"
-          },
-          "endpoint": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Endpoint"
-          },
-          "manufacturer": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Manufacturer"
+            "title": "Vendor"
           },
           "model": {
             "anyOf": [
@@ -24369,62 +25701,67 @@
             ],
             "title": "Model"
           },
-          "firmware": {
+          "connector": {
             "anyOf": [
               {
-                "type": "string"
+                "type": "string",
+                "format": "uuid"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Firmware"
+            "title": "Connector"
           },
-          "serial": {
+          "channel_count": {
+            "type": "integer",
+            "title": "Channel Count"
+          },
+          "channels": {
+            "items": {
+              "$ref": "#/components/schemas/DeviceChannelRead"
+            },
+            "type": "array",
+            "title": "Channels"
+          },
+          "capabilities": {
+            "$ref": "#/components/schemas/CapabilitiesRead"
+          },
+          "identified_at": {
             "anyOf": [
               {
-                "type": "string"
+                "type": "string",
+                "format": "date-time"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Serial"
+            "title": "Identified At"
           },
-          "hardware_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Hardware Id"
-          },
-          "clock": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/ClockRead"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "can_reboot": {
-            "type": "boolean",
-            "title": "Can Reboot",
-            "default": false
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
           }
         },
         "type": "object",
         "required": [
-          "camera_uuid",
-          "supported"
+          "uuid",
+          "kind",
+          "adapter",
+          "name",
+          "vendor",
+          "model",
+          "connector",
+          "channel_count",
+          "channels",
+          "capabilities",
+          "identified_at",
+          "created_at"
         ],
         "title": "DeviceRead",
-        "description": "ONVIF device details of a camera.\n\nAttributes:\n    camera_uuid: Public id of the camera.\n    supported: Whether the camera could be read over ONVIF.\n    reason: Why the camera could not be read, when it could not.\n    endpoint: Label of the ONVIF endpoint that answered.\n    manufacturer: Manufacturer the camera reports.\n    model: Model the camera reports.\n    firmware: Firmware version the camera reports.\n    serial: Serial number the camera reports.\n    hardware_id: Hardware id the camera reports.\n    clock: Camera clock, when it could be read.\n    can_reboot: Whether the camera can be rebooted through this API."
+        "description": "A camera, NVR or DVR at the site.\n\nAttributes:\n    uuid: Public id.\n    kind: camera, nvr or dvr.\n    adapter: Adapter that reaches it.\n    name: Display name.\n    vendor: Manufacturer it reported.\n    model: Model it reported.\n    connector: Connector that reaches it, None when the backend reaches it.\n    channel_count: Video channels it reported.\n    channels: Its channels that were added as cameras.\n    capabilities: Its capability manifest.\n    identified_at: When an adapter last identified it.\n    created_at: When it was added."
       },
       "DeviceTokenRequest": {
         "properties": {
@@ -25043,6 +26380,21 @@
         ],
         "title": "ErrorDetail",
         "description": "Machine and human readable reason of a failed request.\n\nAttributes:\n    code: Stable error code, such as camera_not_found.\n    message: Explanation for people."
+      },
+      "EventCapabilities": {
+        "properties": {
+          "kinds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Kinds",
+            "default": []
+          }
+        },
+        "type": "object",
+        "title": "EventCapabilities",
+        "description": "Events the camera reports itself.\n\nAttributes:\n    kinds: Normalised kinds such as motion, tamper, storage and reboot."
       },
       "EventCounts": {
         "properties": {
@@ -26380,6 +27732,197 @@
         "title": "IceServerList",
         "description": "ICE servers for the app's peer connection.\n\nAttributes:\n    ice_servers: The servers; empty when go2rtc is reached directly."
       },
+      "IdentifyRequest": {
+        "properties": {
+          "host": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Host"
+          },
+          "port": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 65535.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Port"
+          },
+          "rtsp_port": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 65535.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rtsp Port"
+          },
+          "username": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Username"
+          },
+          "password": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 256
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Password"
+          },
+          "adapter": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Adapter"
+          },
+          "rtsp_url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1024
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rtsp Url"
+          },
+          "device_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Device Id"
+          },
+          "connector": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Connector"
+          }
+        },
+        "type": "object",
+        "title": "IdentifyRequest",
+        "description": "A device to identify, by address or stream address.\n\nAttributes:\n    host: Address on the site's network.\n    port: Control port, such as the ONVIF port; the adapter's usual one when omitted.\n    rtsp_port: RTSP port.\n    username: Login.\n    password: Password; it is not stored by the identification.\n    adapter: Adapter to use, when known; otherwise the registry picks one.\n    rtsp_url: Full stream address, for a plain RTSP camera.\n    device_id: Device id, for a V380 camera.\n    connector: Connector that reaches the device; the backend reaches it itself when omitted and allowed."
+      },
+      "IdentifyResult": {
+        "properties": {
+          "adapter": {
+            "type": "string",
+            "title": "Adapter"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "vendor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vendor"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "rtsp_port": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rtsp Port"
+          },
+          "channels": {
+            "items": {
+              "$ref": "#/components/schemas/ChannelRead"
+            },
+            "type": "array",
+            "title": "Channels"
+          },
+          "capabilities": {
+            "$ref": "#/components/schemas/CapabilitiesRead"
+          },
+          "attempt": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Attempt"
+          }
+        },
+        "type": "object",
+        "required": [
+          "adapter",
+          "kind",
+          "vendor",
+          "model",
+          "rtsp_port",
+          "channels",
+          "capabilities",
+          "attempt"
+        ],
+        "title": "IdentifyResult",
+        "description": "What an adapter learned about a device.\n\nAttributes:\n    adapter: Adapter that identified it.\n    kind: camera, nvr or dvr.\n    vendor: Manufacturer.\n    model: Model.\n    rtsp_port: RTSP port of its streams.\n    channels: Its video channels.\n    capabilities: Its capability manifest.\n    attempt: Pairing attempt the identification belongs to, to pass on to device creation."
+      },
       "ImageOptionsRead": {
         "properties": {
           "levels": {
@@ -26613,6 +28156,31 @@
         "type": "object",
         "title": "ImageSettings",
         "description": "Imaging settings of a camera; as a request, only the fields given are changed.\n\nAttributes:\n    brightness: Image brightness.\n    contrast: Image contrast.\n    saturation: Color saturation.\n    sharpness: Image sharpness.\n    ir_cut_filter: Infrared cut filter mode.\n    wdr_mode: Wide dynamic range mode.\n    wdr_level: Wide dynamic range level.\n    backlight_mode: Backlight compensation mode.\n    backlight_level: Backlight compensation level."
+      },
+      "ImagingCapabilities": {
+        "properties": {
+          "settings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Settings",
+            "default": []
+          },
+          "encoders": {
+            "type": "boolean",
+            "title": "Encoders",
+            "default": false
+          },
+          "motion": {
+            "type": "boolean",
+            "title": "Motion",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "ImagingCapabilities",
+        "description": "Picture settings the camera exposes.\n\nAttributes:\n    settings: Names of the settings.\n    encoders: Whether its video encoders can be changed.\n    motion: Whether its own motion detection can be tuned."
       },
       "InspectProfile": {
         "properties": {
@@ -27176,6 +28744,155 @@
         "title": "JwkSet",
         "description": "Keys that verify access tokens.\n\nAttributes:\n    keys: The keys."
       },
+      "LabelRead": {
+        "properties": {
+          "adapter": {
+            "type": "string",
+            "title": "Adapter"
+          },
+          "format": {
+            "type": "string",
+            "title": "Format"
+          },
+          "confirmed": {
+            "type": "boolean",
+            "title": "Confirmed"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "vendor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vendor"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "serial": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Serial"
+          },
+          "code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          },
+          "device_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Device Id"
+          },
+          "host": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Host"
+          },
+          "port": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Port"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "methods": {
+            "items": {
+              "$ref": "#/components/schemas/PairingMethodId"
+            },
+            "type": "array",
+            "title": "Methods"
+          }
+        },
+        "type": "object",
+        "required": [
+          "adapter",
+          "format",
+          "confirmed",
+          "kind",
+          "vendor",
+          "model",
+          "serial",
+          "code",
+          "device_id",
+          "host",
+          "port",
+          "url",
+          "methods"
+        ],
+        "title": "LabelRead",
+        "description": "What a label says.\n\nAttributes:\n    adapter: Adapter the label belongs to.\n    format: Label format that matched.\n    confirmed: Whether the format follows a published standard; other formats are tolerant guesses.\n    kind: camera, nvr or dvr.\n    vendor: Vendor.\n    model: Model.\n    serial: Serial number.\n    code: Verification or claim code printed with it.\n    device_id: Device id, such as a V380 id.\n    host: Address, when the label carries one.\n    port: Port, when the label carries one.\n    url: Stream or service address, when the label carries one.\n    methods: Pairing methods that can continue from the label, best first."
+      },
+      "LabelRequest": {
+        "properties": {
+          "payload": {
+            "type": "string",
+            "maxLength": 2048,
+            "minLength": 1,
+            "title": "Payload"
+          }
+        },
+        "type": "object",
+        "required": [
+          "payload"
+        ],
+        "title": "LabelRequest",
+        "description": "A label QR code a member scanned.\n\nAttributes:\n    payload: The decoded QR text."
+      },
       "LatencyStats": {
         "properties": {
           "avg_ms": {
@@ -27580,6 +29297,58 @@
         "title": "LoginRequest",
         "description": "Credentials sent to sign in to the web app.\n\nAttributes:\n    username: Sign-in name or email address.\n    password: Account password."
       },
+      "MaintenanceCapabilities": {
+        "properties": {
+          "time": {
+            "type": "boolean",
+            "title": "Time",
+            "default": false
+          },
+          "reboot": {
+            "type": "boolean",
+            "title": "Reboot",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "MaintenanceCapabilities",
+        "description": "Maintenance the camera allows.\n\nAttributes:\n    time: Whether its clock can be read and set.\n    reboot: Whether it can be restarted."
+      },
+      "MediaCapabilities": {
+        "properties": {
+          "main": {
+            "type": "boolean",
+            "title": "Main",
+            "default": true
+          },
+          "sub": {
+            "type": "boolean",
+            "title": "Sub",
+            "default": false
+          },
+          "snapshot": {
+            "type": "boolean",
+            "title": "Snapshot",
+            "default": false
+          },
+          "audio": {
+            "type": "boolean",
+            "title": "Audio",
+            "default": false
+          },
+          "codecs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Codecs",
+            "default": []
+          }
+        },
+        "type": "object",
+        "title": "MediaCapabilities",
+        "description": "What the camera streams.\n\nAttributes:\n    main: Whether it has a main stream.\n    sub: Whether it has a sub stream.\n    snapshot: Whether it serves still pictures itself.\n    audio: Whether its streams carry sound.\n    codecs: Video codecs it was seen streaming."
+      },
       "MemberList": {
         "properties": {
           "items": {
@@ -27714,6 +29483,72 @@
         "type": "object",
         "title": "MemberUpdate",
         "description": "Request to change a member's role or sites; only the fields sent change.\n\nAttributes:\n    role: New role; owner is given only by a transfer of ownership.\n    all_sites: Whether the membership covers every site.\n    sites: Sites it covers when it does not cover all."
+      },
+      "MethodStats": {
+        "properties": {
+          "method": {
+            "$ref": "#/components/schemas/PairingMethodId"
+          },
+          "attempts": {
+            "type": "integer",
+            "title": "Attempts"
+          },
+          "succeeded": {
+            "type": "integer",
+            "title": "Succeeded"
+          },
+          "failed": {
+            "type": "integer",
+            "title": "Failed"
+          },
+          "abandoned": {
+            "type": "integer",
+            "title": "Abandoned"
+          },
+          "success_rate": {
+            "type": "number",
+            "title": "Success Rate"
+          },
+          "median_duration_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Median Duration Ms"
+          },
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/StatCount"
+            },
+            "type": "array",
+            "title": "Errors"
+          },
+          "stopped_at": {
+            "items": {
+              "$ref": "#/components/schemas/StatCount"
+            },
+            "type": "array",
+            "title": "Stopped At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "method",
+          "attempts",
+          "succeeded",
+          "failed",
+          "abandoned",
+          "success_rate",
+          "median_duration_ms",
+          "errors",
+          "stopped_at"
+        ],
+        "title": "MethodStats",
+        "description": "How one pairing method fares.\n\nAttributes:\n    method: Pairing method.\n    attempts: Finished attempts.\n    succeeded: Attempts that succeeded.\n    failed: Attempts that failed.\n    abandoned: Attempts the member abandoned.\n    success_rate: Succeeded over finished attempts, from 0 to 1.\n    median_duration_ms: Median duration of the finished attempts.\n    errors: Most frequent error codes.\n    stopped_at: Steps where unsuccessful attempts stopped."
       },
       "MotionRead": {
         "properties": {
@@ -28533,6 +30368,126 @@
         "title": "PairingApprove",
         "description": "Request a signed-in user sends to approve the TV showing a code.\n\nAttributes:\n    code: Six-digit code shown on the TV."
       },
+      "PairingAttemptCreate": {
+        "properties": {
+          "method": {
+            "$ref": "#/components/schemas/PairingMethodId"
+          },
+          "adapter": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 20
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Adapter"
+          },
+          "last_step": {
+            "type": "string",
+            "maxLength": 30,
+            "minLength": 1,
+            "pattern": "^[a-z_]+$",
+            "title": "Last Step"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/AttemptOutcome"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40,
+                "pattern": "^[a-z_]+$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "duration_ms": {
+            "type": "integer",
+            "maximum": 86400000.0,
+            "minimum": 0.0,
+            "title": "Duration Ms",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "method",
+          "last_step",
+          "outcome"
+        ],
+        "title": "PairingAttemptCreate",
+        "description": "A pairing step the app reports itself, such as a scan the member abandoned.\n\nAttributes:\n    method: Pairing method.\n    adapter: Adapter involved, if known.\n    last_step: Last step reached.\n    outcome: started, succeeded, failed or abandoned.\n    error_code: Stable error code of a failure.\n    duration_ms: Time from start to the outcome."
+      },
+      "PairingAttemptRead": {
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Uuid"
+          },
+          "method": {
+            "$ref": "#/components/schemas/PairingMethodId"
+          },
+          "adapter": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Adapter"
+          },
+          "last_step": {
+            "type": "string",
+            "title": "Last Step"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/AttemptOutcome"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "duration_ms": {
+            "type": "integer",
+            "title": "Duration Ms"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "uuid",
+          "method",
+          "adapter",
+          "last_step",
+          "outcome",
+          "error_code",
+          "duration_ms",
+          "created_at"
+        ],
+        "title": "PairingAttemptRead",
+        "description": "A recorded pairing attempt.\n\nAttributes:\n    uuid: Public id.\n    method: Pairing method.\n    adapter: Adapter involved.\n    last_step: Last step reached.\n    outcome: Outcome.\n    error_code: Error code of a failure.\n    duration_ms: Duration.\n    created_at: When it started."
+      },
       "PairingCreate": {
         "properties": {
           "device_name": {
@@ -28571,6 +30526,339 @@
         ],
         "title": "PairingCreated",
         "description": "Response to an opened pairing.\n\nAttributes:\n    id: Public id the TV polls for the pairing status.\n    code: Six-digit code to show on the TV.\n    expires_at: Time after which the code stops working."
+      },
+      "PairingDeviceCreate": {
+        "properties": {
+          "host": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Host"
+          },
+          "port": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 65535.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Port"
+          },
+          "rtsp_port": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 65535.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rtsp Port"
+          },
+          "username": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Username"
+          },
+          "password": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 256
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Password"
+          },
+          "adapter": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Adapter"
+          },
+          "rtsp_url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1024
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rtsp Url"
+          },
+          "device_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Device Id"
+          },
+          "connector": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Connector"
+          },
+          "method": {
+            "$ref": "#/components/schemas/PairingMethodId",
+            "default": "manual_host"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "channels": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array",
+                "maxItems": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Channels"
+          },
+          "discovered": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discovered"
+          },
+          "attempt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attempt"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "PairingDeviceCreate",
+        "description": "Request to add a device and some of its channels as cameras.\n\nAttributes:\n    method: Pairing method the member used.\n    name: Name of the device; channels are named after it.\n    channels: Channels to add; every channel of a camera when omitted, at least one of a recorder.\n    discovered: Discovered camera the device comes from, if any.\n    attempt: Pairing attempt that identified the device, if any."
+      },
+      "PairingMethod": {
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/PairingMethodId"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "requires": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Requires"
+          },
+          "parameters": {
+            "items": {
+              "$ref": "#/components/schemas/PairingParameter"
+            },
+            "type": "array",
+            "title": "Parameters"
+          },
+          "endpoint": {
+            "type": "string",
+            "title": "Endpoint"
+          },
+          "adapter": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Adapter"
+          },
+          "recommended": {
+            "type": "boolean",
+            "title": "Recommended",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "description",
+          "requires",
+          "parameters",
+          "endpoint"
+        ],
+        "title": "PairingMethod",
+        "description": "A pairing method that works for the request's site and context.\n\nAttributes:\n    id: Method id.\n    title: Name shown to people.\n    description: What the method does.\n    requires: What it needs, such as admin, connector, direct, camera_app or same_wifi.\n    parameters: Values it asks for.\n    endpoint: API operation that carries it out.\n    adapter: Adapter the context points to, if any.\n    recommended: Whether it is the best method for the context."
+      },
+      "PairingMethodId": {
+        "type": "string",
+        "enum": [
+          "connector_discovery",
+          "manual_host",
+          "rtsp_url",
+          "label_qr",
+          "nvr_import",
+          "connector_code",
+          "connector_qr",
+          "connector_mdns"
+        ],
+        "title": "PairingMethodId",
+        "description": "Ways to add a camera, a recorder or a connector."
+      },
+      "PairingMethodList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PairingMethod"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "connectors": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "title": "Connectors"
+          },
+          "direct": {
+            "type": "boolean",
+            "title": "Direct"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "connectors",
+          "direct"
+        ],
+        "title": "PairingMethodList",
+        "description": "The pairing methods that work now, best first.\n\nAttributes:\n    items: The methods.\n    connectors: Paired connectors of the site that are online.\n    direct: Whether the backend may reach cameras itself."
+      },
+      "PairingParameter": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "required": {
+            "type": "boolean",
+            "title": "Required"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "default": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Default"
+          },
+          "prefill": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prefill"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "type",
+          "required",
+          "description"
+        ],
+        "title": "PairingParameter",
+        "description": "A value a pairing method asks for.\n\nAttributes:\n    name: Field name, as the method's request carries it.\n    type: string, integer, password, uuid, url, qr or list.\n    required: Whether the method needs it.\n    description: What it is.\n    default: Value used when it is omitted.\n    prefill: Value read from the context, such as a scanned label."
       },
       "PairingRead": {
         "properties": {
@@ -28624,6 +30912,29 @@
         ],
         "title": "PairingState",
         "description": "Progress of a TV pairing request, as reported to the TV."
+      },
+      "PairingStats": {
+        "properties": {
+          "since": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Since"
+          },
+          "methods": {
+            "items": {
+              "$ref": "#/components/schemas/MethodStats"
+            },
+            "type": "array",
+            "title": "Methods"
+          }
+        },
+        "type": "object",
+        "required": [
+          "since",
+          "methods"
+        ],
+        "title": "PairingStats",
+        "description": "Success of the pairing methods over a period.\n\nAttributes:\n    since: Start of the period.\n    methods: Stats per method, most attempted first."
       },
       "PairingStatus": {
         "properties": {
@@ -29062,6 +31373,23 @@
         "title": "PlanSettings",
         "description": "Propagation and editor settings of a plan.\n\nAttributes:\n    path_loss_exponent: Exponent of the signal loss over distance.\n    target_dbm: Signal strength in dBm that counts as good coverage.\n    snap_m: Grid step in meters that the editor snaps items to."
       },
+      "PlaybackCapabilities": {
+        "properties": {
+          "recordings": {
+            "type": "boolean",
+            "title": "Recordings",
+            "default": false
+          },
+          "replay": {
+            "type": "boolean",
+            "title": "Replay",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "PlaybackCapabilities",
+        "description": "Recordings the camera keeps itself.\n\nAttributes:\n    recordings: Whether it lists recordings.\n    replay: Whether it replays them."
+      },
       "PresetName": {
         "properties": {
           "name": {
@@ -29173,6 +31501,21 @@
         ],
         "title": "Profile",
         "description": "Pipeline profile of an analytics view."
+      },
+      "ProvisioningCapabilities": {
+        "properties": {
+          "methods": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Methods",
+            "default": []
+          }
+        },
+        "type": "object",
+        "title": "ProvisioningCapabilities",
+        "description": "Ways a factory-new device of this kind joins Wi-Fi.\n\nAttributes:\n    methods: Provisioning method ids it supports."
       },
       "PtzMove": {
         "properties": {
@@ -30827,6 +33170,25 @@
         ],
         "title": "SourceState",
         "description": "Connection state of a camera's event subscription."
+      },
+      "StatCount": {
+        "properties": {
+          "value": {
+            "type": "string",
+            "title": "Value"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "value",
+          "count"
+        ],
+        "title": "StatCount",
+        "description": "A value and how often it occurred.\n\nAttributes:\n    value: The value, such as an error code or a step.\n    count: Occurrences."
       },
       "StreamTest": {
         "properties": {

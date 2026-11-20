@@ -9,7 +9,9 @@ from app.modules.devices.routers import (
     connector_device_router,
     connectors_router,
     control_router,
+    devices_router,
     discovery_router,
+    pairing_router,
 )
 from app.modules.events.routers import events_router
 from app.modules.identity.routers import auth_router
@@ -36,6 +38,8 @@ v1_routers.include_router(live_router, tags=["live"])
 v1_routers.include_router(connectors_router, prefix="/connectors", tags=["connectors"])
 v1_routers.include_router(connector_device_router, prefix="/connector", tags=["connector-device"])
 v1_routers.include_router(discovery_router, prefix="/discovery", tags=["discovery"])
+v1_routers.include_router(devices_router, prefix="/devices", tags=["devices"])
+v1_routers.include_router(pairing_router, prefix="/pairing", tags=["pairing"])
 v1_routers.include_router(events_router, prefix="/events", tags=["events"])
 v1_routers.include_router(floorplans_router, prefix="/floorplans", tags=["floorplans"])
 v1_routers.include_router(health_router, prefix="/health", tags=["health"])

@@ -14,8 +14,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.database import async_session_maker
-from app.models import FaceSample, Membership, Organisation, Site, User
+from app.models import Camera, Device, FaceSample, Membership, Organisation, Site, User
 from app.models.ownership import SiteOwned
+from app.modules.devices.services.manifests import camera_manifest
 from app.modules.tenancy.enums import Role, SiteKind
 from app.modules.tenancy.services.scope import ORGANISATION_SCOPED, SITE_SCOPED
 
@@ -36,17 +37,25 @@ class BootstrapReport:
         site_created: Whether it created the site.
         membership_created: Whether it made the admin the owner.
         assigned: Rows assigned per table.
+        devices: Devices created for cameras registered before devices existed.
     """
 
     organisation_created: bool = False
     site_created: bool = False
     membership_created: bool = False
     assigned: dict[str, int] = field(default_factory=dict)
+    devices: int = 0
 
     @property
     def changed(self) -> bool:
         """bool: Whether the run changed anything."""
-        return self.organisation_created or self.site_created or self.membership_created or any(self.assigned.values())
+        return (
+            self.organisation_created
+            or self.site_created
+            or self.membership_created
+            or any(self.assigned.values())
+            or bool(self.devices)
+        )
 
 
 async def unassigned(session: AsyncSession) -> bool:
@@ -162,6 +171,42 @@ async def assign_rows(session: AsyncSession, organisation: Organisation, site: S
             )
 
 
+async def backfill_devices(session: AsyncSession, report: BootstrapReport) -> None:
+    """Give every camera from before devices existed a device of its own, as its first channel.
+
+    The device takes the camera's site, organisation, connector, brand as adapter and addresses, and the camera
+    receives the manifest its adapter gives for what is known about it. Cameras with a device are left alone.
+
+    Args:
+        session: Database session without a scope.
+        report: Report to count the devices in.
+    """
+    cameras = list(await session.scalars(select(Camera).where(Camera.device_id.is_(None))))
+    for camera in cameras:
+        manifest = camera_manifest(camera)
+        device = Device(
+            site_id=camera.site_id,
+            organisation_id=camera.organisation_id,
+            connector_id=camera.connector_id,
+            kind="camera",
+            adapter=camera.brand,
+            name=camera.name,
+            host=camera.device_host or camera.host,
+            onvif_port=camera.onvif_port,
+            rtsp_port=camera.rtsp_port,
+            channel_count=1,
+            capabilities=manifest.to_dict(),
+            deleted_at=camera.deleted_at,
+        )
+        session.add(device)
+        await session.flush()
+        camera.device_id = device.id
+        camera.channel = 1
+        if not camera.capabilities:
+            camera.capabilities = manifest.to_dict()
+        report.devices += 1
+
+
 async def bootstrap(session: AsyncSession) -> BootstrapReport:
     """Run the bootstrap in a session and commit it.
 
@@ -205,9 +250,10 @@ async def run_bootstrap() -> BootstrapReport:
         report = await bootstrap(session)
     if report.changed:
         logger.info(
-            "Bootstrap: organisation created %s, site created %s, rows assigned %s",
+            "Bootstrap: organisation created %s, site created %s, rows assigned %s, devices created %s",
             report.organisation_created,
             report.site_created,
             report.assigned,
+            report.devices,
         )
     return report

@@ -11,13 +11,18 @@ from app.modules.devices.services import (
     CameraService,
     ConnectorDeviceService,
     ConnectorService,
+    DevicePairingService,
+    DeviceService,
     DiscoveryService,
+    PairingCatalogService,
     PairingService,
+    PairingTelemetryService,
     StreamAccessService,
     authenticate_connector,
 )
 from app.modules.identity.deps import get_current_user
-from app.modules.tenancy.deps import get_site_access
+from app.modules.tenancy.deps import get_site_access, require_admin
+from app.modules.tenancy.enums import Role
 from app.modules.tenancy.services.access import SiteAccess
 
 
@@ -144,3 +149,63 @@ def get_stream_access_service(
         The service.
     """
     return StreamAccessService(session, actor)
+
+
+def get_device_service(
+    session: AsyncSession = Depends(get_db), access: SiteAccess = Depends(get_site_access)
+) -> DeviceService:
+    """Build the device service for a member of the request's site.
+
+    Args:
+        session: Request-scoped database session, limited to the site.
+        access: Access of the signed-in member to the request's site.
+
+    Returns:
+        The service.
+    """
+    return DeviceService(session, access.user)
+
+
+def get_pairing_catalog_service(
+    session: AsyncSession = Depends(get_db), access: SiteAccess = Depends(get_site_access)
+) -> PairingCatalogService:
+    """Build the pairing method catalog for a member of the request's site.
+
+    Args:
+        session: Request-scoped database session, limited to the site.
+        access: Access of the signed-in member to the request's site.
+
+    Returns:
+        The service, offering device methods only to admins and owners.
+    """
+    return PairingCatalogService(session, access.allows(Role.ADMIN))
+
+
+def get_device_pairing_service(
+    session: AsyncSession = Depends(get_db), access: SiteAccess = Depends(require_admin)
+) -> DevicePairingService:
+    """Build the device pairing service for an admin of the request's site.
+
+    Args:
+        session: Request-scoped database session, limited to the site.
+        access: Access of the signed-in admin to the request's site.
+
+    Returns:
+        The service.
+    """
+    return DevicePairingService(session, access.user, access.site_id)
+
+
+def get_pairing_telemetry_service(
+    session: AsyncSession = Depends(get_db), access: SiteAccess = Depends(get_site_access)
+) -> PairingTelemetryService:
+    """Build the pairing telemetry service for a member of the request's site.
+
+    Args:
+        session: Request-scoped database session, limited to the site and organisation.
+        access: Access of the signed-in member to the request's site.
+
+    Returns:
+        The service.
+    """
+    return PairingTelemetryService(session, access.site_id)

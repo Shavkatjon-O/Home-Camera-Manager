@@ -10,7 +10,7 @@ from app.auth.context import UserContext
 from app.core.base_service import BaseModelService
 from app.core.exceptions import BadGateway, Conflict, NotFound, Unprocessable
 from app.core.security import decrypt_secret, encrypt_secret
-from app.models import Camera, Connector
+from app.models import Camera, Connector, Device
 from app.modules.devices.agent import AgentClient
 from app.modules.devices.enums import CameraBrand, CameraSort
 from app.modules.devices.schemas import (
@@ -22,7 +22,9 @@ from app.modules.devices.schemas import (
     CameraUpdate,
     PtzMove,
 )
+from app.modules.devices.schemas.capabilities import CapabilitiesRead, capabilities_read
 from app.modules.devices.services.defaults import DEFAULT_RTSP_PORT, apply_brand_defaults
+from app.modules.devices.services.manifests import camera_manifest
 from app.streaming.names import MAIN, SUB, stream_name
 from app.streaming.supervisor import CameraSupervisor, supervisor
 from camera_adapters.onvif.cache import OnvifCache, PtzTarget, onvif_cache
@@ -67,6 +69,33 @@ class CameraService(BaseModelService[Camera]):
         self.cameras = cameras
         self.onvif = onvif
 
+    def capabilities(self, camera: Camera) -> CapabilitiesRead:
+        """Return a camera's capability manifest, built from its brand when none is stored yet.
+
+        Args:
+            camera: Camera row.
+
+        Returns:
+            The manifest.
+        """
+        if camera.capabilities:
+            return capabilities_read(camera.capabilities)
+        return capabilities_read(camera_manifest(camera))
+
+    async def device_uuids(self, cameras: list[Camera]) -> dict[int, UUID]:
+        """Load the public ids of the devices of cameras.
+
+        Args:
+            cameras: Camera rows.
+
+        Returns:
+            Device database id to public id.
+        """
+        ids = {camera.device_id for camera in cameras if camera.device_id is not None}
+        if not ids:
+            return {}
+        return dict((await self.session.execute(select(Device.id, Device.uuid).where(Device.id.in_(ids)))).all())
+
     async def connector_uuids(self, cameras: list[Camera]) -> dict[int, UUID]:
         """Load the public ids of the connectors of cameras.
 
@@ -83,12 +112,15 @@ class CameraService(BaseModelService[Camera]):
             (await self.session.execute(select(Connector.id, Connector.uuid).where(Connector.id.in_(ids)))).all()
         )
 
-    def read(self, camera: Camera, connectors: dict[int, UUID] | None = None) -> CameraRead:
+    def read(
+        self, camera: Camera, connectors: dict[int, UUID] | None = None, devices: dict[int, UUID] | None = None
+    ) -> CameraRead:
         """Build the API view of a camera with its last known status.
 
         Args:
             camera: Camera row.
             connectors: Connector database id to public id, for a connector camera.
+            devices: Device database id to public id.
 
         Returns:
             The camera as the API returns it.
@@ -119,6 +151,9 @@ class CameraService(BaseModelService[Camera]):
             created_at=camera.created_at,
             updated_at=camera.updated_at,
             connector=(connectors or {}).get(camera.connector_id) if camera.connector_id else None,
+            device=(devices or {}).get(camera.device_id) if camera.device_id else None,
+            channel=camera.channel,
+            capabilities=self.capabilities(camera),
         )
 
     async def read_one(self, camera: Camera) -> CameraRead:
@@ -130,7 +165,7 @@ class CameraService(BaseModelService[Camera]):
         Returns:
             The camera as the API returns it.
         """
-        return self.read(camera, await self.connector_uuids([camera]))
+        return self.read(camera, await self.connector_uuids([camera]), await self.device_uuids([camera]))
 
     def live(self):
         """Build a query for cameras that have not been soft-deleted.
@@ -159,8 +194,9 @@ class CameraService(BaseModelService[Camera]):
             query = query.order_by(Camera.created_at.desc(), Camera.id.desc())
         rows = list(await self.session.scalars(query.offset((page - 1) * page_size).limit(page_size)))
         connectors = await self.connector_uuids(rows)
+        devices = await self.device_uuids(rows)
         return CameraList(
-            items=[self.read(camera, connectors) for camera in rows],
+            items=[self.read(camera, connectors, devices) for camera in rows],
             total=total or 0,
             page=page,
             page_size=page_size,
@@ -393,6 +429,23 @@ class CameraService(BaseModelService[Camera]):
         )
         if connector is not None:
             await AgentClient(connector).put_camera(camera.uuid, self.agent_config(camera, payload.password))
+        manifest = camera_manifest(camera)
+        device = Device(
+            connector_id=camera.connector_id,
+            kind="camera",
+            adapter=camera.brand,
+            name=camera.name,
+            host=camera.device_host or camera.host,
+            onvif_port=camera.onvif_port,
+            rtsp_port=camera.rtsp_port,
+            channel_count=1,
+            capabilities=manifest.to_dict(),
+        )
+        self.session.add(device)
+        await self.session.flush()
+        camera.device_id = device.id
+        camera.channel = 1
+        camera.capabilities = manifest.to_dict()
         self.session.add(camera)
         await self.commit()
         await self.session.refresh(camera)

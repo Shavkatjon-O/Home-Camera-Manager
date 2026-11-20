@@ -7,6 +7,7 @@ from uuid import UUID
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 from app.modules.devices.enums import CameraBrand
+from app.modules.devices.schemas.capabilities import CapabilitiesRead
 
 __all__ = [
     "CameraCreate",
@@ -140,6 +141,9 @@ class CameraRead(BaseModel):
         created_at: When the camera was registered.
         updated_at: When the camera last changed.
         connector: Connector that reaches the camera on its site's network, None when the backend reaches it.
+        device: Device the camera is a channel of.
+        channel: Channel number of the camera on its device.
+        capabilities: What the camera can do, so the apps show only its real controls.
     """
 
     uuid: UUID
@@ -163,6 +167,9 @@ class CameraRead(BaseModel):
     created_at: datetime
     updated_at: datetime
     connector: UUID | None = None
+    device: UUID | None = None
+    channel: int | None = None
+    capabilities: CapabilitiesRead | None = None
 
 
 class CameraList(BaseModel):
