@@ -1,0 +1,38 @@
+---
+title: Adding a camera adapter
+description: "Support a new kind of camera: an adapter package, its catalog entries, fixtures and the conformance suite."
+icon: Plug
+---
+
+Most cameras need no new adapter: an ONVIF camera with ordinary stream paths only needs an entry in the model catalog. Write an adapter when a camera speaks something the existing adapters do not, or needs quirks its catalog entry cannot express.
+
+## A catalog entry
+
+packages/camera-adapters/camera_adapters/catalog/models.yaml lists vendors and model families. An entry names its vendor, the adapter that reaches it, its kind (camera, nvr or dvr) and how sure the facts are (tested, documented or guessed), and gives:
+
+- match: lower-case parts of the ONVIF manufacturer, model name patterns, ports only this vendor opens, parts of its web server banner and hardware address prefixes, which the registry scores against a device's fingerprint;
+- urls: stream path templates, with a channel placeholder for recorders;
+- ports: the usual ONVIF and RTSP ports;
+- quirks: behaviour the adapter must allow for;
+- pairing: the [pairing methods](../cameras/pairing-methods.mdx) it supports.
+
+The [compatibility page](../cameras/compatibility.mdx) is generated from this file, so a new entry appears there on the next build.
+
+## An adapter
+
+An adapter is a folder under packages/camera-adapters/camera_adapters/ with an adapter.py whose class extends Adapter:
+
+- match scores a fingerprint, with the catalog entry that matched it as a hint;
+- identify reads the device's vendor, model, channels and capability manifest with its credentials;
+- streams returns the main and sub stream paths of a channel;
+- manifest builds the capability manifest, and parse_label reads the device's label QR code when it has one.
+
+A capability is added by also extending its class: ControlCapability for PTZ, presets, home, light and siren; ImagingCapability for picture settings; EventsCapability to turn the device's own events into normalised kinds; PlaybackCapability for the recordings it keeps; MaintenanceCapability for its clock and reboot; and ProvisioningCapability for Wi-Fi provisioning, which no adapter implements yet. The manifest then says which of the capability's features each camera really has.
+
+Register a built-in adapter in the registry's list, with a priority that ranks it against the adapters it overlaps. A third-party package can instead register its adapter through the Python entry point group smart_surveillance.camera_adapters, naming an Adapter subclass or a function that returns one; a plugin whose name clashes with a built-in adapter is skipped.
+
+## Tests
+
+- The conformance suite in packages/camera-adapters/tests runs against every registered adapter: names and priorities, scoring any fingerprint without failing, manifests that round-trip, and label parsing that ignores garbage.
+- Vendor behaviour is tested on recorded fixtures in tests/fixtures. Scrub every private value from a recording before it is committed: addresses, serials, device ids, hardware addresses, names and passwords.
+- Never test reboot, siren or light on real cameras, and restore every setting a test changes.

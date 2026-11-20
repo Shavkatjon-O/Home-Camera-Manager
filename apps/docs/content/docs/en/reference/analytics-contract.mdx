@@ -1,0 +1,28 @@
+---
+title: Analytics contract
+description: The internal routes the analytics engine uses to read its configuration and post events, observations, counts, journeys and faces.
+icon: Workflow
+---
+
+The analytics engine and the API talk over internal routes under /internal. The engine polls its configuration every 5 s and posts every change of an event, the media paths once they are cut, observations per view, minute counts, finished appearances and journeys, and face decisions. Every internal route needs SSS_ANALYTICS_TOKEN as a bearer token; the web entry point answers 404 for /internal, and the engine publishes no port.
+
+Without a backend, the engine reads the same configuration from the JSON file in SSS_ANALYTICS_CONFIG_FILE, for a host that runs only the engine.
+
+## Routes
+
+<include>../../../../generated/analytics-contract.md</include>
+
+## Routes of the engine
+
+The API also calls the engine on its internal address, with the same token:
+
+| Route | Returns |
+|---|---|
+| GET /status | pipeline state, per-view frame rate, latency, objects, rule counts, tamper readings and errors, the recorders, the GPU reading, recent events and the face stage |
+| GET /views/:view/objects | the tracked boxes of a view's latest frame, for the live overlay |
+| GET /views/:view/snapshot.jpg | a fresh picture of a view, kept as a zone reference with reference=1 |
+| POST /identity/embed | the faces in a posted photo with boxes, landmarks, quality and embedding, for enrolment |
+
+## Running at the edge
+
+The contract is the same whether the engine runs centrally or, later, on a Jetson connector at a site with a token of its own. <Status kind="planned" />

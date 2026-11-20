@@ -1,0 +1,68 @@
+---
+title: How analytics works
+description: The DeepStream pipeline, views and profiles, and how the engine and the API share the configuration.
+icon: ScanEye
+---
+
+The analytics engine in services/analytics runs NVIDIA DeepStream 9.1 with CUDA 13.2 and TensorRT 10.16. It detects and tracks people, vehicles and animals, applies the rules of each view, and cuts a snapshot and a clip for every event.
+
+## Views
+
+A view is one lens of one camera. A camera with several lenses stacked in one picture, such as a dual-lens V380, has one view per lens, each with its own zones, lines and settings. Each view chooses a profile:
+
+| Profile | Stages |
+|---|---|
+| perimeter | detector, tracker, zones, lines and rules for people, animals and vehicles, tamper watch |
+| vehicle | detector, tracker, zones, lines and rules for vehicles, tamper watch |
+| identity | detector, tracker and rules for people, and the face stage |
+| tamper | tamper watch only, without the detector |
+
+Views run at 8 frames per second unless they set their own rate.
+
+## Pipeline
+
+```mermaid
+flowchart LR
+  src["Decode each camera once, NVDEC"]
+  split["One source per lens"]
+  rate["Analysis rate per view"]
+  det["RF-DETR Medium and NvDCF tracker"]
+  rules["Rules, faces, features, tamper"]
+  clip["Snapshot and H.264 clip"]
+  src --> split --> rate --> det --> rules --> clip
+```
+
+- The engine reads each camera's original stream from go2rtc's RTSP server and decodes it once on NVDEC, never the browser transcodes.
+- A cropping stage turns every lens into its own source, so the tracker never mixes objects across lenses.
+- Each view drops frames to its analysis rate and ends in a leaky queue, and a lost stream reconnects by itself, so one dead camera never holds up the others.
+- One shared detector, RF-DETR Medium at 1024x576, runs with the NvDCF tracker on every view.
+- The pipeline runs in a child process. A crash in native code takes down only the pipeline, which the service restarts with backoff, and a configuration change restarts it only when the decoded or analysed views change, in about 1.5 s.
+- The rules engine is plain Python with no DeepStream import, so it runs on any host that produces tracked boxes and is tested without a GPU.
+
+## Snapshots and clips
+
+One ffmpeg process per camera copies the stream into two-second segments in memory, 120 s of them by default, without re-encoding. An event's snapshot is cut from these segments at the event time, and its clip runs from 5 s before the event to 5 s after it ends, at most 60 s, cropped to the event's lens and encoded once to H.264 MP4 with NVENC, or with libx264 where there is no hardware encoder. SSS_ANALYTICS_CLIP_BEFORE, SSS_ANALYTICS_CLIP_AFTER, SSS_ANALYTICS_CLIP_MAX and SSS_ANALYTICS_BUFFER_SECONDS change these lengths.
+
+## Configuration from the API
+
+The API owns the configuration: views, zones, lines, areas, schedules, alert policies and the arm mode. The engine reads it every 5 s and posts events and observations back, so zone and rule edits apply without a restart. The routes are internal, need a shared token and are never served by the web entry point; the [analytics contract](../reference/analytics-contract.mdx) lists them.
+
+## Events
+
+Every event has a source, the camera itself or the analytics, and a kind:
+
+| Kind | Source | Raised when |
+|---|---|---|
+| intrusion | analytics | a person stays in a zone for its dwell |
+| vehicle | analytics | a vehicle stays in a zone for its dwell |
+| animal | analytics | a dog, cat or bird is in a zone or crosses a line |
+| line_crossing | analytics | an object crosses a line in or out |
+| loitering | analytics | a person stays in a zone longer than its loitering time |
+| crowd | analytics | at least the zone's crowd count of objects are inside at once |
+| tamper | analytics or camera | a view is covered, blurred, too dark or moved, or the camera reports tampering |
+| object_left, object_taken | analytics | an object stays in, or leaves, a zone |
+| face_known, face_unknown | analytics | a known person or an unknown cluster is seen |
+| fall | analytics | a person falls and lies still (beta) |
+| motion, storage, reboot | camera | the camera reports motion, a storage failure or a restart over ONVIF |
+
+Analytics events carry a snapshot, the boxes of their objects and a clip. Camera events come from one ONVIF PullPoint subscription per camera, carry a snapshot and use the server's clock, keeping the camera's own time beside it. Events stay for SSS_EVENTS_RETENTION_DAYS, 30 by default, with their snapshots, clips and face samples.

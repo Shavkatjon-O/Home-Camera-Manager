@@ -1,0 +1,31 @@
+---
+title: Pairing methods
+description: The ways a camera, a recorder or a connector is added to a site, which work today and which are designed only.
+icon: QrCode
+---
+
+GET /api/v1/pairing/methods tells the apps which pairing methods fit the site and what is known so far, such as a scanned label or a discovered device, in the order to offer them; the first is marked as recommended. Each method says what it needs and which values it asks for, prefilled from that context where possible. A site without a connector is offered the connector methods first; a site with one starts with discovery. The mobile app keeps one folder per method behind a common interface, so a method is added without touching the others.
+
+## Methods
+
+<include>../../../../generated/cameras/pairing-methods.md</include>
+
+Needs: admin is the admin or owner role; connector is a paired connector at the site; direct mode is a site whose cameras the API reaches itself; camera app is a phone that can scan; same wifi is a phone on the site's network. The three connector methods end in the same pairing, which the [connector protocol](../reference/connector-protocol.mdx) describes.
+
+## Which catalog entries offer which method
+
+<include>../../../../generated/cameras/pairing-support.md</include>
+
+## Label formats
+
+A label format is confirmed when it follows a published standard and guessed when the parser is a tolerant reading of public descriptions, not yet checked against a real label.
+
+<include>../../../../generated/cameras/label-formats.md</include>
+
+## Designed only
+
+<Status kind="planned" /> Methods that bring a factory-new camera onto Wi-Fi are designed and never offered: wifi_qr, where the camera reads a QR code the phone shows; soft_ap, where the phone joins the camera's own access point; ble, over Bluetooth with Improv Wi-Fi or a vendor protocol; sound_wave, where the phone plays the network as sound; and matter, Matter commissioning. The adapters' provisioning capability is the contract they will implement.
+
+## Telemetry
+
+Every pairing attempt records its method, adapter, last step, outcome, error code and duration per organisation, with no personal data, so the methods that fail most can be improved.

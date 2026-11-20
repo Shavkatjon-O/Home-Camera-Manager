@@ -1,0 +1,13 @@
+---
+title: Falls
+description: Fall detection from body keypoints on the views where it is turned on.
+icon: PersonStanding
+---
+
+<Status kind="beta" />
+
+On views with falls turned on, RTMPose-m reads body keypoints from each person, cropped from the full colour frame with the person box widened by a quarter to 3 by 4, because the bare box cuts off limbs: on real crops the widened box found 72 percent of the keypoints with good confidence against 45 percent for the bare box.
+
+A fall is a change from upright to lying within 1.5 s with the hips dropping, followed by lying still for 8 s, so lying down slowly or bending does not count. Fall events are labelled beta.
+
+Falls are verified on synthetic input and against a live baseline without real falls; a staged fall test is still open. SSS_ANALYTICS_POSE turns the pose model off for the whole engine.

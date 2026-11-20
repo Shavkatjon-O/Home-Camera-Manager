@@ -1,0 +1,30 @@
+---
+title: Installing a connector
+description: Run the connector at a site, pair it with a site in the app, and let it find the cameras.
+icon: Router
+---
+
+<Status kind="beta" /> The connector agent is built and tested against the simulated site; it has not yet run at a real site.
+
+A connector lets a backend reach a site's cameras without opening any port at the site. It is one container on any always-on Linux machine on the site's network, such as a mini PC or a Raspberry Pi. Every call it makes to the backend is outbound.
+
+## Run
+
+docker-compose.connector.yml at the repository root runs the connector with host networking, which multicast discovery on the site's network needs:
+
+```bash
+SSS_CONNECTOR_BACKEND_URL=https://cameras.example.com docker compose -f docker-compose.connector.yml up -d
+docker compose -f docker-compose.connector.yml logs -f connector
+```
+
+The container runs read-only, without capabilities and with a 512 MB memory limit. The SSS_CONNECTOR_ settings in the [configuration reference](../reference/configuration.mdx) change its name, ports, interfaces, subnets and discovery interval.
+
+## Pair
+
+1. The log shows a pairing code and its QR code. While the connector waits, its pairing page at port 8780, /pairing, shows the same code, and /pairing.svg the QR code.
+2. An admin or owner of the site claims it in the app: by scanning the QR code, by typing the code, or by picking the connector the app finds over mDNS on the same Wi-Fi.
+3. The connector, which keeps polling, receives its credentials and starts sending heartbeats. The app then lists the cameras its discovery finds.
+
+The connector belongs to that one site until it is removed. Camera passwords entered in the app go to the connector and stay there, encrypted; the backend never stores them.
+
+The [connector guide](../guides/connector.mdx) describes what it does once paired, and the [connector protocol](../reference/connector-protocol.mdx) the calls behind the pairing.

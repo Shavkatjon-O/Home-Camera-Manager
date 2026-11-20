@@ -1,0 +1,11 @@
+---
+title: Auto-follow
+description: Keeping one person centred with a PTZ lens, off on every view by default.
+icon: Crosshair
+---
+
+Auto-follow moves a PTZ lens to keep the chosen person centred. It is off on every view, because the owner of a site decides whether cameras may move by themselves.
+
+- The controller keeps the person centred with a dead zone and a proportional speed between 0.15 and 0.5, and stops after 1 s without the person.
+- It saves the position when it starts and returns there 30 s after the last person by retracing its moves, one reverse command per move. Some PTZ cameras answer GotoPreset without moving and turn a fixed step per move command whatever its speed, so a preset return is a per-view option rather than the default.
+- Moves go to the camera's own ONVIF device when it offers PTZ, and to its bridge otherwise, remembered per camera.
