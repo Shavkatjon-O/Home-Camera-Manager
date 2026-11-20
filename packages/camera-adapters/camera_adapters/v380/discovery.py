@@ -51,7 +51,7 @@ def parse_reply(text: str) -> DiscoveredCamera | None:
 
 
 class Listener(asyncio.DatagramProtocol):
-    """Collects replies, one per hardware address.
+    """Collects replies, one per hardware address compared without case, or per device id without one.
 
     Attributes:
         found: Cameras by hardware address.
@@ -70,7 +70,7 @@ class Listener(asyncio.DatagramProtocol):
         """
         camera = parse_reply(data.decode("ascii", "replace"))
         if camera is not None:
-            self.found.setdefault(camera.mac.upper(), camera)
+            self.found.setdefault(camera.mac.upper() or camera.device_id, camera)
 
 
 def search_socket(port: int) -> socket.socket:

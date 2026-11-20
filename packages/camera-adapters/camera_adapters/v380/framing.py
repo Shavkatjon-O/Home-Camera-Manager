@@ -29,7 +29,7 @@ FRAGMENT_HEADER_SIZE = 12
 FRAME_HEADER_SIZE = 16
 MAX_FRAGMENT = 20000
 MAX_INVALID_HEADERS = 64
-MAX_SKIPPED_BYTES = 1 << 20
+MAX_SKIPPED_BYTES = 64 * 1024
 
 
 class FrameType(IntEnum):
@@ -124,7 +124,7 @@ class FragmentReader:
     On an invalid header the reader scans forward byte by byte for a marker that starts a valid header, and never
     reads a payload for an invalid header. While it searches, it also requires a frame type the cameras are known
     to send, because marker bytes inside media can form a header that looks valid. It gives up after 64
-    consecutive invalid headers that start with the marker, or after a megabyte without a valid header.
+    consecutive invalid headers that start with the marker, or after 64 KiB without a valid header.
 
     Attributes:
         buffer: Bytes received and not yet cut.
@@ -261,7 +261,8 @@ class Reassembler:
 
     Attributes:
         partial: The frame being built per kind, video or audio.
-        dropped: Frames dropped because of a missing, repeated or reordered fragment or a changed count.
+        dropped: Frames dropped because of a missing, repeated or reordered fragment or a changed count, counted
+            once per frame, also when a new frame replaces one that never completed.
         short: Complete frames dropped for being shorter than the frame header.
     """
 
@@ -289,6 +290,8 @@ class Reassembler:
             return None
         current = self.partial[kind]
         if header.index == 0:
+            if current is not None:
+                self.dropped += 1
             current = Partial(type=header.type, count=header.count)
         elif current is None or header.count != current.count or header.index != current.next:
             if current is not None:

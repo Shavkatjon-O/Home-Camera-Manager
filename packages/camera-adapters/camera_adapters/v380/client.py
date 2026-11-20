@@ -49,8 +49,9 @@ RECEIVE_BUFFER = 128 * 1024
 SEND_BUFFER = 64 * 1024
 READ_SIZE = 64 * 1024
 SIREN_REPEAT_SECONDS = 0.5
-MAX_MOVE_SECONDS = 10.0
+MAX_MOVE_SECONDS = 30.0
 MAX_RATE = 120
+SIZE_RANGE = range(16, 8193)
 
 H265_TYPES = (FrameType.H265_KEY, FrameType.H265)
 H264_TYPES = (FrameType.H264_KEY, FrameType.H264)
@@ -180,6 +181,7 @@ class MediaDecoder:
         reader: Fragment reader.
         assembler: Frame reassembler.
         started: Whether the first key frame has been delivered.
+        family: Codec family of the first key frame's frame type, which later frame types must match.
         clock: Source of arrival times.
     """
 
@@ -191,6 +193,7 @@ class MediaDecoder:
     reader: FragmentReader = field(default_factory=FragmentReader)
     assembler: Reassembler = field(default_factory=Reassembler)
     started: bool = False
+    family: Codec | None = None
     clock: Callable[[], float] = time.monotonic
 
     def feed(self, data: bytes) -> list[VideoFrame | AudioFrame]:
@@ -253,7 +256,11 @@ class MediaDecoder:
         return VideoFrame(data=aligned, key=frame.key, codec=codec, arrival=self.clock(), number=header.number)
 
     def codec(self, frame: Frame, aligned: bytes) -> Codec | None:
-        """Fix the session's codec at the first key frame and keep the other codec out.
+        """Fix the session's codec and frame type family at the first key frame and keep the other codec out.
+
+        The codec comes from the first key frame's NAL units, or from its frame type when they name none. Later
+        frames whose frame type is of the other family are dropped, and so are later key frames whose NAL units
+        name another codec.
 
         Args:
             frame: The frame.
@@ -267,8 +274,9 @@ class MediaDecoder:
         if current is None:
             current = identify_codec(aligned) or by_type
             self.facts.codec = current.value
+            self.family = by_type
             return current
-        if by_type != current or (frame.key and (identify_codec(aligned) or current) != current):
+        if by_type != self.family or (frame.key and (identify_codec(aligned) or current) != current):
             self.facts.foreign += 1
             return None
         return current
@@ -514,7 +522,9 @@ class Session:
                 sound=self.sound,
                 low_latency=self.low_latency,
                 facts=self.facts,
-                fallback=(reply.width, reply.height) if reply.width and reply.height else None,
+                fallback=(reply.width, reply.height)
+                if reply.width in SIZE_RANGE and reply.height in SIZE_RANGE
+                else None,
             )
             self.writer.write(records.start_request())
             await self.writer.drain()

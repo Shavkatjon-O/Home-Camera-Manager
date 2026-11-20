@@ -498,3 +498,36 @@ async def test_a_password_outside_printable_ascii_is_refused_before_connecting()
 
     with pytest.raises(ProtocolError):
         await login(Camera("127.0.0.1", DEVICE, "p" + chr(0xE4) + "ss", port=1))
+
+
+def test_the_frame_type_family_of_the_first_key_frame_holds_for_the_session():
+    from camera_adapters.v380.client import MediaDecoder
+
+    unit = b"\0\0\0\1" + h(SPS[0][0]) + b"\0\0\0\1\x26\x01" + bytes(range(1, 40))
+    decoder = MediaDecoder(cipher=None, sound=False)
+
+    def frame(frame_type, data):
+        body = framing.frame_header(framing.FrameHeader(1, 0, 15, 0)) + data
+        return framing.fragment_header(framing.FragmentHeader(frame_type, 1, 0, len(body))) + body
+
+    key = decoder.feed(frame(0x00, unit))
+    assert [item.codec.value for item in key] == ["h265"]
+    assert decoder.feed(frame(0x01, b"\0\0\0\1\x02\x01" + bytes(range(1, 30))))
+    assert decoder.feed(frame(0x29, b"\0\0\0\1\x02\x01" + bytes(range(1, 30)))) == []
+    assert decoder.facts.foreign == 1
+
+
+def test_the_fragment_reader_gives_up_after_64_kib_without_a_header():
+    from camera_adapters.v380.errors import FramingLost
+
+    reader = framing.FragmentReader()
+    with pytest.raises(FramingLost):
+        reader.feed(bytes(70000))
+
+
+def test_a_frame_replaced_before_it_completes_counts_as_dropped():
+    delivered, dropped = run(
+        [fragment(0x29, 3, 0, FRAME[:100]), fragment(0x29, 1, 0, FRAME[:116]), fragment(0x29, 2, 1, FRAME[:20])]
+    )
+    assert delivered[0] is None and len(delivered[1].payload) == 100 and delivered[2] is None
+    assert dropped == 1
