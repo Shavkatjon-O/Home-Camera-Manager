@@ -174,7 +174,7 @@ class _ClipPlayerState extends ConsumerState<ClipPlayer> with SingleTickerProvid
         Row(
           children: [
             IconButton(
-              tooltip: playing ? MaterialLocalizations.of(context).keyboardKeyMediaPlayPause : l10n.eventClip,
+              tooltip: l10n.eventClip,
               onPressed: toggle,
               icon: Icon(playing ? Icons.pause_rounded : Icons.play_arrow_rounded),
             ),

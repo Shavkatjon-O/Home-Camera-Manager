@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smart_surveillance/app/l10n/l10n.dart';
 import 'package:smart_surveillance/app/settings/appearance.dart';
+import 'package:smart_surveillance/core/design/palette.dart';
 import 'package:smart_surveillance/core/design/tokens.dart';
 import 'package:smart_surveillance/core/widgets/surfaces.dart';
 const languageNames = {'en': 'English', 'ru': '\u0420\u0443\u0441\u0441\u043A\u0438\u0439', 'uz': 'O\u02BBzbekcha'};

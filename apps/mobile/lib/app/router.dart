@@ -6,7 +6,7 @@ import 'package:smart_surveillance/features/identity/presentation/session.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
 
 part 'router.g.dart';
-const authPaths = ['/welcome', '/sign-in', '/sign-up', '/forgot', '/reset'];
+const authPaths = ['/welcome', '/sign-in', '/sign-up', '/forgot', '/reset', '/verify-email', '/reset-password'];
 
 @Riverpod(keepAlive: true)
 class PendingLink extends _$PendingLink {
@@ -21,10 +21,11 @@ String? redirectFor(Ref ref, GoRouterState state) {
   final session = ref.read(sessionProvider);
   final auth = authPaths.any(location.startsWith);
   final invite = location.startsWith('/invite/');
+  final connect = location.startsWith('/connect');
   if (!session.hasValue) return location == '/splash' ? null : '/splash';
   final current = session.requireValue;
   if (current is SignedOut) {
-    if (invite) ref.read(pendingLinkProvider.notifier).set(state.uri.toString());
+    if (invite || connect) ref.read(pendingLinkProvider.notifier).set(state.uri.toString());
     if (auth || invite) return null;
     return const WelcomeRoute().location;
   }

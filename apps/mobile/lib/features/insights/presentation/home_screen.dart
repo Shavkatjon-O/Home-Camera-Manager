@@ -12,6 +12,7 @@ import 'package:smart_surveillance/core/widgets/surfaces.dart';
 import 'package:smart_surveillance/features/alerting/presentation/arm_control.dart';
 import 'package:smart_surveillance/features/devices/domain/models.dart';
 import 'package:smart_surveillance/features/devices/presentation/providers.dart';
+import 'package:smart_surveillance/features/events/domain/models.dart';
 import 'package:smart_surveillance/features/events/presentation/event_tiles.dart';
 import 'package:smart_surveillance/features/events/presentation/labels.dart';
 import 'package:smart_surveillance/features/events/presentation/providers.dart';
@@ -151,7 +152,7 @@ class TodayMetrics extends ConsumerWidget {
     );
   }
 
-  String topKinds(AppLocalizations l10n, Map<dynamic, int> kinds) {
+  String topKinds(AppLocalizations l10n, Map<EventKind, int> kinds) {
     final entries = kinds.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
     return entries.take(2).map((e) => '${l10n.kind(e.key)} ${e.value}').join(', ');
   }

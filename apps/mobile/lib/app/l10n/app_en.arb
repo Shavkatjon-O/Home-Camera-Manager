@@ -1361,5 +1361,195 @@
   },
   "commonShowPassword": "Show password",
   "commonHidePassword": "Hide password",
-  "countsInside": "inside"
+  "countsInside": "inside",
+  "editorAddPoints": "Add corners",
+  "connectorsVersionLabel": "Version",
+  "connectorsLastSeen": "Last seen",
+  "connectorsConnection": "Connection",
+  "connectorsTunnel": "Secure tunnel",
+  "fieldCodeHelp": "Paste the link from the email, or the code in it",
+  "verifyDone": "Email confirmed. Sign in to continue.",
+  "resetLinkBody": "Choose a new password for your account.",
+  "pairingAddTitle": "How do you want to add it?",
+  "pairingAddBody": "Pick the way that suits the camera. The best one for this site comes first.",
+  "pairingRecommended": "Recommended",
+  "pairingPermissionDenied": "This needs a permission the phone did not give. Allow it in the phone settings, or choose another way.",
+  "pairingDemoCode": "Use the demo code",
+  "pairingWaiting": "Waiting for the connector to confirm",
+  "pairingCamerasAdded": "{count, plural, =1{Camera added} other{{count} cameras added}}",
+  "@pairingCamerasAdded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "validationConnectorCode": "Enter the 8 character code, like ABCD-1234",
+  "methodConnectorDiscovery": "Cameras on the network",
+  "methodConnectorDiscoveryBody": "Pick one of the cameras the connector found",
+  "methodLabelQr": "Scan the camera's label",
+  "methodLabelQrBody": "Point at the QR code on the sticker of the camera",
+  "methodManualHost": "Enter its address",
+  "methodManualHostBody": "Type the camera's IP address and the connector identifies it",
+  "methodNvrImport": "Import from a recorder",
+  "methodNvrImportBody": "Add channels of an NVR or DVR at once",
+  "methodRtspUrl": "Paste an RTSP link",
+  "methodRtspUrlBody": "For cameras that give a stream address",
+  "methodConnectorQr": "Scan the connector's QR code",
+  "methodConnectorQrBody": "The connector shows it on its screen or web page",
+  "methodConnectorMdns": "Find it on this Wi-Fi",
+  "methodConnectorMdnsBody": "Look for connectors on the network this phone is on",
+  "methodConnectorCode": "Type the code",
+  "methodConnectorCodeBody": "The 8 character code the connector shows",
+  "mdnsTitle": "Connectors on this Wi-Fi",
+  "mdnsSearching": "Looking for connectors on this network",
+  "mdnsNone": "No connector found yet. Make sure this phone and the connector are on the same Wi-Fi.",
+  "labelTitle": "Scan the label",
+  "labelHint": "Point the camera at the QR code on the camera's sticker.",
+  "labelUnknown": "This label is not one we know. Add the camera another way.",
+  "manualTitle": "Camera address",
+  "manualBody": "The connector asks the camera what it is. Its login comes on the next step.",
+  "manualHost": "IP address or host name",
+  "manualPort": "ONVIF port, if not the usual one",
+  "manualIdentify": "Identify camera",
+  "manualIdentifying": "Asking the camera",
+  "manualNotFound": "No camera answered at that address. Check it and try again.",
+  "rtspTitle": "RTSP link",
+  "rtspBody": "Paste the stream link from the camera's manual or app. A login in the link is kept on the connector.",
+  "rtspField": "Stream link",
+  "rtspInvalid": "That is not an RTSP link.",
+  "nvrPick": "Choose the recorder",
+  "nvrNone": "No recorders found",
+  "nvrTitle": "Import channels",
+  "nvrLogin": "Recorder login",
+  "nvrLoad": "Show channels",
+  "nvrChannels": "Channels",
+  "nvrAdd": "{count, plural, =0{Choose channels} =1{Add 1 camera} other{Add {count} cameras}}",
+  "@nvrAdd": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "nvrOffline": "No signal",
+  "onboardingTestPassed": "Stream works",
+  "presetZoneName": "Whole view",
+  "presetLineName": "Entrance",
+  "morePlan": "Plan and usage",
+  "moreActivity": "Activity",
+  "planTitle": "Plan and usage",
+  "planInternal": "Internal plan with no limits",
+  "planUnlimited": "No limit",
+  "planLimits": "Limits",
+  "planUsage": "This month",
+  "planFeatures": "Features",
+  "planIncluded": "Included",
+  "planNotIncluded": "Not in your plan",
+  "planUnavailable": "Not in your plan. An owner can change the plan.",
+  "planSites": "Sites",
+  "planCameras": "Cameras",
+  "planMembers": "Members",
+  "planEventRetention": "Events kept",
+  "planClipRetention": "Clips kept",
+  "planCameraHours": "Camera hours online",
+  "planAnalyticsHours": "Analysed view hours",
+  "planEvents": "Events",
+  "planClipStorage": "Clip storage",
+  "planNotifications": "Notifications sent",
+  "planOf": "{used} of {limit}",
+  "@planOf": {
+    "placeholders": {
+      "used": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
+  "planSince": "Since {date}",
+  "@planSince": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "planGigabytes": "{value} GB",
+  "@planGigabytes": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "featureObjects": "Objects left and taken",
+  "featureJourneys": "Journeys",
+  "featureAppearanceSearch": "Find this person",
+  "featureTelegram": "Telegram alerts",
+  "telegramTitle": "Telegram",
+  "telegramBody": "Send alerts with the snapshot to a Telegram chat or group.",
+  "telegramLink": "Link a chat",
+  "telegramLinkBody": "Telegram opens the bot. Press Start in a private chat, or add the bot to a group, and the chat appears here.",
+  "telegramOpened": "Finish in Telegram, then come back here.",
+  "telegramChats": "Linked chats",
+  "telegramNone": "No chat linked yet",
+  "telegramGroup": "Group",
+  "telegramPrivate": "Private chat",
+  "telegramLinked": "Linked {when}",
+  "@telegramLinked": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "telegramUnlink": "Unlink",
+  "telegramUnlinkBody": "Alerts stop going to {chat}.",
+  "@telegramUnlinkBody": {
+    "placeholders": {
+      "chat": {
+        "type": "String"
+      }
+    }
+  },
+  "telegramTest": "Send a test",
+  "telegramTestSent": "{count, plural, =0{No chat to send to} =1{Test sent to 1 chat} other{Test sent to {count} chats}}",
+  "@telegramTestSent": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "telegramCannotOpen": "Telegram could not be opened on this phone.",
+  "activityTitle": "Activity",
+  "activityEmpty": "No activity yet",
+  "activityAll": "All",
+  "auditSignIn": "Sign ins",
+  "auditMembers": "Members",
+  "auditCameras": "Cameras",
+  "auditRules": "Rules",
+  "auditArm": "Arm mode",
+  "auditViews": "Viewing",
+  "auditExports": "Exports",
+  "auditFaces": "Faces",
+  "auditAdmin": "Platform",
+  "actionAuthSignIn": "Signed in",
+  "actionMemberInvite": "Invited a member",
+  "actionMemberRole": "Changed a role",
+  "actionMemberRemove": "Removed a member",
+  "actionCameraAdd": "Added a camera",
+  "actionCameraUpdate": "Changed a camera",
+  "actionCameraDelete": "Deleted a camera",
+  "actionRulesUpdate": "Changed zones and lines",
+  "actionArmChange": "Changed the arm mode",
+  "actionLiveView": "Watched live",
+  "actionClipView": "Watched a clip",
+  "actionClipExport": "Shared a clip",
+  "actionFaceEnrol": "Added face photos",
+  "actionFaceDelete": "Deleted faces",
+  "actionOrgPlan": "Changed the plan",
+  "capabilityNone": "This camera has no controls to show."
 }

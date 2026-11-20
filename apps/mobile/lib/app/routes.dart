@@ -4,11 +4,15 @@ import 'package:smart_surveillance/app/settings/about_screen.dart';
 import 'package:smart_surveillance/app/settings/appearance_screen.dart';
 import 'package:smart_surveillance/app/shell/app_shell.dart';
 import 'package:smart_surveillance/app/shell/more_screen.dart';
+import 'package:smart_surveillance/app/shell/setup_done_screen.dart';
 import 'package:smart_surveillance/app/shell/splash_screen.dart';
-import 'package:smart_surveillance/features/alerting/presentation/arm_control.dart';
+import 'package:smart_surveillance/features/alerting/presentation/notifications_screen.dart';
+import 'package:smart_surveillance/features/alerting/presentation/notifications_setup_screen.dart';
 import 'package:smart_surveillance/features/analytics/presentation/analytics_screens.dart';
+import 'package:smart_surveillance/features/analytics/presentation/preset_screen.dart';
 import 'package:smart_surveillance/features/analytics/presentation/zone_editor_screen.dart';
-import 'package:smart_surveillance/features/devices/domain/models.dart';
+import 'package:smart_surveillance/features/billing/presentation/plan_screen.dart';
+import 'package:smart_surveillance/features/devices/pairing/pairing_screens.dart';
 import 'package:smart_surveillance/features/devices/presentation/cameras_screens.dart';
 import 'package:smart_surveillance/features/devices/presentation/connectors_screen.dart';
 import 'package:smart_surveillance/features/events/presentation/event_screen.dart';
@@ -27,16 +31,12 @@ import 'package:smart_surveillance/features/investigation/presentation/people_sc
 import 'package:smart_surveillance/features/investigation/presentation/search_screen.dart';
 import 'package:smart_surveillance/features/media/presentation/camera_screen.dart';
 import 'package:smart_surveillance/features/media/presentation/live_screen.dart';
-import 'package:smart_surveillance/features/more/notifications_screen.dart';
-import 'package:smart_surveillance/features/onboarding/camera_setup_screen.dart';
-import 'package:smart_surveillance/features/onboarding/cameras_found_screen.dart';
-import 'package:smart_surveillance/features/onboarding/connector_screen.dart';
-import 'package:smart_surveillance/features/onboarding/finish_screens.dart';
-import 'package:smart_surveillance/features/onboarding/site_screen.dart';
+import 'package:smart_surveillance/features/operations/presentation/activity_screen.dart';
 import 'package:smart_surveillance/features/operations/presentation/health_screen.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/invite_screen.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/members_screen.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/site_settings_screen.dart';
+import 'package:smart_surveillance/features/tenancy/presentation/site_setup_screen.dart';
 
 part 'routes.g.dart';
 final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
@@ -125,40 +125,26 @@ class OnboardingSiteRoute extends GoRouteData with $OnboardingSiteRoute {
 
 @TypedGoRoute<OnboardingConnectorRoute>(path: '/setup/connector/:siteId')
 class OnboardingConnectorRoute extends GoRouteData with $OnboardingConnectorRoute {
-  const OnboardingConnectorRoute({required this.siteId, this.first = true});
+  const OnboardingConnectorRoute({required this.siteId, this.first = true, this.code});
 
   final String siteId;
   final bool first;
-
-  @override
-  Widget build(BuildContext context, GoRouterState state) => ConnectorSetupScreen(siteId: siteId, first: first);
-}
-
-@TypedGoRoute<OnboardingCamerasRoute>(path: '/setup/cameras/:siteId/:connectorId')
-class OnboardingCamerasRoute extends GoRouteData with $OnboardingCamerasRoute {
-  const OnboardingCamerasRoute({required this.siteId, required this.connectorId, this.first = true});
-
-  final String siteId;
-  final String connectorId;
-  final bool first;
+  final String? code;
 
   @override
   Widget build(BuildContext context, GoRouterState state) =>
-      CamerasFoundScreen(siteId: siteId, connectorId: connectorId, first: first);
+      ConnectorPairingScreen(siteId: siteId, first: first, code: code);
 }
 
-@TypedGoRoute<OnboardingCameraRoute>(path: '/setup/camera/:siteId/:connectorId')
-class OnboardingCameraRoute extends GoRouteData with $OnboardingCameraRoute {
-  const OnboardingCameraRoute({required this.siteId, required this.connectorId, required this.$extra, this.first = true});
+@TypedGoRoute<OnboardingAddRoute>(path: '/setup/add/:siteId')
+class OnboardingAddRoute extends GoRouteData with $OnboardingAddRoute {
+  const OnboardingAddRoute({required this.siteId, this.first = true});
 
   final String siteId;
-  final String connectorId;
-  final DiscoveredCamera $extra;
   final bool first;
 
   @override
-  Widget build(BuildContext context, GoRouterState state) =>
-      CameraSetupScreen(siteId: siteId, connectorId: connectorId, camera: $extra, first: first);
+  Widget build(BuildContext context, GoRouterState state) => AddCameraScreen(siteId: siteId, first: first);
 }
 
 @TypedGoRoute<OnboardingAnalyticsRoute>(path: '/setup/analytics/:siteId/:cameraId')
@@ -188,6 +174,36 @@ class OnboardingDoneRoute extends GoRouteData with $OnboardingDoneRoute {
 
   @override
   Widget build(BuildContext context, GoRouterState state) => const SetupDoneScreen();
+}
+
+@TypedGoRoute<ConnectRoute>(path: '/connect')
+class ConnectRoute extends GoRouteData with $ConnectRoute {
+  const ConnectRoute({this.code});
+
+  final String? code;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => ConnectLinkScreen(code: code);
+}
+
+@TypedGoRoute<VerifyLinkRoute>(path: '/verify-email/:token')
+class VerifyLinkRoute extends GoRouteData with $VerifyLinkRoute {
+  const VerifyLinkRoute({required this.token});
+
+  final String token;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => VerifyLinkScreen(token: token);
+}
+
+@TypedGoRoute<ResetLinkRoute>(path: '/reset-password/:token')
+class ResetLinkRoute extends GoRouteData with $ResetLinkRoute {
+  const ResetLinkRoute({required this.token});
+
+  final String token;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => ResetScreen(email: '', token: token);
 }
 
 @TypedGoRoute<CameraRoute>(path: '/camera/:cameraId')
@@ -271,6 +287,8 @@ class ZoneEditorRoute extends GoRouteData with $ZoneEditorRoute {
             TypedGoRoute<MembersRoute>(path: 'members'),
             TypedGoRoute<FacesRoute>(path: 'faces'),
             TypedGoRoute<NotificationsRoute>(path: 'notifications'),
+            TypedGoRoute<PlanRoute>(path: 'plan'),
+            TypedGoRoute<ActivityRoute>(path: 'activity'),
             TypedGoRoute<AccountRoute>(path: 'account'),
             TypedGoRoute<AppearanceRoute>(path: 'appearance'),
             TypedGoRoute<AboutRoute>(path: 'about'),
@@ -452,4 +470,18 @@ class AboutRoute extends GoRouteData with $AboutRoute {
 
   @override
   Widget build(BuildContext context, GoRouterState state) => const AboutScreen();
+}
+
+class PlanRoute extends GoRouteData with $PlanRoute {
+  const PlanRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => const PlanScreen();
+}
+
+class ActivityRoute extends GoRouteData with $ActivityRoute {
+  const ActivityRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => const ActivityScreen();
 }

@@ -3,20 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smart_surveillance/app/backend.dart';
 import 'package:smart_surveillance/app/l10n/l10n.dart';
 import 'package:smart_surveillance/app/routes.dart';
-import 'package:smart_surveillance/app/settings/appearance.dart';
-import 'package:smart_surveillance/app/theme/theme.dart';
 import 'package:smart_surveillance/core/design/palette.dart';
 import 'package:smart_surveillance/core/design/tokens.dart';
 import 'package:smart_surveillance/core/format.dart';
 import 'package:smart_surveillance/core/providers.dart';
 import 'package:smart_surveillance/core/widgets/states.dart';
 import 'package:smart_surveillance/core/widgets/surfaces.dart';
-import 'package:smart_surveillance/features/analytics/presentation/providers.dart';
 import 'package:smart_surveillance/features/devices/domain/models.dart';
 import 'package:smart_surveillance/features/devices/presentation/providers.dart';
-import 'package:smart_surveillance/features/events/presentation/providers.dart';
-import 'package:smart_surveillance/features/identity/presentation/session.dart';
-import 'package:smart_surveillance/features/insights/presentation/providers.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
 final cameraSettingsProvider = FutureProvider.autoDispose.family<CameraSettings, String>(
   (ref, id) => ref.read(backendProvider).devices.settings(id),
@@ -36,7 +30,7 @@ Future<void> addCamera(BuildContext context, WidgetRef ref, String siteId) async
   if (online.isEmpty) {
     await OnboardingConnectorRoute(siteId: siteId, first: false).push<void>(context);
   } else {
-    await OnboardingCamerasRoute(siteId: siteId, connectorId: online.first.id, first: false).push<void>(context);
+    await OnboardingAddRoute(siteId: siteId, first: false).push<void>(context);
   }
   ref.invalidate(camerasProvider(siteId));
 }
@@ -82,10 +76,10 @@ class _CamerasScreenState extends ConsumerState<CamerasScreen> {
               child: Text(l10n.camerasReorder, style: context.text.bodySmall),
             ),
             itemCount: list.length,
-            onReorder: (from, to) async {
+            onReorderItem: (from, to) async {
               final next = List.of(list);
               final moved = next.removeAt(from);
-              next.insert(to > from ? to - 1 : to, moved);
+              next.insert(to, moved);
               setState(() => order = next);
               try {
                 await ref.read(backendProvider).devices.orderCameras(id, [for (final c in next) c.id]);

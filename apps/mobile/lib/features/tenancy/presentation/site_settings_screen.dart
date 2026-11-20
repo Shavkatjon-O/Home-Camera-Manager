@@ -8,9 +8,9 @@ import 'package:smart_surveillance/core/widgets/flow_scaffold.dart';
 import 'package:smart_surveillance/core/widgets/states.dart';
 import 'package:smart_surveillance/core/widgets/surfaces.dart';
 import 'package:smart_surveillance/features/alerting/presentation/labels.dart';
-import 'package:smart_surveillance/features/onboarding/site_screen.dart';
 import 'package:smart_surveillance/features/tenancy/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
+import 'package:smart_surveillance/features/tenancy/presentation/site_setup_screen.dart';
 class SiteSettingsScreen extends ConsumerStatefulWidget {
   const SiteSettingsScreen({super.key});
 

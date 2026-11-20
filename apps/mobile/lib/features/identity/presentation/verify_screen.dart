@@ -1,46 +1,53 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smart_surveillance/app/backend.dart';
 import 'package:smart_surveillance/app/l10n/l10n.dart';
+import 'package:smart_surveillance/app/routes.dart';
 import 'package:smart_surveillance/core/design/palette.dart';
 import 'package:smart_surveillance/core/design/tokens.dart';
+import 'package:smart_surveillance/core/widgets/failure_labels.dart';
 import 'package:smart_surveillance/core/widgets/flow_scaffold.dart';
 import 'package:smart_surveillance/core/widgets/states.dart';
 import 'package:smart_surveillance/features/identity/presentation/session.dart';
-import 'package:smart_surveillance/features/identity/presentation/validators.dart';
-class CodeField extends StatelessWidget {
-  const CodeField({super.key, required this.controller, this.onCompleted, this.label});
+import 'package:smart_surveillance/features/identity/presentation/token.dart';
 
+/// A field for the code or the link from an email.
+class TokenField extends StatelessWidget {
+  /// Creates the field.
+  const TokenField({super.key, required this.controller, this.onSubmitted});
+
+  /// The field's text.
   final TextEditingController controller;
-  final ValueChanged<String>? onCompleted;
-  final String? label;
+
+  /// Called when the keyboard's done key is pressed.
+  final ValueChanged<String>? onSubmitted;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return TextFormField(
       controller: controller,
-      keyboardType: TextInputType.number,
-      autofillHints: const [AutofillHints.oneTimeCode],
-      textAlign: TextAlign.center,
-      maxLength: 6,
-      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-      style: dataStyle(context, size: 28, weight: FontWeight.w500).copyWith(letterSpacing: 10),
-      decoration: InputDecoration(labelText: label ?? l10n.fieldCode, counterText: ''),
-      validator: (value) => validateCode(l10n, value),
-      onChanged: (value) {
-        if (value.length == 6) onCompleted?.call(value);
-      },
+      keyboardType: TextInputType.url,
+      autocorrect: false,
+      enableSuggestions: false,
+      minLines: 1,
+      maxLines: 3,
+      style: dataStyle(context, size: 14),
+      decoration: InputDecoration(labelText: l10n.fieldCode, helperText: l10n.fieldCodeHelp),
+      validator: (value) => extractToken(value ?? '').length >= 6 ? null : l10n.validationCode,
+      onFieldSubmitted: onSubmitted,
     );
   }
 }
 
+/// Confirms the email address of a new account.
 class VerifyScreen extends ConsumerStatefulWidget {
+  /// Creates the screen for [email].
   const VerifyScreen({super.key, required this.email});
 
+  /// The address the code was sent to.
   final String email;
 
   @override
@@ -65,7 +72,7 @@ class _VerifyScreenState extends ConsumerState<VerifyScreen> {
     if (!form.currentState!.validate()) return;
     setState(() => busy = true);
     try {
-      await ref.read(sessionProvider.notifier).verify(widget.email, code.text.trim());
+      await ref.read(sessionProvider.notifier).verify(extractToken(code.text));
     } catch (failure) {
       if (mounted) showFailure(context, failure);
     } finally {
@@ -104,16 +111,16 @@ class _VerifyScreenState extends ConsumerState<VerifyScreen> {
       ),
       bottom: BusyButton(label: l10n.verifyAction, busy: busy, onPressed: submit),
       children: [
-        Form(key: form, child: CodeField(controller: code, onCompleted: (_) => submit())),
+        Form(key: form, child: TokenField(controller: code, onSubmitted: (_) => submit())),
         const SizedBox(height: Gaps.lg),
-        Row(
+        Wrap(
+          spacing: 8,
           children: [
             TextButton.icon(
               onPressed: cooldown > 0 ? null : resend,
               icon: const Icon(Icons.refresh_rounded, size: 18),
               label: Text(cooldown > 0 ? '${l10n.verifyResend} ($cooldown)' : l10n.verifyResend),
             ),
-            const Spacer(),
             TextButton(
               style: TextButton.styleFrom(foregroundColor: p.text2),
               onPressed: () => ref.read(sessionProvider.notifier).cancelVerification(),
@@ -124,4 +131,56 @@ class _VerifyScreenState extends ConsumerState<VerifyScreen> {
       ],
     );
   }
+}
+
+/// Confirms an email address from the link in the verification email.
+class VerifyLinkScreen extends ConsumerStatefulWidget {
+  /// Creates the screen for the link's [token].
+  const VerifyLinkScreen({super.key, required this.token});
+
+  /// The verification token in the link.
+  final String token;
+
+  @override
+  ConsumerState<VerifyLinkScreen> createState() => _VerifyLinkScreenState();
+}
+
+class _VerifyLinkScreenState extends ConsumerState<VerifyLinkScreen> {
+  Object? error;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => verify());
+  }
+
+  Future<void> verify() async {
+    setState(() => error = null);
+    try {
+      final signedIn = await ref.read(sessionProvider.notifier).verify(widget.token);
+      if (!mounted) return;
+      if (signedIn) {
+        const HomeRoute().go(context);
+      } else {
+        SignInRoute(notice: context.l10n.verifyDone).go(context);
+      }
+    } catch (failure) {
+      if (mounted) setState(() => error = failure);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(),
+    body: Center(
+      child: error == null
+          ? const CircularProgressIndicator(strokeWidth: 2)
+          : EmptyState(
+              icon: Icons.mark_email_unread_outlined,
+              title: context.l10n.verifyTitle,
+              body: context.l10n.failure(error!),
+              action: OutlinedButton(onPressed: verify, child: Text(context.l10n.commonRetry)),
+            ),
+    ),
+  );
 }

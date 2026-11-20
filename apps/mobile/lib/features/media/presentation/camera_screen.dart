@@ -191,12 +191,12 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
                   icon: sound ? Icons.volume_up_rounded : Icons.volume_off_rounded,
                   label: l10n.cameraSound,
                   selected: sound,
-                  onTap: controls?.audio == true ? () => setState(() => sound = !sound) : null,
+                  onTap: camera.capabilities.audio ? () => setState(() => sound = !sound) : null,
                 ),
               ],
             ),
           ),
-          if (camera.ptz && operator) ...[
+          if (camera.capabilities.ptz && operator) ...[
             SectionHeader(l10n.cameraPtz),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: Gaps.page),
@@ -210,9 +210,9 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
                           onMove: move,
                           onStop: stop,
                           speed: speed,
-                          onHome: controls?.homeSupported == true ? () => devices.gotoHome(camera.id) : null,
+                          onHome: camera.capabilities.home ? () => devices.gotoHome(camera.id) : null,
                         ),
-                        ZoomButtons(onMove: move, onStop: stop, speed: speed),
+                        if (camera.capabilities.zoom) ZoomButtons(onMove: move, onStop: stop, speed: speed),
                       ],
                     ),
                     const SizedBox(height: Gaps.md),
@@ -235,12 +235,13 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
                 ),
               ),
             ),
-            PresetsRow(camera: camera, presets: controls?.presets ?? const []),
+            if (camera.capabilities.presets) PresetsRow(camera: camera, presets: controls?.presets ?? const []),
           ],
-          if (controls?.extrasSupported == true && operator) ...[
+          if ((camera.capabilities.light || camera.capabilities.siren) && operator) ...[
             SectionHeader(l10n.cameraLight),
             TileGroup(
               children: [
+                if (camera.capabilities.light)
                 SwitchListTile(
                   secondary: const Icon(Icons.light_mode_outlined),
                   title: Text(l10n.cameraLight),
@@ -255,6 +256,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
                     }
                   },
                 ),
+                if (camera.capabilities.siren)
                 ListTile(
                   leading: Icon(Icons.campaign_outlined, color: p.dangerText),
                   title: Text(l10n.cameraSiren),

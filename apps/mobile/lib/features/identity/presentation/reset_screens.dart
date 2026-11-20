@@ -6,6 +6,7 @@ import 'package:smart_surveillance/app/routes.dart';
 import 'package:smart_surveillance/core/design/tokens.dart';
 import 'package:smart_surveillance/core/widgets/flow_scaffold.dart';
 import 'package:smart_surveillance/core/widgets/states.dart';
+import 'package:smart_surveillance/features/identity/presentation/token.dart';
 import 'package:smart_surveillance/features/identity/presentation/validators.dart';
 import 'package:smart_surveillance/features/identity/presentation/verify_screen.dart';
 class ForgotScreen extends ConsumerStatefulWidget {
@@ -64,10 +65,16 @@ class _ForgotScreenState extends ConsumerState<ForgotScreen> {
   }
 }
 
+/// Sets a new password with the token from the reset email.
 class ResetScreen extends ConsumerStatefulWidget {
-  const ResetScreen({super.key, required this.email});
+  /// Creates the screen for [email], or for a link's [token].
+  const ResetScreen({super.key, required this.email, this.token});
 
+  /// The address the reset email went to.
   final String email;
+
+  /// The token from an opened reset link.
+  final String? token;
 
   @override
   ConsumerState<ResetScreen> createState() => _ResetScreenState();
@@ -75,7 +82,7 @@ class ResetScreen extends ConsumerStatefulWidget {
 
 class _ResetScreenState extends ConsumerState<ResetScreen> {
   final form = GlobalKey<FormState>();
-  final code = TextEditingController();
+  late final code = TextEditingController(text: widget.token ?? '');
   final password = TextEditingController();
   bool busy = false;
 
@@ -90,11 +97,8 @@ class _ResetScreenState extends ConsumerState<ResetScreen> {
     if (!form.currentState!.validate()) return;
     setState(() => busy = true);
     try {
-      await ref
-          .read(backendProvider)
-          .auth
-          .resetPassword(email: widget.email, code: code.text.trim(), password: password.text);
-      if (mounted) SignInRoute(notice: context.l10n.resetDone).pushReplacement(context);
+      await ref.read(backendProvider).auth.resetPassword(token: extractToken(code.text), password: password.text);
+      if (mounted) SignInRoute(notice: context.l10n.resetDone).go(context);
     } catch (failure) {
       if (mounted) showFailure(context, failure);
     } finally {
@@ -105,17 +109,17 @@ class _ResetScreenState extends ConsumerState<ResetScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final linked = widget.token != null;
     return FlowScaffold(
       title: l10n.resetTitle,
-      subtitle: l10n.resetBody(widget.email),
+      subtitle: linked ? l10n.resetLinkBody : l10n.resetBody(widget.email),
       bottom: BusyButton(label: l10n.resetAction, busy: busy, onPressed: submit),
       children: [
         Form(
           key: form,
           child: Column(
             children: [
-              CodeField(controller: code),
-              const SizedBox(height: Gaps.md),
+              if (!linked) ...[TokenField(controller: code), const SizedBox(height: Gaps.md)],
               PasswordField(
                 controller: password,
                 label: l10n.fieldNewPassword,

@@ -104,7 +104,7 @@ class PeopleTab extends ConsumerWidget {
           .people
           .createPerson(organisationId, name: name.text.trim(), notes: notes.text.trim().isEmpty ? null : notes.text.trim());
       ref.invalidate(peopleProvider(organisationId));
-      if (context.mounted) PersonRoute(personId: person.id).push<void>(context);
+      if (context.mounted) await PersonRoute(personId: person.id).push<void>(context);
     } catch (failure) {
       if (context.mounted) showFailure(context, failure);
     } finally {

@@ -80,6 +80,8 @@ class MoreScreen extends ConsumerWidget {
             TileGroup(
               children: [
                 tile(Icons.group_outlined, l10n.moreMembers, () => const MembersRoute().go(context)),
+                if (admin) tile(Icons.workspace_premium_outlined, l10n.morePlan, () => const PlanRoute().go(context)),
+                if (admin) tile(Icons.history_rounded, l10n.moreActivity, () => const ActivityRoute().go(context)),
                 tile(
                   Icons.face_outlined,
                   l10n.moreFaces,
