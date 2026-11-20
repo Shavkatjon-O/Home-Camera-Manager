@@ -2299,282 +2299,281 @@ class AppLocalizationsUz extends AppLocalizations {
   String get commonHidePassword => 'Parolni yashirish';
 
   @override
-  String get countsInside => 'inside';
+  String get countsInside => 'ichkarida';
 
   @override
-  String get editorAddPoints => 'Add corners';
+  String get editorAddPoints => 'Burchaklar qoʻshish';
 
   @override
-  String get connectorsVersionLabel => 'Version';
+  String get connectorsVersionLabel => 'Versiya';
 
   @override
-  String get connectorsLastSeen => 'Last seen';
+  String get connectorsLastSeen => 'Oxirgi faollik';
 
   @override
-  String get connectorsConnection => 'Connection';
+  String get connectorsConnection => 'Ulanish';
 
   @override
-  String get connectorsTunnel => 'Secure tunnel';
+  String get connectorsTunnel => 'Xavfsiz tunnel';
 
   @override
-  String get fieldCodeHelp => 'Paste the link from the email, or the code in it';
+  String get fieldCodeHelp => 'Xatdagi havolani yoki undagi kodni qoʻying';
 
   @override
-  String get verifyDone => 'Email confirmed. Sign in to continue.';
+  String get verifyDone => 'Email tasdiqlandi. Davom etish uchun kiring.';
 
   @override
-  String get resetLinkBody => 'Choose a new password for your account.';
+  String get resetLinkBody => 'Hisobingiz uchun yangi parol tanlang.';
 
   @override
-  String get pairingAddTitle => 'How do you want to add it?';
+  String get pairingAddTitle => 'Qanday qoʻshmoqchisiz?';
 
   @override
   String get pairingAddBody =>
-      'Pick the way that suits the camera. The best one for this site comes first.';
+      'Kameraga mos usulni tanlang. Shu obyekt uchun eng yaxshisi birinchi turadi.';
 
   @override
-  String get pairingRecommended => 'Recommended';
+  String get pairingRecommended => 'Tavsiya etiladi';
 
   @override
   String get pairingPermissionDenied =>
-      'This needs a permission the phone did not give. Allow it in the phone settings, or choose another way.';
+      'Buning uchun telefon bermagan ruxsat kerak. Uni telefon sozlamalarida yoqing yoki boshqa usulni tanlang.';
 
   @override
-  String get pairingDemoCode => 'Use the demo code';
+  String get pairingDemoCode => 'Demo koddan foydalanish';
 
   @override
-  String get pairingWaiting => 'Waiting for the connector to confirm';
+  String get pairingWaiting => 'Konnektor tasdiqlashi kutilmoqda';
 
   @override
   String pairingCamerasAdded(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count cameras added',
-      one: 'Camera added',
+      other: '$count ta kamera qoʻshildi',
+      one: 'Kamera qoʻshildi',
     );
     return '$_temp0';
   }
 
   @override
-  String get validationConnectorCode => 'Enter the 8 character code, like ABCD-1234';
+  String get validationConnectorCode => '8 belgili kodni kiriting, masalan ABCD-1234';
 
   @override
-  String get methodConnectorDiscovery => 'Cameras on the network';
+  String get methodConnectorDiscovery => 'Tarmoqdagi kameralar';
 
   @override
-  String get methodConnectorDiscoveryBody => 'Pick one of the cameras the connector found';
+  String get methodConnectorDiscoveryBody => 'Konnektor topgan kameralardan birini tanlang';
 
   @override
-  String get methodLabelQr => 'Scan the camera\'s label';
+  String get methodLabelQr => 'Kamera yorligʻini skanerlash';
 
   @override
-  String get methodLabelQrBody => 'Point at the QR code on the sticker of the camera';
+  String get methodLabelQrBody => 'Kamera yorligʻidagi QR kodga qarating';
 
   @override
-  String get methodManualHost => 'Enter its address';
+  String get methodManualHost => 'Manzilni kiritish';
 
   @override
-  String get methodManualHostBody =>
-      'Type the camera\'s IP address and the connector identifies it';
+  String get methodManualHostBody => 'Kameraning IP manzilini kiriting, konnektor uni aniqlaydi';
 
   @override
-  String get methodNvrImport => 'Import from a recorder';
+  String get methodNvrImport => 'Registratordan import qilish';
 
   @override
-  String get methodNvrImportBody => 'Add channels of an NVR or DVR at once';
+  String get methodNvrImportBody => 'NVR yoki DVR kanallarini birdan qoʻshing';
 
   @override
-  String get methodRtspUrl => 'Paste an RTSP link';
+  String get methodRtspUrl => 'RTSP havolasini qoʻyish';
 
   @override
-  String get methodRtspUrlBody => 'For cameras that give a stream address';
+  String get methodRtspUrlBody => 'Oqim manzilini beradigan kameralar uchun';
 
   @override
-  String get methodConnectorQr => 'Scan the connector\'s QR code';
+  String get methodConnectorQr => 'Konnektorning QR kodini skanerlash';
 
   @override
-  String get methodConnectorQrBody => 'The connector shows it on its screen or web page';
+  String get methodConnectorQrBody => 'Konnektor uni ekranida yoki veb-sahifasida koʻrsatadi';
 
   @override
-  String get methodConnectorMdns => 'Find it on this Wi-Fi';
+  String get methodConnectorMdns => 'Shu Wi-Fi tarmogʻida topish';
 
   @override
-  String get methodConnectorMdnsBody => 'Look for connectors on the network this phone is on';
+  String get methodConnectorMdnsBody => 'Telefon ulangan tarmoqdagi konnektorlarni qidirish';
 
   @override
-  String get methodConnectorCode => 'Type the code';
+  String get methodConnectorCode => 'Kodni kiritish';
 
   @override
-  String get methodConnectorCodeBody => 'The 8 character code the connector shows';
+  String get methodConnectorCodeBody => 'Konnektor koʻrsatadigan 8 belgili kod';
 
   @override
-  String get mdnsTitle => 'Connectors on this Wi-Fi';
+  String get mdnsTitle => 'Shu Wi-Fi tarmogʻidagi konnektorlar';
 
   @override
-  String get mdnsSearching => 'Looking for connectors on this network';
+  String get mdnsSearching => 'Bu tarmoqdagi konnektorlar qidirilmoqda';
 
   @override
   String get mdnsNone =>
-      'No connector found yet. Make sure this phone and the connector are on the same Wi-Fi.';
+      'Konnektor hali topilmadi. Telefon va konnektor bir Wi-Fi tarmogʻida ekanini tekshiring.';
 
   @override
-  String get labelTitle => 'Scan the label';
+  String get labelTitle => 'Yorliqni skanerlash';
 
   @override
-  String get labelHint => 'Point the camera at the QR code on the camera\'s sticker.';
+  String get labelHint => 'Telefon kamerasini kamera yorligʻidagi QR kodga qarating.';
 
   @override
-  String get labelUnknown => 'This label is not one we know. Add the camera another way.';
+  String get labelUnknown => 'Bu yorliq bizga notanish. Kamerani boshqa usul bilan qoʻshing.';
 
   @override
-  String get manualTitle => 'Camera address';
+  String get manualTitle => 'Kamera manzili';
 
   @override
   String get manualBody =>
-      'The connector asks the camera what it is. Its login comes on the next step.';
+      'Konnektor kameradan u qanday model ekanini soʻraydi. Login keyingi bosqichda kiritiladi.';
 
   @override
-  String get manualHost => 'IP address or host name';
+  String get manualHost => 'IP manzil yoki host nomi';
 
   @override
-  String get manualPort => 'ONVIF port, if not the usual one';
+  String get manualPort => 'ONVIF porti, agar odatdagisi boʻlmasa';
 
   @override
-  String get manualIdentify => 'Identify camera';
+  String get manualIdentify => 'Kamerani aniqlash';
 
   @override
-  String get manualIdentifying => 'Asking the camera';
+  String get manualIdentifying => 'Kameradan soʻralmoqda';
 
   @override
-  String get manualNotFound => 'No camera answered at that address. Check it and try again.';
+  String get manualNotFound => 'Bu manzilda kamera javob bermadi. Uni tekshirib, qayta urining.';
 
   @override
-  String get rtspTitle => 'RTSP link';
+  String get rtspTitle => 'RTSP havolasi';
 
   @override
   String get rtspBody =>
-      'Paste the stream link from the camera\'s manual or app. A login in the link is kept on the connector.';
+      'Oqim havolasini kameraning qoʻllanmasi yoki ilovasidan qoʻying. Havoladagi login konnektorda saqlanadi.';
 
   @override
-  String get rtspField => 'Stream link';
+  String get rtspField => 'Oqim havolasi';
 
   @override
-  String get rtspInvalid => 'That is not an RTSP link.';
+  String get rtspInvalid => 'Bu RTSP havolasi emas.';
 
   @override
-  String get nvrPick => 'Choose the recorder';
+  String get nvrPick => 'Registratorni tanlang';
 
   @override
-  String get nvrNone => 'No recorders found';
+  String get nvrNone => 'Registratorlar topilmadi';
 
   @override
-  String get nvrTitle => 'Import channels';
+  String get nvrTitle => 'Kanallarni import qilish';
 
   @override
-  String get nvrLogin => 'Recorder login';
+  String get nvrLogin => 'Registrator logini';
 
   @override
-  String get nvrLoad => 'Show channels';
+  String get nvrLoad => 'Kanallarni koʻrsatish';
 
   @override
-  String get nvrChannels => 'Channels';
+  String get nvrChannels => 'Kanallar';
 
   @override
   String nvrAdd(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Add $count cameras',
-      one: 'Add 1 camera',
-      zero: 'Choose channels',
+      other: '$count ta kamera qoʻshish',
+      one: '1 ta kamera qoʻshish',
+      zero: 'Kanallarni tanlang',
     );
     return '$_temp0';
   }
 
   @override
-  String get nvrOffline => 'No signal';
+  String get nvrOffline => 'Tasvir yoʻq';
 
   @override
-  String get onboardingTestPassed => 'Stream works';
+  String get onboardingTestPassed => 'Oqim ishlayapti';
 
   @override
-  String get presetZoneName => 'Whole view';
+  String get presetZoneName => 'Butun koʻrinish';
 
   @override
-  String get presetLineName => 'Entrance';
+  String get presetLineName => 'Kirish';
 
   @override
-  String get morePlan => 'Plan and usage';
+  String get morePlan => 'Tarif va foydalanish';
 
   @override
-  String get moreActivity => 'Activity';
+  String get moreActivity => 'Faollik';
 
   @override
-  String get planTitle => 'Plan and usage';
+  String get planTitle => 'Tarif va foydalanish';
 
   @override
-  String get planInternal => 'Internal plan with no limits';
+  String get planInternal => 'Cheklovsiz ichki tarif';
 
   @override
-  String get planUnlimited => 'No limit';
+  String get planUnlimited => 'Cheklovsiz';
 
   @override
-  String get planLimits => 'Limits';
+  String get planLimits => 'Limitlar';
 
   @override
-  String get planUsage => 'This month';
+  String get planUsage => 'Shu oyda';
 
   @override
-  String get planFeatures => 'Features';
+  String get planFeatures => 'Imkoniyatlar';
 
   @override
-  String get planIncluded => 'Included';
+  String get planIncluded => 'Tarifga kiritilgan';
 
   @override
-  String get planNotIncluded => 'Not in your plan';
+  String get planNotIncluded => 'Tarifingizga kirmaydi';
 
   @override
-  String get planUnavailable => 'Not in your plan. An owner can change the plan.';
+  String get planUnavailable => 'Tarifingizga kirmaydi. Egasi tarifni oʻzgartira oladi.';
 
   @override
-  String get planSites => 'Sites';
+  String get planSites => 'Obyektlar';
 
   @override
-  String get planCameras => 'Cameras';
+  String get planCameras => 'Kameralar';
 
   @override
-  String get planMembers => 'Members';
+  String get planMembers => 'Aʼzolar';
 
   @override
-  String get planEventRetention => 'Events kept';
+  String get planEventRetention => 'Hodisalarni saqlash';
 
   @override
-  String get planClipRetention => 'Clips kept';
+  String get planClipRetention => 'Kliplarni saqlash';
 
   @override
-  String get planCameraHours => 'Camera hours online';
+  String get planCameraHours => 'Kameralarning tarmoqdagi soatlari';
 
   @override
-  String get planAnalyticsHours => 'Analysed view hours';
+  String get planAnalyticsHours => 'Koʻrinishlarni tahlil qilish soatlari';
 
   @override
-  String get planEvents => 'Events';
+  String get planEvents => 'Hodisalar';
 
   @override
-  String get planClipStorage => 'Clip storage';
+  String get planClipStorage => 'Kliplar xotirasi';
 
   @override
-  String get planNotifications => 'Notifications sent';
+  String get planNotifications => 'Yuborilgan bildirishnomalar';
 
   @override
   String planOf(String used, String limit) {
-    return '$used of $limit';
+    return '$used / $limit';
   }
 
   @override
   String planSince(String date) {
-    return 'Since $date';
+    return '$date dan';
   }
 
   @override
@@ -2583,157 +2582,157 @@ class AppLocalizationsUz extends AppLocalizations {
   }
 
   @override
-  String get featureObjects => 'Objects left and taken';
+  String get featureObjects => 'Qoldirilgan va olib ketilgan buyumlar';
 
   @override
-  String get featureJourneys => 'Journeys';
+  String get featureJourneys => 'Marshrutlar';
 
   @override
-  String get featureAppearanceSearch => 'Find this person';
+  String get featureAppearanceSearch => 'Shu odamni topish';
 
   @override
-  String get featureTelegram => 'Telegram alerts';
+  String get featureTelegram => 'Telegram signallari';
 
   @override
   String get telegramTitle => 'Telegram';
 
   @override
-  String get telegramBody => 'Send alerts with the snapshot to a Telegram chat or group.';
+  String get telegramBody => 'Signallarni surat bilan Telegram chatiga yoki guruhiga yuboring.';
 
   @override
-  String get telegramLink => 'Link a chat';
+  String get telegramLink => 'Chatni bogʻlash';
 
   @override
   String get telegramLinkBody =>
-      'Telegram opens the bot. Press Start in a private chat, or add the bot to a group, and the chat appears here.';
+      'Telegram botni ochadi. Shaxsiy chatda Start tugmasini bosing yoki botni guruhga qoʻshing, chat shu yerda paydo boʻladi.';
 
   @override
-  String get telegramOpened => 'Finish in Telegram, then come back here.';
+  String get telegramOpened => 'Telegramda yakunlang va shu yerga qayting.';
 
   @override
-  String get telegramChats => 'Linked chats';
+  String get telegramChats => 'Bogʻlangan chatlar';
 
   @override
-  String get telegramNone => 'No chat linked yet';
+  String get telegramNone => 'Hozircha chat bogʻlanmagan';
 
   @override
-  String get telegramGroup => 'Group';
+  String get telegramGroup => 'Guruh';
 
   @override
-  String get telegramPrivate => 'Private chat';
+  String get telegramPrivate => 'Shaxsiy chat';
 
   @override
   String telegramLinked(String when) {
-    return 'Linked $when';
+    return 'Bogʻlangan: $when';
   }
 
   @override
-  String get telegramUnlink => 'Unlink';
+  String get telegramUnlink => 'Uzish';
 
   @override
   String telegramUnlinkBody(String chat) {
-    return 'Alerts stop going to $chat.';
+    return 'Signallar $chat ga yuborilmay qoʻyadi.';
   }
 
   @override
-  String get telegramTest => 'Send a test';
+  String get telegramTest => 'Sinov yuborish';
 
   @override
   String telegramTestSent(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Test sent to $count chats',
-      one: 'Test sent to 1 chat',
-      zero: 'No chat to send to',
+      other: 'Sinov $count ta chatga yuborildi',
+      one: 'Sinov 1 ta chatga yuborildi',
+      zero: 'Yuboriladigan chat yoʻq',
     );
     return '$_temp0';
   }
 
   @override
-  String get telegramCannotOpen => 'Telegram could not be opened on this phone.';
+  String get telegramCannotOpen => 'Bu telefonda Telegramni ochib boʻlmadi.';
 
   @override
-  String get activityTitle => 'Activity';
+  String get activityTitle => 'Faollik';
 
   @override
-  String get activityEmpty => 'No activity yet';
+  String get activityEmpty => 'Hozircha faollik yoʻq';
 
   @override
-  String get activityAll => 'All';
+  String get activityAll => 'Hammasi';
 
   @override
-  String get auditSignIn => 'Sign ins';
+  String get auditSignIn => 'Kirishlar';
 
   @override
-  String get auditMembers => 'Members';
+  String get auditMembers => 'Aʼzolar';
 
   @override
-  String get auditCameras => 'Cameras';
+  String get auditCameras => 'Kameralar';
 
   @override
-  String get auditRules => 'Rules';
+  String get auditRules => 'Qoidalar';
 
   @override
-  String get auditArm => 'Arm mode';
+  String get auditArm => 'Qoʻriqlash rejimi';
 
   @override
-  String get auditViews => 'Viewing';
+  String get auditViews => 'Koʻrish';
 
   @override
-  String get auditExports => 'Exports';
+  String get auditExports => 'Eksport';
 
   @override
-  String get auditFaces => 'Faces';
+  String get auditFaces => 'Yuzlar';
 
   @override
-  String get auditAdmin => 'Platform';
+  String get auditAdmin => 'Platforma';
 
   @override
-  String get actionAuthSignIn => 'Signed in';
+  String get actionAuthSignIn => 'Hisobga kirdi';
 
   @override
-  String get actionMemberInvite => 'Invited a member';
+  String get actionMemberInvite => 'Aʼzoni taklif qildi';
 
   @override
-  String get actionMemberRole => 'Changed a role';
+  String get actionMemberRole => 'Rolni oʻzgartirdi';
 
   @override
-  String get actionMemberRemove => 'Removed a member';
+  String get actionMemberRemove => 'Aʼzoni chiqardi';
 
   @override
-  String get actionCameraAdd => 'Added a camera';
+  String get actionCameraAdd => 'Kamera qoʻshdi';
 
   @override
-  String get actionCameraUpdate => 'Changed a camera';
+  String get actionCameraUpdate => 'Kamerani oʻzgartirdi';
 
   @override
-  String get actionCameraDelete => 'Deleted a camera';
+  String get actionCameraDelete => 'Kamerani oʻchirdi';
 
   @override
-  String get actionRulesUpdate => 'Changed zones and lines';
+  String get actionRulesUpdate => 'Hudud va chiziqlarni oʻzgartirdi';
 
   @override
-  String get actionArmChange => 'Changed the arm mode';
+  String get actionArmChange => 'Qoʻriqlash rejimini oʻzgartirdi';
 
   @override
-  String get actionLiveView => 'Watched live';
+  String get actionLiveView => 'Jonli koʻrdi';
 
   @override
-  String get actionClipView => 'Watched a clip';
+  String get actionClipView => 'Klipni koʻrdi';
 
   @override
-  String get actionClipExport => 'Shared a clip';
+  String get actionClipExport => 'Klipni ulashdi';
 
   @override
-  String get actionFaceEnrol => 'Added face photos';
+  String get actionFaceEnrol => 'Yuz suratlarini qoʻshdi';
 
   @override
-  String get actionFaceDelete => 'Deleted faces';
+  String get actionFaceDelete => 'Yuzlarni oʻchirdi';
 
   @override
-  String get actionOrgPlan => 'Changed the plan';
+  String get actionOrgPlan => 'Tarifni oʻzgartirdi';
 
   @override
-  String get capabilityNone => 'This camera has no controls to show.';
+  String get capabilityNone => 'Bu kamerada koʻrsatiladigan boshqaruv yoʻq.';
 }

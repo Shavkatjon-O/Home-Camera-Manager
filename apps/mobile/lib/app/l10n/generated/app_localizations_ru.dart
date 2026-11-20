@@ -67,10 +67,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get commonNone => 'Нет';
 
   @override
-  String get commonOn => 'Вкл.';
+  String get commonOn => 'Включено';
 
   @override
-  String get commonOff => 'Выкл.';
+  String get commonOff => 'Выключено';
 
   @override
   String get commonBeta => 'Бета';
@@ -114,7 +114,15 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String commonDaysAgo(int count) {
-    return '$count дн. назад';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count дня назад',
+      many: '$count дней назад',
+      few: '$count дня назад',
+      one: '$count день назад',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -166,7 +174,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get errorTitle => 'Не удалось загрузить';
 
   @override
-  String get fieldEmail => 'Эл. почта';
+  String get fieldEmail => 'Электронная почта';
 
   @override
   String get fieldPassword => 'Пароль';
@@ -1922,7 +1930,7 @@ class AppLocalizationsRu extends AppLocalizations {
       many: '$count человек',
       few: '$count человека',
       one: '$count человек',
-      zero: 'Выкл.',
+      zero: 'Выключено',
     );
     return '$_temp0';
   }
@@ -1975,7 +1983,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get editorDirectionBoth => 'В обе стороны';
 
   @override
-  String get editorDurationOff => 'Выкл.';
+  String get editorDurationOff => 'Выключено';
 
   @override
   String get editorEnabled => 'Активна';
@@ -2354,441 +2362,447 @@ class AppLocalizationsRu extends AppLocalizations {
   String get commonHidePassword => 'Скрыть пароль';
 
   @override
-  String get countsInside => 'inside';
+  String get countsInside => 'внутри';
 
   @override
-  String get editorAddPoints => 'Add corners';
+  String get editorAddPoints => 'Добавить углы';
 
   @override
-  String get connectorsVersionLabel => 'Version';
+  String get connectorsVersionLabel => 'Версия';
 
   @override
-  String get connectorsLastSeen => 'Last seen';
+  String get connectorsLastSeen => 'Последняя активность';
 
   @override
-  String get connectorsConnection => 'Connection';
+  String get connectorsConnection => 'Подключение';
 
   @override
-  String get connectorsTunnel => 'Secure tunnel';
+  String get connectorsTunnel => 'Защищенный туннель';
 
   @override
-  String get fieldCodeHelp => 'Paste the link from the email, or the code in it';
+  String get fieldCodeHelp => 'Вставьте ссылку из письма или код из нее';
 
   @override
-  String get verifyDone => 'Email confirmed. Sign in to continue.';
+  String get verifyDone => 'Почта подтверждена. Войдите, чтобы продолжить.';
 
   @override
-  String get resetLinkBody => 'Choose a new password for your account.';
+  String get resetLinkBody => 'Выберите новый пароль для вашего аккаунта.';
 
   @override
-  String get pairingAddTitle => 'How do you want to add it?';
+  String get pairingAddTitle => 'Как вы хотите ее добавить?';
 
   @override
   String get pairingAddBody =>
-      'Pick the way that suits the camera. The best one for this site comes first.';
+      'Выберите способ, который подходит камере. Лучший для этого объекта указан первым.';
 
   @override
-  String get pairingRecommended => 'Recommended';
+  String get pairingRecommended => 'Рекомендуется';
 
   @override
   String get pairingPermissionDenied =>
-      'This needs a permission the phone did not give. Allow it in the phone settings, or choose another way.';
+      'Нужно разрешение, которое телефон не получил. Разрешите его в настройках телефона или выберите другой способ.';
 
   @override
-  String get pairingDemoCode => 'Use the demo code';
+  String get pairingDemoCode => 'Использовать демо-код';
 
   @override
-  String get pairingWaiting => 'Waiting for the connector to confirm';
+  String get pairingWaiting => 'Ждем подтверждения от коннектора';
 
   @override
   String pairingCamerasAdded(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count cameras added',
-      one: 'Camera added',
+      other: '$count камеры добавлено',
+      many: '$count камер добавлено',
+      few: '$count камеры добавлены',
+      one: '$count камера добавлена',
     );
     return '$_temp0';
   }
 
   @override
-  String get validationConnectorCode => 'Enter the 8 character code, like ABCD-1234';
+  String get validationConnectorCode => 'Введите 8-значный код, например ABCD-1234';
 
   @override
-  String get methodConnectorDiscovery => 'Cameras on the network';
+  String get methodConnectorDiscovery => 'Камеры в сети';
 
   @override
-  String get methodConnectorDiscoveryBody => 'Pick one of the cameras the connector found';
+  String get methodConnectorDiscoveryBody => 'Выберите одну из камер, найденных коннектором';
 
   @override
-  String get methodLabelQr => 'Scan the camera\'s label';
+  String get methodLabelQr => 'Сканировать наклейку камеры';
 
   @override
-  String get methodLabelQrBody => 'Point at the QR code on the sticker of the camera';
+  String get methodLabelQrBody => 'Наведите на QR-код на наклейке камеры';
 
   @override
-  String get methodManualHost => 'Enter its address';
+  String get methodManualHost => 'Ввести адрес';
 
   @override
-  String get methodManualHostBody =>
-      'Type the camera\'s IP address and the connector identifies it';
+  String get methodManualHostBody => 'Введите IP-адрес камеры, и коннектор ее определит';
 
   @override
-  String get methodNvrImport => 'Import from a recorder';
+  String get methodNvrImport => 'Импорт с регистратора';
 
   @override
-  String get methodNvrImportBody => 'Add channels of an NVR or DVR at once';
+  String get methodNvrImportBody => 'Добавьте сразу каналы NVR или DVR';
 
   @override
-  String get methodRtspUrl => 'Paste an RTSP link';
+  String get methodRtspUrl => 'Вставить RTSP-ссылку';
 
   @override
-  String get methodRtspUrlBody => 'For cameras that give a stream address';
+  String get methodRtspUrlBody => 'Для камер, которые дают адрес потока';
 
   @override
-  String get methodConnectorQr => 'Scan the connector\'s QR code';
+  String get methodConnectorQr => 'Сканировать QR-код коннектора';
 
   @override
-  String get methodConnectorQrBody => 'The connector shows it on its screen or web page';
+  String get methodConnectorQrBody => 'Коннектор показывает его на экране или веб-странице';
 
   @override
-  String get methodConnectorMdns => 'Find it on this Wi-Fi';
+  String get methodConnectorMdns => 'Найти в этой сети Wi-Fi';
 
   @override
-  String get methodConnectorMdnsBody => 'Look for connectors on the network this phone is on';
+  String get methodConnectorMdnsBody =>
+      'Искать коннекторы в сети, к которой подключен этот телефон';
 
   @override
-  String get methodConnectorCode => 'Type the code';
+  String get methodConnectorCode => 'Ввести код';
 
   @override
-  String get methodConnectorCodeBody => 'The 8 character code the connector shows';
+  String get methodConnectorCodeBody => '8-значный код, который показывает коннектор';
 
   @override
-  String get mdnsTitle => 'Connectors on this Wi-Fi';
+  String get mdnsTitle => 'Коннекторы в этой сети Wi-Fi';
 
   @override
-  String get mdnsSearching => 'Looking for connectors on this network';
+  String get mdnsSearching => 'Ищем коннекторы в этой сети';
 
   @override
   String get mdnsNone =>
-      'No connector found yet. Make sure this phone and the connector are on the same Wi-Fi.';
+      'Коннектор пока не найден. Убедитесь, что телефон и коннектор в одной сети Wi-Fi.';
 
   @override
-  String get labelTitle => 'Scan the label';
+  String get labelTitle => 'Сканирование наклейки';
 
   @override
-  String get labelHint => 'Point the camera at the QR code on the camera\'s sticker.';
+  String get labelHint => 'Наведите камеру телефона на QR-код на наклейке камеры.';
 
   @override
-  String get labelUnknown => 'This label is not one we know. Add the camera another way.';
+  String get labelUnknown => 'Эта наклейка нам незнакома. Добавьте камеру другим способом.';
 
   @override
-  String get manualTitle => 'Camera address';
+  String get manualTitle => 'Адрес камеры';
 
   @override
   String get manualBody =>
-      'The connector asks the camera what it is. Its login comes on the next step.';
+      'Коннектор спросит у камеры, что это за модель. Логин вводится на следующем шаге.';
 
   @override
-  String get manualHost => 'IP address or host name';
+  String get manualHost => 'IP-адрес или имя хоста';
 
   @override
-  String get manualPort => 'ONVIF port, if not the usual one';
+  String get manualPort => 'Порт ONVIF, если не стандартный';
 
   @override
-  String get manualIdentify => 'Identify camera';
+  String get manualIdentify => 'Определить камеру';
 
   @override
-  String get manualIdentifying => 'Asking the camera';
+  String get manualIdentifying => 'Опрашиваем камеру';
 
   @override
-  String get manualNotFound => 'No camera answered at that address. Check it and try again.';
+  String get manualNotFound => 'По этому адресу камера не ответила. Проверьте его и повторите.';
 
   @override
-  String get rtspTitle => 'RTSP link';
+  String get rtspTitle => 'RTSP-ссылка';
 
   @override
   String get rtspBody =>
-      'Paste the stream link from the camera\'s manual or app. A login in the link is kept on the connector.';
+      'Вставьте ссылку на поток из инструкции или приложения камеры. Логин в ссылке хранится на коннекторе.';
 
   @override
-  String get rtspField => 'Stream link';
+  String get rtspField => 'Ссылка на поток';
 
   @override
-  String get rtspInvalid => 'That is not an RTSP link.';
+  String get rtspInvalid => 'Это не RTSP-ссылка.';
 
   @override
-  String get nvrPick => 'Choose the recorder';
+  String get nvrPick => 'Выберите регистратор';
 
   @override
-  String get nvrNone => 'No recorders found';
+  String get nvrNone => 'Регистраторы не найдены';
 
   @override
-  String get nvrTitle => 'Import channels';
+  String get nvrTitle => 'Импорт каналов';
 
   @override
-  String get nvrLogin => 'Recorder login';
+  String get nvrLogin => 'Логин регистратора';
 
   @override
-  String get nvrLoad => 'Show channels';
+  String get nvrLoad => 'Показать каналы';
 
   @override
-  String get nvrChannels => 'Channels';
+  String get nvrChannels => 'Каналы';
 
   @override
   String nvrAdd(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Add $count cameras',
-      one: 'Add 1 camera',
-      zero: 'Choose channels',
+      other: 'Добавить $count камеры',
+      many: 'Добавить $count камер',
+      few: 'Добавить $count камеры',
+      one: 'Добавить $count камеру',
+      zero: 'Выберите каналы',
     );
     return '$_temp0';
   }
 
   @override
-  String get nvrOffline => 'No signal';
+  String get nvrOffline => 'Нет сигнала';
 
   @override
-  String get onboardingTestPassed => 'Stream works';
+  String get onboardingTestPassed => 'Поток работает';
 
   @override
-  String get presetZoneName => 'Whole view';
+  String get presetZoneName => 'Весь обзор';
 
   @override
-  String get presetLineName => 'Entrance';
+  String get presetLineName => 'Вход';
 
   @override
-  String get morePlan => 'Plan and usage';
+  String get morePlan => 'Тариф и использование';
 
   @override
-  String get moreActivity => 'Activity';
+  String get moreActivity => 'Активность';
 
   @override
-  String get planTitle => 'Plan and usage';
+  String get planTitle => 'Тариф и использование';
 
   @override
-  String get planInternal => 'Internal plan with no limits';
+  String get planInternal => 'Внутренний тариф без ограничений';
 
   @override
-  String get planUnlimited => 'No limit';
+  String get planUnlimited => 'Без ограничений';
 
   @override
-  String get planLimits => 'Limits';
+  String get planLimits => 'Лимиты';
 
   @override
-  String get planUsage => 'This month';
+  String get planUsage => 'В этом месяце';
 
   @override
-  String get planFeatures => 'Features';
+  String get planFeatures => 'Возможности';
 
   @override
-  String get planIncluded => 'Included';
+  String get planIncluded => 'Входит в тариф';
 
   @override
-  String get planNotIncluded => 'Not in your plan';
+  String get planNotIncluded => 'Не входит в ваш тариф';
 
   @override
-  String get planUnavailable => 'Not in your plan. An owner can change the plan.';
+  String get planUnavailable => 'Не входит в ваш тариф. Владелец может сменить тариф.';
 
   @override
-  String get planSites => 'Sites';
+  String get planSites => 'Объекты';
 
   @override
-  String get planCameras => 'Cameras';
+  String get planCameras => 'Камеры';
 
   @override
-  String get planMembers => 'Members';
+  String get planMembers => 'Участники';
 
   @override
-  String get planEventRetention => 'Events kept';
+  String get planEventRetention => 'Хранение событий';
 
   @override
-  String get planClipRetention => 'Clips kept';
+  String get planClipRetention => 'Хранение клипов';
 
   @override
-  String get planCameraHours => 'Camera hours online';
+  String get planCameraHours => 'Часы работы камер в сети';
 
   @override
-  String get planAnalyticsHours => 'Analysed view hours';
+  String get planAnalyticsHours => 'Часы анализа обзоров';
 
   @override
-  String get planEvents => 'Events';
+  String get planEvents => 'События';
 
   @override
-  String get planClipStorage => 'Clip storage';
+  String get planClipStorage => 'Хранилище клипов';
 
   @override
-  String get planNotifications => 'Notifications sent';
+  String get planNotifications => 'Отправлено уведомлений';
 
   @override
   String planOf(String used, String limit) {
-    return '$used of $limit';
+    return '$used из $limit';
   }
 
   @override
   String planSince(String date) {
-    return 'Since $date';
+    return 'С $date';
   }
 
   @override
   String planGigabytes(String value) {
-    return '$value GB';
+    return '$value ГБ';
   }
 
   @override
-  String get featureObjects => 'Objects left and taken';
+  String get featureObjects => 'Оставленные и забранные предметы';
 
   @override
-  String get featureJourneys => 'Journeys';
+  String get featureJourneys => 'Маршруты';
 
   @override
-  String get featureAppearanceSearch => 'Find this person';
+  String get featureAppearanceSearch => 'Найти этого человека';
 
   @override
-  String get featureTelegram => 'Telegram alerts';
+  String get featureTelegram => 'Тревоги в Telegram';
 
   @override
   String get telegramTitle => 'Telegram';
 
   @override
-  String get telegramBody => 'Send alerts with the snapshot to a Telegram chat or group.';
+  String get telegramBody => 'Отправляйте тревоги со снимком в чат или группу Telegram.';
 
   @override
-  String get telegramLink => 'Link a chat';
+  String get telegramLink => 'Привязать чат';
 
   @override
   String get telegramLinkBody =>
-      'Telegram opens the bot. Press Start in a private chat, or add the bot to a group, and the chat appears here.';
+      'Telegram откроет бота. Нажмите Start в личном чате или добавьте бота в группу, и чат появится здесь.';
 
   @override
-  String get telegramOpened => 'Finish in Telegram, then come back here.';
+  String get telegramOpened => 'Завершите в Telegram и вернитесь сюда.';
 
   @override
-  String get telegramChats => 'Linked chats';
+  String get telegramChats => 'Привязанные чаты';
 
   @override
-  String get telegramNone => 'No chat linked yet';
+  String get telegramNone => 'Чат пока не привязан';
 
   @override
-  String get telegramGroup => 'Group';
+  String get telegramGroup => 'Группа';
 
   @override
-  String get telegramPrivate => 'Private chat';
+  String get telegramPrivate => 'Личный чат';
 
   @override
   String telegramLinked(String when) {
-    return 'Linked $when';
+    return 'Привязан $when';
   }
 
   @override
-  String get telegramUnlink => 'Unlink';
+  String get telegramUnlink => 'Отвязать';
 
   @override
   String telegramUnlinkBody(String chat) {
-    return 'Alerts stop going to $chat.';
+    return 'Тревоги перестанут приходить в $chat.';
   }
 
   @override
-  String get telegramTest => 'Send a test';
+  String get telegramTest => 'Отправить тест';
 
   @override
   String telegramTestSent(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Test sent to $count chats',
-      one: 'Test sent to 1 chat',
-      zero: 'No chat to send to',
+      other: 'Тест отправлен в $count чата',
+      many: 'Тест отправлен в $count чатов',
+      few: 'Тест отправлен в $count чата',
+      one: 'Тест отправлен в $count чат',
+      zero: 'Нет чата для отправки',
     );
     return '$_temp0';
   }
 
   @override
-  String get telegramCannotOpen => 'Telegram could not be opened on this phone.';
+  String get telegramCannotOpen => 'Не удалось открыть Telegram на этом телефоне.';
 
   @override
-  String get activityTitle => 'Activity';
+  String get activityTitle => 'Активность';
 
   @override
-  String get activityEmpty => 'No activity yet';
+  String get activityEmpty => 'Активности пока нет';
 
   @override
-  String get activityAll => 'All';
+  String get activityAll => 'Все';
 
   @override
-  String get auditSignIn => 'Sign ins';
+  String get auditSignIn => 'Входы';
 
   @override
-  String get auditMembers => 'Members';
+  String get auditMembers => 'Участники';
 
   @override
-  String get auditCameras => 'Cameras';
+  String get auditCameras => 'Камеры';
 
   @override
-  String get auditRules => 'Rules';
+  String get auditRules => 'Правила';
 
   @override
-  String get auditArm => 'Arm mode';
+  String get auditArm => 'Режим охраны';
 
   @override
-  String get auditViews => 'Viewing';
+  String get auditViews => 'Просмотр';
 
   @override
-  String get auditExports => 'Exports';
+  String get auditExports => 'Экспорт';
 
   @override
-  String get auditFaces => 'Faces';
+  String get auditFaces => 'Лица';
 
   @override
-  String get auditAdmin => 'Platform';
+  String get auditAdmin => 'Платформа';
 
   @override
-  String get actionAuthSignIn => 'Signed in';
+  String get actionAuthSignIn => 'Вошел в аккаунт';
 
   @override
-  String get actionMemberInvite => 'Invited a member';
+  String get actionMemberInvite => 'Пригласил участника';
 
   @override
-  String get actionMemberRole => 'Changed a role';
+  String get actionMemberRole => 'Изменил роль';
 
   @override
-  String get actionMemberRemove => 'Removed a member';
+  String get actionMemberRemove => 'Убрал участника';
 
   @override
-  String get actionCameraAdd => 'Added a camera';
+  String get actionCameraAdd => 'Добавил камеру';
 
   @override
-  String get actionCameraUpdate => 'Changed a camera';
+  String get actionCameraUpdate => 'Изменил камеру';
 
   @override
-  String get actionCameraDelete => 'Deleted a camera';
+  String get actionCameraDelete => 'Удалил камеру';
 
   @override
-  String get actionRulesUpdate => 'Changed zones and lines';
+  String get actionRulesUpdate => 'Изменил зоны и линии';
 
   @override
-  String get actionArmChange => 'Changed the arm mode';
+  String get actionArmChange => 'Изменил режим охраны';
 
   @override
-  String get actionLiveView => 'Watched live';
+  String get actionLiveView => 'Смотрел эфир';
 
   @override
-  String get actionClipView => 'Watched a clip';
+  String get actionClipView => 'Смотрел клип';
 
   @override
-  String get actionClipExport => 'Shared a clip';
+  String get actionClipExport => 'Поделился клипом';
 
   @override
-  String get actionFaceEnrol => 'Added face photos';
+  String get actionFaceEnrol => 'Добавил фото лиц';
 
   @override
-  String get actionFaceDelete => 'Deleted faces';
+  String get actionFaceDelete => 'Удалил лица';
 
   @override
-  String get actionOrgPlan => 'Changed the plan';
+  String get actionOrgPlan => 'Сменил тариф';
 
   @override
-  String get capabilityNone => 'This camera has no controls to show.';
+  String get capabilityNone => 'У этой камеры нет элементов управления.';
 }
