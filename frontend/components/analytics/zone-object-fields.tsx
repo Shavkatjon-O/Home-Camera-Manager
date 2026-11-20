@@ -166,13 +166,13 @@ export function ZoneObjectFields({
       <MinutesRow
         id={`${id}-taken`}
         label="Taken after"
-        hint="Time an object is missing before it counts as taken. 0 turns it off."
+        hint="Time an object must have been there before its going counts as taken. 0 turns it off."
         seconds={value.taken_seconds}
         onChange={(taken_seconds) => onChange({ taken_seconds })}
       />
       <div className="flex flex-col gap-1.5">
-        <span className="text-[12px] text-text-3">Objects</span>
-        <div role="group" aria-label="Objects" className="flex flex-wrap gap-1">
+        <span className="text-[12px] text-text-3">Left and taken objects</span>
+        <div role="group" aria-label="Left and taken objects" className="flex flex-wrap gap-1">
           {OBJECT_CHOICES.map((label) => (
             <ToggleChip key={label} pressed={value.object_labels.includes(label)} onClick={() => toggle(label)}>
               {choiceName(label)}
