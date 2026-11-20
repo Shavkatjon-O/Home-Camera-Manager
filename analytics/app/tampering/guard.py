@@ -14,7 +14,9 @@ during which no condition can start.
 - blurred: the picture still lines up with the reference brightness pattern, but its gradients lost their energy
   and no longer line up, which a change of brightness or gain does not cause.
 - moved: the gradient structure no longer lines up with the reference. It is not measured on moving lenses or on
-  views whose structure is too weak or too unstable to compare, such as a blank wall with sensor noise.
+  views whose structure is too weak or too unstable to compare, such as a blank wall with sensor noise. A moving
+  lens whose structure stops lining up has turned, by a person or by the camera's own tracking, so its reference
+  starts again from the new picture instead of calling the new place blurred.
 
 A condition must hold for several samples before it starts and stop for a few before it ends. The reference stops
 learning while a condition holds, and a moved condition that lasts long enough becomes the new reference, so a
@@ -338,8 +340,24 @@ class TamperGuard:
             conditions = dict.fromkeys(CONDITIONS, False)
         else:
             conditions = self.evaluate(sample, regime, scene)
+        turned = (
+            self.moving
+            and not (conditions["covered"] or conditions["dark"])
+            and regime.warm(settings)
+            and scene < settings.move_correlation
+        )
+        if turned:
+            conditions["blurred"] = False
         started, ended = self.advance(conditions)
-        if self.streaks["moved"] >= settings.accept_moved:
+        if turned:
+            self.current = Regime.start(sample, regime.night)
+            self.regimes = [self.current]
+            self.streaks = dict.fromkeys(CONDITIONS, 0)
+            for name in ("blurred", "moved"):
+                if name in self.active:
+                    self.active.discard(name)
+                    ended.add(name)
+        elif self.streaks["moved"] >= settings.accept_moved:
             self.current = Regime.start(sample, regime.night)
             self.regimes = [self.current]
             self.streaks = dict.fromkeys(CONDITIONS, 0)

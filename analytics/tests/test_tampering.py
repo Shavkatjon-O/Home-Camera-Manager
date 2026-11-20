@@ -209,3 +209,20 @@ def test_settings_from_view_configuration():
     assert settings.hold == 5
     assert isinstance(settings.hold, int)
     assert GuardSettings.from_dict(None) == GuardSettings()
+
+
+def test_a_moving_lens_that_turns_to_a_plain_wall_is_not_blurred():
+    guard = TamperGuard(moving=True)
+    warm(guard, scene())
+    plain = box_blur(np.roll(scene(seed=7), 60, axis=1), size=21)
+    events = feed(guard, [noisy(plain, 2000 + number) for number in range(30)], start=100.0)
+    assert started_names(events) == []
+    assert guard.last["scene"] > 0.3
+
+
+def test_a_moving_lens_still_reports_a_smeared_lens_in_place():
+    guard = TamperGuard(moving=True)
+    warm(guard, scene())
+    smeared = [noisy(box_blur(scene(), size=5), 700 + number) for number in range(12)]
+    events = feed(guard, smeared, start=100.0)
+    assert "moved" not in started_names(events)
