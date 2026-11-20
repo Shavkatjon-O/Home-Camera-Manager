@@ -308,7 +308,8 @@ class RulesEngine:
         for identity in dwelled:
             kind = EventKind.VEHICLE if identity.label in VEHICLES else EventKind.INTRUSION
             updates += self.join_episode(zone, kind, identity.label, [identity], now, moment, active)
-            if zone.loiter_seconds and now - entered[identity.id] >= zone.loiter_seconds and active:
+            loiters = zone.loiter_seconds and identity.label not in VEHICLES
+            if loiters and now - entered[identity.id] >= zone.loiter_seconds and active:
                 updates += self.instant(
                     ("loiter", zone.id, identity.id),
                     EventKind.LOITERING,

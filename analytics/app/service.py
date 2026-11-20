@@ -44,9 +44,12 @@ STALL_SECONDS = 20.0
 PIPELINE_STALL_SECONDS = 90.0
 RESTART_DELAYS = (5, 10, 30, 60, 120)
 SNAPSHOT_DELAY = 1.5
+SNAPSHOT_RETRIES = (3.0, 6.0, 12.0)
 RECENT_EVENTS = 200
 GPU_POLL_SECONDS = 10.0
 OBSERVATION_SECONDS = 5.0
+REFERENCE_PRUNE_SECONDS = 3600.0
+REFERENCE_KEEP_SECONDS = 86400.0
 MEDIA_EVENT_LIMIT = 500
 
 
@@ -190,6 +193,7 @@ class Service:
         self.scenes = SceneMatcher(settings.events_dir)
         self.media_events: collections.OrderedDict[str, dict] = collections.OrderedDict()
         self.observed = 0.0
+        self.references_pruned = 0.0
         self.config: ServiceConfig | None = None
         self.views: dict[str, ViewRuntime] = {}
         self.recorders: dict[str, CameraRecorder] = {}
@@ -699,42 +703,51 @@ class Service:
 
     def media_loop(self) -> None:
         """Cut snapshots when due and clips when their events end or reach the length cap."""
-        waiting: list[tuple[float, dict, ViewConfig]] = []
+        waiting: list[tuple[float, dict, ViewConfig, int]] = []
         while not self.stopping.is_set():
             try:
                 while True:
                     kind, due, event, view = self.media_jobs.get_nowait()
-                    waiting.append((due, event, view))
+                    waiting.append((due, event, view, 0))
             except queue.Empty:
                 pass
             now = time.time()
             for job in [job for job in waiting if job[0] <= now]:
                 waiting.remove(job)
-                self.cut_snapshot(job[1], job[2])
+                due, event, view, attempt = job
+                if not self.cut_snapshot(event, view) and attempt < len(SNAPSHOT_RETRIES):
+                    waiting.append((now + SNAPSHOT_RETRIES[attempt], event, view, attempt + 1))
             for event_id, pending in list(self.pending.items()):
                 if now >= pending.deadline:
                     del self.pending[event_id]
                     self.cut_clip(pending)
             self.stopping.wait(0.5)
 
-    def cut_snapshot(self, event: dict, view: ViewConfig) -> None:
+    def cut_snapshot(self, event: dict, view: ViewConfig) -> bool:
         """Write the snapshot of an event.
 
         Args:
             event: The event.
             view: Its view.
+
+        Returns:
+            True when the snapshot was written or cannot be written at all; False to try again later.
         """
         root, stem = self.media_paths(event)
         folder = self.settings.buffer_dir / view.camera
         target, thumbnail = root / f"{stem}.jpg", root / f"{stem}.thumb.jpg"
+        recorder = self.recorders.get(view.camera)
+        seen = recorder.seen if recorder else None
         try:
-            ok = self.clips.snapshot(folder, event["started_at"], view.lens, view.lenses, target, thumbnail)
+            ok = self.clips.snapshot(folder, event["started_at"], view.lens, view.lenses, target, thumbnail, seen)
         except (OSError, subprocess.SubprocessError) as exc:
             logger.warning("Snapshot of event %s failed: %s", event["id"], exc)
-            return
-        if ok:
-            logger.info("Snapshot of event %s written to %s.jpg", event["id"], stem)
-            self.attach_media(event["id"], snapshot_path=f"{stem}.jpg", thumbnail_path=f"{stem}.thumb.jpg")
+            return True
+        if not ok:
+            return False
+        logger.info("Snapshot of event %s written to %s.jpg", event["id"], stem)
+        self.attach_media(event["id"], snapshot_path=f"{stem}.jpg", thumbnail_path=f"{stem}.thumb.jpg")
+        return True
 
     def cut_clip(self, pending: PendingClip) -> None:
         """Write the clip of an event.
@@ -746,8 +759,10 @@ class Service:
         folder = self.settings.buffer_dir / pending.camera
         target = root / f"{stem}.mp4"
         started = time.monotonic()
+        recorder = self.recorders.get(pending.camera)
+        seen = recorder.seen if recorder else None
         try:
-            ok = self.clips.clip(folder, pending.start, pending.deadline, pending.lens, pending.lenses, target)
+            ok = self.clips.clip(folder, pending.start, pending.deadline, pending.lens, pending.lenses, target, seen)
         except (OSError, subprocess.SubprocessError) as exc:
             logger.warning("Clip of event %s failed: %s", pending.event["id"], exc)
             return
@@ -833,6 +848,33 @@ class Service:
         if now - self.gpu_polled >= GPU_POLL_SECONDS:
             self.gpu_polled = now
             self.gpu = gpu_reading()
+        if now - self.references_pruned >= REFERENCE_PRUNE_SECONDS and self.config is not None:
+            self.references_pruned = now
+            self.prune_references(now)
+
+    def prune_references(self, now: float) -> None:
+        """Delete reference pictures no zone or line uses once they are a day old.
+
+        The editor keeps a picture every time it opens, and only the ones saved with zones stay in use.
+
+        Args:
+            now: Current time.
+        """
+        used = {
+            item.reference
+            for view in self.config.views
+            for item in (*view.rules.zones, *view.rules.lines)
+            if item.reference
+        }
+        root = self.settings.events_dir
+        for path in (root / "analytics" / "references").glob("*/*.jpg"):
+            relative = path.relative_to(root).as_posix()
+            try:
+                old = now - path.stat().st_mtime > REFERENCE_KEEP_SECONDS
+            except FileNotFoundError:
+                continue
+            if old and relative not in used:
+                path.unlink(missing_ok=True)
 
     def observe(self, now: float) -> None:
         """Send the per view counts and states to the backend every few seconds.

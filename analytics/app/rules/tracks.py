@@ -10,6 +10,7 @@ from app.rules.model import VEHICLES, Box, Detection, Frame, Tuning
 STATIC_MEMORY_SECONDS = 3600.0
 STATIC_MEMORY_IOU = 0.5
 HOME_SAMPLES = 5
+STATIC_SHARE = 0.2
 RESUME_GAP_SECONDS = 15.0
 MOVE_FRAMES = 3
 
@@ -36,7 +37,9 @@ class Identity:
             partly visible object never counts as movement.
         rest_point: Where the object has been staying since rest_since.
         rest_since: Time it arrived at the rest point.
-        static: True while the object has stayed in place long enough to count as part of the scene.
+        static: True while the object has stayed in place long enough to count as part of the scene. Leaving the
+            rest point ends it, and the object then has to move away from that point like a new one before it
+            counts again, so box jitter on a parked car never wakes it up.
         tracks: Every tracker id joined into this identity.
     """
 
@@ -234,17 +237,19 @@ class TrackBook:
                 ys = sorted(point[1] for point in identity.samples)
                 identity.home = (xs[len(xs) // 2], ys[len(ys) // 2])
                 identity.samples = []
-        elif not identity.moved:
-            height = detection.box.bottom - detection.box.top
+        height = detection.box.bottom - detection.box.top
+        if identity.home is not None and not identity.moved:
             limit = max(self.tuning.move_threshold, self.tuning.move_ratio * height)
             identity.away = identity.away + 1 if distance(identity.home, foot) >= limit else 0
             identity.moved = identity.away >= MOVE_FRAMES
-        if distance(identity.rest_point, foot) > self.tuning.static_radius:
-            identity.rest_point = foot
-            identity.rest_since = now
+        if distance(identity.rest_point, foot) > max(self.tuning.static_radius, STATIC_SHARE * height):
             if identity.static:
                 identity.static = False
-                identity.moved = True
+                identity.home = identity.rest_point
+                identity.moved = False
+                identity.away = 0
+            identity.rest_point = foot
+            identity.rest_since = now
         elif now - identity.rest_since >= self.tuning.static_seconds:
             identity.static = True
 

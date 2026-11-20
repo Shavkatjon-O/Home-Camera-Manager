@@ -154,3 +154,22 @@ def test_box_jitter_of_a_partly_visible_car_is_not_movement():
         box = Box(0.47, 0.0, 0.63, 0.06 + grow + (step % 3) * 0.01)
         frames.append((step / 5, [Detection(4, "car", 0.8, box)]))
     assert run(rules, frames) == []
+
+
+def test_parked_car_that_became_static_stays_silent_when_its_box_shifts():
+    from app.rules.model import Box, Detection
+
+    rules = engine({"zones": [{**YARD, "labels": ["vehicle"], "loiter_seconds": 5}], "tuning": {"static_seconds": 20}})
+    frames = []
+    for step in range(400):
+        shift = 0.03 if step > 150 and step % 5 == 0 else 0.0
+        frames.append((step / 5, [Detection(3, "car", 0.9, Box(0.3, 0.4 + shift, 0.45, 0.62 + shift))]))
+    assert run(rules, frames) == []
+
+
+def test_vehicles_never_loiter():
+    rules = engine(zone(labels=["vehicle"], loiter_seconds=2))
+    frames = walk(8, "car", (0.1, 0.9), (0.4, 0.7), 3)
+    frames += [(3.2 + step / 5, [detection(8, "car", 0.4, 0.7)]) for step in range(40)]
+    kinds = {update.event.kind.value for update in run(rules, frames)}
+    assert kinds == {"vehicle"}
