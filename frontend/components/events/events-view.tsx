@@ -9,6 +9,7 @@ import { AlertMark, EventDuration, EventThumb, KindChip, LabelChip } from "@/com
 import { EventPanel } from "@/components/events/event-panel"
 import { useEvents } from "@/components/events/events-provider"
 import { SourceChip } from "@/components/events/source-chip"
+import { FaceChip } from "@/components/people/face-parts"
 import { AppFrame } from "@/components/shell/app-frame"
 import { IconButton } from "@/components/shell/icon-button"
 import { Chip, EmptyState, LoadingState } from "@/components/shell/primitives"
@@ -69,7 +70,7 @@ function EventRow({
           <div className="flex min-w-0 items-center gap-2">
             <span className="truncate text-[13px] text-foreground">{event.camera_name ?? "Removed camera"}</span>
             <KindChip event={event} />
-            <LabelChip event={event} />
+            {event.face ? <FaceChip face={event.face} className="h-5 px-1.5 text-[10px]" /> : <LabelChip event={event} />}
             <AlertMark event={event} />
           </div>
           <div className="flex min-w-0 items-baseline gap-2">

@@ -409,10 +409,16 @@ class ClipMaker:
 
         Returns:
             True when the snapshot was written; False when the buffer does not reach the time yet.
+
+        Raises:
+            FileNotFoundError: The buffer no longer holds the time.
         """
-        segments = covering(list_segments(folder, seen), at - 0.01, at + 0.01)
-        if not segments or segments[0].end < at + 0.5:
+        listed = list_segments(folder, seen)
+        if not listed or listed[-1].end < at + 0.5:
             return False
+        segments = covering(listed, at - 0.01, at + 0.01)
+        if not segments:
+            raise FileNotFoundError("No buffered video covers the time of the snapshot")
         segment = segments[0]
         filters = crop_filter(lens, lenses)
         target.parent.mkdir(parents=True, exist_ok=True)

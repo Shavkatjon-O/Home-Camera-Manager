@@ -123,12 +123,14 @@ class Detection:
         label: Canonical label such as person or car.
         confidence: Detector or tracker confidence.
         box: Position in normalized view coordinates.
+        detected: True when the detector found the object in this frame, False when only the tracker carried it.
     """
 
     track_id: int
     label: str
     confidence: float
     box: Box
+    detected: bool = True
 
 
 @dataclass(frozen=True)
@@ -348,6 +350,10 @@ class Tuning:
         static_radius: Largest wander, in normalized units, that still counts as staying in place.
         warmup: Seconds after a view starts during which objects found are taken as already present.
         line_margin: Distance from a line an object must reach on each side before a crossing counts.
+        line_gap: Seconds after a crossing in which the same object crossing the same line again is taken as
+            jitter and ignored.
+        confirm_hits: Frames in which the detector itself must find an object before it counts.
+        confirm_window: Seconds those detector frames must fall within.
         min_confidence: Detections below this confidence are ignored.
     """
 
@@ -361,6 +367,9 @@ class Tuning:
     static_radius: float = 0.015
     warmup: float = 8.0
     line_margin: float = 0.008
+    line_gap: float = 3.0
+    confirm_hits: float = 4
+    confirm_window: float = 2.0
     min_confidence: float = 0.0
 
     @classmethod

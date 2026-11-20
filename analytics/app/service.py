@@ -1,4 +1,4 @@
-"""The analytics service: configuration, pipeline supervision, rules, tamper watch, media and status.
+"""The analytics service: configuration, pipeline supervision, rules, tamper watch, faces, media and status.
 
 The DeepStream pipeline runs in a child process and sends tracked objects back over a queue. Everything else runs
 here: the rules engines, the tamper watch, the recorders, clip and snapshot cutting, and the status endpoint. Rule
@@ -26,6 +26,10 @@ import numpy as np
 from app.backend import BackendClient, BackendConfigSource, Outbox
 from app.config import ServiceConfig, ViewConfig, parse_config
 from app.detectors import detector
+from app.identity import enroll
+from app.identity.models import FaceModels
+from app.identity.settings import IdentitySettings
+from app.identity.stage import FaceStage, GallerySync, ViewInfo
 from app.pipeline.plan import PipelinePlan, SourcePlan, ViewPlan
 from app.recorder import CameraRecorder, ClipMaker, latest_frame
 from app.rules.engine import Event, RulesEngine, Update
@@ -191,6 +195,20 @@ class Service:
         else:
             self.source = FileConfigSource(settings.config_file)
         self.scenes = SceneMatcher(settings.events_dir)
+        self.identity = IdentitySettings()
+        self.faces = FaceStage(
+            self.identity,
+            FaceModels(self.identity, settings.engines_dir, settings.workspace_mb),
+            settings.events_dir,
+            self.publish_face,
+            lambda: self.arm_mode().value,
+            self.related_event,
+        )
+        self.gallery_sync: GallerySync | None = None
+        if self.backend is not None:
+            client = self.backend
+            self.gallery_sync = GallerySync(lambda: client.request("GET", "/internal/people/gallery"), self.faces)
+        self.faces_note: str | None = None
         self.media_events: collections.OrderedDict[str, dict] = collections.OrderedDict()
         self.observed = 0.0
         self.references_pruned = 0.0
@@ -234,8 +252,14 @@ class Service:
     def run(self) -> None:
         """Run until stopped."""
         StatusServer(
-            self.settings.status_port, self.settings.backend_token, self.status, self.live_objects, self.view_snapshot
+            self.settings.status_port,
+            self.settings.backend_token,
+            self.status,
+            self.live_objects,
+            self.view_snapshot,
+            lambda data: enroll.answer(data, self.faces.models, self.identity),
         ).start()
+        self.faces.start()
         if self.outbox_backend is not None:
             self.outbox_backend.start()
         threading.Thread(target=self.media_loop, name="media", daemon=True).start()
@@ -426,6 +450,7 @@ class Service:
         if self.config is None:
             return None, None
         sources = []
+        faces: list[int] = []
         index = 0
         for camera in self.config.cameras:
             views = [view for view in camera.views if view.detects]
@@ -444,6 +469,8 @@ class Service:
             plans = []
             for view in views:
                 plans.append(ViewPlan(index, view.id, view.lens, camera.lenses, view.fps))
+                if view.recognises:
+                    faces.append(index)
                 index += 1
             sources.append(SourcePlan(camera.id, uri, width, height, tuple(plans)))
         if not sources:
@@ -461,6 +488,7 @@ class Service:
             width=self.settings.mux_width,
             height=self.settings.mux_height,
             engine_batch=self.settings.engine_batch,
+            faces=tuple(faces),
         )
         key = (self.config.pipeline_key(), tuple(sorted(self.sizes.items())))
         return plan, key
@@ -519,6 +547,14 @@ class Service:
         self.outbox = self.context.Queue(maxsize=200)
         self.process = self.context.Process(target=run, args=(plan, self.outbox), name="pipeline", daemon=True)
         self.process.start()
+        configs = {view.id: view for view in self.config.views} if self.config else {}
+        face_views = {}
+        for view in plan.views:
+            config = configs.get(view.view)
+            if view.index in plan.faces and config is not None:
+                face_views[view.index] = ViewInfo(config.id, config.name, config.camera)
+        self.faces.set_views(face_views)
+        self.faces_note = None
         self.plan, self.plan_key = plan, key
         self.pipeline_started = time.time()
         self.pipeline_restarts += 1
@@ -576,6 +612,11 @@ class Service:
         elif kind in ("failed", "eos", "stopped"):
             self.pipeline_message = message[2]
             logger.warning("Pipeline: %s", message[2])
+        elif kind == "faces":
+            self.faces.submit(message[2])
+        elif kind == "faces_off":
+            self.faces_note = message[2]
+            logger.warning("Pipeline: %s", message[2])
         elif kind in ("starting", "preparing"):
             self.pipeline_message = str(message[2])
             logger.info("Pipeline: %s", message[2])
@@ -605,8 +646,8 @@ class Service:
                 if ntp:
                     runtime.latencies.append(max(0.0, (received - ntp / 1e9) * 1000))
                 detections = tuple(
-                    Detection(track, label, confidence, Box(left, top, right, bottom))
-                    for track, label, confidence, left, top, right, bottom in objects
+                    Detection(track, label, max(found, kept), Box(left, top, right, bottom), found > 0)
+                    for track, label, found, kept, left, top, right, bottom in objects
                     if label in profile.labels
                 )
                 runtime.objects = [
@@ -836,11 +877,13 @@ class Service:
                 self.handle(view, updates)
 
     def maintain(self, now: float) -> None:
-        """Prune the buffers and refresh the GPU reading.
+        """Prune the buffers, refresh the GPU reading and keep the face gallery current.
 
         Args:
             now: Current time.
         """
+        if self.gallery_sync is not None:
+            self.gallery_sync.poll(now)
         for camera_id, recorder in list(self.recorders.items()):
             starts = [pending.start for pending in self.pending.values() if pending.camera == camera_id]
             recorder.prune(min(starts) if starts else None)
@@ -894,6 +937,38 @@ class Service:
             views.append({**view, "counts": rules})
         body = {"at": now, "pipeline": status["pipeline"], "gpu": status["gpu"], "views": views}
         self.outbox_backend.send("/internal/analytics/observations", body, droppable=True)
+
+    def publish_face(self, body: dict) -> None:
+        """Send a face result to the backend.
+
+        Args:
+            body: The face result.
+        """
+        if self.outbox_backend is not None:
+            self.outbox_backend.send("/internal/people/faces", body)
+
+    def related_event(self, view_id: str, track: int) -> str | None:
+        """Find the analytics event a person track of a view belongs to.
+
+        The rules engine may have joined the track into an identity started by an earlier tracker id, and the
+        events list identities, so the track is looked up through the engine's track book.
+
+        Args:
+            view_id: The view.
+            track: Tracker id of the person.
+
+        Returns:
+            The id of the newest event of the view that involves the person, or None.
+        """
+        with self.lock:
+            runtime = self.views.get(view_id)
+            if runtime is None or runtime.engine is None:
+                return None
+            identity = runtime.engine.book.by_track.get(track, track)
+            for event in reversed(self.recent):
+                if event.get("view") == view_id and identity in (event.get("objects") or []):
+                    return event["id"]
+        return None
 
     def view_snapshot(self, view_id: str, reference: bool) -> tuple[bytes, str | None] | None:
         """Cut a fresh picture of a view from its camera's newest segment.
@@ -1012,6 +1087,11 @@ class Service:
                     else None
                 ),
                 "recent_events": list(self.recent)[-50:],
+                "faces": {
+                    **self.faces.status(),
+                    "note": self.faces_note,
+                    "gallery_error": self.gallery_sync.error if self.gallery_sync else None,
+                },
             }
 
 

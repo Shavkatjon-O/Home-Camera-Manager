@@ -41,6 +41,9 @@ class Identity:
             rest point ends it, and the object then has to move away from that point like a new one before it
             counts again, so box jitter on a parked car never wakes it up.
         tracks: Every tracker id joined into this identity.
+        hits: Recent times the detector found the object, until it is confirmed.
+        confirmed: True once the detector found the object often enough; the tracker alone keeps a box for a few
+            seconds after a single detection, which would let a one-frame false detection pass the dwell.
     """
 
     id: int
@@ -60,6 +63,8 @@ class Identity:
     rest_since: float = 0.0
     static: bool = False
     tracks: set[int] = field(default_factory=set)
+    hits: list[float] = field(default_factory=list)
+    confirmed: bool = False
 
     @property
     def counts(self) -> bool:
@@ -68,7 +73,7 @@ class Identity:
         Static objects never count. Vehicles and objects present at start count only once they moved, so parked
         cars and anything standing in the picture when the service starts stay silent.
         """
-        if self.static:
+        if self.static or not self.confirmed:
             return False
         if self.label in VEHICLES or self.initial:
             return self.moved
@@ -226,6 +231,10 @@ class TrackBook:
             now: Frame time.
         """
         foot = detection.box.foot
+        if not identity.confirmed and detection.detected:
+            window = self.tuning.confirm_window
+            identity.hits = [hit for hit in identity.hits if now - hit <= window] + [now]
+            identity.confirmed = len(identity.hits) >= self.tuning.confirm_hits
         identity.last_seen = now
         identity.foot = foot
         identity.box = detection.box

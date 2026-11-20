@@ -12,6 +12,8 @@ export const EVENT_KINDS: EventKind[] = [
   "line_crossing",
   "loitering",
   "crowd",
+  "face_known",
+  "face_unknown",
   "tamper",
   "storage",
   "reboot",
@@ -25,6 +27,8 @@ export const KIND_LABELS: Record<EventKind, string> = {
   line_crossing: "Line crossing",
   loitering: "Loitering",
   crowd: "Crowd",
+  face_known: "Known face",
+  face_unknown: "Unknown face",
   tamper: "Tamper",
   storage: "Storage",
   reboot: "Restart",
@@ -143,7 +147,8 @@ const TAMPER_TITLES: Record<string, string> = {
   moved: "moved",
 }
 
-type TitleEvent = Pick<CameraEvent, "kind" | "camera_name"> & Partial<Pick<CameraEvent, "label" | "source" | "details">>
+type TitleEvent = Pick<CameraEvent, "kind" | "camera_name"> &
+  Partial<Pick<CameraEvent, "label" | "source" | "details" | "face">>
 
 export function eventTitle(event: TitleEvent): string {
   const camera = event.camera_name ?? "A camera"
@@ -166,6 +171,10 @@ export function eventTitle(event: TitleEvent): string {
       return zone ? `${label ?? "Someone"} loitering in ${zone} on ${camera}` : `Loitering on ${camera}`
     case "crowd":
       return zone ? `Crowd in ${zone} on ${camera}` : `Crowd on ${camera}`
+    case "face_known":
+      return `${event.face?.person_name ?? "A known person"} on ${camera}`
+    case "face_unknown":
+      return `${event.face?.cluster_label ?? "An unknown person"} on ${camera}`
     case "tamper": {
       const how = event.label ? TAMPER_TITLES[event.label] : undefined
       return how ? `${camera} view ${how}` : `${camera} view disturbed`

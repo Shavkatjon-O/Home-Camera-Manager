@@ -13,6 +13,8 @@ import {
   LogOutIcon,
   RadarIcon,
   ScanEyeIcon,
+  SearchIcon,
+  UsersRoundIcon,
   WifiIcon,
 } from "lucide-react"
 import { toast } from "sonner"
@@ -34,6 +36,8 @@ const TABS = [
   { href: "/", label: "Wall", icon: LayoutGridIcon, match: (path: string) => path === "/" || path.startsWith("/camera/") },
   { href: "/cameras/", label: "Cameras", icon: ListIcon, match: (path: string) => path.startsWith("/cameras/") },
   { href: EVENTS_HREF, label: "Events", icon: ScanEyeIcon, match: (path: string) => path.startsWith("/events/") },
+  { href: "/people/", label: "People", icon: UsersRoundIcon, match: (path: string) => path.startsWith("/people/") },
+  { href: "/search/", label: "Search", icon: SearchIcon, match: (path: string) => path.startsWith("/search/") },
   { href: "/discover/", label: "Discover", icon: RadarIcon, match: (path: string) => path.startsWith("/discover/") },
   { href: "/coverage/", label: "Coverage", icon: WifiIcon, match: (path: string) => path.startsWith("/coverage/") },
   { href: "/health/", label: "Health", icon: ActivityIcon, match: (path: string) => path.startsWith("/health/") },

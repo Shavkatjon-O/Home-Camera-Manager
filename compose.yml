@@ -76,6 +76,7 @@ services:
               capabilities: [gpu, compute, utility, video]
     volumes:
       - ${HC_ANALYTICS_MODELS_DIR:-./analytics/models}:/models:ro
+      - ${HC_ANALYTICS_FACE_MODELS_DIR:-./analytics/models/face}:/face-models:ro
       - analytics-engines:/engines
       - events:/data/events
       - type: tmpfs

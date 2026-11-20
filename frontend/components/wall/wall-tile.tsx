@@ -7,6 +7,8 @@ import { ArrowUpRightIcon, MaximizeIcon, MinimizeIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { useOpenEvents } from "@/components/events/events-provider"
+import { ColorDot } from "@/components/people/face-parts"
+import { useRecognitions } from "@/components/people/use-recognitions"
 import { StatusDot } from "@/components/shell/primitives"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { VideoPlaceholder } from "@/components/video/video-placeholder"
@@ -32,6 +34,7 @@ export function WallTile({ camera, lens = null }: { camera: Camera; lens?: numbe
   const href = cameraHref(camera.uuid)
   const offline = camera.status.online === false
   const activity = useOpenEvents(camera.uuid).find((event) => isActivity(event.kind))
+  const recognitions = useRecognitions(camera.uuid)
 
   const onFullscreen = async () => {
     const ok = await toggleFullscreen(tile)
@@ -50,13 +53,27 @@ export function WallTile({ camera, lens = null }: { camera: Camera; lens?: numbe
         <VideoStream stream={stream} compact lens={lens} lenses={camera.lenses} className="absolute inset-0" />
       )}
 
-      {activity ? (
-        <div
-          role="status"
-          className="pointer-events-none absolute top-2 left-2 flex items-center gap-1.5 rounded-md bg-status-err px-1.5 py-0.5 text-[11px] font-medium text-white"
-        >
-          <span aria-hidden className="size-1.5 rounded-full bg-white" />
-          {KIND_LABELS[activity.kind]}
+      {activity || recognitions.length > 0 ? (
+        <div className="pointer-events-none absolute top-2 left-2 flex max-w-[calc(100%-1rem)] flex-col items-start gap-1">
+          {activity ? (
+            <div
+              role="status"
+              className="flex items-center gap-1.5 rounded-md bg-status-err px-1.5 py-0.5 text-[11px] font-medium text-white"
+            >
+              <span aria-hidden className="size-1.5 rounded-full bg-white" />
+              {KIND_LABELS[activity.kind]}
+            </div>
+          ) : null}
+          {recognitions.map((person) => (
+            <div
+              key={person.person_uuid}
+              role="status"
+              className="flex max-w-full items-center gap-1.5 rounded-md bg-black/60 px-1.5 py-0.5 text-[11px] font-medium text-white"
+            >
+              <ColorDot color={person.color} />
+              <span className="truncate">{person.name}</span>
+            </div>
+          ))}
         </div>
       ) : null}
 

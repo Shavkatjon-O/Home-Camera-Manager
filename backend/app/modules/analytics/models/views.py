@@ -22,6 +22,7 @@ class AnalyticsView(BaseModel):
         enabled: Whether the analytics service analyses the view.
         fps: Analysis rate in frames per second.
         tamper: Whether the tamper watch runs, None for the profile's default.
+        faces: Whether faces are recognised on the view, None for the profile's default.
         moving: Whether the lens moves, so zones need a reference snapshot.
         tuning: Optional overrides of the rules engine's timing and distance settings.
     """
@@ -36,5 +37,6 @@ class AnalyticsView(BaseModel):
     enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     fps: Mapped[float] = mapped_column(Float, nullable=False, default=8.0)
     tamper: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    faces: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
     moving: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     tuning: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
