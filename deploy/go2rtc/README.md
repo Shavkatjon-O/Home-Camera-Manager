@@ -4,7 +4,7 @@ The configuration of the go2rtc container that restreams every camera, transcode
 
 | File | Role |
 |---|---|
-| go2rtc.yaml | Main configuration: RTSP server, h264 transcode template and the TV exec streams |
+| go2rtc.yaml | Main configuration: RTSP server, WebRTC for the apps on SSS_LAN_BIND port 8555, h264 transcode template and the TV exec streams |
 | go2rtc.jetson.yaml | The same for a Jetson, with software x264 transcoding |
 | go2rtc-tv.sh | Exec source that asks the API for the ffmpeg arguments of a TV stream and restarts when they change |
 

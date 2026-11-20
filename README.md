@@ -1,8 +1,21 @@
 # Smart Surveillance System
 
-Smart Surveillance System is a self-hosted video surveillance platform for IP cameras. It shows every camera live in the browser, drives PTZ cameras and their settings over ONVIF, records what the cameras report, and runs its own video analytics on an NVIDIA GPU with DeepStream: people, vehicles and animals in zones and across lines, faces, tampering, counts, objects left behind, falls, number plates and a person's way across the cameras. An Android TV app shows the cameras on a TV straight from the cameras. Everything runs on one computer in the site's own network; no picture, face or event leaves it.
+Smart Surveillance System is a self-hosted video surveillance platform for IP cameras. It shows every camera live in the browser and in the mobile app, drives PTZ cameras and their settings over ONVIF, records what the cameras report, and runs its own video analytics on an NVIDIA GPU with DeepStream: people, vehicles and animals in zones and across lines, faces, tampering, counts, objects left behind, falls, number plates and a person's way across the cameras. Organisations hold sites and members in four roles; a site's cameras are reached on the server's own network or through a connector agent at the site. An Android TV app shows the cameras on a TV straight from the cameras. Everything runs on the operator's own server; pictures, faces and events leave it only as the alerts an organisation sends to its linked Telegram chats and push targets.
 
 ## Features
+
+### Accounts, organisations and sites
+
+- Accounts sign up with an email address, verified by a link, and sign in on the web with a session cookie or in the apps with short-lived access tokens and rotating refresh tokens; reusing a refresh token ends that device session. Password reset, session lists and account deletion are in the API.
+- An organisation holds sites, such as a home and a store, and members as viewer, operator, admin or owner, invited by email to every site or to some. Every route acts on one site and checks the member's role there.
+- Each organisation has a plan with limits on sites, cameras, members and event and clip retention, and features it turns on; a site may keep its events for fewer days than its plan. The apps read the plan and the current usage.
+- An append-only activity log records sign-ins, member, site, camera, connector, rule and arm mode changes, live and clip views, face enrolment and deletion, and admin actions, readable by admins and owners.
+
+### Remote sites, devices and pairing
+
+- A connector agent runs at a site, pairs with the server by a code, a QR code or from the app on the same Wi-Fi, finds the site's cameras with WS-Discovery and a port sweep of the site LAN only, keeps their passwords, and restreams them to the server. services/connector/README.md describes it.
+- Cameras, NVRs and DVRs are devices with channels; a recorder's chosen channels become cameras. The pairing method catalog offers only the methods that work for a site: discovery through a connector, an address, a stream address, a label QR code or a recorder's channels.
+- Camera adapters for RTSP, ONVIF Profile S and T, EZVIZ and V380 identify devices and report a capability manifest, so the apps show only the controls a camera has. packages/camera-adapters/README.md describes them.
 
 ### Watching
 
@@ -20,6 +33,7 @@ The camera page's sidebar reads and writes what the camera itself offers over ON
 - Analytics events: intrusion into a zone, line crossing in or out, loitering, crowding, vehicles, animals, tamper, objects left and taken, falls and faces, each with a snapshot, the boxes of its objects and a clip from 5 s before it starts to 5 s after it ends, at most 60 s.
 - Alerts: a global arm mode in the top bar (Disarmed, Home, Away, Schedule) and an alert policy per zone and line decide which events alert. Alerts raise a toast on every page unless muted in the top bar, and count on the Events tab.
 - Events page: live list with filters for camera, kind, label and day, counts for the filtered events, and a side panel with the snapshot, boxes, clip, plate candidates, the person's journey and Find this person.
+- Notifications: alerts go to the members' phones by FCM or ntfy push, and to Telegram chats or groups an admin links through a single-use bot link, with the snapshot, camera, site and a link to the event.
 
 ### Analytics
 
@@ -47,7 +61,11 @@ services/analytics/README.md describes the pipeline, the rules and every feature
 
 - Discover scans the local subnet for cameras and opens the add form prefilled for any it finds.
 - Coverage plans Wi-Fi coverage on a floor plan with routers, walls by material and devices, shows a heatmap per band and suggests router placement.
-- Health probes every router and camera every 10 s and shows uptime, latency, outages and the device that caused each outage.
+- Health probes every router and camera every 10 s and shows uptime, latency, outages and the device that caused each outage; cameras behind a connector report their reachability with its heartbeats.
+
+### Platform administration
+
+Platform admins list every organisation with its plan, overrides and usage, change plans and overrides, suspend and restore organisations, list every connector with its last heartbeat and version, and read the whole activity log. Usage is metered per site and hour: camera-hours, analytics view-hours, events, clip storage and notifications.
 
 ### TV
 
@@ -86,6 +104,9 @@ flowchart LR
   postgres[(postgres)]
   web[web: nginx and Next.js]
   browser[Browser]
+  phone[Mobile app]
+  connector[connector at a remote site]
+  remote[Remote site cameras]
   tv[Android TV app]
 
   v380 -- V380 protocol --> bridge
@@ -100,6 +121,11 @@ flowchart LR
   browser --> web
   web -- API --> backend
   web -- H.264 video websocket --> go2rtc
+  phone -- API --> web
+  phone -- WebRTC --> go2rtc
+  remote -- RTSP and ONVIF --> connector
+  connector -- heartbeats, discovery --> backend
+  go2rtc -- RTSP --> connector
   tv -- RTSP --> ezviz
   tv -- V380 protocol --> v380
 ```
@@ -112,8 +138,9 @@ flowchart LR
 | analytics | smart-surveillance-system-analytics:local | DeepStream 9.1: detection, tracking, rules, faces, appearance, pose, plates, tamper watch, the rolling recording buffer and event clips |
 | v380-ptz-1, v380-ptz-2 | smart-surveillance-system-v380-bridge:local | One bridge per V380 camera: V380 protocol in, RTSP on 8554 and ONVIF with PTZ, light and siren on 8080 out |
 | web | smart-surveillance-system-web:local | nginx serving the Next.js static export and proxying the API and the video websocket |
+| connector | smart-surveillance-connector:local | Runs at a remote site from docker-compose.connector.yml: pairing, LAN discovery, camera credentials and a go2rtc restream the server pulls |
 
-The analytics service reads its configuration from the backend every 5 s, so zone and rule changes apply without a restart, and posts events and observations back on internal routes that nginx never serves. Only web and go2rtc's RTSP port publish ports: web on loopback and on SSS_LAN_BIND, RTSP on SSS_LAN_BIND only, so phones on the local Wi-Fi reach the app while a VPN on the same computer does not.
+The analytics service reads its configuration from the backend every 5 s, so zone and rule changes apply without a restart, and posts events and observations back on internal routes that nginx never serves. Only web and go2rtc's RTSP and WebRTC ports publish ports: web on loopback and on SSS_LAN_BIND, RTSP on 8554 and WebRTC on 8555 on SSS_LAN_BIND only, so phones on the local Wi-Fi reach the app and live video while a VPN on the same computer does not. The apps exchange WebRTC offers and answers through the API, which checks the member's access to the camera first.
 
 ## Requirements
 
@@ -154,13 +181,13 @@ A Jetson Orin Nano profile exists but has not run on a Jetson; see Jetson Orin N
 
    The first start of the analytics builds its TensorRT engines into the analytics-engines volume, which takes a few minutes; later starts reuse them.
 
-4. Open http://127.0.0.1:8750 and sign in with SSS_ADMIN_USERNAME and SSS_ADMIN_PASSWORD. The backend creates that user on first start and never overwrites its password afterwards.
+4. Open http://127.0.0.1:8750 and sign in with SSS_ADMIN_USERNAME and SSS_ADMIN_PASSWORD. The backend creates that user on first start and never overwrites its password afterwards. That user is the first platform admin, and its own organisation is on the unlimited internal plan; other organisations start on the free plan.
 
 5. Add cameras on the Cameras page or find them with Discover, then turn on analytics per view on each camera's page and draw zones and lines there.
 
 ## Configuration reference
 
-Every variable lives in .env, which mirrors .env.example group by group.
+Every variable lives in .env, which mirrors .env.example group by group. A setting can also come from a Docker secret named after the variable in lower case under /run/secrets; docker-compose.secrets.yml switches the database password and the secret key to secret files in SSS_SECRETS_DIR.
 
 | Name | Default | Meaning |
 |---|---|---|
@@ -175,6 +202,46 @@ Every variable lives in .env, which mirrors .env.example group by group.
 | SSS_ADMIN_USERNAME | admin | User created on first start |
 | SSS_ADMIN_PASSWORD | none | Password of that user on first start |
 | SSS_SESSION_HOURS | 168 | Lifetime of a session |
+| SSS_PUBLIC_URL | http://127.0.0.1:8750 | Base address the links in emails point at, which the mobile app opens as App Links |
+| SSS_REGISTRATION_ENABLED | true | Whether anyone may sign up |
+| SSS_ACCESS_TOKEN_MINUTES | 15 | Lifetime of an app access token |
+| SSS_ACCESS_TOKEN_KEY | empty | PEM of the P-256 key that signs access tokens; empty derives one from SSS_SECRET_KEY |
+| SSS_REFRESH_IDLE_DAYS | 30 | Days a refresh token stays valid unused |
+| SSS_REFRESH_MAX_DAYS | 365 | Days a device session lasts at most |
+| SSS_VERIFY_TOKEN_HOURS | 48 | Hours an email confirmation link stays valid |
+| SSS_RESET_TOKEN_MINUTES | 60 | Minutes a password reset link stays valid |
+| SSS_INVITATION_DAYS | 7 | Days an invitation stays valid |
+| SSS_RATE_LIMIT_CREDENTIALS | 20 | Sign-in, token and verification attempts one client address may make a minute |
+| SSS_RATE_LIMIT_MAIL | 5 | Requests that send mail, such as sign-ups, one client address may make a minute |
+| SSS_SMTP_HOST | empty | SMTP server of outgoing mail; empty logs mail instead of sending it |
+| SSS_SMTP_PORT | 587 | SMTP port |
+| SSS_SMTP_USERNAME | empty | SMTP login |
+| SSS_SMTP_PASSWORD | empty | SMTP password |
+| SSS_SMTP_STARTTLS | true | Whether to upgrade the connection with STARTTLS |
+| SSS_SMTP_SSL | false | Whether to connect with TLS from the start |
+| SSS_MAIL_FROM | Smart Surveillance at no-reply@localhost | Sender of outgoing mail, as a name and an address |
+| SSS_BOOTSTRAP_ORGANISATION_NAME | Home | Organisation the cameras and events of an installation from before organisations existed move into |
+| SSS_BOOTSTRAP_SITE_NAME | Home | Site they move into |
+| SSS_BOOTSTRAP_SITE_KIND | home | Kind of that site |
+| SSS_CONNECTOR_CODE_MINUTES | 15 | Minutes a connector pairing code stays valid |
+| SSS_CONNECTOR_POLL_SECONDS | 5 | Seconds a connector waits between pairing polls |
+| SSS_CONNECTOR_OFFLINE_SECONDS | 90 | Seconds without a heartbeat after which a connector counts as offline |
+| SSS_DIRECT_CAMERAS | true | Whether the server may reach cameras on its own network, as a single-site installation does |
+| SSS_WEBRTC_STUN_URLS | empty | Comma-separated STUN servers offered to the apps |
+| SSS_WEBRTC_TURN_URL | empty | TURN server offered to the apps |
+| SSS_WEBRTC_TURN_USERNAME | empty | TURN user |
+| SSS_WEBRTC_TURN_PASSWORD | empty | TURN password |
+| SSS_FCM_PROJECT_ID | empty | Firebase project of FCM push; empty turns FCM off |
+| SSS_FCM_SERVICE_ACCOUNT_FILE | empty | Path of the Firebase service account key file |
+| SSS_NTFY_URL | empty | ntfy server offered to the apps; empty turns ntfy off |
+| SSS_NTFY_TOKEN | empty | Access token of that ntfy server |
+| SSS_TELEGRAM_BOT_TOKEN | empty | Token of the Telegram bot that sends alerts; empty turns Telegram alerts off |
+| SSS_TELEGRAM_BOT_USERNAME | empty | Username of the bot, read from Telegram at start when empty |
+| SSS_TELEGRAM_API_URL | https://api.telegram.org | Base address of the Bot API |
+| SSS_TELEGRAM_WEBHOOK_SECRET | empty | Secret Telegram sends with every webhook call; required for webhook mode |
+| SSS_TELEGRAM_WEBHOOK_URL | empty | Address Telegram delivers updates to; empty uses SSS_PUBLIC_URL |
+| SSS_TELEGRAM_POLLING | false | Poll Telegram for updates instead of receiving them by webhook |
+| SSS_TELEGRAM_LINK_MINUTES | 30 | Minutes a chat link stays valid |
 | SSS_GO2RTC_URL | http://go2rtc:1984 | go2rtc API address |
 | SSS_TRANSCODE_HARDWARE | empty | go2rtc hardware option added to every transcode, such as cuda for GPU decoding; empty decodes on the CPU |
 | SSS_TV_RTSP_USERNAME | tv | RTSP user go2rtc asks every client outside its container for |
@@ -183,8 +250,10 @@ Every variable lives in .env, which mirrors .env.example group by group.
 | SSS_MONITOR_INTERVAL_SECONDS | 20 | Interval of the camera status monitor and the go2rtc reconciliation |
 | SSS_HEALTH_INTERVAL_SECONDS | 10 | Interval of the health probes |
 | SSS_HEALTH_RETENTION_DAYS | 14 | Days health samples are kept |
+| SSS_EVENTS_DIR | /data/events | Folder of event snapshots and clips |
 | SSS_EVENTS_RETENTION_DAYS | 30 | Days events are kept with their snapshots, clips and face samples, and person appearances and journeys with them, so Find this person never offers a sighting whose event is gone |
 | SSS_COUNTS_RETENTION_DAYS | 400 | Days line counts are kept; a count is one small row per line, minute, direction and label, a few hundred a day, so a year of them costs little and a day can be compared with the same day a year before |
+| SSS_AUDIT_RETENTION_DAYS | 365 | Days activity records are kept |
 | SSS_REPLAY_ENABLED | false | Offers SD card playback, one session per camera |
 | SSS_TIMEZONE | UTC | Time zone of schedules, counts and area resets |
 | SSS_ANALYTICS_URL | http://analytics:8080 | Status endpoint of the analytics service |
@@ -202,6 +271,7 @@ Every variable lives in .env, which mirrors .env.example group by group.
 | SSS_ANALYTICS_CLIP_AFTER | 5 | Seconds a clip runs after its event ends |
 | SSS_ANALYTICS_CLIP_MAX | 60 | Longest clip in seconds |
 | SSS_ANALYTICS_BUFFER_SECONDS | 120 | Seconds of each camera's stream kept in memory for clips |
+| SSS_SECRETS_DIR | empty | Folder of the secret files docker-compose.secrets.yml mounts |
 | CAMERA_PASSWORD | none | Password of the EZVIZ cameras for the OpenCV viewer in cv/ |
 | CV_CAMERA_HOSTS | 192.168.1.104,192.168.1.106 | Addresses the OpenCV viewer opens |
 | V380_USERNAME | admin | Device login of the V380 cameras |
@@ -250,6 +320,10 @@ The weights are never committed. The DeepStream base image is under the NVIDIA D
 
 - Every page, API call and video connection needs a session; nginx checks it before it proxies the video websocket and snapshots, and answers 404 for every other go2rtc path and for /internal.
 - Camera passwords are stored encrypted with a key derived from SSS_SECRET_KEY and are never returned by the API.
+- App access tokens are ES256 JWTs that live 15 minutes; refresh tokens are stored hashed, rotate on every use, and a reused one ends its device session. Sign-in and mail requests are rate limited per client address.
+- Every route resolves the member's site and role before it runs, and every database query of the request is limited to that site; members of a suspended organisation are refused.
+- A connector calls the server outbound with its own token and keeps camera passwords on the site; the server calls the connector's agent with a key it received at pairing, and pulls its streams with a stream login of their own.
+- The Telegram webhook only accepts calls with SSS_TELEGRAM_WEBHOOK_SECRET, and chat links are single use and expire.
 - go2rtc asks RTSP clients for SSS_TV_RTSP_USERNAME and SSS_TV_RTSP_PASSWORD except on loopback, so its own ffmpeg transcodes need no credentials.
 - The analytics service publishes no port; its status endpoint and the backend's internal analytics routes need SSS_ANALYTICS_TOKEN as a bearer token.
 - The bridges serve RTSP and ONVIF without authentication and sound the siren through an unauthenticated API, so they stay on the internal network and never publish ports.
@@ -289,5 +363,8 @@ The host needs no Node or Python; every tool runs in a container as your own use
 - Backend: FastAPI in services/api/app, with one folder per module under app/modules holding its models, schemas, services, routers and dependencies; Alembic migrations in services/api/migrations are generated by autogenerate only. Tests run with uv, ruff and pytest.
 - Analytics: the service in services/analytics/app, the custom RF-DETR box parser in services/analytics/parsers and the tests in services/analytics/tests, run with the test stage of services/analytics/Dockerfile.
 - Console: Next.js static export in apps/console, checked with pnpm lint, typecheck and build.
+- Connector: the site agent in services/connector and the camera adapters in packages/camera-adapters, both uv workspace members with their own tests.
+- API contract: packages/contracts/openapi.json, written by scripts/export-openapi.sh and checked by the API tests.
+- Development kit: scripts/devkit.sh runs the whole stack as the compose project smart-surveillance-dev with a simulated site, a fake Telegram API and Mailpit, binding 127.0.0.1 only, and seeds a demo organisation; tools/devkit/README.md describes it.
 - TV app: Kotlin in apps/tv/app with unit tests run by Gradle.
 - OpenCV viewer: tools/cv-viewer holds a separate desktop viewer for the EZVIZ streams, described in tools/cv-viewer/README.md.
