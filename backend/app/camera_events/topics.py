@@ -3,7 +3,7 @@
 import re
 from dataclasses import dataclass
 
-from app.camera_events.notifications import Notification, TopicInfo
+from adapters.onvif.notifications import Notification, TopicInfo
 from app.modules.events.enums import EventKind
 
 TRUE_VALUES = {"true", "1", "on", "yes"}

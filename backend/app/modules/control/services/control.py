@@ -8,6 +8,11 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from adapters.ezviz.quirks import ENCODER_SERVICES, corrected_sensitivity
+from adapters.onvif import analytics, imaging, media, ptz, recordings, system
+from adapters.onvif.media import Encoder, EncodingOptions, Range, StreamProfile
+from adapters.onvif.soap import OnvifError, OnvifFault, OnvifRefused, descendant, descendants, text
+from adapters.v380.bridge import BridgeClient, BridgeError
 from app.auth.context import UserContext
 from app.core.base_service import BaseModelService
 from app.core.config import settings
@@ -35,13 +40,9 @@ from app.modules.control.schemas import (
     SegmentRead,
     VideoRead,
 )
-from app.onvif import analytics, imaging, media, ptz, recordings, system
 from app.onvif.endpoints import Connection, Directory, OnvifEndpoint, bridge_endpoint, device_endpoint, directory
-from app.onvif.media import Encoder, EncodingOptions, Range, StreamProfile
-from app.onvif.soap import OnvifError, OnvifFault, OnvifRefused, descendant, descendants, text
 from app.streaming.go2rtc import Go2rtcError
 from app.streaming.replay import ReplayBusy, ReplayStreams, replay_streams
-from app.v380.bridge import BridgeClient, BridgeError
 
 __all__ = ["CameraControlService", "NotOffered"]
 
@@ -425,7 +426,7 @@ class CameraControlService(BaseModelService[Camera]):
             NotOffered: When the camera lists no media service.
         """
         failure: Exception | None = None
-        for service in (media.MEDIA2, media.MEDIA1):
+        for service in ENCODER_SERVICES:
             if not connection.address(service):
                 continue
             try:
@@ -888,10 +889,9 @@ class CameraControlService(BaseModelService[Camera]):
                     raise Conflict("not_supported", "The camera does not expose a motion sensitivity")
                 await self.write_sensitivity(connection, setup, payload.sensitivity)
                 reread = await self.motion_setup(connection)
-                if reread.sensitivity is not None and reread.sensitivity != payload.sensitivity:
-                    corrected = payload.sensitivity - (reread.sensitivity - payload.sensitivity)
-                    if 0 <= corrected <= 100:
-                        await self.write_sensitivity(connection, reread, corrected)
+                corrected = corrected_sensitivity(payload.sensitivity, reread.sensitivity)
+                if corrected is not None:
+                    await self.write_sensitivity(connection, reread, corrected)
             if payload.enabled is not None:
                 setup = await self.motion_setup(connection)
                 cells = setup.cells

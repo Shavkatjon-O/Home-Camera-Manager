@@ -3,11 +3,11 @@ from xml.etree import ElementTree
 
 import pytest
 
+from adapters.onvif import analytics, imaging, media, ptz, recordings, system
+from adapters.onvif.soap import descendant, envelope, parse_response
 from app.core.exceptions import Unprocessable
 from app.modules.control.schemas import EncoderUpdate
 from app.modules.control.services.control import CameraControlService, with_credentials, with_start
-from app.onvif import analytics, imaging, media, ptz, recordings, system
-from app.onvif.soap import descendant, envelope, parse_response
 
 SCHEMA = 'xmlns:tt="http://www.onvif.org/ver10/schema"'
 

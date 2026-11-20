@@ -5,9 +5,9 @@ from datetime import UTC, datetime
 from xml.etree.ElementTree import Element
 from xml.sax.saxutils import escape
 
-from app.camera_events.notifications import clean_topic, items, parse_time
-from app.onvif.media import whole
-from app.onvif.soap import child, descendant, descendant_text, descendants, text
+from adapters.onvif.media import whole
+from adapters.onvif.notifications import clean_topic, items, parse_time
+from adapters.onvif.soap import child, descendant, descendant_text, descendants, text
 
 TRACK_STATE = "RecordingHistory/Track/State"
 RECORDING_STATE = "RecordingHistory/Recording/State"

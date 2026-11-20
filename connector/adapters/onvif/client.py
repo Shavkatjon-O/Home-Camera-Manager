@@ -9,8 +9,8 @@ from xml.sax.saxutils import escape
 
 import httpx
 
-from app.onvif.digest import security_header
-from app.onvif.soap import (
+from adapters.onvif.digest import security_header
+from adapters.onvif.soap import (
     OnvifError,
     OnvifFault,
     OnvifRefused,
@@ -106,6 +106,7 @@ class Profile:
         height: Video height in pixels.
         ptz: Whether the profile has a PTZ configuration.
         stream_uri: RTSP stream address, when it has been fetched.
+        source: Token of the video source the profile encodes; an NVR or DVR has one per channel.
     """
 
     token: str
@@ -115,6 +116,7 @@ class Profile:
     height: int | None
     ptz: bool
     stream_uri: str | None = None
+    source: str | None = None
 
     @property
     def area(self) -> int:
@@ -196,6 +198,7 @@ def parse_profiles(body: Element) -> list[Profile]:
                 width=to_int(text(child(resolution, "Width"))),
                 height=to_int(text(child(resolution, "Height"))),
                 ptz=child(element, "PTZConfiguration") is not None,
+                source=text(child(child(element, "VideoSourceConfiguration"), "SourceToken")),
             )
         )
     return profiles

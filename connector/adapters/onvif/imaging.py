@@ -4,8 +4,8 @@ from dataclasses import dataclass, field
 from xml.etree.ElementTree import Element
 from xml.sax.saxutils import escape
 
-from app.onvif.media import Range, format_number, number, value_range
-from app.onvif.soap import child, children, descendant, text
+from adapters.onvif.media import Range, format_number, number, value_range
+from adapters.onvif.soap import child, children, descendant, text
 
 LEVELS = ("brightness", "contrast", "saturation", "sharpness")
 LEVEL_ELEMENTS = {

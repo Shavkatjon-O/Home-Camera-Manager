@@ -1,8 +1,8 @@
-"""Brand and ONVIF port guesses for hosts found by a scan."""
+"""Adapter and ONVIF port guesses for hosts found by a scan."""
 
 from collections.abc import Iterable
 
-from app.modules.cameras.enums import CameraBrand
+from adapters.base import AdapterName
 
 V380_MANUFACTURER = "macro-video"
 
@@ -11,12 +11,12 @@ EZVIZ_PORT = 8000
 RTSP_PORT = 554
 
 BRAND_ONVIF_PORTS = {
-    CameraBrand.V380: 8899,
-    CameraBrand.EZVIZ: 80,
+    AdapterName.V380: 8899,
+    AdapterName.EZVIZ: 80,
 }
 
 
-def guess_brand(open_ports: Iterable[int], manufacturer: str | None, onvif_port: int | None) -> CameraBrand | None:
+def guess_brand(open_ports: Iterable[int], manufacturer: str | None, onvif_port: int | None) -> AdapterName | None:
     """Guess the camera brand from open ports and what the host reported over ONVIF.
 
     V380 is recognised by its manufacturer name or its own port, EZVIZ by its own port, and any other
@@ -32,17 +32,17 @@ def guess_brand(open_ports: Iterable[int], manufacturer: str | None, onvif_port:
     """
     ports = set(open_ports)
     if (manufacturer and V380_MANUFACTURER in manufacturer.lower()) or V380_PORT in ports:
-        return CameraBrand.V380
+        return AdapterName.V380
     if EZVIZ_PORT in ports:
-        return CameraBrand.EZVIZ
+        return AdapterName.EZVIZ
     if onvif_port is not None:
-        return CameraBrand.ONVIF
+        return AdapterName.ONVIF
     if RTSP_PORT in ports:
-        return CameraBrand.RTSP
+        return AdapterName.RTSP
     return None
 
 
-def guess_onvif_port(brand: CameraBrand | None, open_ports: Iterable[int], onvif_port: int | None) -> int | None:
+def guess_onvif_port(brand: AdapterName | None, open_ports: Iterable[int], onvif_port: int | None) -> int | None:
     """Pick the ONVIF port of a host.
 
     Args:

@@ -40,7 +40,9 @@ services:
     networks: [cams]
 
   backend:
-    build: ./backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     image: smart-surveillance-system-backend:local
     container_name: smart-surveillance-system-backend
     restart: unless-stopped

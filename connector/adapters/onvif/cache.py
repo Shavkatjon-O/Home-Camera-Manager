@@ -3,8 +3,8 @@
 from dataclasses import dataclass
 from uuid import UUID
 
-from app.onvif.client import OnvifClient
-from app.onvif.soap import OnvifError
+from adapters.onvif.client import OnvifClient
+from adapters.onvif.soap import OnvifError
 
 
 @dataclass(frozen=True)

@@ -1,0 +1,46 @@
+[project]
+name = "smart-surveillance-connector"
+version = "0.1.0"
+description = "Site agent of Smart Surveillance System and the camera adapters it shares with the backend"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "cryptography>=45.0",
+    "fastapi>=0.120",
+    "httpx>=0.28",
+    "pyyaml>=6.0",
+    "qrcode>=8.0",
+    "uvicorn>=0.35",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4",
+    "pytest-asyncio>=1.1",
+    "ruff>=0.12",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "D"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+known-first-party = ["adapters", "agent"]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401", "F403"]
+"**/tests/**" = ["D"]
+
+[tool.pytest.ini_options]
+testpaths = ["adapters/tests", "agent/tests"]
+pythonpath = ["."]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"

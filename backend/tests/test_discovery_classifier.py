@@ -1,7 +1,7 @@
 import pytest
 
-from app.discovery.classifier import guess_brand, guess_onvif_port
-from app.discovery.scanner import SubnetError, parse_subnet
+from adapters.classifier import guess_brand, guess_onvif_port
+from adapters.sweep import SubnetError, parse_subnet
 from app.modules.cameras.enums import CameraBrand
 
 

@@ -1,4 +1,4 @@
-from app.camera_events.notifications import Notification, TopicInfo
+from adapters.onvif.notifications import Notification, TopicInfo
 from app.camera_events.topics import classify, condition_name, is_condition, supported
 from app.modules.events.enums import EventKind
 

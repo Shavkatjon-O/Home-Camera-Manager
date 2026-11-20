@@ -4,7 +4,7 @@ from dataclasses import dataclass, field, replace
 from xml.etree.ElementTree import Element
 from xml.sax.saxutils import escape
 
-from app.onvif.soap import child, children, descendants, text
+from adapters.onvif.soap import child, children, descendants, text
 
 MEDIA2 = "media2"
 MEDIA1 = "media"

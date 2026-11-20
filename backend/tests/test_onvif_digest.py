@@ -1,8 +1,8 @@
 import base64
 from datetime import UTC, datetime, timedelta
 
-from app.onvif.client import OnvifClient
-from app.onvif.digest import format_created, password_digest, security_header
+from adapters.onvif.client import OnvifClient
+from adapters.onvif.digest import format_created, password_digest, security_header
 
 
 def test_digest_matches_the_onvif_programmers_guide_example():

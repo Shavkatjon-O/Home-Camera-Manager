@@ -4,8 +4,8 @@ from dataclasses import dataclass
 from xml.etree.ElementTree import Element
 from xml.sax.saxutils import escape
 
-from app.onvif.media import whole
-from app.onvif.soap import child, descendant, descendants, text
+from adapters.onvif.media import whole
+from adapters.onvif.soap import child, descendant, descendants, text
 
 
 @dataclass(frozen=True)
