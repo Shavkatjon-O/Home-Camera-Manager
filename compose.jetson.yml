@@ -10,6 +10,7 @@ services:
     runtime: nvidia
     environment:
       HC_ANALYTICS_BACKEND_URL: http://backend:8000
+
       NVIDIA_VISIBLE_DEVICES: all
       NVIDIA_DRIVER_CAPABILITIES: compute,utility,video
 
@@ -17,12 +18,12 @@ services:
       HC_ANALYTICS_ENGINE_BATCH: "6"
       HC_ANALYTICS_WORKSPACE_MB: "512"
 
+      HC_ANALYTICS_PLATES: "false"
+
       HC_ANALYTICS_FPS: "4"
 
       HC_ANALYTICS_CLIP_ENCODER: libx264
       HC_ANALYTICS_BUFFER_SECONDS: "60"
-
-      HC_ANALYTICS_PLATES: "false"
     deploy: !override
       resources:
         limits:

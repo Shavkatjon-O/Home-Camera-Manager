@@ -34,12 +34,12 @@ class Settings(BaseSettings):
         events_retention_days: Days events, their face samples and the analytics appearances and journeys are kept.
         counts_retention_days: Days analytics line counts are kept.
         replay_enabled: Whether SD card playback is offered.
-        device_onvif_port: ONVIF port of bridged V380 cameras.
+        timezone: Time zone of schedules, line counts and area resets.
+        analytics_url: Address of the analytics service, for its status, live objects, view pictures and face embedding.
+        analytics_token: Shared token of the analytics service and the internal analytics endpoints.
         device_username: Device login of bridged V380 cameras.
         device_password: Device password of bridged V380 cameras.
-        analytics_url: Address of the analytics service's status endpoint.
-        analytics_token: Shared token of the analytics service and the internal analytics endpoints.
-        timezone: Time zone of schedules, line counts and area resets.
+        device_onvif_port: ONVIF port of bridged V380 cameras on their own address.
     """
 
     model_config = SettingsConfigDict(env_prefix="HC_", env_file=".env", case_sensitive=False, extra="ignore")
@@ -76,14 +76,14 @@ class Settings(BaseSettings):
 
     replay_enabled: bool = False
 
-    device_onvif_port: int = 8899
-    device_username: str = Field(default="admin", validation_alias=AliasChoices("hc_device_username", "v380_username"))
-    device_password: str = Field(default="", validation_alias=AliasChoices("hc_device_password", "v380_password"))
+    timezone: str = "UTC"
 
     analytics_url: str = "http://analytics:8080"
     analytics_token: str = ""
 
-    timezone: str = "UTC"
+    device_username: str = Field(default="admin", validation_alias=AliasChoices("hc_device_username", "v380_username"))
+    device_password: str = Field(default="", validation_alias=AliasChoices("hc_device_password", "v380_password"))
+    device_onvif_port: int = 8899
 
     @property
     def database_url(self) -> str:

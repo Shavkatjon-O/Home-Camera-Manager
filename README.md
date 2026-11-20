@@ -186,7 +186,6 @@ Every variable lives in .env, which mirrors .env.example group by group.
 | HC_EVENTS_RETENTION_DAYS | 30 | Days events are kept with their snapshots, clips and face samples, and person appearances and journeys with them, so Find this person never offers a sighting whose event is gone |
 | HC_COUNTS_RETENTION_DAYS | 400 | Days line counts are kept; a count is one small row per line, minute, direction and label, a few hundred a day, so a year of them costs little and a day can be compared with the same day a year before |
 | HC_REPLAY_ENABLED | false | Offers SD card playback, one session per camera |
-| HC_DEVICE_ONVIF_PORT | 8899 | ONVIF port of bridged V380 cameras on their own address |
 | HC_TIMEZONE | UTC | Time zone of schedules, counts and area resets |
 | HC_ANALYTICS_URL | http://analytics:8080 | Status endpoint of the analytics service |
 | HC_ANALYTICS_TOKEN | none | Shared token of the backend's internal analytics routes and the analytics status endpoint |
@@ -207,6 +206,7 @@ Every variable lives in .env, which mirrors .env.example group by group.
 | CV_CAMERA_HOSTS | 192.168.1.104,192.168.1.106 | Addresses the OpenCV viewer opens |
 | V380_USERNAME | admin | Device login of the V380 cameras |
 | V380_PASSWORD | none | Device password of the V380 cameras |
+| HC_DEVICE_ONVIF_PORT | 8899 | ONVIF port of bridged V380 cameras on their own address |
 | V380_PTZ_1_HOST | none | Address of the first V380 camera |
 | V380_PTZ_1_ID | none | Device ID of the first V380 camera |
 | V380_PTZ_2_HOST | none | Address of the second V380 camera |

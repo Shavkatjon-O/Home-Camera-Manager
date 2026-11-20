@@ -64,6 +64,7 @@ services:
     env_file: .env
     environment:
       HC_ANALYTICS_BACKEND_URL: http://backend:8000
+
       NVIDIA_DRIVER_CAPABILITIES: compute,utility,video
     deploy:
       resources:
