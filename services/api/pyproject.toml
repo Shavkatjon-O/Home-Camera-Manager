@@ -70,6 +70,12 @@ source_modules = ["app.core", "app.auth"]
 forbidden_modules = ["app.modules", "app.api", "app.main"]
 
 [[tool.importlinter.contracts]]
+name = "nothing in the product imports the development kit"
+type = "forbidden"
+source_modules = ["app.core", "app.auth", "app.api", "app.main", "app.modules", "app.streaming", "app.analytics", "app.health", "app.onvif"]
+forbidden_modules = ["app.devkit"]
+
+[[tool.importlinter.contracts]]
 name = "packages import nothing from services or apps"
 type = "forbidden"
 source_modules = ["camera_adapters"]
