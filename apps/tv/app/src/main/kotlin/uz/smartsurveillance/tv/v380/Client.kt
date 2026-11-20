@@ -1,221 +1,463 @@
 package uz.smartsurveillance.tv.v380
 
-import java.io.Closeable
+import java.io.ByteArrayOutputStream
+import java.io.EOFException
 import java.io.IOException
 import java.io.InputStream
-import java.net.ConnectException
 import java.net.InetSocketAddress
-import java.net.NoRouteToHostException
 import java.net.Socket
 import java.net.SocketTimeoutException
-import javax.crypto.Cipher
+import java.security.SecureRandom
+import java.util.Random
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.TimeUnit
 
-class V380Exception(message: String, val unreachable: Boolean = false, val refused: Boolean = false) : IOException(message)
+/**
+ * What a session learned about the camera and its stream.
+ *
+ * @property deviceVersion Device version from the login reply.
+ * @property communicationVersion Communication version from the stream login reply.
+ * @property replySize Length of the stream login reply the camera sent.
+ * @property reportedSize Picture size from the stream login reply, a fallback when no SPS can be parsed.
+ * @property codec Video codec, once the first key frame identified it.
+ * @property size Picture size from the SPS of the first key frame.
+ * @property frameRate Frame rate the frame headers report.
+ * @property audio Audio format, once the first audio frame arrived.
+ * @property dropped Frames dropped for a missing fragment or a missing start code.
+ */
+data class SessionFacts(
+    val deviceVersion: Int,
+    val communicationVersion: Int,
+    val replySize: Int,
+    val reportedSize: VideoSize?,
+    val codec: Codec? = null,
+    val size: VideoSize? = null,
+    val frameRate: Int? = null,
+    val audio: String? = null,
+    val dropped: Int = 0,
+)
 
-data class Session(val version: Int, val communication: Int, val width: Long, val height: Long, val encrypted: Boolean, val ticket: Long)
+/**
+ * One V380 session over the LAN protocol: login, stream login, start, then media until the session ends.
+ *
+ * [run] blocks on the calling thread and throws [V380Exception] when the session fails; the caller reconnects with
+ * back-off, and every reconnect logs in again. Control records are written by a writer thread in the order given.
+ */
+class V380Client(private val config: Config, private val listener: Listener) {
+    /**
+     * Where and how to connect.
+     *
+     * @property host Camera address.
+     * @property port Camera TCP port.
+     * @property deviceId Device id from the camera's label.
+     * @property user User name.
+     * @property password Password.
+     * @property stream Main or sub stream.
+     * @property sound Whether to ask for audio.
+     * @property connectTimeoutMs Timeout of each TCP connect.
+     * @property replyTimeoutMs Time to wait for the first byte of a reply.
+     * @property idleGapMs Silence after the first byte that ends a reply.
+     * @property silenceMs Media silence after which the session counts as lost.
+     * @property maxMoveMs Time after which a move that was not stopped or renewed is stopped, 0 for never.
+     * @property random Source of the login's random key.
+     */
+    data class Config(
+        val host: String,
+        val port: Int = DEFAULT_PORT,
+        val deviceId: Long,
+        val user: String = "admin",
+        val password: String,
+        val stream: StreamKind = StreamKind.Sub,
+        val sound: Boolean = false,
+        val connectTimeoutMs: Int = 5000,
+        val replyTimeoutMs: Int = 5000,
+        val idleGapMs: Int = 250,
+        val silenceMs: Int = 15000,
+        val maxMoveMs: Long = MAX_MOVE_MS,
+        val random: Random = SecureRandom(),
+    )
 
-interface ClientListener {
-    fun onSession(session: Session)
-    fun onBytes(count: Int)
-    fun onVideo(frame: MediaFrame)
-    fun onAudio(frame: MediaFrame)
-}
+    /** Receives what the session produces, on the thread that runs it. */
+    interface Listener {
+        /** The camera accepted the stream login; media follows the start request. */
+        fun onSession(facts: SessionFacts) {}
 
-class Client(
-    private val host: String,
-    private val port: Int,
-    private val deviceId: Long,
-    private val user: String,
-    private val password: String,
-    private val hd: Boolean,
-    private val audio: Boolean,
-    private val listener: ClientListener,
-) : Closeable {
-    @Volatile
-    private var socket: Socket? = null
+        /** Bytes arrived on the stream connection. */
+        fun onBytes(count: Int) {}
 
-    @Volatile
-    private var streaming: Socket? = null
+        /** A decrypted, aligned access unit in Annex-B format, starting with the first key frame of the session. */
+        fun onVideo(codec: Codec, data: ByteArray, key: Boolean) {}
+
+        /** A decrypted audio payload of a frame type of [FrameType], only when sound was asked for. */
+        fun onAudio(type: Int, payload: ByteArray) {}
+    }
 
     @Volatile
     private var closed = false
 
-    private val writeLock = Any()
+    @Volatile
+    private var loginSocket: Socket? = null
 
+    @Volatile
+    private var streamSocket: Socket? = null
+
+    @Volatile
+    private var writer: Thread? = null
+
+    @Volatile
+    private var moving = false
+
+    private val outbox = LinkedBlockingQueue<ByteArray>()
+    private val reassembler = Reassembler()
+
+    /** The latest facts of the session, or null before the stream login was accepted. */
+    @Volatile
+    var facts: SessionFacts? = null
+        private set
+
+    /** Whether a PTZ move is running. */
+    val isMoving: Boolean get() = moving
+
+    /**
+     * Runs the session until it ends.
+     *
+     * @throws V380Exception The camera is unreachable, refused, sent something invalid, went silent or closed.
+     */
     fun run() {
-        val auth = authenticate()
-        val stream = open()
         try {
-            stream.soTimeout = 0
-            write(stream, Packets.login(deviceId, auth.ticket, hd, audio))
-            val reply = receive(stream.getInputStream(), LOGIN_REPLY_MAX, 5000, 200)
-            val login = reply?.let { Packets.parseLogin(it) } ?: throw V380Exception("No stream login reply")
-            if (login.command != CMD_LOGIN_REPLY) throw V380Exception("Unexpected stream reply ${login.command}")
-            if (!login.ok) throw V380Exception("Stream login refused (${login.result})", refused = true)
-            val encrypted = auth.version > 30
-            listener.onSession(Session(auth.version, login.version, login.width, login.height, encrypted, auth.ticket))
-            write(stream, Packets.start())
-            streaming = stream
-            receiveFrames(stream, if (encrypted) Crypto.decryptor(Crypto.mediaKey(auth.ticket)) else null, login.version)
-        } finally {
-            close()
-        }
-    }
-
-    fun send(packet: ByteArray): Boolean {
-        val current = streaming ?: return false
-        return try {
-            write(current, packet)
-            true
-        } catch (_: IOException) {
-            false
-        }
-    }
-
-    override fun close() {
-        closed = true
-        streaming = null
-        runCatching { socket?.close() }
-    }
-
-    private fun authenticate(): AuthReply {
-        val auth = connect()
-        try {
-            write(auth, Packets.auth(deviceId, user, Crypto.password(password)))
-            val reply = receive(auth.getInputStream(), AUTH_REPLY_SIZE, 5000, 300)
-            val parsed = reply?.let { Packets.parseAuth(it) } ?: throw V380Exception("No login reply")
-            if (parsed.command != CMD_AUTH_REPLY) throw V380Exception("Unexpected login reply ${parsed.command}")
-            if (!parsed.ok) throw V380Exception(Packets.authError(parsed.result), refused = true)
-            return parsed
-        } finally {
-            runCatching { auth.close() }
-        }
-    }
-
-    private fun open(): Socket {
-        val stream = Socket().apply {
-            tcpNoDelay = true
-            receiveBufferSize = 0x20000
-            sendBufferSize = 0x10000
-        }
-        socket = stream
-        if (closed) throw V380Exception("Closed")
-        connectSocket(stream)
-        return stream
-    }
-
-    private fun connect(): Socket {
-        val auth = Socket()
-        socket = auth
-        if (closed) throw V380Exception("Closed")
-        connectSocket(auth)
-        return auth
-    }
-
-    private fun connectSocket(target: Socket) {
-        try {
-            target.connect(InetSocketAddress(host, port), CONNECT_TIMEOUT_MS)
-        } catch (error: SocketTimeoutException) {
-            throw V380Exception("No answer at $host:$port", unreachable = true)
-        } catch (error: ConnectException) {
-            throw V380Exception("Refused at $host:$port", unreachable = true)
-        } catch (error: NoRouteToHostException) {
-            throw V380Exception("No route to $host", unreachable = true)
+            val login = login()
+            if (closed) return
+            stream(login)
+        } catch (error: V380Exception) {
+            if (!closed) throw error
         } catch (error: IOException) {
+            if (!closed) throw V380Exception(error.message ?: "Connection failed", cause = error)
+        } finally {
+            shutdown()
+        }
+    }
+
+    /**
+     * Queues a 16-byte control record for the stream connection.
+     *
+     * @return False when the session is closed.
+     */
+    fun command(record: ByteArray): Boolean {
+        if (closed) return false
+        outbox.offer(record.copyOf())
+        return true
+    }
+
+    /** Starts a pan or tilt move, or stops the running one; a move lasts until a stop or [Config.maxMoveMs]. */
+    fun move(move: PtzMove) {
+        if (closed) return
+        moving = move != PtzMove.Stop
+        command(move.record())
+    }
+
+    /** Ends the session, sending a stop first when a move is running. */
+    fun close() {
+        if (closed) return
+        closed = true
+        val current = writer
+        if (current != null && current.isAlive) {
+            outbox.offer(CLOSE)
+            Thread({
+                runCatching { current.join(CLOSE_GRACE_MS) }
+                closeSockets()
+            }, "v380-close").apply { isDaemon = true }.start()
+        } else {
+            closeSockets()
+        }
+    }
+
+    private fun login(): LoginReply {
+        if (!Crypto.printable(config.password)) {
+            throw V380Exception(
+                "The password must be printable ASCII",
+                refused = true,
+                retryAfterMs = REFUSED_LOGIN_RETRY_MS,
+            )
+        }
+        val field = Crypto.passwordField(config.password, Crypto.randomKey(config.random))
+        val socket = connect { loginSocket = it }
+        try {
+            socket.getOutputStream().apply {
+                write(Records.login(config.deviceId, config.user, field))
+                flush()
+            }
+            val reply = Records.loginReply(readReply(socket, Records.LOGIN_REPLY_SIZE, "login"))
+            if (!reply.accepted) {
+                throw V380Exception(Records.refusal(reply.result), refused = true, retryAfterMs = REFUSED_LOGIN_RETRY_MS)
+            }
+            return reply
+        } finally {
+            runCatching { socket.close() }
+            loginSocket = null
+        }
+    }
+
+    private fun stream(login: LoginReply) {
+        val socket = connect(stream = true) { streamSocket = it }
+        if (closed) return
+        val output = socket.getOutputStream()
+        output.write(Records.streamLogin(config.deviceId, login.ticket, config.stream, config.sound))
+        output.flush()
+        val reply = Records.streamReply(readReply(socket, Records.STREAM_REPLY_SIZE, "stream login"))
+        if (reply.refused) throw V380Exception("Stream refused with code ${reply.result}", refused = true)
+        val cipher = MediaCipher.forSession(login.deviceVersion, reply.communicationVersion, login.ticket)
+        val first = SessionFacts(login.deviceVersion, reply.communicationVersion, reply.length, reply.size)
+        facts = first
+        listener.onSession(first)
+        output.write(Records.start())
+        output.flush()
+        startWriter(socket)
+        media(socket, cipher)
+    }
+
+    private fun connect(stream: Boolean = false, register: (Socket) -> Unit): Socket {
+        val socket = Socket()
+        register(socket)
+        if (closed) socket.close()
+        try {
+            if (stream) {
+                socket.receiveBufferSize = RECEIVE_BUFFER
+                socket.sendBufferSize = SEND_BUFFER
+                socket.tcpNoDelay = true
+            }
+            socket.connect(InetSocketAddress(config.host, config.port), config.connectTimeoutMs)
+            return socket
+        } catch (error: IOException) {
+            runCatching { socket.close() }
             if (closed) throw V380Exception("Closed")
-            throw V380Exception("Cannot reach $host:$port", unreachable = true)
+            throw V380Exception(
+                "Camera does not answer at ${config.host}:${config.port}",
+                unreachable = true,
+                cause = error,
+            )
+        } catch (error: IllegalArgumentException) {
+            runCatching { socket.close() }
+            throw V380Exception("Invalid camera address ${config.host}", unreachable = true, cause = error)
         }
     }
 
-    private fun write(target: Socket, packet: ByteArray) {
-        synchronized(writeLock) {
-            val out = target.getOutputStream()
-            out.write(packet)
-            out.flush()
-        }
-    }
-
-    private fun receive(input: InputStream, max: Int, timeoutMs: Int, idleMs: Int): ByteArray? {
-        val target = socket ?: return null
+    private fun readReply(socket: Socket, max: Int, what: String): ByteArray {
+        val input = socket.getInputStream()
+        val out = ByteArrayOutputStream(max)
         val buffer = ByteArray(max)
-        var total = 0
-        val deadline = System.currentTimeMillis() + timeoutMs
-        while (total < max) {
-            val left = deadline - System.currentTimeMillis()
-            if (left <= 0) break
-            target.soTimeout = if (total == 0) left.toInt() else idleMs
-            val read = try {
-                input.read(buffer, total, max - total)
+        socket.soTimeout = config.replyTimeoutMs
+        while (out.size() < max) {
+            val count = try {
+                input.read(buffer, 0, max - out.size())
             } catch (_: SocketTimeoutException) {
+                if (out.size() == 0) throw V380Exception("No $what reply within ${config.replyTimeoutMs / 1000} s")
                 break
             }
-            if (read <= 0) break
-            total += read
+            if (count < 0) break
+            out.write(buffer, 0, count)
+            socket.soTimeout = config.idleGapMs
         }
-        return if (total == 0) null else buffer.copyOf(total)
+        if (out.size() == 0) throw V380Exception("The camera closed the connection without a $what reply")
+        return out.toByteArray()
     }
 
-    private fun receiveFrames(stream: Socket, cipher: Cipher?, communication: Int) {
-        stream.soTimeout = SILENCE_MS
-        val input = stream.getInputStream()
-        val header = ByteArray(HEADER_SIZE)
-        var payload = ByteArray(MAX_FRAGMENT)
-        val assembler = Assembler()
-        var badInRow = 0
-        while (!closed) {
-            readFully(input, header, HEADER_SIZE)
-            listener.onBytes(HEADER_SIZE)
-            val fragment = parseFragment(header)
-            if (fragment == null || !fragment.valid) {
-                badInRow += 1
-                if (badInRow > MAX_BAD_HEADERS) throw V380Exception("Stream out of sync")
-                continue
-            }
-            badInRow = 0
-            if (payload.size < fragment.length) payload = ByteArray(fragment.length)
-            readFully(input, payload, fragment.length)
-            listener.onBytes(fragment.length)
-            if (fragment.kind == FrameKind.Other) continue
-            val frame = assembler.add(fragment, payload) ?: continue
-            if (fragment.kind == FrameKind.Video) {
-                video(frame, cipher, communication)
-            } else {
-                if (cipher != null) {
-                    Crypto.decryptAligned(cipher, frame.payload, 0, frame.payload.size)
+    private fun media(socket: Socket, cipher: MediaCipher) {
+        socket.soTimeout = config.silenceMs
+        val input = socket.getInputStream().buffered(INPUT_BUFFER)
+        val state = MediaState(cipher)
+        val header = ByteArray(FragmentHeader.SIZE)
+        try {
+            readFully(input, header, header.size)
+            var scanned = 0
+            while (!closed) {
+                val parsed = FragmentHeader.parse(header)?.takeIf { scanned == 0 || FrameType.isKnown(it.type) }
+                if (parsed == null) {
+                    scanned += 1
+                    if (scanned > MAX_SCAN_BYTES) throw V380Exception("Lost the fragment framing")
+                    state.lostFraming()
+                    header.copyInto(header, 0, 1, header.size)
+                    header[header.size - 1] = readByte(input)
+                    continue
                 }
-                listener.onAudio(frame)
+                scanned = 0
+                val payload = ByteArray(parsed.length)
+                readFully(input, payload, payload.size)
+                listener.onBytes(FragmentHeader.SIZE + payload.size)
+                reassembler.push(parsed, payload)?.let { state.frame(it) }
+                readFully(input, header, header.size)
             }
+        } catch (_: SocketTimeoutException) {
+            throw V380Exception("No media for ${config.silenceMs / 1000} s")
+        } catch (_: EOFException) {
+            throw V380Exception("The camera closed the stream")
         }
     }
 
-    private fun video(frame: MediaFrame, cipher: Cipher?, communication: Int) {
-        if (cipher != null) {
-            if (communication == 21) {
-                Crypto.decryptAligned(cipher, frame.payload, 0, frame.payload.size)
+    private inner class MediaState(private val cipher: MediaCipher) {
+        private var codec: Codec? = null
+        private var family: Codec? = null
+        private var waitKey = true
+        private var unaligned = 0
+        private val audioSeen = HashSet<Int>()
+
+        fun lostFraming() {
+            waitKey = true
+        }
+
+        fun frame(frame: Frame) {
+            val data = frame.data
+            val payload = data.copyOfRange(FrameHeader.SIZE, data.size)
+            when {
+                FrameType.isVideo(frame.type) -> video(frame, payload)
+                FrameType.isAudio(frame.type) -> audio(frame.type, payload)
+            }
+        }
+
+        private fun video(frame: Frame, payload: ByteArray) {
+            cipher.video(payload)
+            val aligned = AnnexB.align(payload)
+            if (aligned == null) {
+                unaligned += 1
+                update { it.copy(dropped = reassembler.dropped + unaligned) }
+                return
+            }
+            val key = FrameType.isKey(frame.type)
+            val known = codec
+            if (known == null) {
+                if (!key) return
+                val found = AnnexB.codecOf(aligned) ?: return
+                codec = found
+                family = FrameType.codec(frame.type)
+                val sets = AnnexB.parameterSets(aligned, found)
+                val size = when {
+                    sets == null -> null
+                    found == Codec.Hevc -> Sps.hevcSize(sets[1].bytes)
+                    else -> Sps.avcSize(sets[0].bytes)
+                }
+                update { it.copy(codec = found, size = size, frameRate = frame.header.rate.takeIf { rate -> rate > 0 }) }
             } else {
-                Crypto.decryptVideo(cipher, frame.payload, 0, frame.payload.size)
+                if (FrameType.codec(frame.type) != family) return
+                if (key && AnnexB.codecOf(aligned).let { it != null && it != known }) return
             }
+            if (waitKey && !key) return
+            waitKey = false
+            update { it.copy(dropped = reassembler.dropped + unaligned) }
+            listener.onVideo(codec ?: return, aligned, key)
         }
-        val trimmed = AnnexB.trim(frame.payload) ?: return
-        listener.onVideo(MediaFrame(frame.type, frame.id, frame.frameType, frame.rate, frame.timestamp, trimmed))
-    }
 
-    private fun readFully(input: InputStream, buffer: ByteArray, length: Int) {
-        var total = 0
-        while (total < length) {
-            val read = try {
-                input.read(buffer, total, length - total)
-            } catch (_: SocketTimeoutException) {
-                throw V380Exception("No data for ${SILENCE_MS / 1000} s")
-            }
-            if (read < 0) throw V380Exception("Camera closed the stream")
-            total += read
+        private fun audio(type: Int, payload: ByteArray) {
+            if (!config.sound) return
+            cipher.audio(payload)
+            if (audioSeen.add(type)) update { it.copy(audio = audioName(type)) }
+            listener.onAudio(type, payload)
         }
     }
 
-    private companion object {
-        const val CONNECT_TIMEOUT_MS = 5000
-        const val SILENCE_MS = 15000
-        const val MAX_BAD_HEADERS = 64
+    private inline fun update(change: (SessionFacts) -> SessionFacts) {
+        val current = facts ?: return
+        val next = change(current)
+        if (next != current) facts = next
+    }
+
+    private fun startWriter(socket: Socket) {
+        val output = socket.getOutputStream()
+        writer = Thread({
+            var running = false
+            var movedAt = 0L
+            try {
+                while (true) {
+                    val polled = outbox.poll(WRITER_POLL_MS, TimeUnit.MILLISECONDS)
+                    val now = System.currentTimeMillis()
+                    if (running && config.maxMoveMs > 0 && now - movedAt >= config.maxMoveMs) {
+                        output.write(PtzMove.Stop.record())
+                        output.flush()
+                        running = false
+                        moving = false
+                    }
+                    val record = polled ?: if (closed && outbox.isEmpty()) {
+                        CLOSE
+                    } else {
+                        continue
+                    }
+                    if (record === CLOSE) {
+                        if (running) output.write(PtzMove.Stop.record())
+                        output.flush()
+                        break
+                    }
+                    output.write(record)
+                    output.flush()
+                    if (record.u32(0) == PTZ_CODE) {
+                        running = !record.contentEquals(PtzMove.Stop.record())
+                        movedAt = now
+                    }
+                }
+            } catch (_: IOException) {
+            } catch (_: InterruptedException) {
+            }
+        }, "v380-writer").apply {
+            isDaemon = true
+            start()
+        }
+    }
+
+    private fun shutdown() {
+        val current = writer
+        if (current != null && current.isAlive && !closed) {
+            closed = true
+            outbox.offer(CLOSE)
+            runCatching { current.join(CLOSE_GRACE_MS) }
+        }
+        closed = true
+        closeSockets()
+    }
+
+    private fun closeSockets() {
+        runCatching { loginSocket?.close() }
+        runCatching { streamSocket?.close() }
+        writer?.interrupt()
+    }
+
+    /** Defaults and limits of a session. */
+    companion object {
+        /** Default TCP port of the cameras. */
+        const val DEFAULT_PORT = 8800
+
+        /** Shortest wait before logging in again after the camera refused the credentials. */
+        const val REFUSED_LOGIN_RETRY_MS = 300_000L
+
+        /** Default time after which a move that was not stopped or renewed is stopped. */
+        const val MAX_MOVE_MS = 30_000L
+
+        private const val RECEIVE_BUFFER = 128 * 1024
+        private const val SEND_BUFFER = 64 * 1024
+        private const val INPUT_BUFFER = 64 * 1024
+        private const val MAX_SCAN_BYTES = 64 * 1024
+        private const val CLOSE_GRACE_MS = 500L
+        private const val WRITER_POLL_MS = 200L
+        private const val PTZ_CODE = 0xAAL
+        private val CLOSE = ByteArray(0)
+
+        /** Names an audio frame type. */
+        fun audioName(type: Int): String = when (type) {
+            FrameType.ADPCM -> "IMA ADPCM 8 kHz mono"
+            FrameType.AAC -> "AAC in ADTS"
+            FrameType.ALAW -> "G.711 A-law 8 kHz mono"
+            else -> "Unknown audio type 0x%02x".format(type)
+        }
+
+        private fun readFully(input: InputStream, into: ByteArray, count: Int) {
+            var at = 0
+            while (at < count) {
+                val read = input.read(into, at, count - at)
+                if (read < 0) throw EOFException()
+                at += read
+            }
+        }
+
+        private fun readByte(input: InputStream): Byte {
+            val value = input.read()
+            if (value < 0) throw EOFException()
+            return value.toByte()
+        }
     }
 }

@@ -11,11 +11,12 @@ Smart Surveillance System is a monorepo of products, services and packages aroun
 | Service | services/api | FastAPI platform API and the only writer of the database |
 | Service | services/connector | Site agent: pairing, LAN discovery, camera credentials and a go2rtc restream for central |
 | Service | services/analytics | DeepStream analytics engine: detection, tracking, rules, faces, plates, recordings |
-| Service | services/v380-bridge | Pinned upstream decoder that republishes a V380 camera as RTSP and ONVIF |
+| Service | services/v380-bridge | Pinned upstream decoder that republishes a V380 camera as RTSP and ONVIF, until the cut-over to the relay |
+| Service | services/v380-relay | Serves one V380 camera over RTSP with our own V380 client and takes its controls over HTTP |
 | Package | packages/camera-adapters | Python package camera_adapters: one adapter per kind of camera behind one interface |
 | Package | packages/contracts | The generated OpenAPI document of the API |
 | Deploy | deploy/go2rtc | go2rtc configuration and the TV stream composer script |
-| Tools | tools/devkit | Simulated camera for development |
+| Tools | tools/devkit | Simulated site for development: IP cameras, V380 cameras, seed data |
 | Tools | tools/cv-viewer | OpenCV viewer of the cameras |
 | Scripts | scripts | Shell scripts: model downloads and the OpenAPI export |
 
@@ -70,7 +71,7 @@ flowchart TB
         db[("postgres")]
         g2["go2rtc"]
         an["analytics: DeepStream"]
-        br["v380 bridges"]
+        br["v380 bridges, or v380 relays with the v380-native profile"]
         ev[("events volume")]
     end
     cams["Cameras"]
