@@ -175,13 +175,14 @@ async def backfill_devices(session: AsyncSession, report: BootstrapReport) -> No
     """Give every camera from before devices existed a device of its own, as its first channel.
 
     The device takes the camera's site, organisation, connector, brand as adapter and addresses, and the camera
-    receives the manifest its adapter gives for what is known about it. Cameras with a device are left alone.
+    receives the manifest its adapter gives for what is known about it. Cameras with a device, and cameras that
+    still lack a site, are left alone.
 
     Args:
         session: Database session without a scope.
         report: Report to count the devices in.
     """
-    cameras = list(await session.scalars(select(Camera).where(Camera.device_id.is_(None))))
+    cameras = list(await session.scalars(select(Camera).where(Camera.device_id.is_(None), Camera.site_id.is_not(None))))
     for camera in cameras:
         manifest = camera_manifest(camera)
         device = Device(
@@ -223,20 +224,20 @@ async def bootstrap(session: AsyncSession) -> BootstrapReport:
     if username:
         admin = await session.scalar(select(User).where(User.username == username, User.deleted_at.is_(None)))
     pending = await unassigned(session)
-    if admin is None:
-        if pending:
-            logger.warning("Rows without a site exist but SSS_ADMIN_USERNAME names no user to own them")
+    if admin is None and pending:
+        logger.warning("Rows without a site exist but SSS_ADMIN_USERNAME names no user to own them")
+    if admin is not None:
+        memberships = await session.scalar(
+            select(func.count()).select_from(Membership).where(Membership.user_id == admin.id)
+        )
+        if pending or not memberships:
+            organisation, site = await owner_target(session, admin, report)
+            await assign_rows(session, organisation, site, report)
+    await backfill_devices(session, report)
+    if report.changed:
+        await session.commit()
+    else:
         await session.rollback()
-        return report
-    memberships = await session.scalar(
-        select(func.count()).select_from(Membership).where(Membership.user_id == admin.id)
-    )
-    if not pending and memberships:
-        await session.rollback()
-        return report
-    organisation, site = await owner_target(session, admin, report)
-    await assign_rows(session, organisation, site, report)
-    await session.commit()
     return report
 
 
