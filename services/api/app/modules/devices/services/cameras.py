@@ -341,6 +341,7 @@ class CameraService(BaseModelService[Camera]):
             "main_path": camera.main_path,
             "sub_path": camera.sub_path,
             "enabled": camera.enabled,
+            "channel": camera.channel or 1,
         }
 
     async def resolve_through(self, connector: Connector, values: dict, password: str | None) -> dict:

@@ -28,8 +28,9 @@ COPY --from=parsers /build/libnvds_rfdetr_parser.so /opt/analytics/lib/
 WORKDIR /opt/analytics
 COPY pyproject.toml ./
 COPY app ./app
-COPY configs ./configs
-RUN pip3 install --no-deps . && rm -rf build *.egg-info
+COPY scripts ./scripts
+RUN sh scripts/tracker-config.sh \
+    && pip3 install --no-deps . && rm -rf build *.egg-info
 
 RUN groupadd --system --gid 10001 analytics \
     && useradd --system --uid 10001 --gid analytics --no-create-home --shell /usr/sbin/nologin analytics \

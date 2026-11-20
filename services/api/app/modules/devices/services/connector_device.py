@@ -112,6 +112,7 @@ class ConnectorDeviceService:
                 main_path=camera.main_path,
                 sub_path=camera.sub_path,
                 enabled=camera.enabled,
+                channel=camera.channel or 1,
             )
             for camera in await self.cameras()
         ]

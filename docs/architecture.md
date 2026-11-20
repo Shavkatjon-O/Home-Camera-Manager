@@ -9,6 +9,7 @@ Smart Surveillance System is a monorepo of products, services and packages aroun
 | App | apps/console | Next.js web console: wall, camera pages, events, people, counts, health and administration |
 | App | apps/tv | Android TV wall app that plays the cameras on a TV |
 | Service | services/api | FastAPI platform API and the only writer of the database |
+| Service | services/connector | Site agent: pairing, LAN discovery, camera credentials and a go2rtc restream for central |
 | Service | services/analytics | DeepStream analytics engine: detection, tracking, rules, faces, plates, recordings |
 | Service | services/v380-bridge | Pinned upstream decoder that republishes a V380 camera as RTSP and ONVIF |
 | Package | packages/camera-adapters | Python package camera_adapters: one adapter per kind of camera behind one interface |

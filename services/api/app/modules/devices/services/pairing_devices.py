@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.context import UserContext
 from app.core.config import settings
-from app.core.exceptions import BadGateway, NotFound, ServiceError, Unauthorized, Unprocessable
+from app.core.exceptions import BadGateway, NotFound, ServiceError, Unprocessable
 from app.core.security import encrypt_secret
 from app.models import Camera, Connector, Device, DiscoveredCamera
 from app.modules.devices.agent import AgentClient
@@ -37,11 +37,14 @@ __all__ = ["DevicePairingService", "identity_from_agent", "identity_result"]
 
 logger = logging.getLogger(__name__)
 
-ADAPTER_ERRORS = {"unreachable": BadGateway, "unauthorized": Unauthorized, "no_stream": BadGateway}
+ADAPTER_ERRORS = {"unreachable": BadGateway, "no_stream": BadGateway}
 
 
 def adapter_failure(exc: AdapterError) -> ServiceError:
     """Turn an adapter error into the API error with the same code.
+
+    A device that refuses the login answers 422 rather than 401, so the app does not mistake it for its own
+    expired session.
 
     Args:
         exc: The adapter error.
@@ -233,6 +236,11 @@ class DevicePairingService:
         """
         if connector is not None:
             answer = await AgentClient(connector).identify(request.model_dump(mode="json", exclude={"connector"}))
+            error = answer.get("error")
+            if isinstance(error, dict):
+                raise adapter_failure(
+                    AdapterError(str(error.get("code") or "invalid"), str(error.get("message") or ""))
+                )
             return identity_from_agent(answer)
         target = self.target(request)
         adapter = "rtsp" if request.rtsp_url else request.adapter

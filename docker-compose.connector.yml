@@ -1,0 +1,42 @@
+name: smart-surveillance-connector
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: "3"
+
+services:
+  connector:
+    build:
+      context: .
+      dockerfile: services/connector/Dockerfile
+    image: smart-surveillance-connector:local
+    container_name: smart-surveillance-connector
+    network_mode: host
+    restart: unless-stopped
+    init: true
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp
+    mem_limit: 512m
+    logging: *logging
+    environment:
+      SSS_CONNECTOR_BACKEND_URL: ${SSS_CONNECTOR_BACKEND_URL:?set SSS_CONNECTOR_BACKEND_URL to the backend address}
+      SSS_CONNECTOR_NAME: ${SSS_CONNECTOR_NAME:-Connector}
+
+      SSS_CONNECTOR_SECRET: ${SSS_CONNECTOR_SECRET:-}
+      SSS_CONNECTOR_ADVERTISE_ADDRESS: ${SSS_CONNECTOR_ADVERTISE_ADDRESS:-}
+
+      SSS_CONNECTOR_INTERFACES: ${SSS_CONNECTOR_INTERFACES:-}
+      SSS_CONNECTOR_SUBNETS: ${SSS_CONNECTOR_SUBNETS:-}
+      SSS_CONNECTOR_DISCOVERY_INTERVAL: ${SSS_CONNECTOR_DISCOVERY_INTERVAL:-0}
+    volumes:
+      - connector_data:/data
+
+volumes:
+  connector_data:
