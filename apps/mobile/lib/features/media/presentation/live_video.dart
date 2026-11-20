@@ -130,10 +130,8 @@ class _LiveVideoState extends ConsumerState<LiveVideo> {
       final view = RTCVideoRenderer();
       await view.initialize();
       renderer = view;
-      final pc = await createPeerConnection({
-        'sdpSemantics': 'unified-plan',
-        'iceServers': <Object>[],
-      });
+      final ice = await live.iceServers?.call() ?? const <Map<String, Object?>>[];
+      final pc = await createPeerConnection({'sdpSemantics': 'unified-plan', 'iceServers': ice});
       connection = pc;
       await pc.addTransceiver(
         kind: RTCRtpMediaType.RTCRtpMediaTypeVideo,

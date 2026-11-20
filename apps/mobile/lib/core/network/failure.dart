@@ -39,6 +39,9 @@ enum FailureKind {
   /// A code or link has expired.
   expired,
 
+  /// The server refused because too many attempts came too quickly.
+  tooMany,
+
   /// The server failed to handle the request.
   server,
 

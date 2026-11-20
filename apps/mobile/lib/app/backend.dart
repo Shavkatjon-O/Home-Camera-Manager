@@ -34,6 +34,7 @@ class Backend {
     this.mediaHeaders = _noHeaders,
     this.server,
     this.setServer,
+    this.expirations,
   });
 
   /// The repository for signing in, signing up and the session.
@@ -77,6 +78,9 @@ class Backend {
 
   /// Returns the HTTP headers that media requests need, such as authorization.
   final Map<String, String> Function() mediaHeaders;
+
+  /// Fires when the server ends the session and the user must sign in again.
+  final Stream<void>? expirations;
 
   /// Returns the address of the connected server, or null when none is set.
   final String? Function()? server;

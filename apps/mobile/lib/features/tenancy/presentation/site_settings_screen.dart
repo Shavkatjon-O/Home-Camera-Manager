@@ -89,21 +89,24 @@ class _SiteSettingsScreenState extends ConsumerState<SiteSettingsScreen> {
             value: site.timezone,
             onChanged: (zone) => setState(() => draft = site.copyWith(timezone: zone)),
           ),
-          const SizedBox(height: Gaps.lg),
-          Text(l10n.siteRetention, style: context.text.titleSmall?.copyWith(color: p.text2)),
-          const SizedBox(height: Gaps.sm),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final days in retention)
-                ChoiceChip(
-                  label: Text(l10n.siteRetentionDays(days)),
-                  selected: site.retentionDays == days,
-                  onSelected: (_) => setState(() => draft = site.copyWith(retentionDays: days)),
-                ),
-            ],
-          ),
+          // The server keeps events for a fixed time, so only the simulated site offers a choice.
+          if (ref.read(backendProvider).demo) ...[
+            const SizedBox(height: Gaps.lg),
+            Text(l10n.siteRetention, style: context.text.titleSmall?.copyWith(color: p.text2)),
+            const SizedBox(height: Gaps.sm),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final days in retention)
+                  ChoiceChip(
+                    label: Text(l10n.siteRetentionDays(days)),
+                    selected: site.retentionDays == days,
+                    onSelected: (_) => setState(() => draft = site.copyWith(retentionDays: days)),
+                  ),
+              ],
+            ),
+          ],
           const SizedBox(height: Gaps.xl),
           Panel(
             child: Row(

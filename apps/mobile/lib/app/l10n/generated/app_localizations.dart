@@ -433,7 +433,7 @@ abstract class AppLocalizations {
   /// No description provided for @validationCode.
   ///
   /// In en, this message translates to:
-  /// **'Enter the 6 digit code'**
+  /// **'Paste the link or the code from the email'**
   String get validationCode;
 
   /// No description provided for @welcomeTitle.
@@ -589,7 +589,7 @@ abstract class AppLocalizations {
   /// No description provided for @verifyBody.
   ///
   /// In en, this message translates to:
-  /// **'We sent a 6 digit code to {email}. Enter it here to confirm the address.'**
+  /// **'We sent a confirmation link to {email}. Open it on this phone, or paste the link or the code from the email here.'**
   String verifyBody(String email);
 
   /// No description provided for @verifyAction.
@@ -601,7 +601,7 @@ abstract class AppLocalizations {
   /// No description provided for @verifyResend.
   ///
   /// In en, this message translates to:
-  /// **'Send a new code'**
+  /// **'Send the email again'**
   String get verifyResend;
 
   /// No description provided for @verifyResent.
@@ -643,7 +643,7 @@ abstract class AppLocalizations {
   /// No description provided for @resetBody.
   ///
   /// In en, this message translates to:
-  /// **'Enter the code we sent to {email} and choose a new password.'**
+  /// **'Paste the link or the code we sent to {email} and choose a new password.'**
   String resetBody(String email);
 
   /// No description provided for @resetAction.
@@ -4893,6 +4893,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Import'**
   String get discoveredImport;
+
+  /// No description provided for @errorTooMany.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many attempts. Wait a minute and try again.'**
+  String get errorTooMany;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

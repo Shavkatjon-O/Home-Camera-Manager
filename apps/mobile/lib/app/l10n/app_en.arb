@@ -101,7 +101,7 @@
   "validationEmail": "Enter a valid email address",
   "validationPassword": "Use at least 8 characters",
   "validationRequired": "Required",
-  "validationCode": "Enter the 6 digit code",
+  "validationCode": "Paste the link or the code from the email",
   "welcomeTitle": "Every camera on your site, in your pocket",
   "welcomeBody": "Watch live video, get alerts that matter, and count who comes and goes at home, in a store, an office or a warehouse.",
   "welcomeCreate": "Create account",
@@ -127,7 +127,7 @@
   "passwordFair": "Fair",
   "passwordStrong": "Strong",
   "verifyTitle": "Check your email",
-  "verifyBody": "We sent a 6 digit code to {email}. Enter it here to confirm the address.",
+  "verifyBody": "We sent a confirmation link to {email}. Open it on this phone, or paste the link or the code from the email here.",
   "@verifyBody": {
     "placeholders": {
       "email": {
@@ -136,14 +136,14 @@
     }
   },
   "verifyAction": "Confirm email",
-  "verifyResend": "Send a new code",
+  "verifyResend": "Send the email again",
   "verifyResent": "A new code is on its way.",
   "verifyWrongEmail": "Use another email",
   "forgotTitle": "Reset password",
   "forgotBody": "Enter your email and we will send a code to set a new password.",
   "forgotAction": "Send code",
   "resetTitle": "Set a new password",
-  "resetBody": "Enter the code we sent to {email} and choose a new password.",
+  "resetBody": "Paste the link or the code we sent to {email} and choose a new password.",
   "@resetBody": {
     "placeholders": {
       "email": {
@@ -1563,5 +1563,6 @@
   "discoveredImport": "Import",
   "@discoveredImport": {
     "description": "Action on a discovered recorder that opens its channel import."
-  }
+  },
+  "errorTooMany": "Too many attempts. Wait a minute and try again."
 }

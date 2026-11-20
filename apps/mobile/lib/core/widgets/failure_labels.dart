@@ -15,6 +15,7 @@ extension FailureLabels on AppLocalizations {
       FailureKind.invalid => errorInvalid,
       FailureKind.unverified => errorUnauthorised,
       FailureKind.expired => errorExpired,
+      FailureKind.tooMany => errorTooMany,
       FailureKind.server => errorServer,
       FailureKind.unknown => errorUnknown,
     };

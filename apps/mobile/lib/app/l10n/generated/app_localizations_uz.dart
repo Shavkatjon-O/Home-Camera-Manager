@@ -190,7 +190,7 @@ class AppLocalizationsUz extends AppLocalizations {
   String get validationRequired => 'Majburiy';
 
   @override
-  String get validationCode => '6 xonali kodni kiriting';
+  String get validationCode => 'Xatdagi havola yoki kodni qoʻying';
 
   @override
   String get welcomeTitle => 'Obyektingizdagi barcha kameralar choʻntagingizda';
@@ -272,14 +272,14 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String verifyBody(String email) {
-    return '$email manziliga 6 xonali kod yubordik. Manzilni tasdiqlash uchun uni shu yerga kiriting.';
+    return '$email manziliga tasdiqlash havolasini yubordik. Uni shu telefonda oching yoki xatdagi havola yoki kodni shu yerga qoʻying.';
   }
 
   @override
   String get verifyAction => 'Emailni tasdiqlash';
 
   @override
-  String get verifyResend => 'Yangi kod yuborish';
+  String get verifyResend => 'Xatni qayta yuborish';
 
   @override
   String get verifyResent => 'Yangi kod yoʻlda.';
@@ -301,7 +301,7 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String resetBody(String email) {
-    return '$email manziliga yuborilgan kodni kiriting va yangi parol tanlang.';
+    return '$email manziliga yuborilgan havola yoki kodni qoʻying va yangi parol tanlang.';
   }
 
   @override
@@ -2744,4 +2744,7 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get discoveredImport => 'Import';
+
+  @override
+  String get errorTooMany => 'Urinishlar juda koʻp. Bir daqiqa kuting va qayta urinib koʻring.';
 }

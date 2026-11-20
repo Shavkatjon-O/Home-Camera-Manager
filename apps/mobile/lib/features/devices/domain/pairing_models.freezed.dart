@@ -291,7 +291,7 @@ as String?,
 /// @nodoc
 mixin _$LabelIdentity {
 
- String get method; CameraBrand? get brand; String? get manufacturer; String? get model; String? get serial; String? get discoveredId; String? get host; int? get port;
+ String get method; CameraBrand? get brand; String? get manufacturer; String? get model; String? get serial; String? get discoveredId; String? get host; int? get port; String? get url; String? get adapter;
 /// Create a copy of LabelIdentity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -303,20 +303,20 @@ $LabelIdentityCopyWith<LabelIdentity> get copyWith => _$LabelIdentityCopyWithImp
 @override
 bool operator ==(Object other) {
   final _this = this as LabelIdentity;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is LabelIdentity&&(identical(other.method, _this.method) || other.method == _this.method)&&(identical(other.brand, _this.brand) || other.brand == _this.brand)&&(identical(other.manufacturer, _this.manufacturer) || other.manufacturer == _this.manufacturer)&&(identical(other.model, _this.model) || other.model == _this.model)&&(identical(other.serial, _this.serial) || other.serial == _this.serial)&&(identical(other.discoveredId, _this.discoveredId) || other.discoveredId == _this.discoveredId)&&(identical(other.host, _this.host) || other.host == _this.host)&&(identical(other.port, _this.port) || other.port == _this.port));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LabelIdentity&&(identical(other.method, _this.method) || other.method == _this.method)&&(identical(other.brand, _this.brand) || other.brand == _this.brand)&&(identical(other.manufacturer, _this.manufacturer) || other.manufacturer == _this.manufacturer)&&(identical(other.model, _this.model) || other.model == _this.model)&&(identical(other.serial, _this.serial) || other.serial == _this.serial)&&(identical(other.discoveredId, _this.discoveredId) || other.discoveredId == _this.discoveredId)&&(identical(other.host, _this.host) || other.host == _this.host)&&(identical(other.port, _this.port) || other.port == _this.port)&&(identical(other.url, _this.url) || other.url == _this.url)&&(identical(other.adapter, _this.adapter) || other.adapter == _this.adapter));
 }
 
 
 @override
 int get hashCode {
   final _this = this as LabelIdentity;
-  return Object.hash(runtimeType,_this.method,_this.brand,_this.manufacturer,_this.model,_this.serial,_this.discoveredId,_this.host,_this.port);
+  return Object.hash(runtimeType,_this.method,_this.brand,_this.manufacturer,_this.model,_this.serial,_this.discoveredId,_this.host,_this.port,_this.url,_this.adapter);
 }
 
 @override
 String toString() {
   final _this = this as LabelIdentity;
-  return 'LabelIdentity(method: ${_this.method}, brand: ${_this.brand}, manufacturer: ${_this.manufacturer}, model: ${_this.model}, serial: ${_this.serial}, discoveredId: ${_this.discoveredId}, host: ${_this.host}, port: ${_this.port})';
+  return 'LabelIdentity(method: ${_this.method}, brand: ${_this.brand}, manufacturer: ${_this.manufacturer}, model: ${_this.model}, serial: ${_this.serial}, discoveredId: ${_this.discoveredId}, host: ${_this.host}, port: ${_this.port}, url: ${_this.url}, adapter: ${_this.adapter})';
 }
 
 
@@ -327,7 +327,7 @@ abstract mixin class $LabelIdentityCopyWith<$Res>  {
   factory $LabelIdentityCopyWith(LabelIdentity value, $Res Function(LabelIdentity) _then) = _$LabelIdentityCopyWithImpl;
 @useResult
 $Res call({
- String method, CameraBrand? brand, String? manufacturer, String? model, String? serial, String? discoveredId, String? host, int? port
+ String method, CameraBrand? brand, String? manufacturer, String? model, String? serial, String? discoveredId, String? host, int? port, String? url, String? adapter
 });
 
 
@@ -344,7 +344,7 @@ class _$LabelIdentityCopyWithImpl<$Res>
 
 /// Create a copy of LabelIdentity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? method = null,Object? brand = freezed,Object? manufacturer = freezed,Object? model = freezed,Object? serial = freezed,Object? discoveredId = freezed,Object? host = freezed,Object? port = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? method = null,Object? brand = freezed,Object? manufacturer = freezed,Object? model = freezed,Object? serial = freezed,Object? discoveredId = freezed,Object? host = freezed,Object? port = freezed,Object? url = freezed,Object? adapter = freezed,}) {
   return _then(LabelIdentity(
 method: null == method ? _self.method : method // ignore: cast_nullable_to_non_nullable
 as String,brand: freezed == brand ? _self.brand : brand // ignore: cast_nullable_to_non_nullable
@@ -354,7 +354,9 @@ as String?,serial: freezed == serial ? _self.serial : serial // ignore: cast_nul
 as String?,discoveredId: freezed == discoveredId ? _self.discoveredId : discoveredId // ignore: cast_nullable_to_non_nullable
 as String?,host: freezed == host ? _self.host : host // ignore: cast_nullable_to_non_nullable
 as String?,port: freezed == port ? _self.port : port // ignore: cast_nullable_to_non_nullable
-as int?,
+as int?,url: freezed == url ? _self.url : url // ignore: cast_nullable_to_non_nullable
+as String?,adapter: freezed == adapter ? _self.adapter : adapter // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -439,10 +441,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String method,  CameraBrand? brand,  String? manufacturer,  String? model,  String? serial,  String? discoveredId,  String? host,  int? port)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String method,  CameraBrand? brand,  String? manufacturer,  String? model,  String? serial,  String? discoveredId,  String? host,  int? port,  String? url,  String? adapter)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _LabelIdentity() when $default != null:
-return $default(_that.method,_that.brand,_that.manufacturer,_that.model,_that.serial,_that.discoveredId,_that.host,_that.port);case _:
+return $default(_that.method,_that.brand,_that.manufacturer,_that.model,_that.serial,_that.discoveredId,_that.host,_that.port,_that.url,_that.adapter);case _:
   return orElse();
 
 }
@@ -460,10 +462,10 @@ return $default(_that.method,_that.brand,_that.manufacturer,_that.model,_that.se
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String method,  CameraBrand? brand,  String? manufacturer,  String? model,  String? serial,  String? discoveredId,  String? host,  int? port)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String method,  CameraBrand? brand,  String? manufacturer,  String? model,  String? serial,  String? discoveredId,  String? host,  int? port,  String? url,  String? adapter)  $default,) {final _that = this;
 switch (_that) {
 case _LabelIdentity():
-return $default(_that.method,_that.brand,_that.manufacturer,_that.model,_that.serial,_that.discoveredId,_that.host,_that.port);case _:
+return $default(_that.method,_that.brand,_that.manufacturer,_that.model,_that.serial,_that.discoveredId,_that.host,_that.port,_that.url,_that.adapter);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -480,10 +482,10 @@ return $default(_that.method,_that.brand,_that.manufacturer,_that.model,_that.se
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String method,  CameraBrand? brand,  String? manufacturer,  String? model,  String? serial,  String? discoveredId,  String? host,  int? port)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String method,  CameraBrand? brand,  String? manufacturer,  String? model,  String? serial,  String? discoveredId,  String? host,  int? port,  String? url,  String? adapter)?  $default,) {final _that = this;
 switch (_that) {
 case _LabelIdentity() when $default != null:
-return $default(_that.method,_that.brand,_that.manufacturer,_that.model,_that.serial,_that.discoveredId,_that.host,_that.port);case _:
+return $default(_that.method,_that.brand,_that.manufacturer,_that.model,_that.serial,_that.discoveredId,_that.host,_that.port,_that.url,_that.adapter);case _:
   return null;
 
 }
@@ -495,7 +497,7 @@ return $default(_that.method,_that.brand,_that.manufacturer,_that.model,_that.se
 
 
 class _LabelIdentity implements LabelIdentity {
-  const _LabelIdentity({required this.method, this.brand, this.manufacturer, this.model, this.serial, this.discoveredId, this.host, this.port});
+  const _LabelIdentity({required this.method, this.brand, this.manufacturer, this.model, this.serial, this.discoveredId, this.host, this.port, this.url, this.adapter});
   
 
 @override final  String method;
@@ -506,6 +508,8 @@ class _LabelIdentity implements LabelIdentity {
 @override final  String? discoveredId;
 @override final  String? host;
 @override final  int? port;
+@override final  String? url;
+@override final  String? adapter;
 
 /// Create a copy of LabelIdentity
 /// with the given fields replaced by the non-null parameter values.
@@ -517,18 +521,18 @@ _$LabelIdentityCopyWith<_LabelIdentity> get copyWith => __$LabelIdentityCopyWith
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _LabelIdentity&&(identical(other.method, method) || other.method == method)&&(identical(other.brand, brand) || other.brand == brand)&&(identical(other.manufacturer, manufacturer) || other.manufacturer == manufacturer)&&(identical(other.model, model) || other.model == model)&&(identical(other.serial, serial) || other.serial == serial)&&(identical(other.discoveredId, discoveredId) || other.discoveredId == discoveredId)&&(identical(other.host, host) || other.host == host)&&(identical(other.port, port) || other.port == port));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _LabelIdentity&&(identical(other.method, method) || other.method == method)&&(identical(other.brand, brand) || other.brand == brand)&&(identical(other.manufacturer, manufacturer) || other.manufacturer == manufacturer)&&(identical(other.model, model) || other.model == model)&&(identical(other.serial, serial) || other.serial == serial)&&(identical(other.discoveredId, discoveredId) || other.discoveredId == discoveredId)&&(identical(other.host, host) || other.host == host)&&(identical(other.port, port) || other.port == port)&&(identical(other.url, url) || other.url == url)&&(identical(other.adapter, adapter) || other.adapter == adapter));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,method,brand,manufacturer,model,serial,discoveredId,host,port);
+    return Object.hash(runtimeType,method,brand,manufacturer,model,serial,discoveredId,host,port,url,adapter);
 }
 
 @override
 String toString() {
-    return 'LabelIdentity(method: $method, brand: $brand, manufacturer: $manufacturer, model: $model, serial: $serial, discoveredId: $discoveredId, host: $host, port: $port)';
+    return 'LabelIdentity(method: $method, brand: $brand, manufacturer: $manufacturer, model: $model, serial: $serial, discoveredId: $discoveredId, host: $host, port: $port, url: $url, adapter: $adapter)';
 }
 
 
@@ -539,7 +543,7 @@ abstract mixin class _$LabelIdentityCopyWith<$Res> implements $LabelIdentityCopy
   factory _$LabelIdentityCopyWith(_LabelIdentity value, $Res Function(_LabelIdentity) _then) = __$LabelIdentityCopyWithImpl;
 @override @useResult
 $Res call({
- String method, CameraBrand? brand, String? manufacturer, String? model, String? serial, String? discoveredId, String? host, int? port
+ String method, CameraBrand? brand, String? manufacturer, String? model, String? serial, String? discoveredId, String? host, int? port, String? url, String? adapter
 });
 
 
@@ -556,7 +560,7 @@ class __$LabelIdentityCopyWithImpl<$Res>
 
 /// Create a copy of LabelIdentity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? method = null,Object? brand = freezed,Object? manufacturer = freezed,Object? model = freezed,Object? serial = freezed,Object? discoveredId = freezed,Object? host = freezed,Object? port = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? method = null,Object? brand = freezed,Object? manufacturer = freezed,Object? model = freezed,Object? serial = freezed,Object? discoveredId = freezed,Object? host = freezed,Object? port = freezed,Object? url = freezed,Object? adapter = freezed,}) {
   return _then(_LabelIdentity(
 method: null == method ? _self.method : method // ignore: cast_nullable_to_non_nullable
 as String,brand: freezed == brand ? _self.brand : brand // ignore: cast_nullable_to_non_nullable
@@ -566,7 +570,9 @@ as String?,serial: freezed == serial ? _self.serial : serial // ignore: cast_nul
 as String?,discoveredId: freezed == discoveredId ? _self.discoveredId : discoveredId // ignore: cast_nullable_to_non_nullable
 as String?,host: freezed == host ? _self.host : host // ignore: cast_nullable_to_non_nullable
 as String?,port: freezed == port ? _self.port : port // ignore: cast_nullable_to_non_nullable
-as int?,
+as int?,url: freezed == url ? _self.url : url // ignore: cast_nullable_to_non_nullable
+as String?,adapter: freezed == adapter ? _self.adapter : adapter // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

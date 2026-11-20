@@ -46,6 +46,11 @@ class Session extends _$Session {
 
   @override
   Future<SessionState> build() async {
+    final expired = ref.read(backendProvider).expirations?.listen((_) {
+      pending = null;
+      state = const AsyncData(SignedOut());
+    });
+    ref.onDispose(() => expired?.cancel());
     final user = await ref.read(backendProvider).auth.restore();
     return user == null ? const SignedOut() : SignedIn(user);
   }

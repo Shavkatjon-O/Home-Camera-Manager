@@ -68,7 +68,7 @@ class RtspUrlScreen extends ConsumerStatefulWidget {
 
 class _RtspUrlScreenState extends ConsumerState<RtspUrlScreen> {
   final form = GlobalKey<FormState>();
-  final url = TextEditingController();
+  late final url = TextEditingController(text: widget.pairing.label?.url ?? '');
 
   @override
   void dispose() {

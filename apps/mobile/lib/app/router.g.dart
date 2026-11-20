@@ -8,12 +8,14 @@ part of 'router.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// The deep link saved while signed out, so it can be opened after signing in.
 
 @ProviderFor(PendingLink)
 final pendingLinkProvider = PendingLinkProvider._();
 
-final class PendingLinkProvider
-    extends $NotifierProvider<PendingLink, String?> {
+/// The deep link saved while signed out, so it can be opened after signing in.
+final class PendingLinkProvider extends $NotifierProvider<PendingLink, String?> {
+  /// The deep link saved while signed out, so it can be opened after signing in.
   PendingLinkProvider._()
     : super(
         from: null,
@@ -34,14 +36,13 @@ final class PendingLinkProvider
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(String? value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<String?>(value),
-    );
+    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<String?>(value));
   }
 }
 
 String _$pendingLinkHash() => r'656db4047a66ec52c3524b3fa743dbf98a91e7c8';
+
+/// The deep link saved while signed out, so it can be opened after signing in.
 
 abstract class _$PendingLink extends $Notifier<String?> {
   String? build();
@@ -51,22 +52,21 @@ abstract class _$PendingLink extends $Notifier<String?> {
     final ref = this.ref as $Ref<String?, String?>;
     final element =
         ref.element
-            as $ClassProviderElement<
-              AnyNotifier<String?, String?>,
-              String?,
-              Object?,
-              Object?
-            >;
+            as $ClassProviderElement<AnyNotifier<String?, String?>, String?, Object?, Object?>;
     return element.handleCreate(ref, build);
   }
 }
 
+/// The provider of the app's router.
+
 @ProviderFor(router)
 final routerProvider = RouterProvider._();
 
-final class RouterProvider
-    extends $FunctionalProvider<GoRouter, GoRouter, GoRouter>
+/// The provider of the app's router.
+
+final class RouterProvider extends $FunctionalProvider<GoRouter, GoRouter, GoRouter>
     with $Provider<GoRouter> {
+  /// The provider of the app's router.
   RouterProvider._()
     : super(
         from: null,
@@ -83,8 +83,7 @@ final class RouterProvider
 
   @$internal
   @override
-  $ProviderElement<GoRouter> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
+  $ProviderElement<GoRouter> $createElement($ProviderPointer pointer) => $ProviderElement(pointer);
 
   @override
   GoRouter create(Ref ref) {
@@ -93,10 +92,7 @@ final class RouterProvider
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(GoRouter value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<GoRouter>(value),
-    );
+    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<GoRouter>(value));
   }
 }
 

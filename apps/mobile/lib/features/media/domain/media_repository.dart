@@ -10,10 +10,13 @@ sealed class LiveSource {
 /// A live picture received over WebRTC.
 class WebRtcLive extends LiveSource {
   /// Creates a source that exchanges an offer through [negotiate].
-  const WebRtcLive(this.negotiate);
+  const WebRtcLive(this.negotiate, {this.iceServers});
 
   /// Sends the local session description [offerSdp] and returns the answer.
   final Future<String> Function(String offerSdp) negotiate;
+
+  /// Loads the ICE servers for the peer connection, in the WebRTC configuration format.
+  final Future<List<Map<String, Object?>>> Function()? iceServers;
 }
 
 /// A live picture generated on the device for demos.

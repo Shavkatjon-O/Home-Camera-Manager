@@ -50,6 +50,8 @@ abstract class LabelIdentity with _$LabelIdentity {
     String? discoveredId,
     String? host,
     int? port,
+    String? url,
+    String? adapter,
   }) = _LabelIdentity;
 }
 

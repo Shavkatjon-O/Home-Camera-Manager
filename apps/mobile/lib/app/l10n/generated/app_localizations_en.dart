@@ -191,7 +191,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get validationRequired => 'Required';
 
   @override
-  String get validationCode => 'Enter the 6 digit code';
+  String get validationCode => 'Paste the link or the code from the email';
 
   @override
   String get welcomeTitle => 'Every camera on your site, in your pocket';
@@ -272,14 +272,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String verifyBody(String email) {
-    return 'We sent a 6 digit code to $email. Enter it here to confirm the address.';
+    return 'We sent a confirmation link to $email. Open it on this phone, or paste the link or the code from the email here.';
   }
 
   @override
   String get verifyAction => 'Confirm email';
 
   @override
-  String get verifyResend => 'Send a new code';
+  String get verifyResend => 'Send the email again';
 
   @override
   String get verifyResent => 'A new code is on its way.';
@@ -301,7 +301,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String resetBody(String email) {
-    return 'Enter the code we sent to $email and choose a new password.';
+    return 'Paste the link or the code we sent to $email and choose a new password.';
   }
 
   @override
@@ -2768,4 +2768,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get discoveredImport => 'Import';
+
+  @override
+  String get errorTooMany => 'Too many attempts. Wait a minute and try again.';
 }

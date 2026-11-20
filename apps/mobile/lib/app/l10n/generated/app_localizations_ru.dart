@@ -198,7 +198,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get validationRequired => 'Обязательное поле';
 
   @override
-  String get validationCode => 'Введите 6-значный код';
+  String get validationCode => 'Вставьте ссылку или код из письма';
 
   @override
   String get welcomeTitle => 'Все камеры вашего объекта в кармане';
@@ -279,14 +279,14 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String verifyBody(String email) {
-    return 'Мы отправили 6-значный код на $email. Введите его здесь, чтобы подтвердить адрес.';
+    return 'Мы отправили ссылку для подтверждения на $email. Откройте её на этом телефоне или вставьте сюда ссылку или код из письма.';
   }
 
   @override
   String get verifyAction => 'Подтвердить почту';
 
   @override
-  String get verifyResend => 'Отправить новый код';
+  String get verifyResend => 'Отправить письмо снова';
 
   @override
   String get verifyResent => 'Новый код уже в пути.';
@@ -308,7 +308,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String resetBody(String email) {
-    return 'Введите код, отправленный на $email, и выберите новый пароль.';
+    return 'Вставьте ссылку или код из письма, отправленного на $email, и выберите новый пароль.';
   }
 
   @override
@@ -2821,4 +2821,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get discoveredImport => 'Импорт';
+
+  @override
+  String get errorTooMany => 'Слишком много попыток. Подождите минуту и попробуйте снова.';
 }

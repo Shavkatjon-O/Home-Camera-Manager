@@ -8,12 +8,14 @@ part of 'session.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Holds the authentication state and the actions that change it.
 
 @ProviderFor(Session)
 final sessionProvider = SessionProvider._();
 
-final class SessionProvider
-    extends $AsyncNotifierProvider<Session, SessionState> {
+/// Holds the authentication state and the actions that change it.
+final class SessionProvider extends $AsyncNotifierProvider<Session, SessionState> {
+  /// Holds the authentication state and the actions that change it.
   SessionProvider._()
     : super(
         from: null,
@@ -33,7 +35,9 @@ final class SessionProvider
   Session create() => Session();
 }
 
-String _$sessionHash() => r'44b159c90b1c62e11d6c2ee41706e840352e51a3';
+String _$sessionHash() => r'e323d20d8c8283831106b56f88654388458dd071';
+
+/// Holds the authentication state and the actions that change it.
 
 abstract class _$Session extends $AsyncNotifier<SessionState> {
   FutureOr<SessionState> build();
