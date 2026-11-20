@@ -10,8 +10,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import StrEnum
 
-from app.rules.kinds import ExtraKind
-
 ANIMALS = frozenset({"dog", "cat", "bird"})
 
 
@@ -33,19 +31,6 @@ def is_animal(label: str) -> bool:
         True for dog, cat and bird.
     """
     return label in ANIMALS
-
-
-def event_kind(label: str, default_kind: StrEnum) -> StrEnum:
-    """Return the event kind an object of a label produces.
-
-    Args:
-        label: Canonical label of the object.
-        default_kind: Kind for objects that are not animals, such as intrusion.
-
-    Returns:
-        The animal kind for animals, otherwise the default kind.
-    """
-    return ExtraKind.ANIMAL if is_animal(label) else default_kind
 
 
 @dataclass(frozen=True)

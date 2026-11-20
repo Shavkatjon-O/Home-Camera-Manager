@@ -20,8 +20,7 @@ import numpy as np
 from app.objects.zones import ObjectZone, object_zones
 from app.rules.engine import Event, Update
 from app.rules.geometry import iou, point_in_polygon
-from app.rules.kinds import ExtraKind
-from app.rules.model import ArmMode, Box
+from app.rules.model import ArmMode, Box, EventKind
 
 LABEL = "object"
 
@@ -279,7 +278,7 @@ class BackgroundWatch:
                 self.next_id += 1
                 self.blobs.append(blob)
                 frozen[pixels[:, 0], pixels[:, 1]] = True
-                updates.append(self.event(ExtraKind.OBJECT_LEFT, blob, rule, at, moment, arm))
+                updates.append(self.event(EventKind.OBJECT_LEFT, blob, rule, at, moment, arm))
         return updates
 
     def taken(self, rules: list[ObjectZone], at: float, moment: datetime, arm: ArmMode) -> list[Update]:
@@ -308,7 +307,7 @@ class BackgroundWatch:
             if rule is None or not rule.taken_seconds or at - blob.since < rule.taken_seconds:
                 continue
             if rule.zone.schedule.active(moment):
-                updates.append(self.event(ExtraKind.OBJECT_TAKEN, blob, rule, at, moment, arm))
+                updates.append(self.event(EventKind.OBJECT_TAKEN, blob, rule, at, moment, arm))
         return updates
 
     def absorb(self, at: float) -> None:
@@ -323,7 +322,7 @@ class BackgroundWatch:
                 self.ages[blob.pixels[:, 0], blob.pixels[:, 1]] = 0.0
                 self.blobs.remove(blob)
 
-    def event(self, kind: ExtraKind, blob: Blob, rule: ObjectZone, at: float, moment: datetime, arm: ArmMode) -> Update:
+    def event(self, kind: EventKind, blob: Blob, rule: ObjectZone, at: float, moment: datetime, arm: ArmMode) -> Update:
         """Build the instant event of a blob.
 
         Args:

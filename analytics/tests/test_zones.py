@@ -70,7 +70,10 @@ def test_one_episode_per_label_and_a_crowd_needs_its_count():
             )
         )
     updates = run(rules, frames)
-    assert sorted(set(actions(updates))) == [("open", "intrusion"), ("update", "intrusion")]
+    assert sorted(set(actions(updates))) == [("open", "animal"), ("open", "intrusion"), ("update", "intrusion")]
+    dog = next(update.event for update in updates if update.event.label == "dog")
+    assert dog.kind == "animal"
+    assert not dog.alert
     labels = sorted(update.event.label for update in updates if update.action == "open")
     assert labels == ["dog", "person"]
     person = next(update.event for update in updates if update.event.label == "person")

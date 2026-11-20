@@ -1,7 +1,7 @@
 import pytest
 
-from app.rules.animals import ANIMALS, AnimalMode, AnimalPolicy, event_kind, is_animal
-from app.rules.kinds import ExtraKind
+from app.rules.animals import ANIMALS, AnimalMode, AnimalPolicy, is_animal
+from app.rules.engine import kind_of
 from app.rules.model import EventKind
 
 
@@ -12,9 +12,10 @@ def test_animal_labels_include_birds():
 
 
 def test_animals_get_their_own_event_kind():
-    assert event_kind("cat", EventKind.INTRUSION) == ExtraKind.ANIMAL
-    assert event_kind("person", EventKind.INTRUSION) == EventKind.INTRUSION
-    assert event_kind("car", EventKind.VEHICLE) == EventKind.VEHICLE
+    assert kind_of("cat") == EventKind.ANIMAL
+    assert kind_of("bird") == EventKind.ANIMAL
+    assert kind_of("person") == EventKind.INTRUSION
+    assert kind_of("car") == EventKind.VEHICLE
 
 
 def test_animals_are_recorded_without_alerts_by_default():
@@ -37,3 +38,32 @@ def test_included_animals_may_alert_and_excluded_ones_produce_nothing():
 def test_unknown_animal_mode_is_rejected():
     with pytest.raises(ValueError):
         AnimalPolicy.from_dict({"animals": "sometimes"})
+
+
+def test_animal_events_alert_only_when_the_zone_includes_them():
+    from tests.helpers import engine, run, walk
+
+    square = [[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]]
+    alert = {"mode": "always"}
+    for animals, expected in (("record", False), ("include", True)):
+        rules = engine({"zones": [{"id": "yard", "polygon": square, "alert": alert, "animals": animals}]})
+        updates = run(rules, walk(9, "cat", (0.2, 0.5), (0.6, 0.5), 3))
+        opened = [update.event for update in updates if update.action == "open"]
+        assert [event.kind for event in opened] == ["animal"]
+        assert opened[0].alert is expected
+    rules = engine({"zones": [{"id": "yard", "polygon": square, "alert": alert, "animals": "exclude"}]})
+    assert run(rules, walk(9, "cat", (0.2, 0.5), (0.6, 0.5), 3)) == []
+    rules = engine({"zones": [{"id": "yard", "polygon": square, "alert": alert}]})
+    person = run(rules, walk(4, "person", (0.2, 0.5), (0.6, 0.5), 3))
+    assert [update.event.alert for update in person if update.action == "open"] == [True]
+
+
+def test_line_crossings_are_counted_through_the_hook():
+    from tests.helpers import engine, run, walk
+
+    crossings = []
+    rules = engine({"lines": [{"id": "gate", "points": [[0.0, 0.5], [1.0, 0.5]], "animals": "exclude"}]})
+    rules.on_crossing = lambda line, direction, label, at: crossings.append((line, direction, label))
+    updates = run(rules, walk(5, "dog", (0.5, 0.2), (0.5, 0.8), 3))
+    assert crossings == [("gate", "in", "dog")]
+    assert updates == []

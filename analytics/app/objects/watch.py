@@ -23,8 +23,7 @@ from datetime import datetime, tzinfo
 from app.objects.zones import ObjectZone, object_zones
 from app.rules.engine import Event, Update
 from app.rules.geometry import iou, point_in_polygon
-from app.rules.kinds import ExtraKind
-from app.rules.model import ArmMode, Box, Detection, Frame
+from app.rules.model import ArmMode, Box, Detection, EventKind, Frame
 
 GROUPS = {"backpack": "bag", "handbag": "bag", "suitcase": "bag", "truck": "vehicle", "car": "vehicle"}
 PERSON = "person"
@@ -370,7 +369,7 @@ class ObjectWatch:
                 if not self.inside(place, place.anchor, rule) or not rule.zone.schedule.active(moment):
                     continue
                 place.left_fired = True
-                updates.append(self.event(ExtraKind.OBJECT_LEFT, place, rule, now, moment, arm))
+                updates.append(self.event(EventKind.OBJECT_LEFT, place, rule, now, moment, arm))
                 break
         return updates
 
@@ -399,7 +398,7 @@ class ObjectWatch:
                 touched = place.last_seen - place.near_at <= NEAR_SECONDS or place.moved_away
                 if not touched or not self.inside(place, home, rule) or not rule.zone.schedule.active(moment):
                     continue
-                updates.append(self.event(ExtraKind.OBJECT_TAKEN, place, rule, now, moment, arm, home))
+                updates.append(self.event(EventKind.OBJECT_TAKEN, place, rule, now, moment, arm, home))
                 del self.places[place.id]
                 self.memories.append(Memory(place.group, home, now + MEMORY_SECONDS))
                 break
@@ -422,7 +421,7 @@ class ObjectWatch:
 
     def event(
         self,
-        kind: ExtraKind,
+        kind: EventKind,
         place: Place,
         rule: ObjectZone,
         now: float,

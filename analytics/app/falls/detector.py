@@ -19,8 +19,7 @@ from datetime import datetime, tzinfo
 
 from app.falls.posture import PoseSample, Posture, motion, posture
 from app.rules.engine import Event, Update
-from app.rules.kinds import ExtraKind
-from app.rules.model import AlertMode, AlertPolicy, ArmMode, Box
+from app.rules.model import AlertMode, AlertPolicy, ArmMode, Box, EventKind
 
 HISTORY = 64
 STANDING_SAMPLES = 40
@@ -323,7 +322,7 @@ class FallDetector:
         event = Event(
             id=str(uuid.uuid4()),
             view=self.view,
-            kind=ExtraKind.FALL,
+            kind=EventKind.FALL,
             label="person",
             started_at=started,
             ended_at=now,
