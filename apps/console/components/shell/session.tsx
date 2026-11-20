@@ -6,7 +6,7 @@ import { CircleAlertIcon } from "lucide-react"
 import { hasRole } from "@/components/shell/navigation"
 import { EmptyState } from "@/components/shell/primitives"
 import { Button } from "@/components/ui/button"
-import { ApiError, api, errorMessage, isAbort, request } from "@/lib/api"
+import { ApiError, api, errorMessage, isAbort } from "@/lib/api"
 import type { Camera, Site, SiteRole, User } from "@/lib/types"
 
 const POLL_MS = 10000
@@ -28,16 +28,6 @@ export interface SessionValue {
 }
 
 const SessionContext = React.createContext<SessionValue | null>(null)
-
-function probePlatformAdmin(signal: AbortSignal): Promise<boolean> {
-  return request<unknown>("/admin/organisations?page_size=1", { signal, redirectOn401: false }).then(
-    () => true,
-    (err: unknown) => {
-      if (isAbort(err)) throw err
-      return false
-    },
-  )
-}
 
 function readSiteCookie(): string | null {
   const prefix = `${SITE_COOKIE}=`
@@ -63,8 +53,7 @@ export function useCan(minRole: SiteRole): boolean {
 
 /**
  * Loads the signed-in member, the sites they may reach and the current site's cameras, and polls the cameras.
- * Whether the member administers the platform comes from the account when the API reports it, and otherwise from
- * whether the admin API answers. Renders nothing until the member is known, and a retry screen when the server
+ * Whether the member administers the platform comes from the account. Renders nothing until the member is known, and a retry screen when the server
  * cannot be reached.
  */
 export function SessionProvider({ children }: { children: React.ReactNode }) {
@@ -75,7 +64,6 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = React.useState<string | null>(null)
   const [sites, setSites] = React.useState<Site[]>([])
   const [siteUuid, setSiteUuid] = React.useState<string | null>(null)
-  const [probedAdmin, setProbedAdmin] = React.useState(false)
 
   const refresh = React.useCallback(async () => {
     try {
@@ -119,15 +107,6 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   }, [user])
 
   React.useEffect(() => {
-    if (!user || typeof user.is_platform_admin === "boolean") return
-    const controller = new AbortController()
-    probePlatformAdmin(controller.signal)
-      .then(setProbedAdmin)
-      .catch(() => undefined)
-    return () => controller.abort()
-  }, [user])
-
-  React.useEffect(() => {
     if (!user) return
     const run = () => {
       void refresh()
@@ -157,9 +136,9 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const value = React.useMemo<SessionValue | null>(() => {
     if (!user) return null
     const site = sites.find((item) => item.uuid === siteUuid) ?? null
-    const platformAdmin = user.is_platform_admin ?? probedAdmin
+    const platformAdmin = user.is_platform_admin === true
     return { user, cameras, loaded, error, refresh, sites, site, role: site?.role ?? null, platformAdmin, switchSite }
-  }, [user, cameras, loaded, error, refresh, sites, siteUuid, probedAdmin, switchSite])
+  }, [user, cameras, loaded, error, refresh, sites, siteUuid, switchSite])
 
   if (authError) {
     return (

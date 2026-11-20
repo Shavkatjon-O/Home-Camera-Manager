@@ -2,6 +2,7 @@ import type { Face } from "@/lib/people"
 
 export type CameraBrand = "ezviz" | "v380" | "onvif" | "rtsp"
 
+/** The signed-in account, as the API returns it. */
 export interface User {
   uuid: string
   username: string
