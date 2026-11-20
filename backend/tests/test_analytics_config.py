@@ -62,12 +62,13 @@ def test_fixed_views_drop_references_and_keep_the_profile_tamper_default():
     assert "tamper" not in data
 
 
-def test_moving_views_keep_references_except_whole_view_and_turn_tamper_off():
+def test_moving_views_keep_references_except_whole_view_and_send_moving():
     data = view_config(view(moving=True), [zone(), zone(whole=True)], [line()])
     assert data["zones"][0]["reference"] == "analytics/references/x/1.jpg"
     assert data["zones"][1]["reference"] is None
     assert data["lines"][0]["reference"] == "analytics/references/x/1.jpg"
-    assert data["tamper"] is False
+    assert "tamper" not in data
+    assert data["moving"] is True
     assert view_config(view(moving=True, tamper=True), [], [])["tamper"] is True
 
 

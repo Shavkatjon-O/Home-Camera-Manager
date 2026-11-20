@@ -23,6 +23,7 @@ class AnalyticsLine(BaseModel):
         alert: Alert policy with mode, schedule and labels.
         enabled: Whether the line produces events.
         reference: Snapshot the line was drawn on, relative to the events folder.
+        animals: include, record or exclude, what dogs, cats and birds crossing the line do.
     """
 
     __tablename__ = "analytics_lines"
@@ -39,3 +40,5 @@ class AnalyticsLine(BaseModel):
     alert: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
     enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     reference: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+    animals: Mapped[str] = mapped_column(String(10), nullable=False, default="record", server_default="record")

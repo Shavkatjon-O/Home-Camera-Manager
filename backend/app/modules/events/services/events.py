@@ -69,6 +69,7 @@ class EventFilters:
         source: Only this source.
         start: Only events that started at or after this time.
         end: Only events that started before this time.
+        plate: Only vehicle events whose number plate candidates contain this text.
     """
 
     def __init__(
@@ -79,6 +80,7 @@ class EventFilters:
         source: EventSource | None = None,
         start: datetime | None = None,
         end: datetime | None = None,
+        plate: str | None = None,
     ):
         """Collect the filters.
 
@@ -89,6 +91,7 @@ class EventFilters:
             source: Only this source.
             start: Only events that started at or after this time.
             end: Only events that started before this time.
+            plate: Only vehicle events whose number plate candidates contain this text.
 
         Raises:
             Unprocessable: The end of the range is not after its start.
@@ -101,6 +104,7 @@ class EventFilters:
         self.source = source
         self.start = start
         self.end = end
+        self.plate = "".join(character for character in (plate or "").upper() if character.isalnum())
 
     def clauses(self) -> list:
         """Return the SQL conditions of the filters.
@@ -121,6 +125,8 @@ class EventFilters:
             clauses.append(Event.started_at >= self.start)
         if self.end is not None:
             clauses.append(Event.started_at < self.end)
+        if self.plate:
+            clauses.append(Event.details["plates"].astext.contains(self.plate))
         return clauses
 
 

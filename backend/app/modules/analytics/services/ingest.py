@@ -15,6 +15,7 @@ from app.modules.events.schemas import event_read
 __all__ = ["AnalyticsIngestService"]
 
 DETAIL_FIELDS = ("view_name", "profile", "zone", "zone_name", "line", "line_name", "direction", "objects", "count")
+LATER_FIELDS = ("plates", "plate_status")
 
 
 def moment(value: float | None) -> datetime | None:
@@ -58,6 +59,7 @@ class AnalyticsIngestService:
         """
         row = await self.session.scalar(select(Event).where(Event.uuid == data.id))
         details = {name: getattr(data, name) for name in DETAIL_FIELDS}
+        details.update({name: getattr(data, name) for name in LATER_FIELDS if getattr(data, name) is not None})
         details["boxes"] = data.boxes
         if row is None:
             row = Event(

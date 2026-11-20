@@ -18,6 +18,10 @@ class EventKind(StrEnum):
     CROWD = "crowd"
     FACE_KNOWN = "face_known"
     FACE_UNKNOWN = "face_unknown"
+    ANIMAL = "animal"
+    OBJECT_LEFT = "object_left"
+    OBJECT_TAKEN = "object_taken"
+    FALL = "fall"
 
 
 class EventSource(StrEnum):

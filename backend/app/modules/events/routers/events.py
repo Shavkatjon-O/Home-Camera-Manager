@@ -48,6 +48,7 @@ def event_filters(
     source: EventSource | None = Query(None),
     start: datetime | None = Query(None, alias="from"),
     end: datetime | None = Query(None, alias="to"),
+    plate: str | None = Query(None, max_length=20),
 ) -> EventFilters:
     """Read the event filters from the query string.
 
@@ -58,11 +59,12 @@ def event_filters(
         source: Only this source.
         start: Only events that started at or after this time.
         end: Only events that started before this time.
+        plate: Only vehicle events whose number plate candidates contain this text.
 
     Returns:
         The filters.
     """
-    return EventFilters(camera_uuid, kind, label, source, start, end)
+    return EventFilters(camera_uuid, kind, label, source, start, end, plate)
 
 
 @router.get("", response_model=EventList)

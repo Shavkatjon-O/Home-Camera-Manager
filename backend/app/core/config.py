@@ -38,6 +38,7 @@ class Settings(BaseSettings):
         device_password: Device password of bridged V380 cameras.
         analytics_url: Address of the analytics service's status endpoint.
         analytics_token: Shared token of the analytics service and the internal analytics endpoints.
+        timezone: Time zone of schedules, line counts and area resets.
     """
 
     model_config = SettingsConfigDict(env_prefix="HC_", env_file=".env", case_sensitive=False, extra="ignore")
@@ -79,6 +80,8 @@ class Settings(BaseSettings):
 
     analytics_url: str = "http://analytics:8080"
     analytics_token: str = ""
+
+    timezone: str = "UTC"
 
     @property
     def database_url(self) -> str:

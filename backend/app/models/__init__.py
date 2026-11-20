@@ -1,6 +1,10 @@
 """Model registry: every table's model, imported in one place for Alembic and the import order."""
 
 from app.models.base import BaseModel
+from app.modules.analytics.models.appearances import AnalyticsAppearance
+from app.modules.analytics.models.areas import AnalyticsArea
+from app.modules.analytics.models.counts import AnalyticsCount
+from app.modules.analytics.models.journeys import AnalyticsJourney
 from app.modules.analytics.models.lines import AnalyticsLine
 from app.modules.analytics.models.settings import AnalyticsSettings
 from app.modules.analytics.models.views import AnalyticsView
@@ -20,6 +24,10 @@ from app.modules.tv.models.pairings import TvPairing
 from app.modules.users.models.users import User
 
 __all__ = [
+    "AnalyticsAppearance",
+    "AnalyticsArea",
+    "AnalyticsCount",
+    "AnalyticsJourney",
     "AnalyticsLine",
     "AnalyticsSettings",
     "AnalyticsView",
