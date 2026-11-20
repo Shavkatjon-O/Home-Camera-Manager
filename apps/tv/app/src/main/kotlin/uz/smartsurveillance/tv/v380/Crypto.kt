@@ -14,6 +14,7 @@ object Crypto {
     const val PASSWORD_SIZE = 48
 
     private const val BLOCK = 16
+    private val PRINTABLE = 0x20..0x7E
     private const val ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 
     private val FIXED_KEY = "macrovideo+*#!^@".toByteArray(Charsets.US_ASCII)
@@ -31,11 +32,13 @@ object Crypto {
     /**
      * Encrypts a password into the 64-byte field of the login request.
      *
-     * @param password The password; its ASCII bytes are truncated or zero padded to 48 bytes.
+     * @param password The password, printable ASCII; its bytes are truncated or zero padded to 48 bytes.
      * @param randomKey The 16-byte key of letters and digits that is sent in the clear before the ciphertext.
+     * @throws IllegalArgumentException The password is not printable ASCII.
      */
     fun passwordField(password: String, randomKey: ByteArray): ByteArray {
         require(randomKey.size == BLOCK) { "The random key is 16 bytes" }
+        require(printable(password)) { "A V380 password must be printable ASCII" }
         val plain = ByteArray(PASSWORD_SIZE)
         val bytes = password.toByteArray(Charsets.US_ASCII)
         bytes.copyInto(plain, 0, 0, minOf(bytes.size, PASSWORD_SIZE))
@@ -43,6 +46,13 @@ object Crypto {
         val twice = ecb(randomKey, Cipher.ENCRYPT_MODE).doFinal(once)
         return randomKey + twice
     }
+
+    /**
+     * Tells whether a password can be sent: every character is printable ASCII.
+     *
+     * @param password The password.
+     */
+    fun printable(password: String): Boolean = password.all { it.code in PRINTABLE }
 
     /**
      * Recovers the password from a password field, as a camera does.

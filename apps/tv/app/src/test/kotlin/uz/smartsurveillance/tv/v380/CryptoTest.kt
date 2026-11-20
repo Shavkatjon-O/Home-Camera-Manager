@@ -4,6 +4,8 @@ import java.util.Random
 import javax.crypto.Cipher
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -124,5 +126,14 @@ class CryptoTest {
         val payload = counting(150)
         MediaCipher.forSession(30, 20, 0x0badf00d).video(payload)
         assertEquals(counting(150).hex(), payload.hex())
+    }
+
+    @Test
+    fun passwordsOutsidePrintableAsciiAreRefused() {
+        val key = "ABCDEFGHIJKLMNOP".toByteArray()
+        assertFalse(Crypto.printable("p" + 0xE4.toChar() + "ss"))
+        assertFalse(Crypto.printable("tab" + 0x09.toChar()))
+        assertTrue(Crypto.printable("secret123 !~"))
+        assertThrows(IllegalArgumentException::class.java) { Crypto.passwordField("p" + 0xE4.toChar() + "ss", key) }
     }
 }

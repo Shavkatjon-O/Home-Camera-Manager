@@ -58,6 +58,7 @@ class V380Client(private val config: Config, private val listener: Listener) {
      * @property replyTimeoutMs Time to wait for the first byte of a reply.
      * @property idleGapMs Silence after the first byte that ends a reply.
      * @property silenceMs Media silence after which the session counts as lost.
+     * @property maxMoveMs Time after which a move that was not stopped or renewed is stopped, 0 for never.
      * @property random Source of the login's random key.
      */
     data class Config(
@@ -72,6 +73,7 @@ class V380Client(private val config: Config, private val listener: Listener) {
         val replyTimeoutMs: Int = 5000,
         val idleGapMs: Int = 250,
         val silenceMs: Int = 15000,
+        val maxMoveMs: Long = MAX_MOVE_MS,
         val random: Random = SecureRandom(),
     )
 
@@ -146,7 +148,7 @@ class V380Client(private val config: Config, private val listener: Listener) {
         return true
     }
 
-    /** Starts a pan or tilt move, or stops the running one; a move lasts until a stop. */
+    /** Starts a pan or tilt move, or stops the running one; a move lasts until a stop or [Config.maxMoveMs]. */
     fun move(move: PtzMove) {
         if (closed) return
         moving = move != PtzMove.Stop
@@ -170,9 +172,16 @@ class V380Client(private val config: Config, private val listener: Listener) {
     }
 
     private fun login(): LoginReply {
+        if (!Crypto.printable(config.password)) {
+            throw V380Exception(
+                "The password must be printable ASCII",
+                refused = true,
+                retryAfterMs = REFUSED_LOGIN_RETRY_MS,
+            )
+        }
+        val field = Crypto.passwordField(config.password, Crypto.randomKey(config.random))
         val socket = connect { loginSocket = it }
         try {
-            val field = Crypto.passwordField(config.password, Crypto.randomKey(config.random))
             socket.getOutputStream().apply {
                 write(Records.login(config.deviceId, config.user, field))
                 flush()
@@ -354,9 +363,18 @@ class V380Client(private val config: Config, private val listener: Listener) {
         val output = socket.getOutputStream()
         writer = Thread({
             var running = false
+            var movedAt = 0L
             try {
                 while (true) {
-                    val record = outbox.poll(WRITER_POLL_MS, TimeUnit.MILLISECONDS) ?: if (closed && outbox.isEmpty()) {
+                    val polled = outbox.poll(WRITER_POLL_MS, TimeUnit.MILLISECONDS)
+                    val now = System.currentTimeMillis()
+                    if (running && config.maxMoveMs > 0 && now - movedAt >= config.maxMoveMs) {
+                        output.write(PtzMove.Stop.record())
+                        output.flush()
+                        running = false
+                        moving = false
+                    }
+                    val record = polled ?: if (closed && outbox.isEmpty()) {
                         CLOSE
                     } else {
                         continue
@@ -368,7 +386,10 @@ class V380Client(private val config: Config, private val listener: Listener) {
                     }
                     output.write(record)
                     output.flush()
-                    if (record.u32(0) == PTZ_CODE) running = !record.contentEquals(PtzMove.Stop.record())
+                    if (record.u32(0) == PTZ_CODE) {
+                        running = !record.contentEquals(PtzMove.Stop.record())
+                        movedAt = now
+                    }
                 }
             } catch (_: IOException) {
             } catch (_: InterruptedException) {
@@ -402,7 +423,10 @@ class V380Client(private val config: Config, private val listener: Listener) {
         const val DEFAULT_PORT = 8800
 
         /** Shortest wait before logging in again after the camera refused the credentials. */
-        const val REFUSED_LOGIN_RETRY_MS = 60_000L
+        const val REFUSED_LOGIN_RETRY_MS = 300_000L
+
+        /** Default time after which a move that was not stopped or renewed is stopped. */
+        const val MAX_MOVE_MS = 30_000L
 
         private const val RECEIVE_BUFFER = 128 * 1024
         private const val SEND_BUFFER = 64 * 1024

@@ -275,6 +275,36 @@ class ClientTest {
     }
 
     @Test
+    fun aPasswordOutsidePrintableAsciiIsRefusedBeforeConnecting() {
+        val port = ServerSocket(0, 1, InetAddress.getLoopbackAddress()).use { it.localPort }
+        val client = V380Client(config(port, password = "p" + 0xE4.toChar() + "ss"), Recorder())
+        try {
+            client.run()
+            fail("expected a refusal")
+        } catch (error: V380Exception) {
+            assertTrue(error.refused)
+            assertFalse(error.unreachable)
+            assertEquals(V380Client.REFUSED_LOGIN_RETRY_MS, error.retryAfterMs)
+        }
+    }
+
+    @Test
+    fun aMoveThatIsNotStoppedStopsByItself() {
+        val fake = camera(FakeCamera())
+        val recorder = Recorder()
+        val client = V380Client(config(fake.port).copy(maxMoveMs = 300), recorder)
+        val (runner, _) = start(client)
+        assertTrue(recorder.done.await(5, TimeUnit.SECONDS))
+        client.move(PtzMove.Right)
+        Thread.sleep(900)
+        assertFalse(client.isMoving)
+        client.close()
+        runner.join(3000)
+        assertTrue(fake.ended.await(3, TimeUnit.SECONDS))
+        assertEquals(listOf(PtzMove.Right.record().hex(), PtzMove.Stop.record().hex()), fake.controls.toList())
+    }
+
+    @Test
     fun aStreamRefusalIsReported() {
         val fake = camera(FakeCamera(streamResult = -11))
         val client = V380Client(config(fake.port), Recorder())
