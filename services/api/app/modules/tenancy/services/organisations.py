@@ -9,6 +9,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.context import UserContext
 from app.core.exceptions import NotFound, Unprocessable
 from app.models import Membership, Organisation, Site
+from app.modules.operations.enums import AuditAction
+from app.modules.operations.services.audit import record_audit
 from app.modules.tenancy.enums import Role
 from app.modules.tenancy.schemas import (
     FacesConsent,
@@ -149,6 +151,15 @@ class OrganisationService:
                     position=0,
                 )
             )
+        await self.session.flush()
+        await record_audit(
+            self.session,
+            AuditAction.ORGANISATION_CREATE,
+            actor=self.actor,
+            organisation_id=organisation.id,
+            target_kind="organisation",
+            target_uuid=organisation.uuid,
+        )
         await self.session.commit()
         await self.session.refresh(organisation)
         return (await self.reads([(organisation, membership)]))[0]

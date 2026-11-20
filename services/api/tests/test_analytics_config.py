@@ -6,10 +6,15 @@ from pydantic import ValidationError
 from app.models import AnalyticsLine, AnalyticsView, AnalyticsZone
 from app.modules.analytics.schemas import LineInput, RulesUpdate, ZoneInput
 from app.modules.analytics.services.config import view_config
+from tests.fakes import entitlements
 
 
-def view(moving=False, tamper=None, faces=None):
+def view(moving=False, tamper=None, faces=None, **flags):
     return AnalyticsView(
+        appearance=flags.get("appearance", True),
+        falls=flags.get("falls", False),
+        plates=flags.get("plates", False),
+        follow=flags.get("follow", False),
         uuid=uuid4(),
         camera_uuid=uuid4(),
         lens=2,
@@ -101,3 +106,15 @@ def test_faces_are_sent_only_when_the_view_overrides_its_profile():
     assert "faces" not in view_config(view(), [], [])
     assert view_config(view(faces=True), [], [])["faces"] is True
     assert view_config(view(faces=False), [], [])["faces"] is False
+
+
+def test_features_a_plan_leaves_out_are_not_run():
+    granted = entitlements(features=frozenset({"journeys"}))
+    data = view_config(
+        view(falls=True, plates=True, follow=True, faces=True), [zone()], [line()], faces_allowed=True, granted=granted
+    )
+    assert not data["falls"]["enabled"] and not data["plates"]["enabled"] and not data["follow"]["enabled"]
+    assert data["faces"] is False and data["appearance"] is True
+    assert data["zones"][0]["object_labels"] == [] and data["zones"][0]["left_seconds"] == 0.0
+    everything = view_config(view(falls=True), [zone()], [line()], granted=entitlements())
+    assert everything["falls"]["enabled"]

@@ -14,6 +14,8 @@ from app.core.security import hash_token, new_token
 from app.models import Invitation, Membership, Organisation, Site, User
 from app.modules.billing.enums import Limit
 from app.modules.billing.services.entitlements import require_capacity
+from app.modules.operations.enums import AuditAction
+from app.modules.operations.services.audit import record_audit
 from app.modules.tenancy.enums import Role
 from app.modules.tenancy.schemas import (
     InvitationCreate,
@@ -305,5 +307,15 @@ class InvitationService:
             )
         invitation.accepted_at = now
         invitation.accepted_by_id = user.id
+        await record_audit(
+            self.session,
+            AuditAction.INVITATION_ACCEPT,
+            actor_id=user.id,
+            actor_label=user.email or user.username,
+            organisation_id=organisation.id,
+            target_kind="invitation",
+            target_uuid=invitation.uuid,
+            details={"role": invitation.role},
+        )
         await self.session.commit()
         return organisation.uuid
