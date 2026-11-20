@@ -209,13 +209,16 @@ def calibrate(args: argparse.Namespace) -> None:
     Args:
         args: Command line arguments.
     """
-    data = np.load(args.embeddings)
+    with np.load(args.embeddings) as stored:
+        data = {name: stored[name] for name in stored.files}
     index = {str(name): row for row, name in enumerate(data["names"])}
     pairs = [(index.get(left), index.get(right), same) for left, right, same in read_pairs(args.pairs)]
     pairs = [(left, right, same) for left, right, same in pairs if left is not None and right is not None]
     report = {}
     for first, second in PAIRINGS:
-        scores = np.array([float(data[first][left] @ data[second][right]) for left, right, _ in pairs])
+        lefts = np.array([pair[0] for pair in pairs])
+        rights = np.array([pair[1] for pair in pairs])
+        scores = (data[first][lefts] * data[second][rights]).sum(axis=1)
         same = np.array([pair[2] for pair in pairs])
         genuine, impostor = scores[same], scores[~same]
         report[f"{first}-{second}"] = {

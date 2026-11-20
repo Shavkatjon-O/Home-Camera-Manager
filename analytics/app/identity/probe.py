@@ -397,7 +397,9 @@ def collector(pads: set[int], settings: IdentitySettings, outbox: multiprocessin
                     layers = {name: frames.describe(tensor) for name, tensor in raw.items()}
                     rect = item.rect_params
                     scale = scrfd.letterbox_scale(rect.width, rect.height, settings.detector_size)
-                    found = scrfd.decode(read_layers(layers, detect_threshold, cuda), settings.detector_size, 0.0)
+                    found = scrfd.decode(
+                        read_layers(layers, detect_threshold, cuda), settings.detector_size, detect_threshold
+                    )
                     mapped = [face.mapped(scale, rect.left, rect.top) for face in found]
                     face = best_face(mapped, (rect.left, rect.top, rect.width, rect.height))
                     if face is None or face.score < settings.min_score or face.height < settings.min_face:

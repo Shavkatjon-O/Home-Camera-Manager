@@ -48,6 +48,15 @@ def test_decode_suppresses_overlapping_detections_and_drops_low_scores():
     assert [round(face.score, 2) for face in faces] == [0.9]
 
 
+def test_decode_bounds_its_work_when_every_anchor_passes():
+    outputs = detector_outputs()
+    for stride in scrfd.STRIDES:
+        outputs[f"score{stride}"][:] = 0.3
+        outputs[f"box{stride}"][:] = 1.0
+    faces = scrfd.decode(outputs, 640, 0.0)
+    assert 0 < len(faces) <= scrfd.MAX_CANDIDATES
+
+
 def test_mapped_and_letterbox_scale_undo_nvinfer_scaling():
     scale = scrfd.letterbox_scale(300, 600, 640)
     assert scale == pytest.approx(640 / 600)

@@ -14,6 +14,7 @@ import numpy as np
 STRIDES = (8, 16, 32)
 ANCHORS = 2
 NMS_IOU = 0.4
+MAX_CANDIDATES = 200
 
 
 @dataclass(frozen=True)
@@ -127,6 +128,10 @@ def decode(outputs: dict[str, np.ndarray], size: int, threshold: float, iou: flo
     all_boxes = np.concatenate(boxes)
     all_scores = np.concatenate(scores)
     all_points = np.concatenate(points)
+    if all_scores.size > MAX_CANDIDATES:
+        # Suppression is quadratic, so a low threshold must never feed it every anchor.
+        top = np.argsort(-all_scores)[:MAX_CANDIDATES]
+        all_boxes, all_scores, all_points = all_boxes[top], all_scores[top], all_points[top]
     faces = []
     for index in nms(all_boxes, all_scores, iou):
         box = tuple(float(value) for value in all_boxes[index])
