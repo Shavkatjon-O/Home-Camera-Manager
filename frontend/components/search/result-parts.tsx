@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Image from "next/image"
-import { ImageOffIcon, UserRoundSearchIcon } from "lucide-react"
+import { ImageOffIcon, UserRoundSearchIcon, UserSearchIcon } from "lucide-react"
 
 import { overlayButton } from "@/components/people/face-parts"
 import { IconButton } from "@/components/shell/icon-button"
@@ -79,6 +79,39 @@ export function SimilarButton({
   return (
     <IconButton label="Find similar" size="icon-sm" onClick={() => onFind(target)}>
       <UserRoundSearchIcon />
+    </IconButton>
+  )
+}
+
+export function FindPersonButton({
+  eventUuid,
+  onFindPerson,
+  overlay,
+}: {
+  eventUuid: string
+  onFindPerson: (eventUuid: string) => void
+  overlay?: boolean
+}) {
+  if (overlay) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            aria-label="Find this person"
+            onClick={() => onFindPerson(eventUuid)}
+            className={overlayButton}
+          >
+            <UserSearchIcon />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent>Find this person</TooltipContent>
+      </Tooltip>
+    )
+  }
+  return (
+    <IconButton label="Find this person" size="icon-sm" onClick={() => onFindPerson(eventUuid)}>
+      <UserSearchIcon />
     </IconButton>
   )
 }

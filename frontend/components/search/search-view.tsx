@@ -6,6 +6,7 @@ import { ImageUpIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { PHOTO_ACCEPT } from "@/components/people/photo-upload"
+import { AppearanceResults } from "@/components/search/appearance-results"
 import type { SimilarTarget } from "@/components/search/result-parts"
 import { SearchFiltersBar } from "@/components/search/search-filters"
 import {
@@ -78,14 +79,24 @@ function SearchView() {
         ...state,
         similar: target.sample ?? null,
         similarEvent: target.sample ? null : (target.event ?? null),
+        appearance: null,
       }),
       { scroll: false },
     )
   }
 
+  const findPerson = (eventUuid: string) => {
+    setPhoto(null)
+    router.push(searchHrefFor({ ...state, similar: null, similarEvent: null, appearance: eventUuid }), {
+      scroll: false,
+    })
+  }
+
   const back = () => {
     setPhoto(null)
-    if (state.similar || state.similarEvent) replace({ ...state, similar: null, similarEvent: null })
+    if (state.similar || state.similarEvent || state.appearance) {
+      replace({ ...state, similar: null, similarEvent: null, appearance: null })
+    }
   }
 
   const choosePhoto = () => fileRef.current?.click()
@@ -96,7 +107,9 @@ function SearchView() {
       const data = await downscalePhoto(file)
       photoCount.current += 1
       setPhoto({ id: photoCount.current, data })
-      if (state.similar || state.similarEvent) replace({ ...state, similar: null, similarEvent: null })
+      if (state.similar || state.similarEvent || state.appearance) {
+        replace({ ...state, similar: null, similarEvent: null, appearance: null })
+      }
     } catch (err) {
       toast.error(errorMessage(err))
     } finally {
@@ -154,7 +167,16 @@ function SearchView() {
   return (
     <AppFrame actions={actions}>
       <main className="@container min-h-0 min-w-0 flex-1 overflow-y-auto">
-        {source ? (
+        {state.appearance && !photo ? (
+          <AppearanceResults
+            key={state.appearance}
+            eventUuid={state.appearance}
+            layout={state.layout}
+            toolbar={layoutToggle}
+            onBack={back}
+            onFindPerson={findPerson}
+          />
+        ) : source ? (
           <SimilarResults
             key={source.key}
             source={source}
@@ -183,6 +205,7 @@ function SearchView() {
                 toolbar={layoutToggle}
                 onPage={changePage}
                 onFind={findSimilar}
+                onFindPerson={findPerson}
               />
             </div>
           </div>

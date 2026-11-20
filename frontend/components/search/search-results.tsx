@@ -6,7 +6,13 @@ import { CircleAlertIcon, TextSearchIcon } from "lucide-react"
 
 import { Pager } from "@/components/people/pager"
 import { FaceChip } from "@/components/people/face-parts"
-import { ResultImage, SimilarButton, TagChip, type SimilarTarget } from "@/components/search/result-parts"
+import {
+  FindPersonButton,
+  ResultImage,
+  SimilarButton,
+  TagChip,
+  type SimilarTarget,
+} from "@/components/search/result-parts"
 import { filtersQuery, hasFilters, type Layout, type SearchFilters } from "@/components/search/search-params"
 import { EmptyState, LoadingState, Spinner } from "@/components/shell/primitives"
 import { Button } from "@/components/ui/button"
@@ -27,14 +33,25 @@ function targetOf(result: SearchResult): SimilarTarget | null {
   return { sample: result.face.sample_uuid, event: result.uuid }
 }
 
+function personOf(result: SearchResult): string | null {
+  return result.label === "person" && result.view_uuid ? result.uuid : null
+}
+
 function viewOf(result: SearchResult): string | null {
   const view = result.details.view_name
   return typeof view === "string" && view && view !== result.camera_name ? view : null
 }
 
-function ResultRow({ result, onFind }: { result: SearchResult; onFind: (target: SimilarTarget) => void }) {
+interface ResultProps {
+  result: SearchResult
+  onFind: (target: SimilarTarget) => void
+  onFindPerson: (eventUuid: string) => void
+}
+
+function ResultRow({ result, onFind, onFindPerson }: ResultProps) {
   const image = imageOf(result)
   const target = targetOf(result)
+  const person = personOf(result)
   const view = viewOf(result)
   return (
     <li className="flex items-center gap-1 border-b border-hairline pr-2 transition-colors hover:bg-surface-2 sm:pr-3">
@@ -54,13 +71,15 @@ function ResultRow({ result, onFind }: { result: SearchResult; onFind: (target: 
         </div>
       </Link>
       {target ? <SimilarButton target={target} onFind={onFind} /> : null}
+      {person ? <FindPersonButton eventUuid={person} onFindPerson={onFindPerson} /> : null}
     </li>
   )
 }
 
-function ResultCard({ result, onFind }: { result: SearchResult; onFind: (target: SimilarTarget) => void }) {
+function ResultCard({ result, onFind, onFindPerson }: ResultProps) {
   const image = imageOf(result)
   const target = targetOf(result)
+  const person = personOf(result)
   return (
     <li className="relative min-w-0 overflow-hidden rounded-lg border border-hairline bg-surface transition-colors hover:border-hairline-strong">
       <Link href={eventHref(result.uuid)} className="flex flex-col">
@@ -84,9 +103,10 @@ function ResultCard({ result, onFind }: { result: SearchResult; onFind: (target:
           Alert
         </TagChip>
       ) : null}
-      {target ? (
-        <div className="absolute top-2 right-2">
-          <SimilarButton target={target} onFind={onFind} overlay />
+      {target || person ? (
+        <div className="absolute top-2 right-2 flex gap-1">
+          {target ? <SimilarButton target={target} onFind={onFind} overlay /> : null}
+          {person ? <FindPersonButton eventUuid={person} onFindPerson={onFindPerson} overlay /> : null}
         </div>
       ) : null}
     </li>
@@ -100,6 +120,7 @@ export function SearchResults({
   toolbar,
   onPage,
   onFind,
+  onFindPerson,
 }: {
   filters: SearchFilters
   page: number
@@ -107,6 +128,7 @@ export function SearchResults({
   toolbar?: React.ReactNode
   onPage: (page: number) => void
   onFind: (target: SimilarTarget) => void
+  onFindPerson: (eventUuid: string) => void
 }) {
   const key = React.useMemo(
     () => JSON.stringify({ ...filtersQuery(filters), page, page_size: RESULTS_PAGE_SIZE }),
@@ -174,13 +196,13 @@ export function SearchResults({
       {layout === "grid" ? (
         <ul aria-label="Events" className="grid grid-cols-2 gap-3 p-3 sm:p-4 @2xl:grid-cols-3 @4xl:grid-cols-4 @6xl:grid-cols-5">
           {data.items.map((item) => (
-            <ResultCard key={item.uuid} result={item} onFind={onFind} />
+            <ResultCard key={item.uuid} result={item} onFind={onFind} onFindPerson={onFindPerson} />
           ))}
         </ul>
       ) : (
         <ul aria-label="Events">
           {data.items.map((item) => (
-            <ResultRow key={item.uuid} result={item} onFind={onFind} />
+            <ResultRow key={item.uuid} result={item} onFind={onFind} onFindPerson={onFindPerson} />
           ))}
         </ul>
       )}

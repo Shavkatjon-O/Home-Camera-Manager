@@ -31,6 +31,7 @@ export interface SearchState {
   layout: Layout
   similar: string | null
   similarEvent: string | null
+  appearance: string | null
 }
 
 export const EMPTY_FILTERS: SearchFilters = {
@@ -82,6 +83,7 @@ export function readSearchState(params: ParamSource): SearchState {
     layout: params.get("layout") === "grid" ? "grid" : "list",
     similar: params.get("similar") || null,
     similarEvent: params.get("similar_event") || null,
+    appearance: params.get("appearance") || null,
   }
 }
 
@@ -103,6 +105,7 @@ export function searchHrefFor(state: SearchState): string {
   if (state.layout === "grid") search.set("layout", "grid")
   if (state.similar) search.set("similar", state.similar)
   else if (state.similarEvent) search.set("similar_event", state.similarEvent)
+  else if (state.appearance) search.set("appearance", state.appearance)
   const text = search.toString()
   return text ? `/search/?${text}` : "/search/"
 }
