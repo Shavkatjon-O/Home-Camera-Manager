@@ -185,11 +185,26 @@ class FaceStage:
         """Process candidates until stopped."""
         while not self.stopping.is_set():
             try:
+                self.preload(time.time())
                 self.drain()
                 self.step(time.time())
             except Exception:
                 logger.exception("The face stage failed a step")
             self.stopping.wait(STEP_SECONDS)
+
+    def preload(self, now: float) -> None:
+        """Load the face models as soon as any view needs them, so no face or photo waits for a first load.
+
+        Args:
+            now: Current time.
+        """
+        if not self.views or self.models.loaded or now < self.retry_at:
+            return
+        try:
+            self.models.load()
+        except Exception:
+            logger.exception("Loading the face models failed, retrying in %.0f s", RETRY_SECONDS)
+            self.retry_at = now + RETRY_SECONDS
 
     def drain(self) -> None:
         """Move waiting candidates into their tracks."""

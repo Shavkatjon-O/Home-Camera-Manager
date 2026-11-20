@@ -226,3 +226,22 @@ def test_poor_tracks_still_join_an_existing_cluster(tmp_path):
     )
     face_stage.step(100.3)
     assert published[0]["cluster"] == "c1" and not published[0]["cluster_new"]
+
+
+def test_models_load_as_soon_as_a_face_view_exists(tmp_path):
+    face_stage, _, models = stage(tmp_path, {1: unit(1)})
+    models.loaded = False
+    calls = []
+
+    def load():
+        calls.append(1)
+        models.loaded = True
+
+    models.load = load
+    face_stage.preload(100.0)
+    face_stage.preload(101.0)
+    assert calls == [1]
+    face_stage.set_views({})
+    models.loaded = False
+    face_stage.preload(102.0)
+    assert calls == [1]
