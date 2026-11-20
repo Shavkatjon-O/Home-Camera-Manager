@@ -46,6 +46,8 @@ class FollowSettings:
         invert_pan: Flips the pan direction for cameras that turn the other way.
         invert_tilt: Flips the tilt direction.
         labels: Labels that can be followed.
+        presets: Returns by going to a preset saved when follow starts instead of retracing the moves. Off by
+            default, because PTZ 1 answers GotoPreset on its ONVIF device without moving.
     """
 
     enabled: bool = False
@@ -64,6 +66,7 @@ class FollowSettings:
     invert_pan: bool = False
     invert_tilt: bool = False
     labels: frozenset[str] = field(default_factory=lambda: DEFAULT_LABELS)
+    presets: bool = False
 
     @classmethod
     def from_dict(cls, data: dict | None) -> FollowSettings:
@@ -100,6 +103,7 @@ class FollowSettings:
             invert_pan=bool(data.get("invert_pan", False)),
             invert_tilt=bool(data.get("invert_tilt", False)),
             labels=frozenset(str(label) for label in labels) if labels else DEFAULT_LABELS,
+            presets=bool(data.get("presets", False)),
             **numbers,
         )
 

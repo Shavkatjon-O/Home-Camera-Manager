@@ -116,9 +116,10 @@ any other event.
   links before 20 tracks have been seen. Colour and infrared pictures of the same person do not match.
 - Auto-follow (app/follow): off by default. The controller keeps the chosen person centred with a dead zone,
   proportional speed between 0.15 and 0.5 and a stop after 1 s without the person, saves the position when it starts
-  and returns there after 30 s without anyone, to a reserved preset or by retracing its moves on cameras without
-  presets. The backend sends the moves to the camera's own ONVIF device when it offers PTZ and to the bridge
-  otherwise.
+  and returns there after 30 s without anyone by retracing its moves, one reverse command per move, because PTZ 1
+  answers GotoPreset without moving and turns a fixed step per move command; a preset return can be turned on per
+  view with presets in the follow settings. The backend sends the moves to the camera's own ONVIF device when it
+  offers PTZ and to the bridge otherwise.
 
 | Model | Use | Licence | Engine memory | Batch time |
 |---|---|---|---|---|

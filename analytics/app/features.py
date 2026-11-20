@@ -246,7 +246,7 @@ class FeatureHub:
             return
         if features.follow is None:
             url, token = self.backend
-            mover = RecordingMover(BackendMover(url, token, features.config.camera))
+            mover = RecordingMover(BackendMover(url, token, features.config.camera), use_presets=settings.presets)
             follower = Follower(FollowController(settings, now), mover)
             follower.thread = threading.Thread(
                 target=follower.run, args=(self.stopping,), name=f"follow-{features.config.id[:8]}", daemon=True

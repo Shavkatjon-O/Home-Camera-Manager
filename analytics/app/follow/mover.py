@@ -197,14 +197,16 @@ class Segment:
 class RecordingMover:
     """Remembers how the lens left its start position so it can go back.
 
-    save_home asks the wrapped mover for a preset. When the camera stored one, return_home goes to it; otherwise
-    return_home replays the recorded moves in reverse order with negated speeds and the same durations, then
-    stops. The replay blocks for as long as the moves took, so the caller runs it off the analysis loop.
+    By default return_home replays the recorded moves in reverse order with negated speeds and the same durations,
+    then stops; every move command is mirrored by one, so cameras that turn a fixed step per command come back too.
+    With presets on, save_home asks the wrapped mover for a preset and return_home goes to it when the camera stored
+    one. The replay blocks for as long as the moves took, so the caller runs it off the analysis loop.
 
     Attributes:
         raw: The mover that talks to the camera.
         clock: Returns the current time.
         sleep: Waits a number of seconds.
+        use_presets: Whether to save and return to a preset instead of retracing.
         presets: Whether the camera stored the start position as a preset.
         segments: Moves since the start position, finished ones only.
         current: The move running now and its start time, or None.
@@ -215,6 +217,7 @@ class RecordingMover:
         raw: Mover,
         clock: Callable[[], float] = time.monotonic,
         sleep: Callable[[float], None] = time.sleep,
+        use_presets: bool = False,
     ):
         """Wrap a mover.
 
@@ -222,8 +225,10 @@ class RecordingMover:
             raw: The mover that talks to the camera.
             clock: Monotonic clock.
             sleep: Sleep function.
+            use_presets: Whether to save and return to a preset instead of retracing.
         """
         self.raw = raw
+        self.use_presets = use_presets
         self.clock = clock
         self.sleep = sleep
         self.presets = False
@@ -264,7 +269,7 @@ class RecordingMover:
         """
         self.close_current()
         self.segments = []
-        self.presets = bool(self.raw.save_home())
+        self.presets = bool(self.raw.save_home()) if self.use_presets else False
         return self.presets
 
     def return_home(self) -> None:

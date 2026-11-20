@@ -231,7 +231,7 @@ def test_retrace_returns_exactly_to_the_start():
 def test_preset_return_when_the_camera_keeps_presets():
     clock = Clock()
     camera = FakeCamera(clock, presets=True)
-    mover = RecordingMover(camera, clock=clock, sleep=clock.sleep)
+    mover = RecordingMover(camera, clock=clock, sleep=clock.sleep, use_presets=True)
     assert mover.save_home() is True
     mover.move(0.5, 0.5)
     clock.now += 2.0
@@ -313,3 +313,19 @@ def test_backend_mover_reports_no_presets_and_swallows_errors():
     assert mover.save_home() is False
     assert mover.errors == 2
     assert "move" in mover.last_error or "home" in mover.last_error
+
+
+def test_retrace_is_the_default_even_when_the_camera_keeps_presets():
+    clock = Clock()
+    camera = FakeCamera(clock, presets=True)
+    mover = RecordingMover(camera, clock=clock, sleep=clock.sleep)
+    assert mover.save_home() is False
+    assert ("save_home",) not in camera.calls
+    mover.move(0.5, 0.0)
+    clock.now += 1.0
+    camera.advance()
+    mover.stop()
+    mover.return_home()
+    camera.advance()
+    assert camera.position[0] == pytest.approx(0.0, abs=1e-9)
+    assert ("return_home",) not in camera.calls
