@@ -6,11 +6,12 @@ from sqlalchemy import Boolean, Integer, String, Text, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import BaseModel
+from app.models.ownership import SiteOwned
 
 __all__ = ["NetworkDevice"]
 
 
-class NetworkDevice(BaseModel):
+class NetworkDevice(SiteOwned, BaseModel):
     """Router, access point or other network device that is probed.
 
     Attributes:

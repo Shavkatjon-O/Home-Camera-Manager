@@ -21,6 +21,13 @@ class Profile(StrEnum):
     TAMPER = "tamper"
 
 
+class ViewStream(StrEnum):
+    """Camera stream a view is analysed on: sub for detection and counting, main for faces and plates."""
+
+    MAIN = "main"
+    SUB = "sub"
+
+
 class LineDirection(StrEnum):
     """Crossings of a line that produce events."""
 

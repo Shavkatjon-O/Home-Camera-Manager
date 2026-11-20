@@ -7,11 +7,12 @@ from sqlalchemy import DateTime, Integer, String, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import BaseModel
+from app.models.ownership import SiteOwned
 
 __all__ = ["Outage"]
 
 
-class Outage(BaseModel):
+class Outage(SiteOwned, BaseModel):
     """Period in which a device or camera did not answer probes.
 
     Attributes:

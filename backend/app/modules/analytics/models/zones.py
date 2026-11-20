@@ -5,11 +5,12 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import BaseModel
+from app.models.ownership import SiteOwned
 
 __all__ = ["AnalyticsZone"]
 
 
-class AnalyticsZone(BaseModel):
+class AnalyticsZone(SiteOwned, BaseModel):
     """A zone of an analytics view.
 
     Attributes:

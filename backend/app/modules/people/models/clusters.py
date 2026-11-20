@@ -6,11 +6,12 @@ from sqlalchemy import DateTime, Integer, LargeBinary
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import BaseModel
+from app.models.ownership import OrganisationOwned
 
 __all__ = ["UnknownCluster"]
 
 
-class UnknownCluster(BaseModel):
+class UnknownCluster(OrganisationOwned, BaseModel):
     """Group of face samples the analytics service judged to be one unknown person.
 
     Attributes:

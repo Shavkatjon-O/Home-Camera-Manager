@@ -6,11 +6,12 @@ from sqlalchemy import Boolean, DateTime, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import BaseModel
+from app.models.ownership import SiteOwned
 
 __all__ = ["TvDevice"]
 
 
-class TvDevice(BaseModel):
+class TvDevice(SiteOwned, BaseModel):
     """TV that has been paired and authenticates with its own device token.
 
     Attributes:

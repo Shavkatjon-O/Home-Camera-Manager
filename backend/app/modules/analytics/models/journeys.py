@@ -7,11 +7,12 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import BaseModel
+from app.models.ownership import SiteOwned
 
 __all__ = ["AnalyticsJourney"]
 
 
-class AnalyticsJourney(BaseModel):
+class AnalyticsJourney(SiteOwned, BaseModel):
     """A journey and its steps in time order.
 
     Attributes:

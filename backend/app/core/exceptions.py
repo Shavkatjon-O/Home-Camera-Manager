@@ -34,6 +34,16 @@ class Unauthorized(ServiceError):
     status_code = 401
 
 
+class Forbidden(ServiceError):
+    """The caller is signed in but may not do this.
+
+    Attributes:
+        status_code: HTTP status 403.
+    """
+
+    status_code = 403
+
+
 class NotFound(ServiceError):
     """The requested item does not exist.
 

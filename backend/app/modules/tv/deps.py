@@ -4,11 +4,13 @@ from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.context import TvDeviceContext, UserContext
-from app.auth.dependencies import get_current_user
+from app.auth.context import TvDeviceContext
 from app.core.database import get_db
 from app.modules.cameras.services import CameraService
 from app.modules.tv.services import TvConfigService, TvDeviceService, TvPairingService
+from app.tenancy.access import SiteAccess
+from app.tenancy.dependencies import get_site_access
+from app.tenancy.scope import Scope, install_scope
 
 device_bearer = HTTPBearer(auto_error=False)
 
@@ -27,34 +29,34 @@ def get_pairing_service(session: AsyncSession = Depends(get_db)) -> TvPairingSer
 
 def get_pairing_admin_service(
     session: AsyncSession = Depends(get_db),
-    actor: UserContext = Depends(get_current_user),
+    access: SiteAccess = Depends(get_site_access),
 ) -> TvPairingService:
     """Build the pairing service for a signed-in user.
 
     Args:
         session: Database session for the request.
-        actor: Signed-in user making the request.
+        access: Access of the signed-in member to the request's site.
 
     Returns:
         Pairing service acting for the user.
     """
-    return TvPairingService(session, actor)
+    return TvPairingService(session, access.user)
 
 
 def get_device_service(
     session: AsyncSession = Depends(get_db),
-    actor: UserContext = Depends(get_current_user),
+    access: SiteAccess = Depends(get_site_access),
 ) -> TvDeviceService:
     """Build the device service for a signed-in user.
 
     Args:
         session: Database session for the request.
-        actor: Signed-in user making the request.
+        access: Access of the signed-in member to the request's site.
 
     Returns:
         Device service acting for the user.
     """
-    return TvDeviceService(session, actor)
+    return TvDeviceService(session, access.user)
 
 
 async def get_tv_device(
@@ -68,10 +70,16 @@ async def get_tv_device(
         session: Database session for the request.
 
     Returns:
-        The paired device that owns the token.
+        The paired device that owns the token; the session is limited to the device's site from then on.
     """
     token = credentials.credentials if credentials is not None else None
-    return await TvDeviceService(session).authenticate(token)
+    device = await TvDeviceService(session).authenticate(token)
+    if device.site_id is not None and device.organisation_id is not None:
+        install_scope(
+            session,
+            Scope(organisation_id=device.organisation_id, site_ids=frozenset({device.site_id}), site_id=device.site_id),
+        )
+    return device
 
 
 def get_tv_config_service(

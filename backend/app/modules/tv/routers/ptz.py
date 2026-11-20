@@ -12,7 +12,7 @@ router = APIRouter()
 
 
 @router.post("/ptz/{camera_uuid}/move", status_code=status.HTTP_204_NO_CONTENT)
-async def move_camera(
+async def move_tv_camera(
     camera_uuid: UUID,
     payload: PtzMove,
     service: CameraService = Depends(get_tv_camera_service),
@@ -32,7 +32,7 @@ async def move_camera(
 
 
 @router.post("/ptz/{camera_uuid}/stop", status_code=status.HTTP_204_NO_CONTENT)
-async def stop_camera(camera_uuid: UUID, service: CameraService = Depends(get_tv_camera_service)) -> Response:
+async def stop_tv_camera(camera_uuid: UUID, service: CameraService = Depends(get_tv_camera_service)) -> Response:
     """Stop a camera's movement.
 
     Args:

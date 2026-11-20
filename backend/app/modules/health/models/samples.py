@@ -6,11 +6,12 @@ from sqlalchemy import Boolean, Double, Index, String, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import BaseModel
+from app.models.ownership import SiteOwned
 
 __all__ = ["HealthSample"]
 
 
-class HealthSample(BaseModel):
+class HealthSample(SiteOwned, BaseModel):
     """Result of one probe of a device or camera.
 
     Attributes:

@@ -4,11 +4,12 @@ from sqlalchemy import String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import BaseModel
+from app.models.ownership import OrganisationOwned
 
 __all__ = ["Person"]
 
 
-class Person(BaseModel):
+class Person(OrganisationOwned, BaseModel):
     """Person known by name, recognised from the face samples that belong to them.
 
     Attributes:

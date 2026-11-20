@@ -270,7 +270,7 @@ class CameraEventsEngine:
             camera: Camera to reconcile.
         """
         current = self.statuses.get(camera.uuid)
-        endpoint = device_endpoint(camera) if camera.enabled else None
+        endpoint = device_endpoint(camera) if camera.enabled and camera.connector_id is None else None
         entry = self.subscribers.get(camera.uuid)
         if endpoint is not None and entry is not None and entry[0] == endpoint_key(endpoint):
             if current is not None and (current.camera_name != camera.name or current.position != camera.position):
@@ -284,6 +284,11 @@ class CameraEventsEngine:
         base = SourceStatus(camera_uuid=camera.uuid, camera_name=camera.name, position=camera.position)
         if not camera.enabled:
             self.set_status(replace(base, state=SourceState.DISABLED, error="The camera is disabled"))
+            return
+        if camera.connector_id is not None:
+            self.set_status(
+                replace(base, state=SourceState.UNSUPPORTED, error="Camera events of connector cameras come later")
+            )
             return
         if endpoint is None:
             self.set_status(replace(base, state=SourceState.UNSUPPORTED, error="The camera has no ONVIF port"))

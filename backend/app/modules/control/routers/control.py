@@ -25,6 +25,7 @@ from app.modules.control.schemas import (
     VideoRead,
 )
 from app.modules.control.services import CameraControlService
+from app.tenancy.dependencies import require_admin, require_operator
 
 router = APIRouter()
 
@@ -39,7 +40,7 @@ def no_content() -> Response:
 
 
 @router.get("/{uuid}/device", response_model=DeviceRead)
-async def get_device(uuid: UUID, service: CameraControlService = Depends(get_control_service)) -> DeviceRead:
+async def get_camera_device(uuid: UUID, service: CameraControlService = Depends(get_control_service)) -> DeviceRead:
     """Return the camera's ONVIF device details and clock.
 
     Args:
@@ -52,8 +53,8 @@ async def get_device(uuid: UUID, service: CameraControlService = Depends(get_con
     return await service.device(uuid)
 
 
-@router.post("/{uuid}/device/sync-time", response_model=DeviceRead)
-async def sync_time(uuid: UUID, service: CameraControlService = Depends(get_control_service)) -> DeviceRead:
+@router.post("/{uuid}/device/sync-time", dependencies=[Depends(require_admin)], response_model=DeviceRead)
+async def sync_camera_time(uuid: UUID, service: CameraControlService = Depends(get_control_service)) -> DeviceRead:
     """Set the camera's clock to this server's time.
 
     Args:
@@ -66,8 +67,8 @@ async def sync_time(uuid: UUID, service: CameraControlService = Depends(get_cont
     return await service.sync_time(uuid)
 
 
-@router.post("/{uuid}/device/reboot", status_code=status.HTTP_204_NO_CONTENT)
-async def reboot(uuid: UUID, service: CameraControlService = Depends(get_control_service)) -> Response:
+@router.post("/{uuid}/device/reboot", dependencies=[Depends(require_admin)], status_code=status.HTTP_204_NO_CONTENT)
+async def reboot_camera(uuid: UUID, service: CameraControlService = Depends(get_control_service)) -> Response:
     """Reboot the camera.
 
     Args:
@@ -82,7 +83,7 @@ async def reboot(uuid: UUID, service: CameraControlService = Depends(get_control
 
 
 @router.get("/{uuid}/video", response_model=VideoRead)
-async def get_video(uuid: UUID, service: CameraControlService = Depends(get_control_service)) -> VideoRead:
+async def get_video_settings(uuid: UUID, service: CameraControlService = Depends(get_control_service)) -> VideoRead:
     """Return the camera's video encoders and the options each offers.
 
     Args:
@@ -95,8 +96,8 @@ async def get_video(uuid: UUID, service: CameraControlService = Depends(get_cont
     return await service.video(uuid)
 
 
-@router.put("/{uuid}/video/{token}", response_model=VideoRead)
-async def update_video(
+@router.put("/{uuid}/video/{token}", dependencies=[Depends(require_admin)], response_model=VideoRead)
+async def update_video_encoder(
     uuid: UUID,
     token: str,
     payload: EncoderUpdate,
@@ -117,7 +118,7 @@ async def update_video(
 
 
 @router.get("/{uuid}/image", response_model=ImageRead)
-async def get_image(uuid: UUID, service: CameraControlService = Depends(get_control_service)) -> ImageRead:
+async def get_image_settings(uuid: UUID, service: CameraControlService = Depends(get_control_service)) -> ImageRead:
     """Return the camera's imaging settings and the options it offers.
 
     Args:
@@ -130,8 +131,8 @@ async def get_image(uuid: UUID, service: CameraControlService = Depends(get_cont
     return await service.image(uuid)
 
 
-@router.patch("/{uuid}/image", response_model=ImageRead)
-async def update_image(
+@router.patch("/{uuid}/image", dependencies=[Depends(require_admin)], response_model=ImageRead)
+async def update_image_settings(
     uuid: UUID,
     payload: ImageSettings,
     service: CameraControlService = Depends(get_control_service),
@@ -150,7 +151,7 @@ async def update_image(
 
 
 @router.get("/{uuid}/motion", response_model=MotionRead)
-async def get_motion(uuid: UUID, service: CameraControlService = Depends(get_control_service)) -> MotionRead:
+async def get_motion_settings(uuid: UUID, service: CameraControlService = Depends(get_control_service)) -> MotionRead:
     """Return the camera's motion detection setup.
 
     Args:
@@ -163,8 +164,8 @@ async def get_motion(uuid: UUID, service: CameraControlService = Depends(get_con
     return await service.motion(uuid)
 
 
-@router.patch("/{uuid}/motion", response_model=MotionRead)
-async def update_motion(
+@router.patch("/{uuid}/motion", dependencies=[Depends(require_admin)], response_model=MotionRead)
+async def update_motion_settings(
     uuid: UUID,
     payload: MotionUpdate,
     service: CameraControlService = Depends(get_control_service),
@@ -196,7 +197,12 @@ async def list_presets(uuid: UUID, service: CameraControlService = Depends(get_c
     return await service.presets(uuid)
 
 
-@router.post("/{uuid}/presets", response_model=PresetsRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/{uuid}/presets",
+    dependencies=[Depends(require_admin)],
+    response_model=PresetsRead,
+    status_code=status.HTTP_201_CREATED,
+)
 async def create_preset(
     uuid: UUID,
     payload: PresetName,
@@ -215,7 +221,7 @@ async def create_preset(
     return await service.create_preset(uuid, payload.name)
 
 
-@router.patch("/{uuid}/presets/{token}", response_model=PresetsRead)
+@router.patch("/{uuid}/presets/{token}", dependencies=[Depends(require_admin)], response_model=PresetsRead)
 async def rename_preset(
     uuid: UUID,
     token: str,
@@ -236,7 +242,7 @@ async def rename_preset(
     return await service.rename_preset(uuid, token, payload.name)
 
 
-@router.delete("/{uuid}/presets/{token}", response_model=PresetsRead)
+@router.delete("/{uuid}/presets/{token}", dependencies=[Depends(require_admin)], response_model=PresetsRead)
 async def remove_preset(
     uuid: UUID,
     token: str,
@@ -255,7 +261,9 @@ async def remove_preset(
     return await service.remove_preset(uuid, token)
 
 
-@router.post("/{uuid}/presets/{token}/goto", status_code=status.HTTP_204_NO_CONTENT)
+@router.post(
+    "/{uuid}/presets/{token}/goto", dependencies=[Depends(require_operator)], status_code=status.HTTP_204_NO_CONTENT
+)
 async def goto_preset(
     uuid: UUID,
     token: str,
@@ -275,7 +283,7 @@ async def goto_preset(
     return no_content()
 
 
-@router.post("/{uuid}/home/goto", status_code=status.HTTP_204_NO_CONTENT)
+@router.post("/{uuid}/home/goto", dependencies=[Depends(require_operator)], status_code=status.HTTP_204_NO_CONTENT)
 async def goto_home(uuid: UUID, service: CameraControlService = Depends(get_control_service)) -> Response:
     """Move the camera to its PTZ home position.
 
@@ -290,7 +298,7 @@ async def goto_home(uuid: UUID, service: CameraControlService = Depends(get_cont
     return no_content()
 
 
-@router.post("/{uuid}/home/set", status_code=status.HTTP_204_NO_CONTENT)
+@router.post("/{uuid}/home/set", dependencies=[Depends(require_admin)], status_code=status.HTTP_204_NO_CONTENT)
 async def set_home(uuid: UUID, service: CameraControlService = Depends(get_control_service)) -> Response:
     """Store the camera's current position as its PTZ home position.
 
@@ -305,7 +313,7 @@ async def set_home(uuid: UUID, service: CameraControlService = Depends(get_contr
     return no_content()
 
 
-@router.get("/{uuid}/recordings", response_model=RecordingsRead)
+@router.get("/{uuid}/recordings", dependencies=[Depends(require_operator)], response_model=RecordingsRead)
 async def list_recordings(
     uuid: UUID,
     start: datetime | None = Query(None, alias="from"),
@@ -326,7 +334,7 @@ async def list_recordings(
     return await service.recordings(uuid, start, end)
 
 
-@router.get("/{uuid}/replay", response_model=ReplayRead)
+@router.get("/{uuid}/replay", dependencies=[Depends(require_operator)], response_model=ReplayRead)
 async def replay_status(uuid: UUID, service: CameraControlService = Depends(get_control_service)) -> ReplayRead:
     """Return the state of the camera's SD card playback session.
 
@@ -340,7 +348,7 @@ async def replay_status(uuid: UUID, service: CameraControlService = Depends(get_
     return await service.replay_status(uuid)
 
 
-@router.post("/{uuid}/replay", response_model=ReplayRead)
+@router.post("/{uuid}/replay", dependencies=[Depends(require_operator)], response_model=ReplayRead)
 async def start_replay(
     uuid: UUID,
     payload: ReplayCreate,
@@ -359,7 +367,7 @@ async def start_replay(
     return await service.start_replay(uuid, payload.start, payload.session)
 
 
-@router.delete("/{uuid}/replay", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{uuid}/replay", dependencies=[Depends(require_operator)], status_code=status.HTTP_204_NO_CONTENT)
 async def stop_replay(
     uuid: UUID,
     session: str | None = Query(None, max_length=64),
@@ -380,7 +388,7 @@ async def stop_replay(
 
 
 @router.get("/{uuid}/extras", response_model=ExtrasRead)
-async def get_extras(uuid: UUID, service: CameraControlService = Depends(get_control_service)) -> ExtrasRead:
+async def get_camera_extras(uuid: UUID, service: CameraControlService = Depends(get_control_service)) -> ExtrasRead:
     """Report whether the camera has a light and a siren behind a V380 bridge.
 
     Args:
@@ -393,7 +401,7 @@ async def get_extras(uuid: UUID, service: CameraControlService = Depends(get_con
     return await service.extras(uuid)
 
 
-@router.post("/{uuid}/extras/light", status_code=status.HTTP_204_NO_CONTENT)
+@router.post("/{uuid}/extras/light", dependencies=[Depends(require_operator)], status_code=status.HTTP_204_NO_CONTENT)
 async def set_light(
     uuid: UUID,
     payload: LightRequest,
@@ -413,7 +421,7 @@ async def set_light(
     return no_content()
 
 
-@router.post("/{uuid}/extras/siren", status_code=status.HTTP_204_NO_CONTENT)
+@router.post("/{uuid}/extras/siren", dependencies=[Depends(require_operator)], status_code=status.HTTP_204_NO_CONTENT)
 async def set_siren(
     uuid: UUID,
     payload: SirenRequest,
@@ -434,7 +442,7 @@ async def set_siren(
 
 
 @router.get("/{uuid}/audio", response_model=AudioRead)
-async def get_audio(uuid: UUID, service: CameraControlService = Depends(get_control_service)) -> AudioRead:
+async def get_camera_audio(uuid: UUID, service: CameraControlService = Depends(get_control_service)) -> AudioRead:
     """Report whether the camera stream carries audio the browser player can play.
 
     Args:

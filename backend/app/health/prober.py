@@ -169,7 +169,11 @@ class HealthProber:
             devices = await session.scalars(
                 select(NetworkDevice).where(NetworkDevice.deleted_at.is_(None), NetworkDevice.enabled.is_(True))
             )
-            cameras = await session.scalars(select(Camera).where(Camera.deleted_at.is_(None), Camera.enabled.is_(True)))
+            cameras = await session.scalars(
+                select(Camera).where(
+                    Camera.deleted_at.is_(None), Camera.enabled.is_(True), Camera.connector_id.is_(None)
+                )
+            )
             links = await session.scalars(select(CameraLink).where(CameraLink.deleted_at.is_(None)))
             return build_targets(list(devices), list(cameras), list(links))
 

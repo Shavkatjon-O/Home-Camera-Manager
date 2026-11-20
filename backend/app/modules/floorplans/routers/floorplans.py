@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, Query, Response, status
 from app.modules.floorplans.deps import get_floor_plan_service
 from app.modules.floorplans.schemas import FloorPlanCreate, FloorPlanList, FloorPlanRead, FloorPlanUpdate
 from app.modules.floorplans.services import FloorPlanService
+from app.tenancy.dependencies import require_admin
 
 router = APIRouter()
 
@@ -33,7 +34,9 @@ async def list_floor_plans(
     return await service.list_page(page, page_size)
 
 
-@router.post("", response_model=FloorPlanRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "", dependencies=[Depends(require_admin)], response_model=FloorPlanRead, status_code=status.HTTP_201_CREATED
+)
 async def create_floor_plan(
     payload: FloorPlanCreate,
     service: FloorPlanService = Depends(get_floor_plan_service),
@@ -64,7 +67,7 @@ async def get_floor_plan(uuid: UUID, service: FloorPlanService = Depends(get_flo
     return await service.detail(uuid)
 
 
-@router.patch("/{uuid}", response_model=FloorPlanRead)
+@router.patch("/{uuid}", dependencies=[Depends(require_admin)], response_model=FloorPlanRead)
 async def update_floor_plan(
     uuid: UUID,
     payload: FloorPlanUpdate,
@@ -83,7 +86,7 @@ async def update_floor_plan(
     return await service.update(uuid, payload)
 
 
-@router.delete("/{uuid}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{uuid}", dependencies=[Depends(require_admin)], status_code=status.HTTP_204_NO_CONTENT)
 async def delete_floor_plan(uuid: UUID, service: FloorPlanService = Depends(get_floor_plan_service)) -> Response:
     """Delete a floor plan.
 

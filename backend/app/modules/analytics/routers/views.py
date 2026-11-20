@@ -7,8 +7,9 @@ from fastapi.responses import Response
 
 from app.analytics import client
 from app.modules.analytics.deps import get_view_service
-from app.modules.analytics.schemas import RulesUpdate, ViewList, ViewRead, ViewUpdate
+from app.modules.analytics.schemas import LiveObjects, RulesUpdate, ViewList, ViewRead, ViewUpdate
 from app.modules.analytics.services import AnalyticsViewService
+from app.tenancy.dependencies import require_admin
 
 router = APIRouter()
 
@@ -30,7 +31,7 @@ async def list_views(
     return await service.list(camera_uuid)
 
 
-@router.patch("/views/{uuid}", response_model=ViewRead)
+@router.patch("/views/{uuid}", dependencies=[Depends(require_admin)], response_model=ViewRead)
 async def update_view(
     uuid: UUID,
     data: ViewUpdate,
@@ -49,7 +50,7 @@ async def update_view(
     return await service.update(uuid, data)
 
 
-@router.put("/views/{uuid}/rules", response_model=ViewRead)
+@router.put("/views/{uuid}/rules", dependencies=[Depends(require_admin)], response_model=ViewRead)
 async def replace_rules(
     uuid: UUID,
     data: RulesUpdate,
@@ -68,8 +69,12 @@ async def replace_rules(
     return await service.replace_rules(uuid, data)
 
 
-@router.get("/views/{uuid}/snapshot")
-async def view_snapshot(
+@router.get(
+    "/views/{uuid}/snapshot",
+    response_class=Response,
+    responses={200: {"content": {"image/jpeg": {"schema": {"type": "string", "format": "binary"}}}}},
+)
+async def get_view_snapshot(
     uuid: UUID,
     reference: bool = Query(False),
     service: AnalyticsViewService = Depends(get_view_service),
@@ -92,8 +97,8 @@ async def view_snapshot(
     return Response(content=data, media_type="image/jpeg", headers=headers)
 
 
-@router.get("/views/{uuid}/objects")
-async def view_objects(uuid: UUID, service: AnalyticsViewService = Depends(get_view_service)) -> dict:
+@router.get("/views/{uuid}/objects", response_model=LiveObjects)
+async def get_view_objects(uuid: UUID, service: AnalyticsViewService = Depends(get_view_service)) -> dict:
     """Return the tracked objects of a view's latest frame.
 
     Args:

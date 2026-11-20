@@ -26,6 +26,7 @@ from app.modules.analytics.schemas.journeys import (
 )
 from app.modules.events.services.events import camera_names
 from app.modules.people.embeddings import to_bytes, to_vector
+from app.tenancy.owners import view_owners
 
 __all__ = ["JourneyService", "centred_scores", "describe", "unit"]
 
@@ -113,9 +114,15 @@ class JourneyService(BaseModelService[AnalyticsJourney]):
         Args:
             report: The report.
         """
+        views = {item.view for item in report.appearances} | {
+            step.view for journey in report.journeys for step in journey.steps
+        }
+        owners = await view_owners(self.session, views)
+        empty = {"site_id": None, "organisation_id": None}
         if report.appearances:
             rows = [
                 {
+                    **owners.get(item.view, empty),
                     "view_uuid": item.view,
                     "camera_uuid": item.camera,
                     "track_id": item.track,
@@ -147,6 +154,7 @@ class JourneyService(BaseModelService[AnalyticsJourney]):
                 "started_at": moment(min(step.start for step in journey.steps)),
                 "ended_at": moment(max(step.end for step in journey.steps)),
                 "views": len({step.view for step in journey.steps}),
+                **owners.get(journey.steps[0].view, empty),
             }
             statement = insert(AnalyticsJourney).values(uuid=journey.id, **values)
             statement = statement.on_conflict_do_update(index_elements=["uuid"], set_=values)

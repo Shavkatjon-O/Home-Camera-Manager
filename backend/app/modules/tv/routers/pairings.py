@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, Request, status
 from app.modules.tv.deps import get_pairing_admin_service, get_pairing_service
 from app.modules.tv.schemas import PairingApprove, PairingCreate, PairingCreated, PairingStatus, TvDeviceRead
 from app.modules.tv.services import TvPairingService
+from app.tenancy.dependencies import require_admin
 
 router = APIRouter()
 
@@ -44,7 +45,12 @@ async def create_pairing(
     return await service.create(payload or PairingCreate(), client_key(request))
 
 
-@router.post("/pairings/approve", response_model=TvDeviceRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/pairings/approve",
+    dependencies=[Depends(require_admin)],
+    response_model=TvDeviceRead,
+    status_code=status.HTTP_201_CREATED,
+)
 async def approve_pairing(
     payload: PairingApprove,
     service: TvPairingService = Depends(get_pairing_admin_service),

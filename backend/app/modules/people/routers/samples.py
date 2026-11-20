@@ -13,8 +13,12 @@ router = APIRouter()
 CROP_HEADERS = {"Cache-Control": "private, max-age=300"}
 
 
-@router.get("/{uuid}/crop")
-async def get_crop(uuid: UUID, service: SampleService = Depends(get_sample_service)) -> FileResponse:
+@router.get(
+    "/{uuid}/crop",
+    response_class=FileResponse,
+    responses={200: {"content": {"image/jpeg": {"schema": {"type": "string", "format": "binary"}}}}},
+)
+async def get_face_crop(uuid: UUID, service: SampleService = Depends(get_sample_service)) -> FileResponse:
     """Return the crop image of a face sample.
 
     The cache time is short because the analytics service may write a better crop for an ongoing face event.

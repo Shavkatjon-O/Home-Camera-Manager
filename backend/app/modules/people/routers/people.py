@@ -19,6 +19,7 @@ from app.modules.people.schemas import (
     PhotoUploadResult,
 )
 from app.modules.people.services import PersonService, SampleService
+from app.tenancy.dependencies import require_admin
 
 from .clusters import router as clusters_router
 from .samples import router as samples_router
@@ -31,7 +32,7 @@ PAGE_SIZE_DEFAULT = 50
 PAGE_SIZE_MAX = 200
 
 
-@router.get("", response_model=PersonList)
+@router.get("", dependencies=[Depends(require_admin)], response_model=PersonList)
 async def list_people(
     page: int = Query(1, ge=1),
     page_size: int = Query(PAGE_SIZE_DEFAULT, ge=1, le=PAGE_SIZE_MAX),
@@ -50,7 +51,7 @@ async def list_people(
     return await service.list_page(page, page_size)
 
 
-@router.post("", response_model=PersonRead, status_code=status.HTTP_201_CREATED)
+@router.post("", dependencies=[Depends(require_admin)], response_model=PersonRead, status_code=status.HTTP_201_CREATED)
 async def create_person(payload: PersonCreate, service: PersonService = Depends(get_person_service)) -> PersonRead:
     """Create a person.
 
@@ -64,7 +65,7 @@ async def create_person(payload: PersonCreate, service: PersonService = Depends(
     return await service.create(payload)
 
 
-@router.get("/{uuid}", response_model=PersonRead)
+@router.get("/{uuid}", dependencies=[Depends(require_admin)], response_model=PersonRead)
 async def get_person(uuid: UUID, service: PersonService = Depends(get_person_service)) -> PersonRead:
     """Return one person with up to 24 samples.
 
@@ -78,7 +79,7 @@ async def get_person(uuid: UUID, service: PersonService = Depends(get_person_ser
     return await service.detail(uuid)
 
 
-@router.patch("/{uuid}", response_model=PersonRead)
+@router.patch("/{uuid}", dependencies=[Depends(require_admin)], response_model=PersonRead)
 async def update_person(
     uuid: UUID,
     payload: PersonUpdate,
@@ -97,7 +98,7 @@ async def update_person(
     return await service.update(uuid, payload)
 
 
-@router.delete("/{uuid}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{uuid}", dependencies=[Depends(require_admin)], status_code=status.HTTP_204_NO_CONTENT)
 async def delete_person(uuid: UUID, service: PersonService = Depends(get_person_service)) -> Response:
     """Delete a person with every sample and crop.
 
@@ -112,7 +113,7 @@ async def delete_person(uuid: UUID, service: PersonService = Depends(get_person_
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@router.post("/{uuid}/photos", response_model=PhotoUploadResult)
+@router.post("/{uuid}/photos", dependencies=[Depends(require_admin)], response_model=PhotoUploadResult)
 async def add_photos(
     uuid: UUID,
     payload: PhotoUploadRequest,
@@ -131,7 +132,9 @@ async def add_photos(
     return await service.add_photos(uuid, payload)
 
 
-@router.delete("/{uuid}/samples/{sample_uuid}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{uuid}/samples/{sample_uuid}", dependencies=[Depends(require_admin)], status_code=status.HTTP_204_NO_CONTENT
+)
 async def delete_sample(
     uuid: UUID,
     sample_uuid: UUID,
@@ -151,7 +154,7 @@ async def delete_sample(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@router.post("/{uuid}/merge", response_model=PersonRead)
+@router.post("/{uuid}/merge", dependencies=[Depends(require_admin)], response_model=PersonRead)
 async def merge_person(
     uuid: UUID,
     payload: PersonMerge,

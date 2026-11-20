@@ -119,7 +119,9 @@ class FaceResultService:
         cluster = None
         if payload.status == FaceStatus.KNOWN:
             person = await self.person(payload.person)
-        else:
+            if not await self.same_organisation(payload.camera, person.organisation_id):
+                person = None
+        if person is None:
             cluster = await self.cluster(payload, seen_at)
         event = await self.session.scalar(select(Event).where(Event.uuid == payload.id))
         sample = await self.session.scalar(
@@ -136,6 +138,9 @@ class FaceResultService:
         joins_cluster = cluster is not None and (sample is None or sample.cluster_id != cluster.id)
         event = await self.store_event(payload, event, started_at, seen_at, person, cluster)
         sample = self.store_sample(payload, sample, seen_at, person, cluster)
+        if cluster is not None and cluster.organisation_id is None:
+            await self.session.flush()
+            cluster.organisation_id = sample.organisation_id
         if cluster is not None:
             if joins_cluster:
                 cluster.seen_count = (cluster.seen_count or 0) + 1
@@ -169,28 +174,50 @@ class FaceResultService:
             raise missing_person(uuid)
         return person
 
+    async def same_organisation(self, camera_uuid: UUID, organisation_id: int | None) -> bool:
+        """Tell whether a gallery entry belongs to the organisation of the camera that saw the face.
+
+        Args:
+            camera_uuid: Camera that saw the face.
+            organisation_id: Organisation of the matched person or cluster, None for one from before
+                organisations, which belongs to every camera.
+
+        Returns:
+            True when both are of the same organisation or the entry has none.
+        """
+        if organisation_id is None:
+            return True
+        camera_organisation = await self.session.scalar(
+            select(Camera.organisation_id).where(Camera.uuid == camera_uuid)
+        )
+        return camera_organisation is None or camera_organisation == organisation_id
+
     async def cluster(self, payload: FaceResult, seen_at: datetime) -> UnknownCluster:
-        """Find or create the unknown cluster of a face.
+        """Find or create the unknown cluster of a face, always within the camera's organisation.
 
         A cluster id the backend does not know is created with that id and the next number, as is a new cluster
         without an id. A cluster that was deleted or named is brought back, since the analytics service still
-        matched a face to it.
+        matched a face to it. A face matched to a person or cluster of another organisation starts a cluster of
+        its own, because a gallery never crosses organisations.
 
         Args:
-            payload: Face result of an unknown face.
+            payload: Face result of an unknown face, or of a known face whose person is of another organisation.
             seen_at: When the face was seen.
 
         Returns:
-            The live cluster.
+            The live cluster; a new one receives the camera's organisation with its first sample.
         """
-        if payload.cluster is not None:
-            existing = await self.session.scalar(select(UnknownCluster).where(UnknownCluster.uuid == payload.cluster))
-            if existing is not None:
+        wanted = payload.cluster if payload.status != FaceStatus.KNOWN else None
+        if wanted is not None:
+            existing = await self.session.scalar(select(UnknownCluster).where(UnknownCluster.uuid == wanted))
+            if existing is not None and await self.same_organisation(payload.camera, existing.organisation_id):
                 existing.deleted_at = None
                 return existing
+            if existing is not None:
+                wanted = None
         highest = await self.session.scalar(select(func.coalesce(func.max(UnknownCluster.number), 0)))
         cluster = UnknownCluster(
-            uuid=payload.cluster or uuid4(),
+            uuid=wanted or uuid4(),
             number=(highest or 0) + 1,
             seen_count=0,
             first_seen_at=seen_at,

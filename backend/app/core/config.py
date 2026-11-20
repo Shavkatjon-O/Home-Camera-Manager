@@ -21,7 +21,37 @@ class Settings(BaseSettings):
         secret_key: Key that signs sessions and encrypts camera passwords.
         admin_username: User created on first start.
         admin_password: Password of that user on first start.
-        session_hours: Lifetime of a session.
+        session_hours: Lifetime of a web session.
+        public_url: Base address the links in emails point at, which the mobile app opens as App Links.
+        registration_enabled: Whether anyone may create an account.
+        access_token_minutes: Lifetime of an access token.
+        access_token_key: PEM of the P-256 key that signs access tokens; empty derives one from the secret key.
+        refresh_idle_days: Days a refresh token stays valid unused.
+        refresh_max_days: Days a device session lasts at most, whatever its refreshes.
+        verify_token_hours: Hours an email confirmation link stays valid.
+        reset_token_minutes: Minutes a password reset link stays valid.
+        invitation_days: Days an invitation stays valid.
+        smtp_host: SMTP server of outgoing mail; empty logs mail instead of sending it.
+        smtp_port: SMTP port.
+        smtp_username: SMTP login, empty for none.
+        smtp_password: SMTP password.
+        smtp_starttls: Whether to upgrade the connection with STARTTLS.
+        smtp_ssl: Whether to connect with TLS from the start.
+        mail_from: Sender of outgoing mail.
+        bootstrap_organisation_name: Organisation the existing installation's rows move into.
+        bootstrap_site_name: Site the existing installation's rows move into.
+        bootstrap_site_kind: Kind of that site.
+        connector_code_minutes: Minutes a connector pairing code stays valid.
+        connector_poll_seconds: Seconds a connector waits between pairing polls.
+        connector_offline_seconds: Seconds without a heartbeat after which a connector counts as offline.
+        webrtc_stun_urls: Comma-separated STUN servers offered to the apps.
+        webrtc_turn_url: TURN server offered to the apps, empty for none.
+        webrtc_turn_username: TURN user.
+        webrtc_turn_password: TURN password.
+        fcm_project_id: Firebase project of FCM HTTP v1 push, empty to turn FCM off.
+        fcm_service_account_file: Path of the Firebase service account key file.
+        ntfy_url: Base address of the ntfy server offered to the apps, empty to turn ntfy off.
+        ntfy_token: Access token for that ntfy server, empty for none.
         go2rtc_url: go2rtc API address.
         transcode_hardware: go2rtc hardware option added to every transcode, empty for none.
         tv_rtsp_username: RTSP user of go2rtc for clients outside its container.
@@ -56,6 +86,43 @@ class Settings(BaseSettings):
     admin_username: str = "admin"
     admin_password: str = ""
     session_hours: int = 168
+
+    public_url: str = "http://127.0.0.1:8750"
+    registration_enabled: bool = True
+
+    access_token_minutes: int = 15
+    access_token_key: str = ""
+    refresh_idle_days: int = 30
+    refresh_max_days: int = 365
+    verify_token_hours: int = 48
+    reset_token_minutes: int = 60
+    invitation_days: int = 7
+
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_username: str = ""
+    smtp_password: str = ""
+    smtp_starttls: bool = True
+    smtp_ssl: bool = False
+    mail_from: str = "Smart Surveillance <no-reply@localhost>"
+
+    bootstrap_organisation_name: str = "Home"
+    bootstrap_site_name: str = "Home"
+    bootstrap_site_kind: str = "home"
+
+    connector_code_minutes: int = 15
+    connector_poll_seconds: int = 5
+    connector_offline_seconds: int = 90
+
+    webrtc_stun_urls: str = ""
+    webrtc_turn_url: str = ""
+    webrtc_turn_username: str = ""
+    webrtc_turn_password: str = ""
+
+    fcm_project_id: str = ""
+    fcm_service_account_file: str = ""
+    ntfy_url: str = ""
+    ntfy_token: str = ""
 
     go2rtc_url: str = "http://go2rtc:1984"
     transcode_hardware: str = ""

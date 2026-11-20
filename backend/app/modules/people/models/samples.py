@@ -8,11 +8,12 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import BaseModel
+from app.models.ownership import SiteOwned
 
 __all__ = ["FaceSample"]
 
 
-class FaceSample(BaseModel):
+class FaceSample(SiteOwned, BaseModel):
     """Face with its embedding, owned by exactly one person or one unknown cluster.
 
     Attributes:

@@ -5,8 +5,6 @@ import hmac
 from fastapi import Depends, Header
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.context import UserContext
-from app.auth.dependencies import get_current_user
 from app.core.config import settings
 from app.core.database import get_db
 from app.core.exceptions import Unauthorized, Unavailable
@@ -14,33 +12,35 @@ from app.modules.analytics.services import AnalyticsIngestService, AnalyticsSett
 from app.modules.analytics.services.counts import AreaService, CountService
 from app.modules.analytics.services.follow import FollowPtzService
 from app.modules.analytics.services.journeys import JourneyService
+from app.tenancy.access import SiteAccess
+from app.tenancy.dependencies import get_site_access
 
 
 def get_view_service(
     session: AsyncSession = Depends(get_db),
-    actor: UserContext = Depends(get_current_user),
+    access: SiteAccess = Depends(get_site_access),
 ) -> AnalyticsViewService:
     """Build the view service for a signed-in request.
 
     Args:
         session: Request-scoped database session.
-        actor: Signed-in user.
+        access: Access of the signed-in member to the request's site.
 
     Returns:
         The service.
     """
-    return AnalyticsViewService(session, actor)
+    return AnalyticsViewService(session, access.user)
 
 
 def get_settings_service(
     session: AsyncSession = Depends(get_db),
-    actor: UserContext = Depends(get_current_user),
+    access: SiteAccess = Depends(get_site_access),
 ) -> AnalyticsSettingsService:
     """Build the settings service for a signed-in request.
 
     Args:
         session: Request-scoped database session.
-        actor: Signed-in user.
+        access: Access of the signed-in member to the request's site.
 
     Returns:
         The service.
@@ -82,50 +82,50 @@ def get_ingest_service(
 
 def get_count_service(
     session: AsyncSession = Depends(get_db),
-    actor: UserContext = Depends(get_current_user),
+    access: SiteAccess = Depends(get_site_access),
 ) -> CountService:
     """Build the count service for a signed-in request.
 
     Args:
         session: Request-scoped database session.
-        actor: Signed-in user.
+        access: Access of the signed-in member to the request's site.
 
     Returns:
         The service.
     """
-    return CountService(session, actor)
+    return CountService(session, access.user)
 
 
 def get_area_service(
     session: AsyncSession = Depends(get_db),
-    actor: UserContext = Depends(get_current_user),
+    access: SiteAccess = Depends(get_site_access),
 ) -> AreaService:
     """Build the area service for a signed-in request.
 
     Args:
         session: Request-scoped database session.
-        actor: Signed-in user.
+        access: Access of the signed-in member to the request's site.
 
     Returns:
         The service.
     """
-    return AreaService(session, actor)
+    return AreaService(session, access.user)
 
 
 def get_journey_service(
     session: AsyncSession = Depends(get_db),
-    actor: UserContext = Depends(get_current_user),
+    access: SiteAccess = Depends(get_site_access),
 ) -> JourneyService:
     """Build the journey service for a signed-in request.
 
     Args:
         session: Request-scoped database session.
-        actor: Signed-in user.
+        access: Access of the signed-in member to the request's site.
 
     Returns:
         The service.
     """
-    return JourneyService(session, actor)
+    return JourneyService(session, access.user)
 
 
 def get_count_ingest_service(

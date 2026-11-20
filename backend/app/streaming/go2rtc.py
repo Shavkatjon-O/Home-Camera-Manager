@@ -3,6 +3,8 @@
 import httpx
 
 STREAMS_PATH = "/api/streams"
+WEBRTC_PATH = "/api/webrtc"
+SDP_TYPE = "application/sdp"
 
 DEFAULT_TIMEOUT_SECONDS = 5.0
 
@@ -186,3 +188,36 @@ class Go2rtcClient:
         if name not in await self.streams():
             return
         raise Go2rtcError(f"go2rtc refused to remove the stream {name} with HTTP {response.status_code}")
+
+    async def webrtc(self, name: str, offer: str, timeout: float = 15.0) -> str:
+        """Exchange a WebRTC offer for go2rtc's answer on a stream.
+
+        Args:
+            name: Stream name.
+            offer: SDP offer of the viewer.
+            timeout: Request timeout in seconds; go2rtc connects to the source before it answers.
+
+        Returns:
+            The SDP answer.
+
+        Raises:
+            Go2rtcError: When go2rtc cannot be reached or refuses the offer.
+        """
+        try:
+            response = await self.client().post(
+                WEBRTC_PATH,
+                params=[("src", name)],
+                content=offer.encode(),
+                headers={"Content-Type": SDP_TYPE},
+                timeout=timeout,
+            )
+        except httpx.HTTPError as exc:
+            raise Go2rtcError(f"go2rtc does not answer ({type(exc).__name__})")
+        if not response.is_success:
+            raise Go2rtcError(f"go2rtc refused the offer for {name} with HTTP {response.status_code}")
+        if "json" in response.headers.get("content-type", ""):
+            try:
+                return str((response.json() or {}).get("sdp") or "")
+            except ValueError:
+                raise Go2rtcError("go2rtc answered the offer with invalid JSON")
+        return response.text

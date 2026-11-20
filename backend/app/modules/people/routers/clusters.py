@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, Query, Response, status
 from app.modules.people.deps import get_cluster_service
 from app.modules.people.schemas import ClusterList, ClusterMerge, ClusterName, ClusterRead, PersonRead
 from app.modules.people.services import ClusterService
+from app.tenancy.dependencies import require_admin
 
 router = APIRouter()
 
@@ -14,7 +15,7 @@ PAGE_SIZE_DEFAULT = 50
 PAGE_SIZE_MAX = 200
 
 
-@router.get("", response_model=ClusterList)
+@router.get("", dependencies=[Depends(require_admin)], response_model=ClusterList)
 async def list_clusters(
     page: int = Query(1, ge=1),
     page_size: int = Query(PAGE_SIZE_DEFAULT, ge=1, le=PAGE_SIZE_MAX),
@@ -33,7 +34,7 @@ async def list_clusters(
     return await service.list_page(page, page_size)
 
 
-@router.post("/{uuid}/name", response_model=PersonRead)
+@router.post("/{uuid}/name", dependencies=[Depends(require_admin)], response_model=PersonRead)
 async def name_cluster(
     uuid: UUID,
     payload: ClusterName,
@@ -52,7 +53,7 @@ async def name_cluster(
     return await service.name(uuid, payload)
 
 
-@router.post("/{uuid}/merge", response_model=ClusterRead)
+@router.post("/{uuid}/merge", dependencies=[Depends(require_admin)], response_model=ClusterRead)
 async def merge_cluster(
     uuid: UUID,
     payload: ClusterMerge,
@@ -71,7 +72,7 @@ async def merge_cluster(
     return await service.merge(uuid, payload.into)
 
 
-@router.delete("/{uuid}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{uuid}", dependencies=[Depends(require_admin)], status_code=status.HTTP_204_NO_CONTENT)
 async def delete_cluster(uuid: UUID, service: ClusterService = Depends(get_cluster_service)) -> Response:
     """Delete an unknown cluster with its samples and crops.
 

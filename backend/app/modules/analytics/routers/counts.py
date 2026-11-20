@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, Query, Response, status
 from app.modules.analytics.deps import get_area_service, get_count_service
 from app.modules.analytics.schemas.counts import AreaCreate, AreaList, AreaRead, AreaReset, AreaUpdate, CountsRead
 from app.modules.analytics.services.counts import AreaService, CountService
+from app.tenancy.dependencies import require_admin, require_operator
 
 router = APIRouter()
 
@@ -47,7 +48,9 @@ async def list_areas(service: AreaService = Depends(get_area_service)) -> AreaLi
     return await service.areas()
 
 
-@router.post("/areas", response_model=AreaRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/areas", dependencies=[Depends(require_admin)], response_model=AreaRead, status_code=status.HTTP_201_CREATED
+)
 async def create_area(payload: AreaCreate, service: AreaService = Depends(get_area_service)) -> AreaRead:
     """Create an area bounded by counting lines.
 
@@ -61,7 +64,7 @@ async def create_area(payload: AreaCreate, service: AreaService = Depends(get_ar
     return await service.create(payload)
 
 
-@router.patch("/areas/{uuid}", response_model=AreaRead)
+@router.patch("/areas/{uuid}", dependencies=[Depends(require_admin)], response_model=AreaRead)
 async def update_area(uuid: UUID, payload: AreaUpdate, service: AreaService = Depends(get_area_service)) -> AreaRead:
     """Change an area.
 
@@ -76,7 +79,7 @@ async def update_area(uuid: UUID, payload: AreaUpdate, service: AreaService = De
     return await service.update(uuid, payload)
 
 
-@router.delete("/areas/{uuid}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/areas/{uuid}", dependencies=[Depends(require_admin)], status_code=status.HTTP_204_NO_CONTENT)
 async def delete_area(uuid: UUID, service: AreaService = Depends(get_area_service)) -> Response:
     """Delete an area.
 
@@ -91,7 +94,7 @@ async def delete_area(uuid: UUID, service: AreaService = Depends(get_area_servic
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@router.post("/areas/{uuid}/reset", response_model=AreaRead)
+@router.post("/areas/{uuid}/reset", dependencies=[Depends(require_operator)], response_model=AreaRead)
 async def reset_area(uuid: UUID, payload: AreaReset, service: AreaService = Depends(get_area_service)) -> AreaRead:
     """Set an area's occupancy now and count on from it.
 

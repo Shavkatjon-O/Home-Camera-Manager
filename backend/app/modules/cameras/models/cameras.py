@@ -1,14 +1,15 @@
 """Database model of a camera."""
 
-from sqlalchemy import Boolean, Integer, String, Text
+from sqlalchemy import BigInteger, Boolean, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import BaseModel
+from app.models.ownership import SiteOwned
 
 __all__ = ["Camera"]
 
 
-class Camera(BaseModel):
+class Camera(SiteOwned, BaseModel):
     """Camera registered on the wall.
 
     Attributes:
@@ -27,6 +28,8 @@ class Camera(BaseModel):
         ptz_enabled: Whether pan, tilt and zoom control is on.
         position: Place of the camera in the wall order.
         enabled: Whether the camera is streamed.
+        connector_id: Connector that reaches the camera on its site's network, or None when the backend reaches
+            the camera itself; the password of a connector camera stays on the connector.
     """
 
     __tablename__ = "cameras"
@@ -50,3 +53,5 @@ class Camera(BaseModel):
     ptz_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     position: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+
+    connector_id: Mapped[int | None] = mapped_column(BigInteger, ForeignKey("connectors.id"), nullable=True, index=True)

@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, Query, Response, status
 from app.modules.health.deps import get_network_device_service
 from app.modules.health.schemas import NetworkDeviceCreate, NetworkDeviceList, NetworkDeviceRead, NetworkDeviceUpdate
 from app.modules.health.services import NetworkDeviceService
+from app.tenancy.dependencies import require_admin
 
 router = APIRouter()
 
@@ -15,7 +16,7 @@ PAGE_SIZE_MAX = 200
 
 
 @router.get("", response_model=NetworkDeviceList)
-async def list_devices(
+async def list_network_devices(
     page: int = Query(1, ge=1),
     page_size: int = Query(PAGE_SIZE_DEFAULT, ge=1, le=PAGE_SIZE_MAX),
     service: NetworkDeviceService = Depends(get_network_device_service),
@@ -33,8 +34,10 @@ async def list_devices(
     return await service.list_page(page, page_size)
 
 
-@router.post("", response_model=NetworkDeviceRead, status_code=status.HTTP_201_CREATED)
-async def create_device(
+@router.post(
+    "", dependencies=[Depends(require_admin)], response_model=NetworkDeviceRead, status_code=status.HTTP_201_CREATED
+)
+async def create_network_device(
     payload: NetworkDeviceCreate,
     service: NetworkDeviceService = Depends(get_network_device_service),
 ) -> NetworkDeviceRead:
@@ -51,7 +54,7 @@ async def create_device(
 
 
 @router.get("/{uuid}", response_model=NetworkDeviceRead)
-async def get_device(
+async def get_network_device(
     uuid: UUID, service: NetworkDeviceService = Depends(get_network_device_service)
 ) -> NetworkDeviceRead:
     """Return one network device.
@@ -66,8 +69,8 @@ async def get_device(
     return await service.detail(uuid)
 
 
-@router.patch("/{uuid}", response_model=NetworkDeviceRead)
-async def update_device(
+@router.patch("/{uuid}", dependencies=[Depends(require_admin)], response_model=NetworkDeviceRead)
+async def update_network_device(
     uuid: UUID,
     payload: NetworkDeviceUpdate,
     service: NetworkDeviceService = Depends(get_network_device_service),
@@ -85,8 +88,10 @@ async def update_device(
     return await service.update(uuid, payload)
 
 
-@router.delete("/{uuid}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_device(uuid: UUID, service: NetworkDeviceService = Depends(get_network_device_service)) -> Response:
+@router.delete("/{uuid}", dependencies=[Depends(require_admin)], status_code=status.HTTP_204_NO_CONTENT)
+async def delete_network_device(
+    uuid: UUID, service: NetworkDeviceService = Depends(get_network_device_service)
+) -> Response:
     """Delete a network device.
 
     Args:

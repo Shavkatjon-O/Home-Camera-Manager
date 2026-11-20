@@ -7,11 +7,12 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import BaseModel
+from app.models.ownership import SiteOwned
 
 __all__ = ["AnalyticsView"]
 
 
-class AnalyticsView(BaseModel):
+class AnalyticsView(SiteOwned, BaseModel):
     """An analysed picture: a whole camera frame or one lens band of it.
 
     Attributes:
@@ -29,6 +30,7 @@ class AnalyticsView(BaseModel):
         falls: Whether the view watches for falls.
         plates: Whether vehicle events on the view read number plates.
         follow: Whether a moving lens turns to follow a person.
+        stream: main or sub, the camera stream the view is analysed on, or None for the main stream.
     """
 
     __tablename__ = "analytics_views"
@@ -49,3 +51,4 @@ class AnalyticsView(BaseModel):
     falls: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default=false())
     plates: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default=false())
     follow: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default=false())
+    stream: Mapped[str | None] = mapped_column(String(4), nullable=True)

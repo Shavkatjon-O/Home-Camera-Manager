@@ -12,6 +12,8 @@ from app.core.exceptions import ServiceError, Unauthorized
 from app.modules.people import deps
 from app.modules.people.routers import people_internal_router, people_router
 from app.modules.people.schemas import ClusterList, FaceResultAck, Gallery, PersonRead
+from app.tenancy.dependencies import get_site_access
+from tests.fakes import site_access
 
 NOW = datetime(2026, 11, 20, 5, 0, tzinfo=UTC)
 PERSON = uuid4()
@@ -76,6 +78,7 @@ async def client(tmp_path, monkeypatch):
     v1.include_router(people_router, prefix="/people")
     application.include_router(v1, prefix="/api/v1")
     application.include_router(people_internal_router, prefix="/internal/people")
+    application.dependency_overrides[get_site_access] = site_access
     application.dependency_overrides[deps.get_cluster_service] = FakeClusters
     application.dependency_overrides[deps.get_person_service] = FakePeople
     application.dependency_overrides[deps.get_sample_service] = lambda: FakeSamples(crop)

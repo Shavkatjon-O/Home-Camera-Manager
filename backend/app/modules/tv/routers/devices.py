@@ -7,12 +7,13 @@ from fastapi import APIRouter, Depends, Response, status
 from app.modules.tv.deps import get_device_service
 from app.modules.tv.schemas import TvDeviceList
 from app.modules.tv.services import TvDeviceService
+from app.tenancy.dependencies import require_admin
 
 router = APIRouter()
 
 
-@router.get("/devices", response_model=TvDeviceList)
-async def list_devices(service: TvDeviceService = Depends(get_device_service)) -> TvDeviceList:
+@router.get("/devices", dependencies=[Depends(require_admin)], response_model=TvDeviceList)
+async def list_tv_devices(service: TvDeviceService = Depends(get_device_service)) -> TvDeviceList:
     """List the active paired TV devices.
 
     Args:
@@ -24,8 +25,8 @@ async def list_devices(service: TvDeviceService = Depends(get_device_service)) -
     return await service.list_all()
 
 
-@router.delete("/devices/{uuid}", status_code=status.HTTP_204_NO_CONTENT)
-async def revoke_device(uuid: UUID, service: TvDeviceService = Depends(get_device_service)) -> Response:
+@router.delete("/devices/{uuid}", dependencies=[Depends(require_admin)], status_code=status.HTTP_204_NO_CONTENT)
+async def revoke_tv_device(uuid: UUID, service: TvDeviceService = Depends(get_device_service)) -> Response:
     """Revoke a paired TV device so its token stops working.
 
     Args:

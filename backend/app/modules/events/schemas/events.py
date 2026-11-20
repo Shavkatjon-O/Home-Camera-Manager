@@ -36,6 +36,7 @@ class EventRead(BaseModel):
         created_at: When the row was inserted.
         updated_at: When the row last changed.
         face: Who a face event shows, None for other events.
+        acknowledged_at: When a member acknowledged the alert, None while it is unacknowledged.
     """
 
     uuid: UUID
@@ -59,6 +60,7 @@ class EventRead(BaseModel):
     created_at: datetime
     updated_at: datetime
     face: FaceRead | None = None
+    acknowledged_at: datetime | None = None
 
 
 class EventList(BaseModel):
@@ -128,4 +130,5 @@ def event_read(event, camera_name: str | None, until: datetime, face: FaceRead |
         created_at=event.created_at,
         updated_at=event.updated_at,
         face=face,
+        acknowledged_at=getattr(event, "acknowledged_at", None),
     )

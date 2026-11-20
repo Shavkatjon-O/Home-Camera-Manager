@@ -7,11 +7,12 @@ from fastapi import APIRouter, Depends
 from app.modules.health.deps import get_camera_link_service
 from app.modules.health.schemas import CameraLinkRead, CameraLinkUpdate
 from app.modules.health.services import CameraLinkService
+from app.tenancy.dependencies import require_admin
 
 router = APIRouter()
 
 
-@router.put("/{camera_uuid}", response_model=CameraLinkRead)
+@router.put("/{camera_uuid}", dependencies=[Depends(require_admin)], response_model=CameraLinkRead)
 async def put_camera_link(
     camera_uuid: UUID,
     payload: CameraLinkUpdate,

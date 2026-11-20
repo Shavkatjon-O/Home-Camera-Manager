@@ -198,6 +198,25 @@ class CameraControlService(BaseModelService[Camera]):
         self.directory = services
         self.replays = replays
 
+    async def get(self, uuid: UUID) -> Camera:
+        """Load a camera the backend reaches itself.
+
+        Args:
+            uuid: Public id of the camera.
+
+        Returns:
+            The camera.
+
+        Raises:
+            Conflict: The camera is reached through a connector, which does not relay camera settings yet.
+        """
+        camera = await super().get(uuid)
+        if camera.connector_id is not None:
+            raise Conflict(
+                "connector_camera", "Camera settings of a camera behind a connector are not available yet; PTZ is"
+            )
+        return camera
+
     async def open(self, endpoint: OnvifEndpoint) -> Connection:
         """Open an ONVIF connection to an endpoint.
 

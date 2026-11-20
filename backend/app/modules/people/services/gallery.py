@@ -6,7 +6,7 @@ import json
 from sqlalchemy import and_, case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import FaceSample, Person, UnknownCluster
+from app.models import FaceSample, Organisation, Person, UnknownCluster
 from app.modules.people.embeddings import encode_embedding
 from app.modules.people.enums import SampleSource
 from app.modules.people.schemas import Gallery, GalleryCluster, GalleryPerson
@@ -56,7 +56,8 @@ class GalleryService:
     def people_statement(self):
         """Build the query for the best embeddings of every live person.
 
-        Each person gets at most 30 embeddings: every uploaded sample first, newest first, then camera samples by
+        Only organisations with face recognition on take part. Each person gets at most 30 embeddings: every
+        uploaded sample first, newest first, then camera samples by
         quality.
 
         Returns:
@@ -85,7 +86,8 @@ class GalleryService:
         return (
             select(Person.uuid, Person.name, ranked.c.embedding)
             .join(ranked, ranked.c.person_id == Person.id)
-            .where(Person.deleted_at.is_(None), ranked.c.rank <= EMBEDDINGS_PER_PERSON)
+            .join(Organisation, Organisation.id == Person.organisation_id)
+            .where(Person.deleted_at.is_(None), ranked.c.rank <= EMBEDDINGS_PER_PERSON, Organisation.faces_enabled)
             .order_by(func.lower(Person.name), Person.id, ranked.c.rank)
         )
 
@@ -98,7 +100,12 @@ class GalleryService:
         return (
             select(UnknownCluster.uuid, UnknownCluster.number, UnknownCluster.centroid, func.count(FaceSample.id))
             .outerjoin(FaceSample, and_(FaceSample.cluster_id == UnknownCluster.id, FaceSample.deleted_at.is_(None)))
-            .where(UnknownCluster.deleted_at.is_(None), UnknownCluster.centroid.is_not(None))
+            .join(Organisation, Organisation.id == UnknownCluster.organisation_id)
+            .where(
+                UnknownCluster.deleted_at.is_(None),
+                UnknownCluster.centroid.is_not(None),
+                Organisation.faces_enabled,
+            )
             .group_by(UnknownCluster.id)
             .order_by(UnknownCluster.number)
         )

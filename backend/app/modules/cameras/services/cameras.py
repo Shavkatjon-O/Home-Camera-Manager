@@ -1,6 +1,7 @@
 """Camera registry service."""
 
-from uuid import UUID
+import logging
+from uuid import UUID, uuid4
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,7 +10,7 @@ from app.auth.context import UserContext
 from app.core.base_service import BaseModelService
 from app.core.exceptions import BadGateway, Conflict, NotFound, Unprocessable
 from app.core.security import decrypt_secret, encrypt_secret
-from app.models import Camera
+from app.models import Camera, Connector
 from app.modules.cameras.enums import CameraBrand, CameraSort
 from app.modules.cameras.schemas import (
     CameraCreate,
@@ -21,6 +22,7 @@ from app.modules.cameras.schemas import (
     PtzMove,
 )
 from app.modules.cameras.services.defaults import DEFAULT_RTSP_PORT, apply_brand_defaults
+from app.modules.connectors.agent import AgentClient
 from app.onvif.cache import OnvifCache, PtzTarget, onvif_cache
 from app.onvif.client import OnvifClient, pick_streams, uri_path
 from app.onvif.soap import OnvifError
@@ -28,6 +30,8 @@ from app.streaming.names import MAIN, SUB, stream_name
 from app.streaming.supervisor import CameraSupervisor, supervisor
 
 __all__ = ["CameraService"]
+
+logger = logging.getLogger(__name__)
 
 STREAM_FIELDS = ("host", "rtsp_port", "username", "main_path", "sub_path", "enabled")
 ONVIF_FIELDS = ("host", "onvif_port", "username", "ptz_enabled")
@@ -63,11 +67,28 @@ class CameraService(BaseModelService[Camera]):
         self.cameras = cameras
         self.onvif = onvif
 
-    def read(self, camera: Camera) -> CameraRead:
+    async def connector_uuids(self, cameras: list[Camera]) -> dict[int, UUID]:
+        """Load the public ids of the connectors of cameras.
+
+        Args:
+            cameras: Camera rows.
+
+        Returns:
+            Connector database id to public id.
+        """
+        ids = {camera.connector_id for camera in cameras if camera.connector_id is not None}
+        if not ids:
+            return {}
+        return dict(
+            (await self.session.execute(select(Connector.id, Connector.uuid).where(Connector.id.in_(ids)))).all()
+        )
+
+    def read(self, camera: Camera, connectors: dict[int, UUID] | None = None) -> CameraRead:
         """Build the API view of a camera with its last known status.
 
         Args:
             camera: Camera row.
+            connectors: Connector database id to public id, for a connector camera.
 
         Returns:
             The camera as the API returns it.
@@ -97,7 +118,19 @@ class CameraService(BaseModelService[Camera]):
             ),
             created_at=camera.created_at,
             updated_at=camera.updated_at,
+            connector=(connectors or {}).get(camera.connector_id) if camera.connector_id else None,
         )
+
+    async def read_one(self, camera: Camera) -> CameraRead:
+        """Build the API view of one camera with its connector.
+
+        Args:
+            camera: Camera row.
+
+        Returns:
+            The camera as the API returns it.
+        """
+        return self.read(camera, await self.connector_uuids([camera]))
 
     def live(self):
         """Build a query for cameras that have not been soft-deleted.
@@ -124,9 +157,10 @@ class CameraService(BaseModelService[Camera]):
             query = query.order_by(Camera.position.asc(), Camera.created_at.desc(), Camera.id.desc())
         else:
             query = query.order_by(Camera.created_at.desc(), Camera.id.desc())
-        rows = await self.session.scalars(query.offset((page - 1) * page_size).limit(page_size))
+        rows = list(await self.session.scalars(query.offset((page - 1) * page_size).limit(page_size)))
+        connectors = await self.connector_uuids(rows)
         return CameraList(
-            items=[self.read(camera) for camera in rows],
+            items=[self.read(camera, connectors) for camera in rows],
             total=total or 0,
             page=page,
             page_size=page_size,
@@ -141,7 +175,7 @@ class CameraService(BaseModelService[Camera]):
         Returns:
             The camera.
         """
-        return self.read(await self.get(uuid))
+        return await self.read_one(await self.get(uuid))
 
     async def ensure_unique(self, host: str, main_path: str, exclude_id: int | None = None) -> None:
         """Check that no other live camera has the same host and main path.
@@ -212,6 +246,105 @@ class CameraService(BaseModelService[Camera]):
             result["sub_path"] = uri_path(sub.stream_uri)[0]
         return result
 
+    async def connector(self, uuid: UUID) -> Connector:
+        """Load a paired connector of the request's site.
+
+        Args:
+            uuid: Public id of the connector.
+
+        Returns:
+            The connector.
+
+        Raises:
+            NotFound: The site has no paired connector with the id.
+        """
+        connector = await self.session.scalar(
+            select(Connector).where(
+                Connector.uuid == uuid, Connector.revoked_at.is_(None), Connector.deleted_at.is_(None)
+            )
+        )
+        if connector is None:
+            raise NotFound("connector_not_found", f"Connector {uuid} does not exist")
+        return connector
+
+    async def camera_connector(self, camera: Camera) -> Connector:
+        """Load the connector of a connector camera.
+
+        Args:
+            camera: Camera row.
+
+        Returns:
+            The connector.
+
+        Raises:
+            Conflict: The connector was removed.
+        """
+        connector = await self.session.get(Connector, camera.connector_id)
+        if connector is None or connector.revoked_at is not None:
+            raise Conflict("connector_revoked", "The camera's connector was removed")
+        return connector
+
+    def agent_config(self, camera: Camera, password: str | None) -> dict:
+        """Build the camera fields handed to its connector.
+
+        Args:
+            camera: Camera row.
+            password: Password to hand over; None keeps the one the connector holds, empty removes it.
+
+        Returns:
+            The fields with the credentials.
+        """
+        return {
+            "name": camera.name,
+            "brand": camera.brand,
+            "host": camera.host,
+            "rtsp_port": camera.rtsp_port,
+            "onvif_port": camera.onvif_port,
+            "username": camera.username,
+            "password": password,
+            "main_path": camera.main_path,
+            "sub_path": camera.sub_path,
+            "enabled": camera.enabled,
+        }
+
+    async def resolve_through(self, connector: Connector, values: dict, password: str | None) -> dict:
+        """Fill missing stream paths and PTZ support by asking the camera through its connector.
+
+        Args:
+            connector: The connector.
+            values: Camera fields from the request.
+            password: Camera password, if any.
+
+        Returns:
+            Copy of the values with what the connector found filled in where missing.
+
+        Raises:
+            BadGateway: The connector could not reach the camera and no main path is known.
+        """
+        if values.get("main_path") and values.get("ptz_enabled") is not None:
+            return values
+        found = await AgentClient(connector).test_camera(
+            {
+                "host": values["host"],
+                "brand": CameraBrand(values["brand"]).value,
+                "rtsp_port": values.get("rtsp_port"),
+                "onvif_port": values.get("onvif_port"),
+                "username": values.get("username"),
+                "password": password,
+                "main_path": values.get("main_path"),
+                "sub_path": values.get("sub_path"),
+            }
+        )
+        if not found.get("main_path") and not values.get("main_path"):
+            raise BadGateway("camera_unreachable", found.get("error") or "The connector found no stream on the camera")
+        result = dict(values)
+        for field in ("main_path", "sub_path", "rtsp_port"):
+            if result.get(field) is None and found.get(field) is not None:
+                result[field] = found[field]
+        if result.get("ptz_enabled") is None and found.get("ptz") is not None:
+            result["ptz_enabled"] = bool(found["ptz"])
+        return result
+
     async def create(self, payload: CameraCreate) -> CameraRead:
         """Register a camera, start streaming it and probe it in the background.
 
@@ -225,9 +358,12 @@ class CameraService(BaseModelService[Camera]):
             Unprocessable: No main stream path is given or found.
             Conflict: A live camera already has that host and main path.
         """
-        values = payload.model_dump(exclude={"password"})
+        values = payload.model_dump(exclude={"password", "connector"})
         values = apply_brand_defaults(payload.brand, values)
-        if payload.brand == CameraBrand.ONVIF and (not values.get("main_path") or values.get("ptz_enabled") is None):
+        connector = await self.connector(payload.connector) if payload.connector else None
+        if connector is not None:
+            values = await self.resolve_through(connector, values, payload.password)
+        elif payload.brand == CameraBrand.ONVIF and (not values.get("main_path") or values.get("ptz_enabled") is None):
             values = await self.resolve_onvif(values, payload.password)
         if not values.get("main_path"):
             raise Unprocessable("main_path_required", "A main stream path is required")
@@ -237,6 +373,8 @@ class CameraService(BaseModelService[Camera]):
             values["ptz_enabled"] = False
         await self.ensure_unique(values["host"], values["main_path"])
         camera = Camera(
+            uuid=uuid4(),
+            connector_id=connector.id if connector is not None else None,
             name=values["name"],
             brand=CameraBrand(values["brand"]).value,
             location=values.get("location"),
@@ -245,7 +383,7 @@ class CameraService(BaseModelService[Camera]):
             rtsp_port=values["rtsp_port"],
             onvif_port=values.get("onvif_port"),
             username=values.get("username"),
-            password_encrypted=encrypt_secret(payload.password) if payload.password else None,
+            password_encrypted=encrypt_secret(payload.password) if payload.password and connector is None else None,
             main_path=values["main_path"],
             sub_path=values.get("sub_path"),
             lenses=values.get("lenses") or 1,
@@ -253,12 +391,15 @@ class CameraService(BaseModelService[Camera]):
             position=await self.next_position(),
             enabled=values["enabled"],
         )
+        if connector is not None:
+            await AgentClient(connector).put_camera(camera.uuid, self.agent_config(camera, payload.password))
         self.session.add(camera)
         await self.commit()
         await self.session.refresh(camera)
         await self.cameras.sync(camera)
-        self.cameras.probe_later(camera)
-        return self.read(camera)
+        if connector is None:
+            self.cameras.probe_later(camera)
+        return await self.read_one(camera)
 
     async def update(self, uuid: UUID, payload: CameraUpdate) -> CameraRead:
         """Change a camera and refresh whatever depends on the changed fields.
@@ -298,6 +439,12 @@ class CameraService(BaseModelService[Camera]):
             else:
                 password_changed = decrypt_secret(camera.password_encrypted) != password
                 camera.password_encrypted = encrypt_secret(password)
+        connector = await self.session.get(Connector, camera.connector_id) if camera.connector_id else None
+        if connector is not None:
+            camera.password_encrypted = None
+            changed = any(before[field] != getattr(camera, field) for field in STREAM_FIELDS + ONVIF_FIELDS)
+            if changed or password_given or "brand" in changes or "sub_path" in changes:
+                await AgentClient(connector).put_camera(camera.uuid, self.agent_config(camera, password))
         await self.commit()
         await self.session.refresh(camera)
         stream_changed = password_changed or any(before[field] != getattr(camera, field) for field in STREAM_FIELDS)
@@ -306,9 +453,9 @@ class CameraService(BaseModelService[Camera]):
             self.onvif.forget(camera.uuid)
         if stream_changed:
             await self.cameras.sync(camera)
-        if before["host"] != camera.host or before["rtsp_port"] != camera.rtsp_port:
+        if connector is None and (before["host"] != camera.host or before["rtsp_port"] != camera.rtsp_port):
             self.cameras.probe_later(camera)
-        return self.read(camera)
+        return await self.read_one(camera)
 
     async def delete(self, uuid: UUID) -> None:
         """Soft-delete a camera and remove its streams and cached ONVIF connection.
@@ -321,6 +468,13 @@ class CameraService(BaseModelService[Camera]):
         await self.commit()
         self.onvif.forget(camera.uuid)
         await self.cameras.remove(camera.uuid)
+        if camera.connector_id is not None:
+            connector = await self.session.get(Connector, camera.connector_id)
+            if connector is not None and connector.revoked_at is None:
+                try:
+                    await AgentClient(connector).delete_camera(camera.uuid)
+                except (BadGateway, Conflict) as exc:
+                    logger.warning("The connector keeps the removed camera %s until it syncs: %s", uuid, exc.message)
 
     async def reorder(self, uuids: list[UUID]) -> None:
         """Set the wall order, keeping cameras that are not listed after the listed ones.
@@ -356,8 +510,9 @@ class CameraService(BaseModelService[Camera]):
             The camera with its status after the probe.
         """
         camera = await self.get(uuid)
-        await self.cameras.probe_camera(camera)
-        return self.read(camera)
+        if camera.connector_id is None:
+            await self.cameras.probe_camera(camera)
+        return await self.read_one(camera)
 
     async def ptz_target(self, camera: Camera) -> PtzTarget:
         """Resolve the ONVIF client, address and profile used to move a camera.
@@ -400,6 +555,11 @@ class CameraService(BaseModelService[Camera]):
             BadGateway: The camera rejects the move.
         """
         camera = await self.get(uuid)
+        if camera.connector_id is not None:
+            if not camera.ptz_enabled:
+                raise Conflict("ptz_not_supported", "PTZ is not enabled for this camera")
+            await AgentClient(await self.camera_connector(camera)).ptz(camera.uuid, move.pan, move.tilt, move.zoom)
+            return
         target = await self.ptz_target(camera)
         try:
             await target.client.continuous_move(target.address, target.profile_token, move.pan, move.tilt, move.zoom)
@@ -419,6 +579,11 @@ class CameraService(BaseModelService[Camera]):
             BadGateway: The camera rejects the stop.
         """
         camera = await self.get(uuid)
+        if camera.connector_id is not None:
+            if not camera.ptz_enabled:
+                raise Conflict("ptz_not_supported", "PTZ is not enabled for this camera")
+            await AgentClient(await self.camera_connector(camera)).ptz_stop(camera.uuid)
+            return
         target = await self.ptz_target(camera)
         try:
             await target.client.stop(target.address, target.profile_token)

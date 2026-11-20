@@ -6,6 +6,8 @@ from contextlib import asynccontextmanager
 from fastapi import APIRouter, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from fastapi.routing import APIRoute
+from pydantic import BaseModel
 from sqlalchemy.exc import SQLAlchemyError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -20,11 +22,15 @@ from app.core.seed import seed_admin
 from app.health.prober import health_prober
 from app.modules.analytics.routers import analytics_internal_router
 from app.modules.people.routers import people_internal_router
+from app.modules.push.services import PushDispatcher
 from app.modules.tv.routers import tv_internal_router
 from app.streaming.supervisor import supervisor
+from app.tenancy.bootstrap import run_bootstrap
 
 setup_logging()
 logger = logging.getLogger(__name__)
+
+push_dispatcher = PushDispatcher(camera_events.broker)
 
 
 @asynccontextmanager
@@ -40,18 +46,76 @@ async def lifespan(application: FastAPI):
     require_secret_key()
     await verify_db_connection()
     await seed_admin()
+    await run_bootstrap()
     await supervisor.start()
     await health_prober.start()
     await camera_events.start()
+    await push_dispatcher.start()
     logger.info("%s %s started", APP_NAME, APP_VERSION)
     yield
+    await push_dispatcher.stop()
     await camera_events.stop()
     await health_prober.stop()
     await supervisor.stop()
     await async_engine.dispose()
 
 
-app = FastAPI(title=APP_NAME, version=APP_VERSION, lifespan=lifespan)
+class ErrorDetail(BaseModel):
+    """Machine and human readable reason of a failed request.
+
+    Attributes:
+        code: Stable error code, such as camera_not_found.
+        message: Explanation for people.
+    """
+
+    code: str
+    message: str
+
+
+class ErrorBody(BaseModel):
+    """Body of every error response.
+
+    Attributes:
+        detail: The reason.
+    """
+
+    detail: ErrorDetail
+
+
+ERROR_RESPONSES = {
+    status: {"model": ErrorBody, "description": description}
+    for status, description in (
+        (401, "Not signed in"),
+        (403, "Signed in without the role or site this needs"),
+        (404, "Not found"),
+        (409, "Conflicts with the current state"),
+        (422, "Invalid request"),
+        (429, "Too many requests"),
+        (502, "A camera, connector or go2rtc did not answer"),
+        (503, "Not available right now"),
+    )
+}
+
+
+def operation_id(route: APIRoute) -> str:
+    """Name an operation after its route function, which stays the same as long as the function keeps its name.
+
+    Args:
+        route: The route.
+
+    Returns:
+        The function name, such as list_cameras.
+    """
+    return route.name
+
+
+app = FastAPI(
+    title=APP_NAME,
+    version=APP_VERSION,
+    lifespan=lifespan,
+    generate_unique_id_function=operation_id,
+    responses=ERROR_RESPONSES,
+)
 
 
 def error_body(code: str, message: str) -> dict:
@@ -150,8 +214,30 @@ async def health_status() -> dict:
 health_router = APIRouter()
 
 
-@health_router.get("/health", tags=["health"])
-async def health() -> dict:
+class HealthRead(BaseModel):
+    """Whether the backend and its database work.
+
+    Attributes:
+        status: ok.
+    """
+
+    status: str
+
+
+class ServiceRead(BaseModel):
+    """Name and version of the service.
+
+    Attributes:
+        service: Service name.
+        version: Service version.
+    """
+
+    service: str
+    version: str
+
+
+@health_router.get("/health", tags=["health"], response_model=HealthRead)
+async def get_service_health() -> dict:
     """Report whether the backend and its database work.
 
     Returns:
@@ -160,7 +246,7 @@ async def health() -> dict:
     return await health_status()
 
 
-@app.get("/", tags=["health"])
+@app.get("/", tags=["health"], response_model=ServiceRead, include_in_schema=False)
 async def root() -> dict:
     """Report the service name and version.
 
@@ -170,7 +256,17 @@ async def root() -> dict:
     return {"service": APP_NAME, "version": APP_VERSION}
 
 
-app.include_router(health_router)
+@app.get("/api/v1/version", tags=["health"], response_model=ServiceRead)
+async def get_service_version() -> dict:
+    """Report the service name and version.
+
+    Returns:
+        Name and version.
+    """
+    return {"service": APP_NAME, "version": APP_VERSION}
+
+
+app.include_router(health_router, include_in_schema=False)
 app.include_router(health_router, prefix="/api/v1")
 app.include_router(v1_routers, prefix="/api/v1")
 app.include_router(tv_internal_router, prefix="/internal/tv", include_in_schema=False)

@@ -5,11 +5,12 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import BaseModel
+from app.models.ownership import SiteOwned
 
 __all__ = ["AnalyticsLine"]
 
 
-class AnalyticsLine(BaseModel):
+class AnalyticsLine(SiteOwned, BaseModel):
     """A line of an analytics view.
 
     Attributes:

@@ -6,11 +6,12 @@ from sqlalchemy import String, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import BaseModel
+from app.models.ownership import SiteOwned
 
 __all__ = ["CameraLink"]
 
 
-class CameraLink(BaseModel):
+class CameraLink(SiteOwned, BaseModel):
     """Connection of a camera to the network device it hangs off.
 
     Attributes:

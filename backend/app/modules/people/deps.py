@@ -6,8 +6,6 @@ from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.context import UserContext
-from app.auth.dependencies import get_current_user
 from app.camera_events.engine import camera_events
 from app.core.config import settings
 from app.core.database import get_db
@@ -21,6 +19,8 @@ from app.modules.people.services import (
     PersonService,
     SampleService,
 )
+from app.tenancy.access import SiteAccess
+from app.tenancy.dependencies import get_site_access
 
 analytics_bearer = HTTPBearer(auto_error=False)
 
@@ -70,7 +70,7 @@ def get_analytics_client() -> AnalyticsClient:
 
 def get_person_service(
     session: AsyncSession = Depends(get_db),
-    actor: UserContext = Depends(get_current_user),
+    access: SiteAccess = Depends(get_site_access),
     store: CropStore = Depends(get_crop_store),
     analytics: AnalyticsClient = Depends(get_analytics_client),
 ) -> PersonService:
@@ -78,50 +78,50 @@ def get_person_service(
 
     Args:
         session: Database session for the request.
-        actor: Signed-in user making the request.
+        access: Access of the signed-in member to the request's site.
         store: Storage of face crops.
         analytics: Client of the analytics enrollment endpoint.
 
     Returns:
         Person service acting for the user.
     """
-    return PersonService(session, actor, store, analytics)
+    return PersonService(session, access.user, store, analytics)
 
 
 def get_cluster_service(
     session: AsyncSession = Depends(get_db),
-    actor: UserContext = Depends(get_current_user),
+    access: SiteAccess = Depends(get_site_access),
     store: CropStore = Depends(get_crop_store),
 ) -> ClusterService:
     """Build the unknown cluster service for a signed-in user.
 
     Args:
         session: Database session for the request.
-        actor: Signed-in user making the request.
+        access: Access of the signed-in member to the request's site.
         store: Storage of face crops.
 
     Returns:
         Cluster service acting for the user.
     """
-    return ClusterService(session, actor, store)
+    return ClusterService(session, access.user, store)
 
 
 def get_sample_service(
     session: AsyncSession = Depends(get_db),
-    actor: UserContext = Depends(get_current_user),
+    access: SiteAccess = Depends(get_site_access),
     store: CropStore = Depends(get_crop_store),
 ) -> SampleService:
     """Build the face sample service for a signed-in user.
 
     Args:
         session: Database session for the request.
-        actor: Signed-in user making the request.
+        access: Access of the signed-in member to the request's site.
         store: Storage of face crops.
 
     Returns:
         Sample service acting for the user.
     """
-    return SampleService(session, actor, store)
+    return SampleService(session, access.user, store)
 
 
 def get_face_result_service(session: AsyncSession = Depends(get_db)) -> FaceResultService:

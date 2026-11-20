@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, Query
 from app.modules.search.deps import get_event_search_service, get_facet_service, get_similar_service
 from app.modules.search.schemas import EventFilters, Facets, ResultPage, SimilarPage, SimilarQuery
 from app.modules.search.services import EventSearchService, FacetService, SimilarService
+from app.tenancy.dependencies import require_admin
 
 router = APIRouter()
 
@@ -71,7 +72,7 @@ async def search_events(
     return await service.search(filters, page, page_size)
 
 
-@router.post("/similar", response_model=SimilarPage)
+@router.post("/similar", dependencies=[Depends(require_admin)], response_model=SimilarPage)
 async def search_similar(
     payload: SimilarQuery,
     service: SimilarService = Depends(get_similar_service),

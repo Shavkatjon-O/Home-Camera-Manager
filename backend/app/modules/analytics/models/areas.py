@@ -7,11 +7,12 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import BaseModel
+from app.models.ownership import SiteOwned
 
 __all__ = ["AnalyticsArea"]
 
 
-class AnalyticsArea(BaseModel):
+class AnalyticsArea(SiteOwned, BaseModel):
     """An area and the lines that bound it.
 
     Attributes:

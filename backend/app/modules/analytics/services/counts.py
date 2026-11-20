@@ -28,6 +28,7 @@ from app.modules.analytics.schemas.counts import (
     CountTotalRead,
 )
 from app.modules.events.services.events import camera_names
+from app.tenancy.owners import view_owners
 
 __all__ = ["AreaService", "CountService", "aggregate", "local_bucket", "occupancy", "occupancy_start"]
 
@@ -161,8 +162,11 @@ class CountService(BaseModelService[AnalyticsCount]):
         """
         if not report.buckets:
             return
+        owners = await view_owners(self.session, {item.view for item in report.buckets})
+        empty = {"site_id": None, "organisation_id": None}
         rows = [
             {
+                **owners.get(item.view, empty),
                 "uuid": uuid4(),
                 "boot": report.boot,
                 "view_uuid": item.view,

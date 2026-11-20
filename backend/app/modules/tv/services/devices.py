@@ -104,4 +104,10 @@ class TvDeviceService(BaseModelService[TvDevice]):
         if device.last_seen_at is None or now - device.last_seen_at >= LAST_SEEN_STEP:
             device.last_seen_at = now
             await self.commit()
-        return TvDeviceContext(id=device.id, uuid=device.uuid, name=device.name)
+        return TvDeviceContext(
+            id=device.id,
+            uuid=device.uuid,
+            name=device.name,
+            site_id=device.site_id,
+            organisation_id=device.organisation_id,
+        )

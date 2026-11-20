@@ -10,9 +10,10 @@ from sqlalchemy import select
 from app.core.config import settings
 from app.core.database import async_session_maker
 from app.core.security import decrypt_secret
-from app.models import Camera
+from app.models import Camera, Connector
+from app.modules.connectors.agent import agent_address
 from app.streaming.go2rtc import Go2rtcClient, Go2rtcError
-from app.streaming.names import belongs_to, camera_streams, is_managed
+from app.streaming.names import MAIN, SUB, belongs_to, camera_streams, is_managed, stream_name
 from app.streaming.status import ProbeResult, StatusStore, probe
 
 logger = logging.getLogger(__name__)
@@ -21,17 +22,51 @@ PROBE_CONCURRENCY = 32
 RETRY_SECONDS = 5.0
 
 
-def streams_for(camera: Camera) -> dict[str, list[str]]:
+def connector_streams(camera: Camera, connector: Connector | None) -> dict[str, list[str]]:
+    """Build the go2rtc streams of a camera that central pulls from its connector's go2rtc.
+
+    The connector's go2rtc names the camera's streams as central does, so only the address differs, and that
+    address is the same in direct and tunnel mode apart from its value.
+
+    Args:
+        camera: Connector camera.
+        connector: Its connector, if loaded.
+
+    Returns:
+        The sources of each stream, empty while the connector is removed or has no address.
+    """
+    if connector is None or connector.revoked_at is not None:
+        return {}
+    address = agent_address(connector)
+    if not address:
+        return {}
+    main = f"/{stream_name(camera.uuid, MAIN)}"
+    sub = f"/{stream_name(camera.uuid, SUB)}" if camera.sub_path else None
+    return camera_streams(
+        camera.uuid,
+        address,
+        connector.rtsp_port,
+        main,
+        sub,
+        connector.stream_username,
+        decrypt_secret(connector.stream_password_encrypted),
+    )
+
+
+def streams_for(camera: Camera, connector: Connector | None = None) -> dict[str, list[str]]:
     """Build the go2rtc streams a camera should have.
 
     Args:
         camera: Camera to build the streams for.
+        connector: The camera's connector, for a connector camera.
 
     Returns:
         The sources of each stream keyed by stream name, empty for a disabled or deleted camera.
     """
     if not camera.enabled or camera.deleted_at is not None:
         return {}
+    if camera.connector_id is not None:
+        return connector_streams(camera, connector)
     return camera_streams(
         camera.uuid,
         camera.host,
@@ -53,6 +88,7 @@ class CameraSupervisor:
         lock: Lock that serializes changes to the go2rtc streams.
         task: Task running the supervision loop.
         background: Probe tasks started by probe_later.
+        connectors: Connectors of the connector cameras, as last loaded.
     """
 
     def __init__(self, go2rtc: Go2rtcClient, statuses: StatusStore, interval: float):
@@ -70,6 +106,7 @@ class CameraSupervisor:
         self.lock = asyncio.Lock()
         self.task: asyncio.Task | None = None
         self.background: set[asyncio.Task] = set()
+        self.connectors: dict[int, Connector] = {}
 
     async def start(self) -> None:
         """Start the supervision loop unless it is already running."""
@@ -122,8 +159,16 @@ class CameraSupervisor:
             The cameras.
         """
         async with async_session_maker() as session:
-            rows = await session.scalars(select(Camera).where(Camera.deleted_at.is_(None)))
-            return list(rows)
+            rows = list(await session.scalars(select(Camera).where(Camera.deleted_at.is_(None))))
+            ids = {camera.connector_id for camera in rows if camera.connector_id is not None}
+            if ids:
+                self.connectors = {
+                    connector.id: connector
+                    for connector in await session.scalars(select(Connector).where(Connector.id.in_(ids)))
+                }
+            else:
+                self.connectors = {}
+            return rows
 
     async def apply(self, desired: dict[str, list[str]], scope: Callable[[str], bool]) -> None:
         """Bring the go2rtc streams in line with the desired ones.
@@ -154,7 +199,7 @@ class CameraSupervisor:
         """
         desired = {}
         for camera in cameras:
-            desired.update(streams_for(camera))
+            desired.update(streams_for(camera, self.connectors.get(camera.connector_id)))
         await self.apply(desired, is_managed)
 
     async def sync(self, camera: Camera) -> None:
@@ -164,8 +209,12 @@ class CameraSupervisor:
             camera: Camera whose streams to update.
         """
         camera_uuid = camera.uuid
+        connector = None
+        if camera.connector_id is not None:
+            async with async_session_maker() as session:
+                connector = await session.get(Connector, camera.connector_id)
         try:
-            await self.apply(streams_for(camera), lambda name: belongs_to(name, camera_uuid))
+            await self.apply(streams_for(camera, connector), lambda name: belongs_to(name, camera_uuid))
         except Go2rtcError as exc:
             logger.warning("Updating go2rtc for camera %s failed: %s", camera_uuid, exc)
 
@@ -224,7 +273,7 @@ class CameraSupervisor:
             async with semaphore:
                 await self.probe_camera(camera)
 
-        await asyncio.gather(*(limited(camera) for camera in cameras))
+        await asyncio.gather(*(limited(camera) for camera in cameras if camera.connector_id is None))
 
     def probe_later(self, camera: Camera) -> None:
         """Start a background probe of a camera.

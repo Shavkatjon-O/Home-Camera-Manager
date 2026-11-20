@@ -139,6 +139,7 @@ class CameraRead(BaseModel):
         streams: Stream names in the stream server.
         created_at: When the camera was registered.
         updated_at: When the camera last changed.
+        connector: Connector that reaches the camera on its site's network, None when the backend reaches it.
     """
 
     uuid: UUID
@@ -161,6 +162,7 @@ class CameraRead(BaseModel):
     streams: CameraStreams
     created_at: datetime
     updated_at: datetime
+    connector: UUID | None = None
 
 
 class CameraList(BaseModel):
@@ -242,6 +244,8 @@ class CameraCreate(CameraFields):
         lenses: Number of lenses the camera has.
         ptz_enabled: Whether pan, tilt and zoom control is on.
         enabled: Whether the camera is streamed.
+        connector: Connector of the site that reaches the camera; its password then goes to the connector and is
+            not stored by the backend.
     """
 
     name: str = Field(min_length=1, max_length=100)
@@ -262,6 +266,7 @@ class CameraCreate(CameraFields):
 
     ptz_enabled: bool | None = None
     enabled: bool = True
+    connector: UUID | None = None
 
 
 class CameraUpdate(CameraFields):

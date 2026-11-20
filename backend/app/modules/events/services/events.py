@@ -16,6 +16,7 @@ from app.models import Camera, Event
 from app.modules.events.enums import EventKind, EventSource
 from app.modules.events.schemas import EventCounts, EventList, EventRead, EventSourceList, event_read
 from app.modules.people.services.faces import face_summaries
+from app.tenancy.scope import Scope, install_scope
 
 __all__ = ["EventFilters", "EventService", "camera_names", "stream_hello"]
 
@@ -33,16 +34,19 @@ async def camera_names(session: AsyncSession) -> dict[UUID, str]:
     return {camera_uuid: name for camera_uuid, name in rows.all()}
 
 
-async def stream_hello(engine: CameraEventsEngine = camera_events) -> dict:
+async def stream_hello(scope: Scope | None = None, engine: CameraEventsEngine = camera_events) -> dict:
     """Build the first message of the event stream: the sources and the open events.
 
     Args:
+        scope: Row scope of the listener, limiting both to its site; None for every site.
         engine: The camera events engine.
 
     Returns:
         The hello payload.
     """
     async with async_session_maker() as session:
+        if scope is not None:
+            install_scope(session, scope)
         rows = list(
             await session.scalars(
                 select(Event)
@@ -51,10 +55,10 @@ async def stream_hello(engine: CameraEventsEngine = camera_events) -> dict:
                 .limit(100)
             )
         )
-        names = await camera_names(session) if rows else {}
+        names = await camera_names(session)
     now = datetime.now(UTC)
     return {
-        "sources": [source.model_dump(mode="json") for source in engine.sources()],
+        "sources": [source.model_dump(mode="json") for source in engine.sources() if source.camera_uuid in names],
         "open": [event_read(row, names.get(row.camera_uuid), now).model_dump(mode="json") for row in rows],
     }
 
@@ -263,10 +267,28 @@ class EventService(BaseModelService[Event]):
             raise NotFound("clip_not_found", "This event has no clip")
         return path
 
-    def sources(self) -> EventSourceList:
-        """Return the state of every camera's event subscription.
+    async def sources(self) -> EventSourceList:
+        """Return the state of the event subscription of every camera of the request's site.
 
         Returns:
             The sources.
         """
-        return EventSourceList(items=self.engine.sources())
+        cameras = set(await camera_names(self.session))
+        return EventSourceList(items=[source for source in self.engine.sources() if source.camera_uuid in cameras])
+
+    async def acknowledge(self, uuid: UUID) -> EventRead:
+        """Mark an event's alert as seen by the acting member.
+
+        Args:
+            uuid: Event id.
+
+        Returns:
+            The event.
+        """
+        row = await self.get(uuid)
+        if row.acknowledged_at is None:
+            row.acknowledged_at = datetime.now(UTC)
+            row.acknowledged_by_id = self.actor.id if self.actor is not None else None
+            await self.commit()
+            await self.session.refresh(row)
+        return await self.detail(uuid)

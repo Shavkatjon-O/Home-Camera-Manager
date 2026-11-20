@@ -4,10 +4,10 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-from app.modules.analytics.enums import Profile
+from app.modules.analytics.enums import Profile, ViewStream
 from app.modules.analytics.schemas.rules import LineRead, ZoneRead
 
-__all__ = ["ViewList", "ViewRead", "ViewUpdate"]
+__all__ = ["LiveObject", "LiveObjects", "ViewList", "ViewRead", "ViewUpdate"]
 
 
 class ViewRead(BaseModel):
@@ -30,6 +30,7 @@ class ViewRead(BaseModel):
         falls: Whether the view watches for falls.
         plates: Whether vehicle events read number plates.
         follow: Whether a moving lens follows a person.
+        stream: Camera stream the view is analysed on.
         zones: The zones.
         lines: The lines.
         status: Latest status from the analytics service, None before its first report.
@@ -51,6 +52,7 @@ class ViewRead(BaseModel):
     falls: bool
     plates: bool
     follow: bool
+    stream: ViewStream
     zones: list[ZoneRead]
     lines: list[LineRead]
     status: dict | None
@@ -81,6 +83,7 @@ class ViewUpdate(BaseModel):
         falls: Whether the view watches for falls.
         plates: Whether vehicle events read number plates.
         follow: Whether a moving lens follows a person.
+        stream: Camera stream to analyse; the sub stream needs a camera with one.
     """
 
     name: str | None = Field(None, min_length=1, max_length=100)
@@ -94,3 +97,34 @@ class ViewUpdate(BaseModel):
     falls: bool | None = None
     plates: bool | None = None
     follow: bool | None = None
+    stream: ViewStream | None = None
+
+
+class LiveObject(BaseModel):
+    """An object the analytics service tracks in a view's latest frame.
+
+    Attributes:
+        track: Tracker id.
+        label: Object label.
+        confidence: Detector confidence.
+        box: Left, top, right and bottom in normalized view coordinates.
+    """
+
+    track: int
+    label: str
+    confidence: float
+    box: list[float]
+
+
+class LiveObjects(BaseModel):
+    """The tracked objects of a view's latest frame.
+
+    Attributes:
+        view: View id.
+        at: Time of the frame as epoch seconds, None before the first frame.
+        objects: The objects.
+    """
+
+    view: str
+    at: float | None
+    objects: list[LiveObject]

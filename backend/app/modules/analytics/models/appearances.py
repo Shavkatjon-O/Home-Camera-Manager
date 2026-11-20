@@ -8,11 +8,12 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import BaseModel
+from app.models.ownership import SiteOwned
 
 __all__ = ["AnalyticsAppearance"]
 
 
-class AnalyticsAppearance(BaseModel):
+class AnalyticsAppearance(SiteOwned, BaseModel):
     """The appearance of one person track on one view.
 
     Attributes:

@@ -10,7 +10,7 @@ from app.auth.context import UserContext
 from app.core.base_service import BaseModelService
 from app.core.exceptions import Unprocessable
 from app.models import AnalyticsLine, AnalyticsView, AnalyticsZone, Camera
-from app.modules.analytics.enums import Profile
+from app.modules.analytics.enums import Profile, ViewStream
 from app.modules.analytics.schemas import LineRead, RulesUpdate, ViewList, ViewRead, ViewUpdate, ZoneRead
 
 __all__ = ["AnalyticsViewService", "sync_views", "view_lenses"]
@@ -39,6 +39,26 @@ def default_name(camera: Camera, lens: int) -> str:
         The camera name, with the lens for multi-lens cameras.
     """
     return camera.name if lens == 0 else f"{camera.name} Lens {lens}"
+
+
+def view_stream(view: AnalyticsView, camera: Camera) -> ViewStream:
+    """Return the camera stream a view is analysed on.
+
+    A view without a choice reads the main stream, as views did before the choice existed; a choice of the sub
+    stream falls back to the main one when the camera has no sub stream or the view reads faces or plates, which
+    need the full resolution.
+
+    Args:
+        view: The view.
+        camera: Its camera.
+
+    Returns:
+        The stream.
+    """
+    needs_detail = view.faces is True or view.plates or (view.faces is None and view.profile == Profile.IDENTITY.value)
+    if view.stream == ViewStream.SUB.value and camera.sub_path and not needs_detail:
+        return ViewStream.SUB
+    return ViewStream.MAIN
 
 
 async def sync_views(session: AsyncSession, cameras: list[Camera]) -> dict[UUID, list[AnalyticsView]]:
@@ -81,6 +101,7 @@ async def sync_views(session: AsyncSession, cameras: list[Camera]) -> dict[UUID,
                     fps=8.0,
                     moving=lens >= 2 and camera.ptz_enabled,
                     tuning={},
+                    stream=ViewStream.SUB.value if camera.connector_id and camera.sub_path else None,
                 )
                 session.add(row)
                 created = True
@@ -151,6 +172,7 @@ def view_read(view: AnalyticsView, camera: Camera, zones: list[AnalyticsZone], l
         falls=view.falls,
         plates=view.plates,
         follow=view.follow,
+        stream=view_stream(view, camera),
         zones=[
             ZoneRead(
                 uuid=zone.uuid,
@@ -287,6 +309,11 @@ class AnalyticsViewService(BaseModelService[AnalyticsView]):
             view.tamper = changes["tamper"]
         if "faces" in changes:
             view.faces = changes["faces"]
+        if changes.get("stream") is not None:
+            camera = await self.session.scalar(select(Camera).where(Camera.uuid == view.camera_uuid))
+            if changes["stream"] == ViewStream.SUB and (camera is None or not camera.sub_path):
+                raise Unprocessable("no_sub_stream", "The camera has no sub stream")
+            view.stream = changes["stream"].value
         await self.session.commit()
         return await self.detail(uuid)
 

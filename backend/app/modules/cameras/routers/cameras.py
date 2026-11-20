@@ -8,6 +8,7 @@ from app.modules.cameras.deps import get_camera_service
 from app.modules.cameras.enums import CameraSort
 from app.modules.cameras.schemas import CameraCreate, CameraList, CameraOrder, CameraRead, CameraUpdate, PtzMove
 from app.modules.cameras.services import CameraService
+from app.tenancy.dependencies import require_admin, require_operator
 
 router = APIRouter()
 
@@ -45,7 +46,7 @@ async def list_cameras(
     return await service.list_page(page, page_size, order)
 
 
-@router.post("", response_model=CameraRead, status_code=status.HTTP_201_CREATED)
+@router.post("", dependencies=[Depends(require_admin)], response_model=CameraRead, status_code=status.HTTP_201_CREATED)
 async def create_camera(payload: CameraCreate, service: CameraService = Depends(get_camera_service)) -> CameraRead:
     """Register a camera.
 
@@ -59,7 +60,7 @@ async def create_camera(payload: CameraCreate, service: CameraService = Depends(
     return await service.create(payload)
 
 
-@router.put("/order", status_code=status.HTTP_204_NO_CONTENT)
+@router.put("/order", dependencies=[Depends(require_admin)], status_code=status.HTTP_204_NO_CONTENT)
 async def order_cameras(payload: CameraOrder, service: CameraService = Depends(get_camera_service)) -> Response:
     """Set the wall order of the cameras.
 
@@ -88,7 +89,7 @@ async def get_camera(uuid: UUID, service: CameraService = Depends(get_camera_ser
     return await service.detail(uuid)
 
 
-@router.patch("/{uuid}", response_model=CameraRead)
+@router.patch("/{uuid}", dependencies=[Depends(require_admin)], response_model=CameraRead)
 async def update_camera(
     uuid: UUID,
     payload: CameraUpdate,
@@ -107,7 +108,7 @@ async def update_camera(
     return await service.update(uuid, payload)
 
 
-@router.delete("/{uuid}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{uuid}", dependencies=[Depends(require_admin)], status_code=status.HTTP_204_NO_CONTENT)
 async def delete_camera(uuid: UUID, service: CameraService = Depends(get_camera_service)) -> Response:
     """Remove a camera from the registry.
 
@@ -122,7 +123,7 @@ async def delete_camera(uuid: UUID, service: CameraService = Depends(get_camera_
     return no_content()
 
 
-@router.post("/{uuid}/check", response_model=CameraRead)
+@router.post("/{uuid}/check", dependencies=[Depends(require_operator)], response_model=CameraRead)
 async def check_camera(uuid: UUID, service: CameraService = Depends(get_camera_service)) -> CameraRead:
     """Probe a camera now and return it with the fresh status.
 
@@ -136,7 +137,7 @@ async def check_camera(uuid: UUID, service: CameraService = Depends(get_camera_s
     return await service.check(uuid)
 
 
-@router.post("/{uuid}/ptz/move", status_code=status.HTTP_204_NO_CONTENT)
+@router.post("/{uuid}/ptz/move", dependencies=[Depends(require_operator)], status_code=status.HTTP_204_NO_CONTENT)
 async def move_camera(
     uuid: UUID,
     payload: PtzMove,
@@ -156,7 +157,7 @@ async def move_camera(
     return no_content()
 
 
-@router.post("/{uuid}/ptz/stop", status_code=status.HTTP_204_NO_CONTENT)
+@router.post("/{uuid}/ptz/stop", dependencies=[Depends(require_operator)], status_code=status.HTTP_204_NO_CONTENT)
 async def stop_camera(uuid: UUID, service: CameraService = Depends(get_camera_service)) -> Response:
     """Stop any pan, tilt and zoom move in progress.
 

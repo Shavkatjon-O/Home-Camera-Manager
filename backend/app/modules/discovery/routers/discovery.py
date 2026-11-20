@@ -5,11 +5,12 @@ from fastapi import APIRouter, Depends
 from app.modules.discovery.deps import get_discovery_service
 from app.modules.discovery.schemas import InspectRequest, InspectResult, ScanRequest, ScanResult
 from app.modules.discovery.services import DiscoveryService
+from app.tenancy.dependencies import require_admin
 
 router = APIRouter()
 
 
-@router.post("/scan", response_model=ScanResult)
+@router.post("/scan", dependencies=[Depends(require_admin)], response_model=ScanResult)
 async def scan_network(
     payload: ScanRequest | None = None,
     service: DiscoveryService = Depends(get_discovery_service),
@@ -26,7 +27,7 @@ async def scan_network(
     return await service.scan(payload or ScanRequest())
 
 
-@router.post("/inspect", response_model=InspectResult)
+@router.post("/inspect", dependencies=[Depends(require_admin)], response_model=InspectResult)
 async def inspect_camera(
     payload: InspectRequest,
     service: DiscoveryService = Depends(get_discovery_service),

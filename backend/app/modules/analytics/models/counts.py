@@ -7,11 +7,12 @@ from sqlalchemy import DateTime, Integer, String, UniqueConstraint, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import BaseModel
+from app.models.ownership import SiteOwned
 
 __all__ = ["AnalyticsCount"]
 
 
-class AnalyticsCount(BaseModel):
+class AnalyticsCount(SiteOwned, BaseModel):
     """Crossings of a line in one minute, direction and label, counted by one boot of the analytics service.
 
     The analytics service reports the absolute total of each minute it counted, so a row is replaced rather than

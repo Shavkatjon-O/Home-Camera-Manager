@@ -3,16 +3,17 @@
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import Boolean, DateTime, Index, String, Uuid, false
+from sqlalchemy import BigInteger, Boolean, DateTime, ForeignKey, Index, String, Uuid, false
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import BaseModel
+from app.models.ownership import SiteOwned
 
 __all__ = ["Event"]
 
 
-class Event(BaseModel):
+class Event(SiteOwned, BaseModel):
     """A camera or analytics event.
 
     Attributes:
@@ -30,6 +31,8 @@ class Event(BaseModel):
         thumbnail_path: Thumbnail relative to the events folder.
         clip_path: Clip relative to the events folder.
         details: Raw messages for camera events; zone, line, direction, objects and boxes for analytics events.
+        acknowledged_at: When a member acknowledged the alert, or None while it is unacknowledged.
+        acknowledged_by_id: Member who acknowledged it.
     """
 
     __tablename__ = "events"
@@ -52,3 +55,8 @@ class Event(BaseModel):
     clip_path: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     details: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
+
+    acknowledged_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    acknowledged_by_id: Mapped[int | None] = mapped_column(
+        BigInteger, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
