@@ -8,7 +8,9 @@ from app.modules.analytics.models.views import AnalyticsView
 from app.modules.analytics.models.zones import AnalyticsZone
 from app.modules.devices.models.cameras import Camera
 from app.modules.devices.models.connectors import Connector
+from app.modules.devices.models.devices import Device
 from app.modules.devices.models.discovered import DiscoveredCamera
+from app.modules.devices.models.pairing_attempts import PairingAttempt
 from app.modules.devices.models.pairings import ConnectorPairing
 from app.modules.events.models.events import Event
 from app.modules.identity.models.email_tokens import EmailToken
@@ -49,6 +51,7 @@ __all__ = [
     "CameraLink",
     "Connector",
     "ConnectorPairing",
+    "Device",
     "DiscoveredCamera",
     "EmailToken",
     "Event",
@@ -61,6 +64,7 @@ __all__ = [
     "NetworkDevice",
     "Organisation",
     "Outage",
+    "PairingAttempt",
     "Person",
     "PushTarget",
     "RefreshToken",

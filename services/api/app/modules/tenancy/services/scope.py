@@ -24,6 +24,7 @@ from app.models import (
     Camera,
     CameraLink,
     Connector,
+    Device,
     DiscoveredCamera,
     Event,
     FaceSample,
@@ -31,6 +32,7 @@ from app.models import (
     HealthSample,
     NetworkDevice,
     Outage,
+    PairingAttempt,
     Person,
     TvDevice,
     UnknownCluster,
@@ -63,6 +65,7 @@ SITE_SCOPED = (
     Camera,
     CameraLink,
     Connector,
+    Device,
     DiscoveredCamera,
     Event,
     FloorPlan,
@@ -72,7 +75,7 @@ SITE_SCOPED = (
     TvDevice,
 )
 
-ORGANISATION_SCOPED = (FaceSample, Person, UnknownCluster)
+ORGANISATION_SCOPED = (FaceSample, PairingAttempt, Person, UnknownCluster)
 
 PARENTS = {
     AnalyticsView: (("camera_uuid", Camera, "uuid"),),
@@ -82,7 +85,8 @@ PARENTS = {
     AnalyticsAppearance: (("view_uuid", AnalyticsView, "uuid"), ("camera_uuid", Camera, "uuid")),
     Event: (("camera_uuid", Camera, "uuid"),),
     CameraLink: (("camera_uuid", Camera, "uuid"),),
-    Camera: (("connector_id", Connector, "id"),),
+    Camera: (("device_id", Device, "id"), ("connector_id", Connector, "id")),
+    Device: (("connector_id", Connector, "id"),),
     DiscoveredCamera: (("connector_id", Connector, "id"),),
     FaceSample: (("camera_uuid", Camera, "uuid"), ("person_id", Person, "id"), ("cluster_id", UnknownCluster, "id")),
     HealthSample: (("target_uuid", Camera, "uuid"), ("target_uuid", NetworkDevice, "uuid")),

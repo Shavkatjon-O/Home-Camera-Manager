@@ -44,6 +44,7 @@ class Settings(BaseSettings):
         connector_code_minutes: Minutes a connector pairing code stays valid.
         connector_poll_seconds: Seconds a connector waits between pairing polls.
         connector_offline_seconds: Seconds without a heartbeat after which a connector counts as offline.
+        direct_cameras: Whether the backend may reach cameras on its own network, as a single-site installation does.
         webrtc_stun_urls: Comma-separated STUN servers offered to the apps.
         webrtc_turn_url: TURN server offered to the apps, empty for none.
         webrtc_turn_username: TURN user.
@@ -113,6 +114,7 @@ class Settings(BaseSettings):
     connector_code_minutes: int = 15
     connector_poll_seconds: int = 5
     connector_offline_seconds: int = 90
+    direct_cameras: bool = True
 
     webrtc_stun_urls: str = ""
     webrtc_turn_url: str = ""

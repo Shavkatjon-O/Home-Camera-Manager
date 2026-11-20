@@ -1,6 +1,7 @@
 """Database model of a camera."""
 
 from sqlalchemy import BigInteger, Boolean, ForeignKey, Integer, String, Text
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import BaseModel
@@ -30,6 +31,9 @@ class Camera(SiteOwned, BaseModel):
         enabled: Whether the camera is streamed.
         connector_id: Connector that reaches the camera on its site's network, or None when the backend reaches
             the camera itself; the password of a connector camera stays on the connector.
+        device_id: Device the camera is a channel of.
+        channel: Channel number of the camera on its device, from 1.
+        capabilities: Normalised capability manifest of the camera, which the apps show controls by.
     """
 
     __tablename__ = "cameras"
@@ -55,3 +59,7 @@ class Camera(SiteOwned, BaseModel):
     enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
     connector_id: Mapped[int | None] = mapped_column(BigInteger, ForeignKey("connectors.id"), nullable=True, index=True)
+
+    device_id: Mapped[int | None] = mapped_column(BigInteger, ForeignKey("devices.id"), nullable=True, index=True)
+    channel: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    capabilities: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict, server_default="{}")
