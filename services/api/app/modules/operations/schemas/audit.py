@@ -16,6 +16,8 @@ class AuditRead(BaseModel):
         at: When it happened.
         action: What was done.
         actor: Sign-in name of who did it, if known.
+        actor_name: Display name of the acting account, if it still exists and has one.
+        actor_email: Email address of the acting account, if it still exists and has one.
         organisation: Organisation concerned, if any.
         site: Site concerned, if any.
         target_kind: Kind of the thing acted on.
@@ -28,6 +30,8 @@ class AuditRead(BaseModel):
     at: datetime
     action: str
     actor: str | None
+    actor_name: str | None = None
+    actor_email: str | None = None
     organisation: UUID | None
     site: UUID | None
     target_kind: str | None

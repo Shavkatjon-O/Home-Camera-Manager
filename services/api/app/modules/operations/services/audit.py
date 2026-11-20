@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.context import UserContext
 from app.core.config import settings
 from app.core.database import async_session_maker
-from app.models import AuditRecord, Organisation, Site
+from app.models import AuditRecord, Organisation, Site, User
 from app.modules.operations.enums import AuditAction
 from app.modules.operations.schemas.audit import AuditList, AuditRead
 from app.modules.tenancy.enums import Role
@@ -104,13 +104,21 @@ async def write_audit(action: AuditAction, **facts) -> None:
         logger.exception("Writing the audit record of %s failed", action.value)
 
 
-def audit_read(record: AuditRecord, organisation: UUID | None, site: UUID | None) -> AuditRead:
+def audit_read(
+    record: AuditRecord,
+    organisation: UUID | None,
+    site: UUID | None,
+    actor_name: str | None = None,
+    actor_email: str | None = None,
+) -> AuditRead:
     """Build the API view of a record.
 
     Args:
         record: The record.
         organisation: Public id of its organisation.
         site: Public id of its site.
+        actor_name: Display name of the acting account, if any.
+        actor_email: Email address of the acting account, if any.
 
     Returns:
         The view.
@@ -120,6 +128,8 @@ def audit_read(record: AuditRecord, organisation: UUID | None, site: UUID | None
         at=record.created_at,
         action=record.action,
         actor=record.actor,
+        actor_name=actor_name,
+        actor_email=actor_email,
         organisation=organisation,
         site=site,
         target_kind=record.target_kind,
@@ -166,9 +176,10 @@ async def audit_query(
     )
     rows = (
         await session.execute(
-            select(AuditRecord, Organisation.uuid, Site.uuid)
+            select(AuditRecord, Organisation.uuid, Site.uuid, User.name, User.email)
             .outerjoin(Organisation, Organisation.id == AuditRecord.organisation_id)
             .outerjoin(Site, Site.id == AuditRecord.site_id)
+            .outerjoin(User, User.id == AuditRecord.actor_id)
             .where(*conditions)
             .order_by(AuditRecord.created_at.desc(), AuditRecord.id.desc())
             .offset((page - 1) * page_size)
@@ -177,7 +188,10 @@ async def audit_query(
         )
     ).all()
     return AuditList(
-        items=[audit_read(record, organisation, site) for record, organisation, site in rows],
+        items=[
+            audit_read(record, organisation, site, actor_name, actor_email)
+            for record, organisation, site, actor_name, actor_email in rows
+        ],
         total=int(total or 0),
         page=page,
         page_size=page_size,

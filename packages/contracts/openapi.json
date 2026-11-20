@@ -26258,6 +26258,28 @@
             ],
             "title": "Actor"
           },
+          "actor_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor Name"
+          },
+          "actor_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor Email"
+          },
           "organisation": {
             "anyOf": [
               {
@@ -26336,7 +26358,7 @@
           "ip"
         ],
         "title": "AuditRead",
-        "description": "One audit record.\n\nAttributes:\n    uuid: Public id.\n    at: When it happened.\n    action: What was done.\n    actor: Sign-in name of who did it, if known.\n    organisation: Organisation concerned, if any.\n    site: Site concerned, if any.\n    target_kind: Kind of the thing acted on.\n    target_uuid: Public id of the thing acted on.\n    details: Further facts.\n    ip: Address of the request."
+        "description": "One audit record.\n\nAttributes:\n    uuid: Public id.\n    at: When it happened.\n    action: What was done.\n    actor: Sign-in name of who did it, if known.\n    actor_name: Display name of the acting account, if it still exists and has one.\n    actor_email: Email address of the acting account, if it still exists and has one.\n    organisation: Organisation concerned, if any.\n    site: Site concerned, if any.\n    target_kind: Kind of the thing acted on.\n    target_uuid: Public id of the thing acted on.\n    details: Further facts.\n    ip: Address of the request."
       },
       "Band": {
         "type": "string",
