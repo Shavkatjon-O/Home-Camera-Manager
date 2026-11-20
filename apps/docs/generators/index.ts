@@ -1,4 +1,4 @@
-import { generateArchitecture } from "./architecture.ts"
+import { generateArchitecture, generateContributing } from "./documents.ts"
 import { generateCameras } from "./cameras.ts"
 import { generateChangelog } from "./changelog.ts"
 import { generateConfiguration } from "./configuration.ts"
@@ -19,6 +19,7 @@ async function main(): Promise<void> {
     ["api", generateOpenAPI],
     ["analytics contract", generateRoutes],
     ["architecture", generateArchitecture],
+    ["contributing", generateContributing],
     ["changelog", generateChangelog],
   ]
   for (const [name, step] of steps) console.log(`[docs] ${name}: ${await step()}`)

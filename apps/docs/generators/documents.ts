@@ -44,3 +44,18 @@ export function generateArchitecture(): string {
   )
   return fromRoot(source)
 }
+
+/**
+ * Copy the repository's contributing guide for the contributing page, without its own title.
+ *
+ * @returns Where it came from, for the build log.
+ */
+export function generateContributing(): string {
+  const source = locate(SOURCES.contributing)
+  if (!source) {
+    writeGenerated("contributing.md", "")
+    return "skipped"
+  }
+  writeGenerated("contributing.md", `${readFileSync(source, "utf8").replace(/^# .*\n+/, "").trimEnd()}\n\nThis section is generated from ${fromRoot(source)}.\n`)
+  return fromRoot(source)
+}
