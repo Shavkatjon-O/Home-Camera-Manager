@@ -6,6 +6,7 @@ from uuid import UUID
 from pydantic import BaseModel
 
 from app.modules.events.enums import EventKind, EventSource
+from app.modules.people.schemas.faces import FaceRead
 
 __all__ = ["EventCounts", "EventList", "EventRead", "event_read"]
 
@@ -34,6 +35,7 @@ class EventRead(BaseModel):
         details: Kind specific details.
         created_at: When the row was inserted.
         updated_at: When the row last changed.
+        face: Who a face event shows, None for other events.
     """
 
     uuid: UUID
@@ -56,6 +58,7 @@ class EventRead(BaseModel):
     details: dict
     created_at: datetime
     updated_at: datetime
+    face: FaceRead | None = None
 
 
 class EventList(BaseModel):
@@ -90,13 +93,14 @@ class EventCounts(BaseModel):
     alerts: int
 
 
-def event_read(event, camera_name: str | None, until: datetime) -> EventRead:
+def event_read(event, camera_name: str | None, until: datetime, face: FaceRead | None = None) -> EventRead:
     """Build the API form of an event row.
 
     Args:
         event: The event row.
         camera_name: Name of its camera, None when the camera was removed.
         until: Time used as the end of an open event for its duration.
+        face: Who a face event shows, if it is one.
 
     Returns:
         The event as the API returns it.
@@ -123,4 +127,5 @@ def event_read(event, camera_name: str | None, until: datetime) -> EventRead:
         details=event.details or {},
         created_at=event.created_at,
         updated_at=event.updated_at,
+        face=face,
     )

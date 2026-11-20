@@ -24,6 +24,7 @@ class ViewRead(BaseModel):
         enabled: Whether the view is analysed.
         fps: Analysis rate.
         tamper: Tamper watch on or off, None for the profile default.
+        faces: Face recognition on or off, None for the profile default.
         moving: Whether the lens moves.
         zones: The zones.
         lines: The lines.
@@ -40,6 +41,7 @@ class ViewRead(BaseModel):
     enabled: bool
     fps: float
     tamper: bool | None
+    faces: bool | None
     moving: bool
     zones: list[ZoneRead]
     lines: list[LineRead]
@@ -65,6 +67,7 @@ class ViewUpdate(BaseModel):
         enabled: Whether the view is analysed.
         fps: Analysis rate from 1 to 15.
         tamper: Tamper watch on or off, None for the profile default.
+        faces: Face recognition on or off, None for the profile default.
         moving: Whether the lens moves.
     """
 
@@ -73,4 +76,5 @@ class ViewUpdate(BaseModel):
     enabled: bool | None = None
     fps: float | None = Field(None, ge=1.0, le=15.0)
     tamper: bool | None = None
+    faces: bool | None = None
     moving: bool | None = None

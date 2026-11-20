@@ -12,6 +12,9 @@ from app.modules.health.models.devices import NetworkDevice
 from app.modules.health.models.links import CameraLink
 from app.modules.health.models.outages import Outage
 from app.modules.health.models.samples import HealthSample
+from app.modules.people.models.clusters import UnknownCluster
+from app.modules.people.models.people import Person
+from app.modules.people.models.samples import FaceSample
 from app.modules.tv.models.devices import TvDevice
 from app.modules.tv.models.pairings import TvPairing
 from app.modules.users.models.users import User
@@ -25,11 +28,14 @@ __all__ = [
     "Camera",
     "CameraLink",
     "Event",
+    "FaceSample",
     "FloorPlan",
     "HealthSample",
     "NetworkDevice",
     "Outage",
+    "Person",
     "TvDevice",
     "TvPairing",
+    "UnknownCluster",
     "User",
 ]

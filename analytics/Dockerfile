@@ -20,7 +20,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     GST_DEBUG=1
 
 RUN /opt/nvidia/deepstream/deepstream/user_additional_install.sh \
-    && apt-get install -y --no-install-recommends libpython3.12t64 python3-yaml python3-numpy tzdata \
+    && apt-get install -y --no-install-recommends libpython3.12t64 python3-yaml python3-numpy python3-pil tzdata \
     && rm -rf /var/lib/apt/lists/* /root/.cache/gstreamer-1.0
 
 COPY --from=parsers /build/libnvds_rfdetr_parser.so /opt/analytics/lib/

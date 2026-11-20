@@ -41,6 +41,7 @@ class ViewConfig:
         enabled: Whether the view is analysed.
         fps: Analysis rate in frames per second.
         rules: Zones, lines and tuning.
+        faces: Whether the face stage runs on the view.
         raw: The view's configuration as received, for change detection.
     """
 
@@ -53,6 +54,7 @@ class ViewConfig:
     enabled: bool
     fps: float
     rules: ViewRules
+    faces: bool = False
     raw: dict = field(default_factory=dict, compare=False)
 
     @property
@@ -60,13 +62,18 @@ class ViewConfig:
         """bool: True when the view needs the detector and tracker."""
         return self.enabled and self.profile.detect
 
+    @property
+    def recognises(self) -> bool:
+        """bool: True when the view needs the face stage."""
+        return self.detects and self.faces
+
     def pipeline_key(self) -> tuple:
         """Return what the DeepStream pipeline depends on, so rule edits never restart it.
 
         Returns:
             A hashable tuple of the view's pipeline settings.
         """
-        return (self.id, self.camera, self.lens, self.lenses, self.detects, round(self.fps, 2))
+        return (self.id, self.camera, self.lens, self.lenses, self.detects, self.recognises, round(self.fps, 2))
 
 
 @dataclass(frozen=True)
@@ -159,6 +166,7 @@ def parse_view(camera: dict, data: dict, default_fps: float) -> ViewConfig:
         enabled=bool(data.get("enabled", True)),
         fps=float(data.get("fps") or default_fps),
         rules=ViewRules.from_dict(data),
+        faces=bool(data.get("faces", PROFILES[profile_name].faces)),
         raw=data,
     )
 

@@ -46,3 +46,35 @@ def test_routes_need_the_token_except_health():
         assert headers.get("X-Reference") == "analytics/references/a/1.jpg"
     finally:
         server.stop()
+
+
+def post(port, path, data, token=None):
+    request = urllib.request.Request(f"http://127.0.0.1:{port}{path}", data=data, method="POST")
+    if token:
+        request.add_header("Authorization", f"Bearer {token}")
+    request.add_header("Content-Type", "image/jpeg")
+    try:
+        with urllib.request.urlopen(request, timeout=5) as response:
+            return response.status, json.loads(response.read())
+    except urllib.error.HTTPError as exc:
+        return exc.code, json.loads(exc.read())
+
+
+def test_photos_are_embedded_only_with_the_token():
+    port = free_port()
+    seen = []
+
+    def embed(data):
+        seen.append(data)
+        return 200, {"faces": [], "width": 1, "height": 1}
+
+    server = StatusServer(port, "secret", dict, lambda view: None, lambda view, reference: None, embed)
+    server.start()
+    try:
+        assert post(port, "/identity/embed", b"photo")[0] == 401
+        status, body = post(port, "/identity/embed", b"photo", "secret")
+        assert status == 200 and body["faces"] == []
+        assert seen == [b"photo"]
+        assert post(port, "/identity/other", b"photo", "secret")[0] == 404
+    finally:
+        server.stop()

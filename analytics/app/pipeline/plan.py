@@ -62,6 +62,7 @@ class PipelinePlan:
         tracker_height: Frame height the tracker works at.
         engine_batch: Largest batch the engine accepts.
         reconnect_seconds: Seconds without data before a source reconnects.
+        faces: Muxer pads of the views the face stage runs on.
     """
 
     sources: tuple[SourcePlan, ...]
@@ -78,6 +79,7 @@ class PipelinePlan:
     tracker_height: int = 544
     engine_batch: int = 8
     reconnect_seconds: int = 10
+    faces: tuple[int, ...] = ()
 
     @property
     def views(self) -> list[ViewPlan]:

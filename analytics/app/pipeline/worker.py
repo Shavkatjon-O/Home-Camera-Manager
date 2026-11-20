@@ -17,7 +17,10 @@ import logging
 import multiprocessing
 import queue
 import time
+from pathlib import Path
 
+from app.identity.probe import add_elements, collector, infer_config
+from app.identity.settings import IdentitySettings
 from app.pipeline.plan import PipelinePlan, ViewPlan, lens_crop
 
 logger = logging.getLogger(__name__)
@@ -29,13 +32,19 @@ QUEUE_BUFFERS = 2
 LEAK_OLDEST = 2
 
 
-def build_pipeline(plan: PipelinePlan, infer_config: str, outbox: multiprocessing.Queue):
+def build_pipeline(
+    plan: PipelinePlan, infer_config: str, outbox: multiprocessing.Queue, face_config: str | None = None
+):
     """Build the pipeline for a plan.
+
+    With face views, the face detector and the RGB conversion follow the tracker, and a second probe sends the
+    best faces of each person track to the service.
 
     Args:
         plan: What to build.
         infer_config: nvinfer configuration file of the detector.
         outbox: Queue that receives the tracked objects of every batch.
+        face_config: nvinfer configuration file of the face detector, or None without face views.
 
     Returns:
         The pyservicemaker pipeline, ready to start.
@@ -114,7 +123,15 @@ def build_pipeline(plan: PipelinePlan, infer_config: str, outbox: multiprocessin
         },
     )
     pipeline.add("fakesink", "sink", {"sync": False, "async": False})
-    pipeline.link("mux", "detector", "tracker", "sink")
+    if face_config is not None:
+        first, last = add_elements(pipeline, Path(face_config))
+        pipeline.link("mux", "detector", "tracker", first)
+        pipeline.link(last, "sink")
+        pipeline.attach(
+            last, Probe("faces", collector(set(plan.faces), IdentitySettings(), outbox, plan.width, plan.height))
+        )
+    else:
+        pipeline.link("mux", "detector", "tracker", "sink")
 
     labels = dict(plan.labels)
     scale_x, scale_y = 1.0 / plan.width, 1.0 / plan.height
@@ -168,8 +185,6 @@ def run(plan: PipelinePlan, outbox: multiprocessing.Queue) -> None:
         plan: What to build.
         outbox: Queue for tracked objects and lifecycle messages.
     """
-    from pathlib import Path
-
     from app.detectors import detector, nvinfer_config
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s pipeline %(message)s")
@@ -184,7 +199,18 @@ def run(plan: PipelinePlan, outbox: multiprocessing.Queue) -> None:
             plan.threshold,
             workspace_mb=plan.workspace_mb,
         )
-        pipeline = build_pipeline(plan, str(config), outbox)
+        face_config = None
+        if plan.faces:
+            outbox.put(("preparing", time.time(), "Preparing the face detector engine"))
+            person_ids = [class_id for class_id, label in item.classes.items() if label == "person"]
+            try:
+                face_config = str(
+                    infer_config(IdentitySettings(), Path(plan.engines_dir), plan.workspace_mb, person_ids)
+                )
+            except (OSError, ValueError, RuntimeError) as exc:
+                # A missing or damaged face model turns faces off instead of stopping every view.
+                outbox.put(("faces_off", time.time(), f"Faces are off: {exc}"))
+        pipeline = build_pipeline(plan, str(config), outbox, face_config)
     except Exception as exc:
         outbox.put(("failed", time.time(), f"Building the pipeline failed: {exc}"))
         raise

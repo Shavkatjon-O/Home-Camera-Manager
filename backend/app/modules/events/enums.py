@@ -16,6 +16,8 @@ class EventKind(StrEnum):
     LINE_CROSSING = "line_crossing"
     LOITERING = "loitering"
     CROWD = "crowd"
+    FACE_KNOWN = "face_known"
+    FACE_UNKNOWN = "face_unknown"
 
 
 class EventSource(StrEnum):
