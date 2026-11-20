@@ -12,6 +12,7 @@ import 'package:smart_surveillance/core/widgets/surfaces.dart';
 import 'package:smart_surveillance/features/devices/domain/models.dart';
 import 'package:smart_surveillance/features/devices/presentation/providers.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
+
 /// The device, encoder, image and motion settings of a camera, loaded by camera id.
 final cameraSettingsProvider = FutureProvider.autoDispose.family<CameraSettings, String>(
   (ref, id) => ref.read(backendProvider).devices.settings(id),
@@ -73,7 +74,11 @@ class _CamerasScreenState extends ConsumerState<CamerasScreen> {
         data: (cameras) {
           final list = order ?? cameras;
           if (list.isEmpty) {
-            return EmptyState(icon: Icons.videocam_off_outlined, title: l10n.liveNoCameras, body: l10n.liveNoCamerasBody);
+            return EmptyState(
+              icon: Icons.videocam_off_outlined,
+              title: l10n.liveNoCameras,
+              body: l10n.liveNoCamerasBody,
+            );
           }
           return ReorderableListView.builder(
             padding: const EdgeInsets.only(bottom: 96),
@@ -88,7 +93,9 @@ class _CamerasScreenState extends ConsumerState<CamerasScreen> {
               next.insert(to, moved);
               setState(() => order = next);
               try {
-                await ref.read(backendProvider).devices.orderCameras(id, [for (final c in next) c.id]);
+                await ref.read(backendProvider).devices.orderCameras(id, [
+                  for (final c in next) c.id,
+                ]);
                 ref.invalidate(camerasProvider(id));
               } catch (failure) {
                 if (context.mounted) showFailure(context, failure);
@@ -104,15 +111,28 @@ class _CamerasScreenState extends ConsumerState<CamerasScreen> {
                   leading: Stack(
                     clipBehavior: Clip.none,
                     children: [
-                      IconBadge(icon: camera.ptz ? Icons.control_camera_rounded : Icons.videocam_outlined),
-                      Positioned(right: -2, bottom: -2, child: StatusDot(online: camera.online, size: 10)),
+                      IconBadge(
+                        icon: camera.ptz ? Icons.control_camera_rounded : Icons.videocam_outlined,
+                      ),
+                      Positioned(
+                        right: -2,
+                        bottom: -2,
+                        child: StatusDot(online: camera.online, size: 10),
+                      ),
                     ],
                   ),
                   title: Text(camera.name),
                   subtitle: Text(
-                    [brandName(camera.brand), if (camera.model != null) camera.model!, if (camera.lenses > 1) l10n.lensesTwo].join(', '),
+                    [
+                      brandName(camera.brand),
+                      if (camera.model != null) camera.model!,
+                      if (camera.lenses > 1) l10n.lensesTwo,
+                    ].join(', '),
                   ),
-                  trailing: ReorderableDragStartListener(index: index, child: const Icon(Icons.drag_handle_rounded)),
+                  trailing: ReorderableDragStartListener(
+                    index: index,
+                    child: const Icon(Icons.drag_handle_rounded),
+                  ),
                   onTap: () => CameraSettingsRoute(cameraId: camera.id).go(context),
                 ),
               );
@@ -147,10 +167,17 @@ class _CameraSettingsScreenState extends ConsumerState<CameraSettingsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.fieldCameraName),
-        content: TextField(controller: controller, autofocus: true, onSubmitted: (value) => Navigator.of(context).pop(value)),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          onSubmitted: (value) => Navigator.of(context).pop(value),
+        ),
         actions: [
           TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.commonCancel)),
-          FilledButton(onPressed: () => Navigator.of(context).pop(controller.text), child: Text(l10n.commonSave)),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(controller.text),
+            child: Text(l10n.commonSave),
+          ),
         ],
       ),
     );
@@ -188,7 +215,12 @@ class _CameraSettingsScreenState extends ConsumerState<CameraSettingsScreen> {
     final settings = ref.watch(cameraSettingsProvider(widget.cameraId));
     final devices = ref.read(backendProvider).devices;
     final format = Formats(context, ref.read(clockProvider)());
-    if (camera == null) return Scaffold(appBar: AppBar(), body: const Center(child: CircularProgressIndicator(strokeWidth: 2)));
+    if (camera == null) {
+      return Scaffold(
+        appBar: AppBar(),
+        body: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+      );
+    }
     return Scaffold(
       appBar: AppBar(title: Text(camera.name)),
       body: ListView(
@@ -217,28 +249,46 @@ class _CameraSettingsScreenState extends ConsumerState<CameraSettingsScreen> {
             ],
           ),
           settings.when(
-            loading: () => const Padding(padding: EdgeInsets.all(40), child: Center(child: CircularProgressIndicator(strokeWidth: 2))),
-            error: (error, _) => ErrorState(error: error, compact: true, onRetry: () => ref.invalidate(cameraSettingsProvider(widget.cameraId))),
+            loading: () => const Padding(
+              padding: EdgeInsets.all(40),
+              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+            ),
+            error: (error, _) => ErrorState(
+              error: error,
+              compact: true,
+              onRetry: () => ref.invalidate(cameraSettingsProvider(widget.cameraId)),
+            ),
             data: (data) {
               final img = image ?? data.image;
               final mot = motion ?? data.motion;
-              Widget slider(String label, double? value, ImageSettings Function(double) apply) => Padding(
-                padding: const EdgeInsets.fromLTRB(Gaps.page, 6, Gaps.sm, 0),
-                child: Row(
-                  children: [
-                    SizedBox(width: 104, child: Text(label, style: context.text.bodyMedium)),
-                    Expanded(
-                      child: Slider(
-                        value: (value ?? 50).clamp(0, 100),
-                        max: 100,
-                        onChanged: value == null ? null : (v) => setState(() => image = apply(v)),
-                        onChangeEnd: value == null ? null : (v) => devices.updateImage(camera.id, apply(v)),
-                      ),
+              Widget slider(String label, double? value, ImageSettings Function(double) apply) =>
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(Gaps.page, 6, Gaps.sm, 0),
+                    child: Row(
+                      children: [
+                        SizedBox(width: 104, child: Text(label, style: context.text.bodyMedium)),
+                        Expanded(
+                          child: Slider(
+                            value: (value ?? 50).clamp(0, 100),
+                            max: 100,
+                            onChanged: value == null
+                                ? null
+                                : (v) => setState(() => image = apply(v)),
+                            onChangeEnd: value == null
+                                ? null
+                                : (v) => devices.updateImage(camera.id, apply(v)),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 32,
+                          child: Text(
+                            '${(value ?? 0).round()}',
+                            style: dataStyle(context, size: 12, color: p.text2),
+                          ),
+                        ),
+                      ],
                     ),
-                    SizedBox(width: 32, child: Text('${(value ?? 0).round()}', style: dataStyle(context, size: 12, color: p.text2))),
-                  ],
-                ),
-              );
+                  );
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -249,9 +299,16 @@ class _CameraSettingsScreenState extends ConsumerState<CameraSettingsScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: Gaps.lg, vertical: Gaps.sm),
                       child: Column(
                         children: [
-                          ReadOut(label: l10n.settingsManufacturer, value: data.device.manufacturer ?? '-'),
+                          ReadOut(
+                            label: l10n.settingsManufacturer,
+                            value: data.device.manufacturer ?? '-',
+                          ),
                           ReadOut(label: l10n.settingsModel, value: data.device.model ?? '-'),
-                          ReadOut(label: l10n.settingsFirmware, value: data.device.firmware ?? '-', mono: true),
+                          ReadOut(
+                            label: l10n.settingsFirmware,
+                            value: data.device.firmware ?? '-',
+                            mono: true,
+                          ),
                         ],
                       ),
                     ),
@@ -280,26 +337,50 @@ class _CameraSettingsScreenState extends ConsumerState<CameraSettingsScreen> {
                   if (img == null)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: Gaps.page),
-                      child: Text(l10n.settingsUnsupported, style: context.text.bodyMedium?.copyWith(color: p.text3)),
+                      child: Text(
+                        l10n.settingsUnsupported,
+                        style: context.text.bodyMedium?.copyWith(color: p.text3),
+                      ),
                     )
                   else
                     Panel(
                       padding: const EdgeInsets.only(bottom: Gaps.sm),
                       child: Column(
                         children: [
-                          slider(l10n.settingsBrightness, img.brightness, (v) => img.copyWith(brightness: v)),
-                          slider(l10n.settingsContrast, img.contrast, (v) => img.copyWith(contrast: v)),
-                          slider(l10n.settingsSaturation, img.saturation, (v) => img.copyWith(saturation: v)),
-                          slider(l10n.settingsSharpness, img.sharpness, (v) => img.copyWith(sharpness: v)),
+                          slider(
+                            l10n.settingsBrightness,
+                            img.brightness,
+                            (v) => img.copyWith(brightness: v),
+                          ),
+                          slider(
+                            l10n.settingsContrast,
+                            img.contrast,
+                            (v) => img.copyWith(contrast: v),
+                          ),
+                          slider(
+                            l10n.settingsSaturation,
+                            img.saturation,
+                            (v) => img.copyWith(saturation: v),
+                          ),
+                          slider(
+                            l10n.settingsSharpness,
+                            img.sharpness,
+                            (v) => img.copyWith(sharpness: v),
+                          ),
                           if (img.irCutModes.isNotEmpty)
                             Padding(
                               padding: const EdgeInsets.fromLTRB(Gaps.page, Gaps.sm, Gaps.page, 0),
                               child: Row(
                                 children: [
-                                  Expanded(child: Text(l10n.settingsIrCut, style: context.text.bodyMedium)),
+                                  Expanded(
+                                    child: Text(l10n.settingsIrCut, style: context.text.bodyMedium),
+                                  ),
                                   SegmentedButton<String>(
                                     showSelectedIcon: false,
-                                    segments: [for (final mode in img.irCutModes) ButtonSegment(value: mode, label: Text(mode))],
+                                    segments: [
+                                      for (final mode in img.irCutModes)
+                                        ButtonSegment(value: mode, label: Text(mode)),
+                                    ],
                                     selected: {img.irCut ?? img.irCutModes.first},
                                     onSelectionChanged: (value) {
                                       final next = img.copyWith(irCut: value.first);
@@ -317,7 +398,10 @@ class _CameraSettingsScreenState extends ConsumerState<CameraSettingsScreen> {
                   if (mot == null)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: Gaps.page),
-                      child: Text(l10n.settingsUnsupported, style: context.text.bodyMedium?.copyWith(color: p.text3)),
+                      child: Text(
+                        l10n.settingsUnsupported,
+                        style: context.text.bodyMedium?.copyWith(color: p.text3),
+                      ),
                     )
                   else
                     TileGroup(
@@ -335,14 +419,27 @@ class _CameraSettingsScreenState extends ConsumerState<CameraSettingsScreen> {
                           padding: const EdgeInsets.fromLTRB(Gaps.page, 0, Gaps.sm, Gaps.sm),
                           child: Row(
                             children: [
-                              SizedBox(width: 104, child: Text(l10n.settingsSensitivity, style: context.text.bodyMedium)),
+                              SizedBox(
+                                width: 104,
+                                child: Text(
+                                  l10n.settingsSensitivity,
+                                  style: context.text.bodyMedium,
+                                ),
+                              ),
                               Expanded(
                                 child: Slider(
-                                  value: (mot.sensitivity ?? 50).toDouble().clamp(mot.min.toDouble(), mot.max.toDouble()),
+                                  value: (mot.sensitivity ?? 50).toDouble().clamp(
+                                    mot.min.toDouble(),
+                                    mot.max.toDouble(),
+                                  ),
                                   min: mot.min.toDouble(),
                                   max: mot.max.toDouble(),
-                                  onChanged: (v) => setState(() => motion = mot.copyWith(sensitivity: v.round())),
-                                  onChangeEnd: (v) => devices.updateMotion(camera.id, mot.copyWith(sensitivity: v.round())),
+                                  onChanged: (v) =>
+                                      setState(() => motion = mot.copyWith(sensitivity: v.round())),
+                                  onChangeEnd: (v) => devices.updateMotion(
+                                    camera.id,
+                                    mot.copyWith(sensitivity: v.round()),
+                                  ),
                                 ),
                               ),
                             ],
@@ -358,9 +455,14 @@ class _CameraSettingsScreenState extends ConsumerState<CameraSettingsScreen> {
                         title: Text(data.device.timezone ?? l10n.settingsClock),
                         subtitle: data.device.clockOffsetSeconds == null
                             ? null
-                            : Text(l10n.settingsClockOffset(format.number(data.device.clockOffsetSeconds!, digits: 1))),
+                            : Text(
+                                l10n.settingsClockOffset(
+                                  format.number(data.device.clockOffsetSeconds!, digits: 1),
+                                ),
+                              ),
                         trailing: TextButton(
-                          onPressed: () => run(() => devices.syncClock(camera.id), l10n.settingsClockSynced),
+                          onPressed: () =>
+                              run(() => devices.syncClock(camera.id), l10n.settingsClockSynced),
                           child: Text(l10n.settingsSyncClock),
                         ),
                       ),
@@ -370,8 +472,15 @@ class _CameraSettingsScreenState extends ConsumerState<CameraSettingsScreen> {
                           title: Text(l10n.settingsReboot),
                           subtitle: Text(l10n.settingsRebootBody),
                           onTap: () async {
-                            final ok = await confirm(context, title: l10n.settingsReboot, body: l10n.settingsRebootBody, action: l10n.settingsReboot);
-                            if (ok) await run(() => devices.reboot(camera.id), l10n.settingsRebooting);
+                            final ok = await confirm(
+                              context,
+                              title: l10n.settingsReboot,
+                              body: l10n.settingsRebootBody,
+                              action: l10n.settingsReboot,
+                            );
+                            if (ok) {
+                              await run(() => devices.reboot(camera.id), l10n.settingsRebooting);
+                            }
                           },
                         ),
                     ],
@@ -415,5 +524,8 @@ class _CameraSettingsScreenState extends ConsumerState<CameraSettingsScreen> {
 /// Adds the page's horizontal padding to a widget.
 extension PagePadding on Widget {
   /// Returns this widget wrapped in the standard horizontal page padding.
-  Widget paddedPage() => Padding(padding: const EdgeInsets.symmetric(horizontal: Gaps.page), child: this);
+  Widget paddedPage() => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: Gaps.page),
+    child: this,
+  );
 }

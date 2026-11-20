@@ -3,6 +3,7 @@ import 'package:smart_surveillance/app/backend.dart';
 import 'package:smart_surveillance/features/events/domain/models.dart';
 
 part 'event_feed.g.dart';
+
 /// The loaded part of the event list together with its paging and pending state.
 class FeedState {
   /// Creates a state holding [items] out of [total] events, with [page] pages loaded.
@@ -17,14 +18,19 @@ class FeedState {
 
   /// The events loaded so far, newest first.
   final List<CameraEvent> items;
+
   /// The number of events matching the filter on the server.
   final int total;
+
   /// The number of the last page loaded.
   final int page;
+
   /// Whether the next page is being loaded.
   final bool loadingMore;
+
   /// New events held back so the list does not jump while the user is scrolled down.
   final List<CameraEvent> pending;
+
   /// The totals for the current filter, or null while unknown.
   final EventCounts? counts;
 
@@ -67,11 +73,16 @@ bool matches(CameraEvent event, EventFilter filter) {
   if (filter.labels.isNotEmpty && !filter.labels.contains(event.label)) return false;
   if (filter.day != null) {
     final day = filter.day!;
-    if (event.startedAt.year != day.year || event.startedAt.month != day.month || event.startedAt.day != day.day) {
+    if (event.startedAt.year != day.year ||
+        event.startedAt.month != day.month ||
+        event.startedAt.day != day.day) {
       return false;
     }
   }
-  return filter.zones.isEmpty && filter.lines.isEmpty && filter.personId == null && filter.clusterId == null;
+  return filter.zones.isEmpty &&
+      filter.lines.isEmpty &&
+      filter.personId == null &&
+      filter.clusterId == null;
 }
 
 /// Loads and updates the paged list of events at a site for the current filter.
@@ -89,7 +100,12 @@ class EventFeed extends _$EventFeed {
       events.counts(siteId, filter),
     ]);
     final page = results[0] as EventPage;
-    return FeedState(items: page.items, total: page.total, page: 1, counts: results[1] as EventCounts);
+    return FeedState(
+      items: page.items,
+      total: page.total,
+      page: 1,
+      counts: results[1] as EventCounts,
+    );
   }
 
   /// Loads the next page and appends it, unless one is loading or everything is loaded.
@@ -99,7 +115,10 @@ class EventFeed extends _$EventFeed {
     state = AsyncData(current.copyWith(loadingMore: true));
     final filter = ref.read(eventFilterStateProvider(siteId));
     try {
-      final page = await ref.read(backendProvider).events.events(siteId, filter, page: current.page + 1, pageSize: pageSize);
+      final page = await ref
+          .read(backendProvider)
+          .events
+          .events(siteId, filter, page: current.page + 1, pageSize: pageSize);
       final known = current.items.map((e) => e.id).toSet();
       state = AsyncData(
         current.copyWith(
@@ -126,7 +145,9 @@ class EventFeed extends _$EventFeed {
     }
     if (!created || !matches(event, ref.read(eventFilterStateProvider(siteId)))) return;
     if (atTop) {
-      state = AsyncData(current.copyWith(items: [event, ...current.items], total: current.total + 1));
+      state = AsyncData(
+        current.copyWith(items: [event, ...current.items], total: current.total + 1),
+      );
     } else {
       state = AsyncData(current.copyWith(pending: [event, ...current.pending]));
     }

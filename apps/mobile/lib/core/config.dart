@@ -25,11 +25,16 @@ class AppConfig {
 
   /// The default server address, set with --dart-define=SSS_API_URL; the
   /// default reaches the development kit on the host from the Android emulator.
-  static const defaultApiUrl = String.fromEnvironment('SSS_API_URL', defaultValue: 'http://10.0.2.2:18700');
+  static const defaultApiUrl = String.fromEnvironment(
+    'SSS_API_URL',
+    defaultValue: 'http://10.0.2.2:18700',
+  );
 
   /// Reads the configuration from --dart-define=SSS_BACKEND=fake|api and the flavor.
   factory AppConfig.fromEnvironment() => AppConfig(
-    mode: const String.fromEnvironment('SSS_BACKEND', defaultValue: 'fake') == 'api' ? BackendMode.api : BackendMode.fake,
+    mode: const String.fromEnvironment('SSS_BACKEND', defaultValue: 'fake') == 'api'
+        ? BackendMode.api
+        : BackendMode.fake,
     apiUrl: defaultApiUrl,
     flavor: appFlavor ?? 'foss',
   );

@@ -1,6 +1,6 @@
-
 import 'package:smart_surveillance/features/devices/domain/models.dart';
 import 'package:smart_surveillance/features/devices/domain/pairing_models.dart';
+
 /// Offers the ways to pair connectors and cameras and carries out the chosen one.
 abstract interface class PairingRepository {
   /// Returns the pairing methods for the site [siteId], optionally for a scanned [label] or

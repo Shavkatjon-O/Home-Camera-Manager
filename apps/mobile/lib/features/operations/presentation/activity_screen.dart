@@ -11,9 +11,11 @@ import 'package:smart_surveillance/features/operations/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
 
 /// One page of an organisation's audit log for a category.
-final auditProvider = FutureProvider.autoDispose.family<AuditPage, ({String organisationId, AuditCategory? category})>(
-  (ref, key) => ref.read(backendProvider).business.audit(key.organisationId, category: key.category),
-);
+final auditProvider = FutureProvider.autoDispose
+    .family<AuditPage, ({String organisationId, AuditCategory? category})>(
+      (ref, key) =>
+          ref.read(backendProvider).business.audit(key.organisationId, category: key.category),
+    );
 
 /// The name of [category].
 String categoryName(AppLocalizations l10n, AuditCategory category) => switch (category) {
@@ -145,7 +147,10 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
                   leading: Icon(categoryIcon(entry.category)),
                   title: Text(actionText(l10n, entry.action)),
                   subtitle: Text([entry.actor, ?entry.target, ?entry.siteName].join(', ')),
-                  trailing: Text(format.time(entry.at), style: dataStyle(context, size: 12, color: p.text3)),
+                  trailing: Text(
+                    format.time(entry.at),
+                    style: dataStyle(context, size: 12, color: p.text3),
+                  ),
                 ),
               );
             }

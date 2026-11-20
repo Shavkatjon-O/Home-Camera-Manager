@@ -1,4 +1,5 @@
 import 'dart:ui';
+
 /// A picture or video frame to show: from the network, generated, or held in memory.
 sealed class MediaSource {
   /// Creates a media source.
@@ -12,6 +13,7 @@ class NetworkMedia extends MediaSource {
 
   /// The address of the image or video.
   final String url;
+
   /// The key to cache the downloaded image under, when it differs from [url].
   final String? cacheKey;
 
@@ -26,20 +28,28 @@ class NetworkMedia extends MediaSource {
 enum SceneKind {
   /// A street scene.
   street,
+
   /// A yard scene.
   yard,
+
   /// A driveway.
   driveway,
+
   /// An indoor hallway.
   hallway,
+
   /// A building entrance.
   entrance,
+
   /// A shop checkout counter.
   checkout,
+
   /// A shop aisle.
   aisle,
+
   /// A stockroom.
   stockroom,
+
   /// A close-up of a face, used for face samples.
   face,
 }
@@ -51,6 +61,7 @@ class SceneFigure {
 
   /// The kind of object the figure represents, such as person.
   final String label;
+
   /// The area of the figure as fractions of the frame, from 0 to 1.
   final Rect box;
 }
@@ -68,12 +79,16 @@ class SyntheticMedia extends MediaSource {
 
   /// The kind of place that is drawn.
   final SceneKind scene;
+
   /// The number that makes the scene's details differ from other scenes of the same kind.
   final int seed;
+
   /// Whether the scene is drawn as at night.
   final bool night;
+
   /// The figures drawn over the scene.
   final List<SceneFigure> figures;
+
   /// The time shown in the camera stamp, or null to use the current time.
   final DateTime? at;
 

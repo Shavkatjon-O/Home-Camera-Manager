@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:smart_surveillance/features/investigation/domain/models.dart';
+
 /// The source of saved people and unnamed face clusters.
 abstract interface class PeopleRepository {
   /// Returns the saved people of the organisation [organisationId].

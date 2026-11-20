@@ -11,6 +11,7 @@ import 'package:smart_surveillance/features/events/domain/models.dart';
 import 'package:smart_surveillance/features/events/presentation/labels.dart';
 import 'package:smart_surveillance/features/events/presentation/providers.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
+
 /// The tab shell with the bottom navigation, live alert banners and notifications.
 class AppShell extends ConsumerStatefulWidget {
   /// Creates the shell around the router's [shell].
@@ -33,7 +34,12 @@ class _AppShellState extends ConsumerState<AppShell> {
     started = true;
     final l10n = context.l10n;
     unawaited(
-      ref.read(alertCenterProvider).start(channelName: l10n.notificationChannelName, channelBody: l10n.notificationChannelBody),
+      ref
+          .read(alertCenterProvider)
+          .start(
+            channelName: l10n.notificationChannelName,
+            channelBody: l10n.notificationChannelBody,
+          ),
     );
   }
 
@@ -43,7 +49,9 @@ class _AppShellState extends ConsumerState<AppShell> {
     final l10n = context.l10n;
     final p = context.palette;
     final site = ref.watch(currentSiteProvider).value;
-    final unreviewed = site == null ? 0 : ref.watch(todayCountsProvider(site.site.id)).value?.unacknowledged ?? 0;
+    final unreviewed = site == null
+        ? 0
+        : ref.watch(todayCountsProvider(site.site.id)).value?.unacknowledged ?? 0;
     if (site != null) {
       ref.listen(liveUpdatesProvider(site.site.id), (previous, next) {
         final update = next.value;
@@ -60,7 +68,13 @@ class _AppShellState extends ConsumerState<AppShell> {
                   children: [
                     Icon(kindIcon(update.event.kind), size: 18, color: p.dangerText),
                     const SizedBox(width: 10),
-                    Expanded(child: Text(l10n.eventTitle(update.event), maxLines: 2, overflow: TextOverflow.ellipsis)),
+                    Expanded(
+                      child: Text(
+                        l10n.eventTitle(update.event),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                   ],
                 ),
                 action: SnackBarAction(
@@ -95,7 +109,9 @@ class _AppShellState extends ConsumerState<AppShell> {
           child: const Icon(Icons.notifications_rounded),
         ),
         label: l10n.navEvents,
-        tooltip: unreviewed > 0 ? '${l10n.navEvents}, ${l10n.homeUnacknowledged(unreviewed)}' : null,
+        tooltip: unreviewed > 0
+            ? '${l10n.navEvents}, ${l10n.homeUnacknowledged(unreviewed)}'
+            : null,
       ),
       NavigationDestination(
         icon: const Icon(Icons.manage_search_rounded),
@@ -111,11 +127,14 @@ class _AppShellState extends ConsumerState<AppShell> {
     return Scaffold(
       body: shell,
       bottomNavigationBar: DecoratedBox(
-        decoration: BoxDecoration(border: Border(top: BorderSide(color: p.border))),
+        decoration: BoxDecoration(
+          border: Border(top: BorderSide(color: p.border)),
+        ),
         child: NavigationBar(
           selectedIndex: shell.currentIndex,
           destinations: destinations,
-          onDestinationSelected: (index) => shell.goBranch(index, initialLocation: index == shell.currentIndex),
+          onDestinationSelected: (index) =>
+              shell.goBranch(index, initialLocation: index == shell.currentIndex),
         ),
       ),
     );

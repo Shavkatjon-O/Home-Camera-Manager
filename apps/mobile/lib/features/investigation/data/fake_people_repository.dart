@@ -6,6 +6,7 @@ import 'package:smart_surveillance/app/demo/fixtures.dart';
 import 'package:smart_surveillance/core/media/media_source.dart';
 import 'package:smart_surveillance/features/investigation/domain/models.dart';
 import 'package:smart_surveillance/features/investigation/domain/people_repository.dart';
+
 /// An in-memory [PeopleRepository] backed by demo data.
 class FakePeopleRepository implements PeopleRepository {
   /// Creates a repository reading and writing [store].
@@ -15,23 +16,26 @@ class FakePeopleRepository implements PeopleRepository {
   final FakeStore store;
 
   @override
-  Future<List<Person>> people(String organisationId) => store.delay(() => List.of(store.data.people));
+  Future<List<Person>> people(String organisationId) =>
+      store.delay(() => List.of(store.data.people));
 
   @override
-  Future<Person> person(String personId) => store.delay(() => store.data.people.firstWhere((p) => p.id == personId));
+  Future<Person> person(String personId) =>
+      store.delay(() => store.data.people.firstWhere((p) => p.id == personId));
 
   @override
-  Future<Person> createPerson(String organisationId, {required String name, String? notes}) => store.delay(() {
-    const colors = [0xFF0090FF, 0xFF45C25F, 0xFFF0A92E, 0xFFE5484D, 0xFFA07CFE];
-    final person = Person(
-      id: 'person-${store.sequence++}',
-      name: name,
-      notes: notes,
-      color: colors[store.data.people.length % colors.length],
-    );
-    store.data.people.add(person);
-    return person;
-  });
+  Future<Person> createPerson(String organisationId, {required String name, String? notes}) =>
+      store.delay(() {
+        const colors = [0xFF0090FF, 0xFF45C25F, 0xFFF0A92E, 0xFFE5484D, 0xFFA07CFE];
+        final person = Person(
+          id: 'person-${store.sequence++}',
+          name: name,
+          notes: notes,
+          color: colors[store.data.people.length % colors.length],
+        );
+        store.data.people.add(person);
+        return person;
+      });
 
   @override
   Future<Person> updatePerson(Person person) => store.delay(() {
@@ -41,7 +45,8 @@ class FakePeopleRepository implements PeopleRepository {
   });
 
   @override
-  Future<void> deletePerson(String personId) => store.delay(() => store.data.people.removeWhere((p) => p.id == personId));
+  Future<void> deletePerson(String personId) =>
+      store.delay(() => store.data.people.removeWhere((p) => p.id == personId));
 
   @override
   Future<PhotoResult> addPhotos(String personId, List<Uint8List> photos) => store.delay(() {
@@ -65,7 +70,9 @@ class FakePeopleRepository implements PeopleRepository {
   Future<void> deleteSample(String personId, String sampleId) => store.delay(() {
     final index = store.data.people.indexWhere((p) => p.id == personId);
     final person = store.data.people[index];
-    store.data.people[index] = person.copyWith(samples: person.samples.where((s) => s.id != sampleId).toList());
+    store.data.people[index] = person.copyWith(
+      samples: person.samples.where((s) => s.id != sampleId).toList(),
+    );
   });
 
   @override
@@ -81,7 +88,8 @@ class FakePeopleRepository implements PeopleRepository {
   });
 
   @override
-  Future<List<FaceCluster>> clusters(String organisationId) => store.delay(() => List.of(store.data.clusters));
+  Future<List<FaceCluster>> clusters(String organisationId) =>
+      store.delay(() => List.of(store.data.clusters));
 
   @override
   Future<FaceCluster> cluster(String clusterId) =>

@@ -10,13 +10,16 @@ import 'package:smart_surveillance/core/design/tokens.dart';
 import 'package:smart_surveillance/core/providers.dart';
 import 'package:smart_surveillance/core/widgets/logo.dart';
 import 'package:smart_surveillance/core/widgets/surfaces.dart';
+
 /// The provider of the installed app's name and version.
 final packageInfoProvider = FutureProvider<PackageInfo>((ref) => PackageInfo.fromPlatform());
 
 /// Registers the licence of the bundled font with the licence page.
 void registerLicences() {
   LicenseRegistry.addLicense(() async* {
-    yield LicenseEntryWithLineBreaks(['Geist'], await rootBundle.loadString('assets/licenses/geist-ofl.txt'));
+    yield LicenseEntryWithLineBreaks([
+      'Geist',
+    ], await rootBundle.loadString('assets/licenses/geist-ofl.txt'));
   });
 }
 
@@ -49,8 +52,14 @@ class AboutScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(l10n.appName, style: context.text.titleLarge),
-                      Text(l10n.aboutVersion(version), style: dataStyle(context, size: 12.5, color: p.text2)),
-                      Text(l10n.aboutBuild(config.flavor), style: dataStyle(context, size: 12.5, color: p.text3)),
+                      Text(
+                        l10n.aboutVersion(version),
+                        style: dataStyle(context, size: 12.5, color: p.text2),
+                      ),
+                      Text(
+                        l10n.aboutBuild(config.flavor),
+                        style: dataStyle(context, size: 12.5, color: p.text3),
+                      ),
                     ],
                   ),
                 ),
@@ -73,7 +82,10 @@ class AboutScreen extends ConsumerWidget {
                   context: context,
                   applicationName: l10n.appName,
                   applicationVersion: version,
-                  applicationIcon: const Padding(padding: EdgeInsets.all(12), child: LogoMark(size: 48)),
+                  applicationIcon: const Padding(
+                    padding: EdgeInsets.all(12),
+                    child: LogoMark(size: 48),
+                  ),
                 ),
               ),
             ],

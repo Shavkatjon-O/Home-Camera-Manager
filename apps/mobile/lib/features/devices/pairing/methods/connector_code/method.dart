@@ -28,5 +28,6 @@ class ConnectorCodeMethod extends PairingMethod {
   String subtitle(AppLocalizations l10n) => l10n.methodConnectorCodeBody;
 
   @override
-  Widget flow(PairingContext context, PairingSession session) => ConnectorCodeScreen(pairing: context, session: session);
+  Widget flow(PairingContext context, PairingSession session) =>
+      ConnectorCodeScreen(pairing: context, session: session);
 }

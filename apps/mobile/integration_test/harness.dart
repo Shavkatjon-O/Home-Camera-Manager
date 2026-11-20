@@ -24,18 +24,25 @@ Future<ProviderContainer> launch(WidgetTester tester, {ThemeMode theme = ThemeMo
   final container = ProviderContainer(
     retry: (count, error) => null,
     overrides: [
-      configProvider.overrideWithValue(const AppConfig(mode: BackendMode.fake, apiUrl: '', flavor: 'foss')),
+      configProvider.overrideWithValue(
+        const AppConfig(mode: BackendMode.fake, apiUrl: '', flavor: 'foss'),
+      ),
       preferencesProvider.overrideWithValue(preferences),
       backendProvider.overrideWithValue(fakeBackend(store)),
     ],
   );
-  await tester.pumpWidget(UncontrolledProviderScope(container: container, child: const SurveillanceApp()));
+  await tester.pumpWidget(
+    UncontrolledProviderScope(container: container, child: const SurveillanceApp()),
+  );
   await settle(tester);
   return container;
 }
 
 /// Pumps frames for [time], because the live scenes never settle.
-Future<void> settle(WidgetTester tester, [Duration time = const Duration(milliseconds: 1500)]) async {
+Future<void> settle(
+  WidgetTester tester, [
+  Duration time = const Duration(milliseconds: 1500),
+]) async {
   final end = DateTime.now().add(time);
   while (DateTime.now().isBefore(end)) {
     await tester.pump(const Duration(milliseconds: 100));
@@ -43,7 +50,12 @@ Future<void> settle(WidgetTester tester, [Duration time = const Duration(millise
 }
 
 /// Opens [location] in the app's router and waits for it to load.
-Future<void> open(WidgetTester tester, ProviderContainer container, String location, {bool push = false}) async {
+Future<void> open(
+  WidgetTester tester,
+  ProviderContainer container,
+  String location, {
+  bool push = false,
+}) async {
   final router = container.read(routerProvider);
   if (push) {
     unawaited(router.push<void>(location));
@@ -60,7 +72,11 @@ Future<void> setTheme(WidgetTester tester, ProviderContainer container, ThemeMod
 }
 
 /// Takes a named screenshot of the whole screen.
-Future<void> shoot(IntegrationTestWidgetsFlutterBinding binding, WidgetTester tester, String name) async {
+Future<void> shoot(
+  IntegrationTestWidgetsFlutterBinding binding,
+  WidgetTester tester,
+  String name,
+) async {
   await settle(tester, const Duration(milliseconds: 400));
   await binding.takeScreenshot(name);
 }

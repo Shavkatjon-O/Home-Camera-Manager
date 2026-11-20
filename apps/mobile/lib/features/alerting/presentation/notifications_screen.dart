@@ -121,7 +121,9 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     title: Text(l10n.notificationsAlertsOnly),
                     subtitle: Text(l10n.notificationsAlertsOnlyBody),
                     value: prefs.alertsOnly,
-                    onChanged: prefs.enabled ? (value) => save(prefs.copyWith(alertsOnly: value)) : null,
+                    onChanged: prefs.enabled
+                        ? (value) => save(prefs.copyWith(alertsOnly: value))
+                        : null,
                   ),
                 ],
               ),
@@ -140,7 +142,9 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                         onSelected: prefs.enabled
                             ? (on) => save(
                                 prefs.copyWith(
-                                  mutedKinds: on ? ({...prefs.mutedKinds}..remove(kind.name)) : {...prefs.mutedKinds, kind.name},
+                                  mutedKinds: on
+                                      ? ({...prefs.mutedKinds}..remove(kind.name))
+                                      : {...prefs.mutedKinds, kind.name},
                                 ),
                               )
                             : null,
@@ -157,7 +161,10 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     subtitle: Text(
                       prefs.quietFrom == null
                           ? l10n.notificationsQuietOff
-                          : l10n.notificationsQuietBody(prefs.quietFrom!, prefs.quietUntil ?? '07:00'),
+                          : l10n.notificationsQuietBody(
+                              prefs.quietFrom!,
+                              prefs.quietUntil ?? '07:00',
+                            ),
                     ),
                     value: prefs.quietFrom != null,
                     onChanged: prefs.enabled
@@ -174,8 +181,16 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
               TileGroup(
                 children: [
                   ListTile(
-                    leading: Icon(center.pushAvailable ? Icons.cloud_done_outlined : Icons.phone_android_outlined),
-                    title: Text(center.pushAvailable ? l10n.notificationsChannelFcm : l10n.notificationsChannelNone),
+                    leading: Icon(
+                      center.pushAvailable
+                          ? Icons.cloud_done_outlined
+                          : Icons.phone_android_outlined,
+                    ),
+                    title: Text(
+                      center.pushAvailable
+                          ? l10n.notificationsChannelFcm
+                          : l10n.notificationsChannelNone,
+                    ),
                   ),
                 ],
               ),
@@ -228,7 +243,9 @@ class _TelegramSectionState extends ConsumerState<TelegramSection> with WidgetsB
     setState(() => busy = true);
     try {
       final link = await ref.read(backendProvider).business.linkTelegram(organisationId);
-      final opened = ref.read(backendProvider).demo || await launchUrl(Uri.parse(link.url), mode: LaunchMode.externalApplication);
+      final opened =
+          ref.read(backendProvider).demo ||
+          await launchUrl(Uri.parse(link.url), mode: LaunchMode.externalApplication);
       if (!mounted) return;
       showMessage(context, opened ? l10n.telegramOpened : l10n.telegramCannotOpen);
       ref.invalidate(telegramChatsProvider(organisationId));
@@ -301,12 +318,22 @@ class _TelegramSectionState extends ConsumerState<TelegramSection> with WidgetsB
           child: Text(l10n.telegramBody, style: context.text.bodySmall),
         ),
         chats.when(
-          loading: () => const Padding(padding: EdgeInsets.all(Gaps.lg), child: Center(child: CircularProgressIndicator(strokeWidth: 2))),
-          error: (error, _) => ErrorState(error: error, compact: true, onRetry: () => ref.invalidate(telegramChatsProvider(organisationId))),
+          loading: () => const Padding(
+            padding: EdgeInsets.all(Gaps.lg),
+            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+          ),
+          error: (error, _) => ErrorState(
+            error: error,
+            compact: true,
+            onRetry: () => ref.invalidate(telegramChatsProvider(organisationId)),
+          ),
           data: (list) => TileGroup(
             children: [
               if (list.isEmpty)
-                ListTile(leading: Icon(Icons.send_outlined, color: p.text3), title: Text(l10n.telegramNone, style: TextStyle(color: p.text2))),
+                ListTile(
+                  leading: Icon(Icons.send_outlined, color: p.text3),
+                  title: Text(l10n.telegramNone, style: TextStyle(color: p.text2)),
+                ),
               for (final chat in list)
                 ListTile(
                   leading: Icon(chat.group ? Icons.groups_outlined : Icons.person_outline_rounded),
@@ -315,7 +342,11 @@ class _TelegramSectionState extends ConsumerState<TelegramSection> with WidgetsB
                     '${chat.group ? l10n.telegramGroup : l10n.telegramPrivate}, ${l10n.telegramLinked(format.ago(chat.linkedAt))}',
                   ),
                   trailing: admin
-                      ? IconButton(tooltip: l10n.telegramUnlink, onPressed: () => unlink(chat), icon: const Icon(Icons.link_off_rounded))
+                      ? IconButton(
+                          tooltip: l10n.telegramUnlink,
+                          onPressed: () => unlink(chat),
+                          icon: const Icon(Icons.link_off_rounded),
+                        )
                       : null,
                 ),
             ],

@@ -41,7 +41,12 @@ class _LabelQrScreenState extends ConsumerState<LabelQrScreen> {
         discovered = list.where((d) => d.id == identity.discoveredId).firstOrNull;
       }
       await widget.session.finish(PairingOutcome.success);
-      navigator.pop(ContinueWith(identity.method, widget.pairing.copyWith(label: identity, discovered: discovered)));
+      navigator.pop(
+        ContinueWith(
+          identity.method,
+          widget.pairing.copyWith(label: identity, discovered: discovered),
+        ),
+      );
     } catch (failure) {
       final unknown = failure is ApiFailure && failure.kind == FailureKind.notFound;
       if (unknown) await widget.session.finish(PairingOutcome.failure, errorCode: 'unknown_label');

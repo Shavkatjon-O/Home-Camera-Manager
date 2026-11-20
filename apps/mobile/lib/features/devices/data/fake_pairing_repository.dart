@@ -6,6 +6,7 @@ import 'package:smart_surveillance/features/devices/data/fake_device_repository.
 import 'package:smart_surveillance/features/devices/domain/models.dart';
 import 'package:smart_surveillance/features/devices/domain/pairing_models.dart';
 import 'package:smart_surveillance/features/devices/domain/pairing_repository.dart';
+
 /// An in-memory pairing repository backed by a [FakeStore].
 class FakePairingRepository implements PairingRepository {
   /// Creates a repository that keeps pairing data in [store] and adds cameras through [devices].
@@ -13,27 +14,41 @@ class FakePairingRepository implements PairingRepository {
 
   /// The shared fake data store.
   final FakeStore store;
+
   /// The fake device repository that receives cameras added by pairing.
   final FakeDeviceRepository devices;
+
   /// The pairing reports received so far.
   final reports = <PairingReport>[];
 
   @override
-  Future<List<PairingCatalogEntry>> catalog(String siteId, {String? label, String? discoveredId}) => store.delay(() {
-    final connectors = store.data.connectors.where((c) => c.siteId == siteId && c.state == ConnectorState.online);
-    final online = connectors.isNotEmpty;
-    final nvr = online && (store.data.discovered[connectors.first.id] ?? const []).any((d) => d.nvr && d.cameraId == null);
-    return [
-      PairingCatalogEntry(id: 'connector_discovery', rank: 1, available: online, recommended: online),
-      const PairingCatalogEntry(id: 'label_qr', rank: 2),
-      PairingCatalogEntry(id: 'manual_host', rank: 3, available: online),
-      PairingCatalogEntry(id: 'nvr_import', rank: 4, available: nvr),
-      PairingCatalogEntry(id: 'rtsp_url', rank: 5, available: online),
-      const PairingCatalogEntry(id: 'connector_qr', rank: 10, recommended: true),
-      const PairingCatalogEntry(id: 'connector_mdns', rank: 11),
-      const PairingCatalogEntry(id: 'connector_code', rank: 12),
-    ];
-  });
+  Future<List<PairingCatalogEntry>> catalog(String siteId, {String? label, String? discoveredId}) =>
+      store.delay(() {
+        final connectors = store.data.connectors.where(
+          (c) => c.siteId == siteId && c.state == ConnectorState.online,
+        );
+        final online = connectors.isNotEmpty;
+        final nvr =
+            online &&
+            (store.data.discovered[connectors.first.id] ?? const []).any(
+              (d) => d.nvr && d.cameraId == null,
+            );
+        return [
+          PairingCatalogEntry(
+            id: 'connector_discovery',
+            rank: 1,
+            available: online,
+            recommended: online,
+          ),
+          const PairingCatalogEntry(id: 'label_qr', rank: 2),
+          PairingCatalogEntry(id: 'manual_host', rank: 3, available: online),
+          PairingCatalogEntry(id: 'nvr_import', rank: 4, available: nvr),
+          PairingCatalogEntry(id: 'rtsp_url', rank: 5, available: online),
+          const PairingCatalogEntry(id: 'connector_qr', rank: 10, recommended: true),
+          const PairingCatalogEntry(id: 'connector_mdns', rank: 11),
+          const PairingCatalogEntry(id: 'connector_code', rank: 12),
+        ];
+      });
 
   @override
   Future<Connector> claimConnector({required String siteId, required String code, String? name}) =>
@@ -89,9 +104,13 @@ class FakePairingRepository implements PairingRepository {
     String? username,
     String? password,
   }) async {
-    if (store.latency > Duration.zero) await Future<void>.delayed(const Duration(milliseconds: 900));
+    if (store.latency > Duration.zero) {
+      await Future<void>.delayed(const Duration(milliseconds: 900));
+    }
     return store.delay(() {
-      if (!RegExp(r'^[0-9A-Za-z.-]+$').hasMatch(host)) throw const ApiFailure(FailureKind.invalid, 'host');
+      if (!RegExp(r'^[0-9A-Za-z.-]+$').hasMatch(host)) {
+        throw const ApiFailure(FailureKind.invalid, 'host');
+      }
       return DiscoveredCamera(
         id: 'manual-${host.hashCode}',
         host: host,
@@ -142,7 +161,9 @@ class FakePairingRepository implements PairingRepository {
     final list = store.data.discovered[connectorId];
     if (list != null) {
       final index = list.indexWhere((d) => d.id == nvr.id);
-      if (index >= 0 && added.isNotEmpty) list[index] = list[index].copyWith(cameraId: added.first.id);
+      if (index >= 0 && added.isNotEmpty) {
+        list[index] = list[index].copyWith(cameraId: added.first.id);
+      }
     }
     return added;
   }

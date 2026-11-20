@@ -28,5 +28,6 @@ class NvrImportMethod extends PairingMethod {
   String subtitle(AppLocalizations l10n) => l10n.methodNvrImportBody;
 
   @override
-  Widget flow(PairingContext context, PairingSession session) => NvrImportScreen(pairing: context, session: session);
+  Widget flow(PairingContext context, PairingSession session) =>
+      NvrImportScreen(pairing: context, session: session);
 }

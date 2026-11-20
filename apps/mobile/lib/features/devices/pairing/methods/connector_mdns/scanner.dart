@@ -76,11 +76,20 @@ class DemoConnectorScanner implements ConnectorScanner {
   Stream<List<FoundConnector>> scan() async* {
     yield const [];
     await Future<void>.delayed(const Duration(milliseconds: 1500));
-    yield const [FoundConnector(name: 'Demo connector', host: '192.168.1.20', port: 8780, code: 'DEMO-2468', version: '0.1.0')];
+    yield const [
+      FoundConnector(
+        name: 'Demo connector',
+        host: '192.168.1.20',
+        port: 8780,
+        code: 'DEMO-2468',
+        version: '0.1.0',
+      ),
+    ];
   }
 }
 
 /// The scanner for the current backend.
 final connectorScannerProvider = Provider<ConnectorScanner>(
-  (ref) => ref.watch(backendProvider).demo ? const DemoConnectorScanner() : const NsdConnectorScanner(),
+  (ref) =>
+      ref.watch(backendProvider).demo ? const DemoConnectorScanner() : const NsdConnectorScanner(),
 );

@@ -11,6 +11,7 @@ import 'package:smart_surveillance/core/widgets/states.dart';
 import 'package:smart_surveillance/core/widgets/surfaces.dart';
 import 'package:smart_surveillance/features/operations/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
+
 /// The health report of a site, loaded by site id.
 final healthProvider = FutureProvider.autoDispose.family<HealthReport, String>(
   (ref, siteId) => ref.read(backendProvider).health.health(siteId),
@@ -50,7 +51,10 @@ class HealthScreen extends ConsumerWidget {
           data: (report) => ListView(
             padding: const EdgeInsets.only(bottom: Gaps.xxl),
             children: [
-              SectionHeader(l10n.healthLast24h, padding: const EdgeInsets.fromLTRB(Gaps.page, Gaps.sm, Gaps.page, Gaps.sm)),
+              SectionHeader(
+                l10n.healthLast24h,
+                padding: const EdgeInsets.fromLTRB(Gaps.page, Gaps.sm, Gaps.page, Gaps.sm),
+              ),
               TileGroup(
                 children: [
                   for (final target in report.targets)
@@ -61,26 +65,63 @@ class HealthScreen extends ConsumerWidget {
                         children: [
                           Row(
                             children: [
-                              StatusDot(online: target.status == HealthStatus.up ? true : (target.status == HealthStatus.down ? false : null)),
+                              StatusDot(
+                                online: target.status == HealthStatus.up
+                                    ? true
+                                    : (target.status == HealthStatus.down ? false : null),
+                              ),
                               const SizedBox(width: 10),
-                              Icon(target.kind == 'camera' ? Icons.videocam_outlined : Icons.router_outlined, size: 18, color: p.text3),
+                              Icon(
+                                target.kind == 'camera'
+                                    ? Icons.videocam_outlined
+                                    : Icons.router_outlined,
+                                size: 18,
+                                color: p.text3,
+                              ),
                               const SizedBox(width: 8),
-                              Expanded(child: Text(target.name, style: context.text.bodyLarge?.copyWith(fontWeight: FontWeight.w500))),
-                              Text(status(target.status), style: dataStyle(context, size: 12, color: target.status == HealthStatus.down ? p.dangerText : p.text2)),
+                              Expanded(
+                                child: Text(
+                                  target.name,
+                                  style: context.text.bodyLarge?.copyWith(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                status(target.status),
+                                style: dataStyle(
+                                  context,
+                                  size: 12,
+                                  color: target.status == HealthStatus.down
+                                      ? p.dangerText
+                                      : p.text2,
+                                ),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 10),
-                          Sparkline(values: [for (final bucket in target.buckets) bucket.availability]),
+                          Sparkline(
+                            values: [for (final bucket in target.buckets) bucket.availability],
+                          ),
                           const SizedBox(height: 8),
                           Row(
                             children: [
                               if (target.uptimePercent != null)
-                                Text(l10n.healthUptime(format.number(target.uptimePercent!, digits: 1)), style: dataStyle(context, size: 12, color: p.text2)),
+                                Text(
+                                  l10n.healthUptime(
+                                    format.number(target.uptimePercent!, digits: 1),
+                                  ),
+                                  style: dataStyle(context, size: 12, color: p.text2),
+                                ),
                               const SizedBox(width: 14),
                               if (target.latencyMs != null)
-                                Text(l10n.healthLatency(format.number(target.latencyMs!, digits: 1)), style: dataStyle(context, size: 12, color: p.text3)),
+                                Text(
+                                  l10n.healthLatency(format.number(target.latencyMs!, digits: 1)),
+                                  style: dataStyle(context, size: 12, color: p.text3),
+                                ),
                               const Spacer(),
-                              if (target.parentName != null) Text(target.parentName!, style: context.text.labelSmall),
+                              if (target.parentName != null)
+                                Text(target.parentName!, style: context.text.labelSmall),
                             ],
                           ),
                         ],
@@ -92,7 +133,10 @@ class HealthScreen extends ConsumerWidget {
               if (report.outages.isEmpty)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: Gaps.page),
-                  child: Text(l10n.healthNoOutages, style: context.text.bodyMedium?.copyWith(color: p.text3)),
+                  child: Text(
+                    l10n.healthNoOutages,
+                    style: context.text.bodyMedium?.copyWith(color: p.text3),
+                  ),
                 )
               else
                 TileGroup(
@@ -107,12 +151,21 @@ class HealthScreen extends ConsumerWidget {
                         subtitle: Text(
                           [
                             outage.ongoing
-                                ? l10n.healthOngoing(format.duration(ref.read(clockProvider)().difference(outage.startedAt)))
-                                : l10n.healthLasted(format.duration(outage.endedAt!.difference(outage.startedAt))),
+                                ? l10n.healthOngoing(
+                                    format.duration(
+                                      ref.read(clockProvider)().difference(outage.startedAt),
+                                    ),
+                                  )
+                                : l10n.healthLasted(
+                                    format.duration(outage.endedAt!.difference(outage.startedAt)),
+                                  ),
                             if (outage.causeName != null) l10n.healthCause(outage.causeName!),
                           ].join('. '),
                         ),
-                        trailing: Text(format.when(outage.startedAt), style: dataStyle(context, size: 11.5, color: p.text3)),
+                        trailing: Text(
+                          format.when(outage.startedAt),
+                          style: dataStyle(context, size: 11.5, color: p.text3),
+                        ),
                       ),
                   ],
                 ),

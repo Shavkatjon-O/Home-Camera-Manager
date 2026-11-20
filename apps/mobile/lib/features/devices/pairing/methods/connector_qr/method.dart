@@ -31,5 +31,6 @@ class ConnectorQrMethod extends PairingMethod {
   String subtitle(AppLocalizations l10n) => l10n.methodConnectorQrBody;
 
   @override
-  Widget flow(PairingContext context, PairingSession session) => ConnectorQrScreen(pairing: context, session: session);
+  Widget flow(PairingContext context, PairingSession session) =>
+      ConnectorQrScreen(pairing: context, session: session);
 }

@@ -28,5 +28,6 @@ class ManualHostMethod extends PairingMethod {
   String subtitle(AppLocalizations l10n) => l10n.methodManualHostBody;
 
   @override
-  Widget flow(PairingContext context, PairingSession session) => ManualHostScreen(pairing: context, session: session);
+  Widget flow(PairingContext context, PairingSession session) =>
+      ManualHostScreen(pairing: context, session: session);
 }

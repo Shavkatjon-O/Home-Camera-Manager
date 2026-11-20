@@ -5,6 +5,7 @@ import 'package:smart_surveillance/features/identity/presentation/session.dart';
 import 'package:smart_surveillance/features/tenancy/domain/models.dart';
 
 part 'current_site.g.dart';
+
 /// Loads the organisations of the signed-in user.
 @Riverpod(keepAlive: true)
 Future<List<Organisation>> organisations(Ref ref) async {
@@ -19,7 +20,9 @@ Future<List<Organisation>> organisations(Ref ref) async {
 Future<List<Site>> allSites(Ref ref) async {
   final organisations = await ref.watch(organisationsProvider.future);
   final tenancy = ref.read(backendProvider).tenancy;
-  final lists = await Future.wait([for (final organisation in organisations) tenancy.sites(organisation.id)]);
+  final lists = await Future.wait([
+    for (final organisation in organisations) tenancy.sites(organisation.id),
+  ]);
   return [for (final list in lists) ...list];
 }
 
@@ -43,6 +46,7 @@ class SiteContext {
 
   /// The site in use.
   final Site site;
+
   /// The organisation that owns the site.
   final Organisation organisation;
 

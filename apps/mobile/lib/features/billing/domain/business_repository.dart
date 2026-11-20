@@ -1,7 +1,7 @@
-
 import 'package:smart_surveillance/features/alerting/domain/models.dart';
 import 'package:smart_surveillance/features/billing/domain/models.dart';
 import 'package:smart_surveillance/features/operations/domain/models.dart';
+
 /// Reads plan, Telegram and audit data of an organisation.
 abstract interface class BusinessRepository {
   /// Returns the plan and usage of the organisation [organisationId].
@@ -20,5 +20,10 @@ abstract interface class BusinessRepository {
   Future<int> testTelegram(String organisationId);
 
   /// Returns one page of the audit log of [organisationId], optionally limited to [category].
-  Future<AuditPage> audit(String organisationId, {AuditCategory? category, int page = 1, int pageSize = 40});
+  Future<AuditPage> audit(
+    String organisationId, {
+    AuditCategory? category,
+    int page = 1,
+    int pageSize = 40,
+  });
 }

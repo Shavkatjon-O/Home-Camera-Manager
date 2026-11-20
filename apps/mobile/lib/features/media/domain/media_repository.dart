@@ -1,7 +1,7 @@
-
 import 'package:smart_surveillance/core/media/media_source.dart';
 import 'package:smart_surveillance/features/devices/domain/models.dart';
 import 'package:smart_surveillance/features/events/domain/models.dart';
+
 /// Where a camera's live picture comes from.
 sealed class LiveSource {
   const LiveSource();
@@ -46,8 +46,10 @@ class SyntheticClip extends ClipSource {
 
   /// The generated picture of the clip.
   final SyntheticMedia media;
+
   /// The detection boxes drawn over the clip.
   final List<EventBox> boxes;
+
   /// The duration of the clip.
   final Duration length;
 }

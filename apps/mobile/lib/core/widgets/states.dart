@@ -4,19 +4,31 @@ import 'package:smart_surveillance/app/l10n/l10n.dart';
 import 'package:smart_surveillance/core/design/palette.dart';
 import 'package:smart_surveillance/core/design/tokens.dart';
 import 'package:smart_surveillance/core/widgets/failure_labels.dart';
+
 /// A centred icon, title and optional text and button, shown when there is nothing to display.
 class EmptyState extends StatelessWidget {
   /// Creates an empty state with [icon] and [title].
-  const EmptyState({super.key, required this.icon, required this.title, this.body, this.action, this.compact = false});
+  const EmptyState({
+    super.key,
+    required this.icon,
+    required this.title,
+    this.body,
+    this.action,
+    this.compact = false,
+  });
 
   /// The icon shown in the rounded square above the title.
   final IconData icon;
+
   /// The headline of the message.
   final String title;
+
   /// The explanation shown under the title.
   final String? body;
+
   /// The widget shown under the text, usually a button.
   final Widget? action;
+
   /// Whether to use less vertical padding.
   final bool compact;
 
@@ -43,7 +55,11 @@ class EmptyState extends StatelessWidget {
             Text(title, style: context.text.titleMedium, textAlign: TextAlign.center),
             if (body != null) ...[
               const SizedBox(height: Gaps.sm),
-              Text(body!, style: context.text.bodyMedium?.copyWith(color: p.text2), textAlign: TextAlign.center),
+              Text(
+                body!,
+                style: context.text.bodyMedium?.copyWith(color: p.text2),
+                textAlign: TextAlign.center,
+              ),
             ],
             if (action != null) ...[const SizedBox(height: Gaps.xl), action!],
           ],
@@ -60,8 +76,10 @@ class ErrorState extends StatelessWidget {
 
   /// The failure to describe.
   final Object error;
+
   /// The callback for the retry button, or null to hide the button.
   final VoidCallback? onRetry;
+
   /// Whether to use less vertical padding.
   final bool compact;
 
@@ -88,8 +106,10 @@ class Skeleton extends StatefulWidget {
 
   /// The width of the block, or null to fill the available width.
   final double? width;
+
   /// The height of the block.
   final double height;
+
   /// The corner radius of the block.
   final double radius;
 
@@ -134,6 +154,7 @@ class ListSkeleton extends StatelessWidget {
 
   /// The number of placeholder rows.
   final int rows;
+
   /// Whether each row has a picture placeholder.
   final bool thumbnail;
 
@@ -147,7 +168,10 @@ class ListSkeleton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: Gaps.page, vertical: 10),
         child: Row(
           children: [
-            if (thumbnail) ...[const Skeleton(width: 96, height: 56, radius: 8), const SizedBox(width: 14)],
+            if (thumbnail) ...[
+              const Skeleton(width: 96, height: 56, radius: 8),
+              const SizedBox(width: 14),
+            ],
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -168,20 +192,17 @@ class ListSkeleton extends StatelessWidget {
 /// A widget that shows an [AsyncValue] as its data, a loading indicator or an error with retry.
 class AsyncBody<T> extends StatelessWidget {
   /// Creates a body that builds [data] from [value] once it has loaded.
-  const AsyncBody({
-    super.key,
-    required this.value,
-    required this.data,
-    this.loading,
-    this.onRetry,
-  });
+  const AsyncBody({super.key, required this.value, required this.data, this.loading, this.onRetry});
 
   /// The value to show.
   final AsyncValue<T> value;
+
   /// The builder of the content from the loaded value.
   final Widget Function(T data) data;
+
   /// The widget shown while loading, defaulting to a spinner.
   final Widget? loading;
+
   /// The callback for the retry button of the error state.
   final VoidCallback? onRetry;
 
@@ -202,7 +223,8 @@ void showMessage(BuildContext context, String message) {
 }
 
 /// Shows a snack bar describing [error].
-void showFailure(BuildContext context, Object error) => showMessage(context, context.l10n.failure(error));
+void showFailure(BuildContext context, Object error) =>
+    showMessage(context, context.l10n.failure(error));
 
 /// Asks the user to confirm with a dialog and returns true when they choose [action].
 Future<bool> confirm(
@@ -219,10 +241,16 @@ Future<bool> confirm(
       title: Text(title),
       content: body == null ? null : Text(body),
       actions: [
-        TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(context.l10n.commonCancel)),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: Text(context.l10n.commonCancel),
+        ),
         FilledButton(
           style: destructive
-              ? FilledButton.styleFrom(backgroundColor: p.danger, foregroundColor: const Color(0xFFFFFFFF))
+              ? FilledButton.styleFrom(
+                  backgroundColor: p.danger,
+                  foregroundColor: const Color(0xFFFFFFFF),
+                )
               : null,
           onPressed: () => Navigator.of(context).pop(true),
           child: Text(action),

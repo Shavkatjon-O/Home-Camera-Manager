@@ -1,6 +1,7 @@
 import 'package:smart_surveillance/core/media/media_source.dart';
 import 'package:smart_surveillance/features/events/domain/models.dart';
 import 'package:smart_surveillance/features/media/domain/media_repository.dart';
+
 /// The source of camera events, their media and live updates.
 abstract interface class EventRepository {
   /// Returns page [page] of the events at [siteId] matching [filter], [pageSize] events per page.

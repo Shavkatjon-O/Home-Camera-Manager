@@ -8,6 +8,7 @@ import 'package:smart_surveillance/core/widgets/flow_scaffold.dart';
 import 'package:smart_surveillance/core/widgets/states.dart';
 import 'package:smart_surveillance/features/identity/presentation/session.dart';
 import 'package:smart_surveillance/features/identity/presentation/validators.dart';
+
 /// The screen where a new user creates an account.
 class SignUpScreen extends ConsumerStatefulWidget {
   /// Creates the screen.
@@ -37,7 +38,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     if (!form.currentState!.validate()) return;
     setState(() => busy = true);
     try {
-      await ref.read(sessionProvider.notifier).signUp(name.text.trim(), email.text.trim(), password.text);
+      await ref
+          .read(sessionProvider.notifier)
+          .signUp(name.text.trim(), email.text.trim(), password.text);
     } catch (failure) {
       if (mounted) showFailure(context, failure);
     } finally {
@@ -119,7 +122,10 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         Align(
           alignment: Alignment.centerLeft,
           child: TextButton(
-            style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 4), foregroundColor: p.text2),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              foregroundColor: p.text2,
+            ),
             onPressed: () => const SignInRoute().pushReplacement(context),
             child: Text(l10n.signUpHaveAccount),
           ),

@@ -1,7 +1,7 @@
-
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'search_models.freezed.dart';
+
 /// The values a search can be narrowed by at a site.
 @freezed
 abstract class SearchFacets with _$SearchFacets {

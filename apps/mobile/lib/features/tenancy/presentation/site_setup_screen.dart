@@ -98,7 +98,10 @@ class SiteKindPicker extends StatelessWidget {
               color: value == kind ? p.surface3 : p.surface,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(Radii.medium),
-                side: BorderSide(color: value == kind ? p.text : p.borderInput, width: value == kind ? 1.5 : 1),
+                side: BorderSide(
+                  color: value == kind ? p.text : p.borderInput,
+                  width: value == kind ? 1.5 : 1,
+                ),
               ),
               child: InkWell(
                 borderRadius: BorderRadius.circular(Radii.medium),
@@ -110,7 +113,9 @@ class SiteKindPicker extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(
                       l10n.siteKind(kind),
-                      style: context.text.labelMedium?.copyWith(color: value == kind ? p.text : p.text2),
+                      style: context.text.labelMedium?.copyWith(
+                        color: value == kind ? p.text : p.text2,
+                      ),
                     ),
                   ],
                 ),
@@ -140,10 +145,16 @@ class TimezoneField extends StatelessWidget {
     return DropdownButtonFormField<String>(
       initialValue: value,
       isExpanded: true,
-      decoration: InputDecoration(labelText: l10n.fieldTimezone, prefixIcon: const Icon(Icons.public_rounded)),
+      decoration: InputDecoration(
+        labelText: l10n.fieldTimezone,
+        prefixIcon: const Icon(Icons.public_rounded),
+      ),
       borderRadius: BorderRadius.circular(Radii.medium),
       menuMaxHeight: 420,
-      items: [for (final zone in zones) DropdownMenuItem(value: zone, child: Text(zone.replaceAll('_', ' ')))],
+      items: [
+        for (final zone in zones)
+          DropdownMenuItem(value: zone, child: Text(zone.replaceAll('_', ' '))),
+      ],
       onChanged: (zone) {
         if (zone != null) onChanged(zone);
       },
@@ -184,12 +195,18 @@ class _SiteSetupScreenState extends ConsumerState<SiteSetupScreen> {
     final tenancy = ref.read(backendProvider).tenancy;
     setState(() => busy = true);
     try {
-      var orgId = organisationId ?? organisations.where((o) => o.role.atLeast(Role.admin)).firstOrNull?.id;
+      var orgId =
+          organisationId ?? organisations.where((o) => o.role.atLeast(Role.admin)).firstOrNull?.id;
       if (orgId == null) {
         final created = await tenancy.createOrganisation(organisation.text.trim());
         orgId = created.id;
       }
-      final site = await tenancy.createSite(organisationId: orgId, name: name.text.trim(), kind: kind, timezone: timezone);
+      final site = await tenancy.createSite(
+        organisationId: orgId,
+        name: name.text.trim(),
+        kind: kind,
+        timezone: timezone,
+      );
       await ref.read(selectedSiteProvider.notifier).select(site.id);
       ref.invalidate(organisationsProvider);
       ref.invalidate(allSitesProvider);
@@ -220,7 +237,11 @@ class _SiteSetupScreenState extends ConsumerState<SiteSetupScreen> {
             child: Text(l10n.moreSignOut, style: TextStyle(color: p.text2)),
           ),
       ],
-      bottom: BusyButton(label: l10n.commonContinue, busy: busy, onPressed: () => submit(organisations)),
+      bottom: BusyButton(
+        label: l10n.commonContinue,
+        busy: busy,
+        onPressed: () => submit(organisations),
+      ),
       children: [
         Form(
           key: form,
@@ -231,7 +252,10 @@ class _SiteSetupScreenState extends ConsumerState<SiteSetupScreen> {
                 TextFormField(
                   controller: organisation,
                   textCapitalization: TextCapitalization.words,
-                  decoration: InputDecoration(labelText: l10n.fieldOrganisation, hintText: l10n.fieldOrganisationHint),
+                  decoration: InputDecoration(
+                    labelText: l10n.fieldOrganisation,
+                    hintText: l10n.fieldOrganisationHint,
+                  ),
                   validator: (value) => validateRequired(l10n, value),
                 ),
                 const SizedBox(height: Gaps.md),
@@ -239,7 +263,9 @@ class _SiteSetupScreenState extends ConsumerState<SiteSetupScreen> {
                 DropdownButtonFormField<String>(
                   initialValue: organisationId ?? adminOf.first.id,
                   decoration: InputDecoration(labelText: l10n.moreOrganisation),
-                  items: [for (final o in adminOf) DropdownMenuItem(value: o.id, child: Text(o.name))],
+                  items: [
+                    for (final o in adminOf) DropdownMenuItem(value: o.id, child: Text(o.name)),
+                  ],
                   onChanged: (value) => setState(() => organisationId = value),
                 ),
                 const SizedBox(height: Gaps.md),
@@ -247,7 +273,10 @@ class _SiteSetupScreenState extends ConsumerState<SiteSetupScreen> {
               TextFormField(
                 controller: name,
                 textCapitalization: TextCapitalization.sentences,
-                decoration: InputDecoration(labelText: l10n.fieldSiteName, hintText: l10n.fieldSiteNameHint),
+                decoration: InputDecoration(
+                  labelText: l10n.fieldSiteName,
+                  hintText: l10n.fieldSiteNameHint,
+                ),
                 validator: (value) => validateRequired(l10n, value),
               ),
               const SizedBox(height: Gaps.lg),
@@ -255,7 +284,10 @@ class _SiteSetupScreenState extends ConsumerState<SiteSetupScreen> {
               const SizedBox(height: Gaps.sm),
               SiteKindPicker(value: kind, onChanged: (value) => setState(() => kind = value)),
               const SizedBox(height: Gaps.lg),
-              TimezoneField(value: timezone, onChanged: (value) => setState(() => timezone = value)),
+              TimezoneField(
+                value: timezone,
+                onChanged: (value) => setState(() => timezone = value),
+              ),
             ],
           ),
         ),

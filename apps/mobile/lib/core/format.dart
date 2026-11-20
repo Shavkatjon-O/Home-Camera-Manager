@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:smart_surveillance/app/l10n/l10n.dart';
+
 /// Formats times, dates, durations and numbers for the user's locale, relative to [now].
 class Formats {
   /// Creates a formatter for the locale of [context], treating [now] as the current time.
@@ -8,6 +9,7 @@ class Formats {
 
   /// The context whose locale and translations are used.
   final BuildContext context;
+
   /// The moment treated as the present when describing relative times.
   final DateTime now;
 
@@ -46,7 +48,9 @@ class Formats {
     final today = DateTime(now.year, now.month, now.day);
     final day = DateTime(at.year, at.month, at.day);
     if (day == today) return time(at);
-    if (day == today.subtract(const Duration(days: 1))) return '${l10n.commonYesterday}, ${time(at)}';
+    if (day == today.subtract(const Duration(days: 1))) {
+      return '${l10n.commonYesterday}, ${time(at)}';
+    }
     return '${dayMonth(at)}, ${time(at)}';
   }
 

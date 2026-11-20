@@ -28,5 +28,6 @@ class RtspUrlMethod extends PairingMethod {
   String subtitle(AppLocalizations l10n) => l10n.methodRtspUrlBody;
 
   @override
-  Widget flow(PairingContext context, PairingSession session) => RtspUrlScreen(pairing: context, session: session);
+  Widget flow(PairingContext context, PairingSession session) =>
+      RtspUrlScreen(pairing: context, session: session);
 }

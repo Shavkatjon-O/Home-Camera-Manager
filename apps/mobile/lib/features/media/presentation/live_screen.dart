@@ -13,6 +13,7 @@ import 'package:smart_surveillance/features/devices/presentation/providers.dart'
 import 'package:smart_surveillance/features/media/presentation/live_video.dart';
 import 'package:smart_surveillance/features/tenancy/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
+
 /// The grid of live pictures of the current site's cameras.
 class LiveScreen extends ConsumerStatefulWidget {
   /// Creates the screen.
@@ -58,7 +59,13 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
               for (var i = 0; i < layouts.length; i++)
                 PopupMenuItem(
                   value: i,
-                  child: Row(children: [Icon(layouts[i].$1, size: 20), const SizedBox(width: 12), Text(layouts[i].$2)]),
+                  child: Row(
+                    children: [
+                      Icon(layouts[i].$1, size: 20),
+                      const SizedBox(width: 12),
+                      Text(layouts[i].$2),
+                    ],
+                  ),
                 ),
             ],
           ),
@@ -92,7 +99,12 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                             await ref.read(tilesProvider(site.site.id).future);
                           },
                           child: GridView.builder(
-                            padding: const EdgeInsets.fromLTRB(Gaps.page, Gaps.xs, Gaps.page, Gaps.xl),
+                            padding: const EdgeInsets.fromLTRB(
+                              Gaps.page,
+                              Gaps.xs,
+                              Gaps.page,
+                              Gaps.xl,
+                            ),
                             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: columns(tiles.length),
                               mainAxisSpacing: 10,
@@ -141,6 +153,7 @@ class LiveTile extends StatelessWidget {
 
   /// The camera lens shown.
   final CameraTile tile;
+
   /// Whether the tile uses the smaller layout.
   final bool compact;
 
@@ -156,7 +169,10 @@ class LiveTile extends StatelessWidget {
       child: Material(
         color: p.surface,
         clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Radii.large), side: BorderSide(color: p.border)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(Radii.large),
+          side: BorderSide(color: p.border),
+        ),
         child: InkWell(
           onTap: () => CameraRoute(cameraId: camera.id, lens: tile.lens).push<void>(context),
           child: Column(
@@ -177,7 +193,10 @@ class LiveTile extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: compact ? 8 : 12, vertical: compact ? 6 : 9),
+                padding: EdgeInsets.symmetric(
+                  horizontal: compact ? 8 : 12,
+                  vertical: compact ? 6 : 9,
+                ),
                 child: Row(
                   children: [
                     StatusDot(online: camera.online),
@@ -187,13 +206,12 @@ class LiveTile extends StatelessWidget {
                         title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: (compact ? context.text.labelMedium : context.text.bodyMedium)?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: p.text,
-                        ),
+                        style: (compact ? context.text.labelMedium : context.text.bodyMedium)
+                            ?.copyWith(fontWeight: FontWeight.w600, color: p.text),
                       ),
                     ),
-                    if (!compact && camera.ptz) Icon(Icons.control_camera_rounded, size: 16, color: p.text3),
+                    if (!compact && camera.ptz)
+                      Icon(Icons.control_camera_rounded, size: 16, color: p.text3),
                   ],
                 ),
               ),
@@ -212,6 +230,7 @@ class LiveFrame extends StatelessWidget {
 
   /// The camera shown.
   final Camera camera;
+
   /// The lens shown, or null for all lenses.
   final int? lens;
 

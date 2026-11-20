@@ -9,6 +9,7 @@ import 'package:smart_surveillance/core/design/tokens.dart';
 import 'package:smart_surveillance/core/providers.dart';
 import 'package:smart_surveillance/core/widgets/logo.dart';
 import 'package:smart_surveillance/features/identity/presentation/session.dart';
+
 /// A wrapper that asks for device authentication before showing its [child].
 class AppLock extends ConsumerStatefulWidget {
   /// Creates a lock around [child].
@@ -26,7 +27,8 @@ class _AppLockState extends ConsumerState<AppLock> with WidgetsBindingObserver {
   bool locked = false;
   DateTime? pausedAt;
 
-  bool get wanted => ref.read(preferencesProvider).appLock && ref.read(sessionProvider).value is SignedIn;
+  bool get wanted =>
+      ref.read(preferencesProvider).appLock && ref.read(sessionProvider).value is SignedIn;
 
   @override
   void initState() {

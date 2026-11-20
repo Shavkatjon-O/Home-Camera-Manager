@@ -16,6 +16,7 @@ import 'package:smart_surveillance/features/analytics/presentation/labels.dart';
 import 'package:smart_surveillance/features/analytics/presentation/providers.dart';
 import 'package:smart_surveillance/features/events/presentation/labels.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
+
 /// Paints the zones and lines of an analytics view over its picture, with name labels and arrows.
 class RulesPainter extends CustomPainter {
   /// Creates a painter for [zones] and [lines] using [palette].
@@ -32,23 +33,31 @@ class RulesPainter extends CustomPainter {
 
   /// The zones to draw.
   final List<Zone> zones;
+
   /// The lines to draw.
   final List<Line> lines;
+
   /// The colors used for outlines and handles.
   final Palette palette;
+
   /// The index in [zones] of the zone being edited, drawn highlighted.
   final int? selectedZone;
+
   /// The index in [lines] of the line being edited, drawn highlighted.
   final int? selectedLine;
+
   /// Whether to draw a compact version without labels or handles.
   final bool thin;
+
   /// Replacement polygons for [zones] while they are being dragged, indexed like [zones].
   final List<List<Offset>>? zonePoints;
+
   /// Replacement end points for [lines] while they are being dragged, indexed like [lines].
   final List<List<Offset>>? linePoints;
 
   /// The label boxes already drawn in this pass, used to keep labels from overlapping.
   final List<Rect> placed = [];
+
   /// The size of the area painted last.
   Size area = Size.zero;
 
@@ -60,11 +69,20 @@ class RulesPainter extends CustomPainter {
     final painter = TextPainter(
       text: TextSpan(
         text: text,
-        style: const TextStyle(fontFamily: sansFamily, fontSize: 11.5, fontWeight: FontWeight.w600, color: Color(0xFFFFFFFF)),
+        style: const TextStyle(
+          fontFamily: sansFamily,
+          fontSize: 11.5,
+          fontWeight: FontWeight.w600,
+          color: Color(0xFFFFFFFF),
+        ),
       ),
       textDirection: TextDirection.ltr,
     )..layout();
-    final start = Rect.fromCenter(center: at, width: painter.width + 10, height: painter.height + 4);
+    final start = Rect.fromCenter(
+      center: at,
+      width: painter.width + 10,
+      height: painter.height + 4,
+    );
     var box = start;
     // Move a label that would cover another one to the nearest free row inside the picture.
     for (final shift in const [1, -1, 2, -2]) {
@@ -73,7 +91,10 @@ class RulesPainter extends CustomPainter {
       if (moved.top >= 0 && moved.bottom <= area.height) box = moved;
     }
     placed.add(box);
-    canvas.drawRRect(RRect.fromRectAndRadius(box, const Radius.circular(4)), Paint()..color = color.withValues(alpha: 0.85));
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(box, const Radius.circular(4)),
+      Paint()..color = color.withValues(alpha: 0.85),
+    );
     painter.paint(canvas, box.topLeft + const Offset(5, 2));
   }
 
@@ -95,7 +116,9 @@ class RulesPainter extends CustomPainter {
       final zone = zones[i];
       final points = zonePoints?[i] ?? zone.polygon;
       final selected = selectedZone == i;
-      final color = zone.suspended ? palette.warning : (selected ? palette.focus : const Color(0xFFFFFFFF));
+      final color = zone.suspended
+          ? palette.warning
+          : (selected ? palette.focus : const Color(0xFFFFFFFF));
       if (zone.wholeView) {
         final rect = (Offset.zero & size).deflate(stroke);
         canvas.drawRect(rect, Paint()..color = color.withValues(alpha: 0.08));
@@ -153,7 +176,10 @@ class RulesPainter extends CustomPainter {
           ..strokeCap = StrokeCap.round,
       );
       final along = (b - a) / max(1, (b - a).distance);
-      final side = Offset(-(points[1].dy - points[0].dy) * size.width, (points[1].dx - points[0].dx) * size.height);
+      final side = Offset(
+        -(points[1].dy - points[0].dy) * size.width,
+        (points[1].dx - points[0].dx) * size.height,
+      );
       final dot = side.dx * along.dx + side.dy * along.dy;
       var normal = side - along * dot;
       normal = normal / max(0.0001, normal.distance);
@@ -196,6 +222,7 @@ class DraftZone {
 
   /// The zone settings being edited.
   Zone zone;
+
   /// The corner points of the zone in normalized view coordinates.
   List<Offset> points;
 }
@@ -207,6 +234,7 @@ class DraftLine {
 
   /// The line settings being edited.
   Line line;
+
   /// The end points of the line in normalized view coordinates.
   List<Offset> points;
 }
@@ -250,7 +278,9 @@ class _ZoneEditorScreenState extends ConsumerState<ZoneEditorScreen> {
   void addZone() {
     final l10n = context.l10n;
     touch(() {
-      zones!.add(DraftZone(Zone(name: '${l10n.editorZone} ${zones!.length + 1}', polygon: const []), []));
+      zones!.add(
+        DraftZone(Zone(name: '${l10n.editorZone} ${zones!.length + 1}', polygon: const []), []),
+      );
       zone = zones!.length - 1;
       line = null;
       adding = true;
@@ -260,7 +290,12 @@ class _ZoneEditorScreenState extends ConsumerState<ZoneEditorScreen> {
   void addLine() {
     final l10n = context.l10n;
     touch(() {
-      lines!.add(DraftLine(Line(name: '${l10n.editorLine} ${lines!.length + 1}', a: Offset.zero, b: Offset.zero), []));
+      lines!.add(
+        DraftLine(
+          Line(name: '${l10n.editorLine} ${lines!.length + 1}', a: Offset.zero, b: Offset.zero),
+          [],
+        ),
+      );
       line = lines!.length - 1;
       zone = null;
       adding = true;
@@ -270,7 +305,8 @@ class _ZoneEditorScreenState extends ConsumerState<ZoneEditorScreen> {
   Offset normalise(Offset local, Size size) =>
       Offset((local.dx / size.width).clamp(0.0, 1.0), (local.dy / size.height).clamp(0.0, 1.0));
 
-  List<Offset>? get selectedPoints => zone != null ? zones![zone!].points : (line != null ? lines![line!].points : null);
+  List<Offset>? get selectedPoints =>
+      zone != null ? zones![zone!].points : (line != null ? lines![line!].points : null);
 
   int? vertexAt(Offset local, Size size) {
     final points = selectedPoints;
@@ -287,7 +323,8 @@ class _ZoneEditorScreenState extends ConsumerState<ZoneEditorScreen> {
     for (var i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
       final a = polygon[i];
       final b = polygon[j];
-      if ((a.dy > point.dy) != (b.dy > point.dy) && point.dx < (b.dx - a.dx) * (point.dy - a.dy) / (b.dy - a.dy) + a.dx) {
+      if ((a.dy > point.dy) != (b.dy > point.dy) &&
+          point.dx < (b.dx - a.dx) * (point.dy - a.dy) / (b.dy - a.dy) + a.dx) {
         result = !result;
       }
     }
@@ -351,9 +388,13 @@ class _ZoneEditorScreenState extends ConsumerState<ZoneEditorScreen> {
           .analytics
           .saveRules(
             widget.viewId,
-            zones: [for (final z in zones!) z.zone.copyWith(polygon: z.zone.wholeView ? const [] : z.points)],
+            zones: [
+              for (final z in zones!)
+                z.zone.copyWith(polygon: z.zone.wholeView ? const [] : z.points),
+            ],
             lines: [
-              for (final l in lines!.where((l) => l.points.length == 2)) l.line.copyWith(a: l.points[0], b: l.points[1]),
+              for (final l in lines!.where((l) => l.points.length == 2))
+                l.line.copyWith(a: l.points[0], b: l.points[1]),
             ],
           );
       final site = ref.read(currentSiteProvider).value;
@@ -376,13 +417,23 @@ class _ZoneEditorScreenState extends ConsumerState<ZoneEditorScreen> {
     if (site == null) return const Scaffold();
     final views = ref.watch(viewsProvider(site.site.id)).value;
     final view = views?.where((v) => v.id == widget.viewId).firstOrNull;
-    if (view == null) return Scaffold(appBar: AppBar(), body: const Center(child: CircularProgressIndicator(strokeWidth: 2)));
+    if (view == null) {
+      return Scaffold(
+        appBar: AppBar(),
+        body: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+      );
+    }
     if (zones == null) load(view);
     return PopScope(
       canPop: !dirty,
       onPopInvokedWithResult: (popped, _) async {
         if (popped) return;
-        final leave = await confirm(context, title: l10n.editorDiscard, body: l10n.editorDiscardBody, action: l10n.commonClose);
+        final leave = await confirm(
+          context,
+          title: l10n.editorDiscard,
+          body: l10n.editorDiscardBody,
+          action: l10n.commonClose,
+        );
         if (leave && context.mounted) {
           setState(() => dirty = false);
           Navigator.of(context).pop();
@@ -398,7 +449,11 @@ class _ZoneEditorScreenState extends ConsumerState<ZoneEditorScreen> {
                 style: FilledButton.styleFrom(minimumSize: const Size(72, 40)),
                 onPressed: busy ? null : save,
                 child: busy
-                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
                     : Text(l10n.commonSave),
               ),
             ),
@@ -407,16 +462,30 @@ class _ZoneEditorScreenState extends ConsumerState<ZoneEditorScreen> {
         body: ListView(
           padding: const EdgeInsets.only(bottom: Gaps.xxl),
           children: [
-            Padding(padding: const EdgeInsets.symmetric(horizontal: Gaps.page), child: canvas(context, view)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: Gaps.page),
+              child: canvas(context, view),
+            ),
             Padding(
               padding: const EdgeInsets.fromLTRB(Gaps.page, Gaps.sm, Gaps.page, 0),
-              child: Text(line != null ? l10n.editorHintLine : l10n.editorHintZone, style: context.text.bodySmall),
+              child: Text(
+                line != null ? l10n.editorHintLine : l10n.editorHintZone,
+                style: context.text.bodySmall,
+              ),
             ),
             shapes(context),
             if (zone != null)
-              ZoneForm(key: ValueKey('zone$zone'), draft: zones![zone!], onChanged: (z) => touch(() => zones![zone!].zone = z)),
+              ZoneForm(
+                key: ValueKey('zone$zone'),
+                draft: zones![zone!],
+                onChanged: (z) => touch(() => zones![zone!].zone = z),
+              ),
             if (line != null)
-              LineForm(key: ValueKey('line$line'), draft: lines![line!], onChanged: (l) => touch(() => lines![line!].line = l)),
+              LineForm(
+                key: ValueKey('line$line'),
+                draft: lines![line!],
+                onChanged: (l) => touch(() => lines![line!].line = l),
+              ),
           ],
         ),
       ),
@@ -435,7 +504,8 @@ class _ZoneEditorScreenState extends ConsumerState<ZoneEditorScreen> {
           return GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTapUp: (details) => tap(details.localPosition, size),
-            onPanStart: (details) => setState(() => dragging = vertexAt(details.localPosition, size)),
+            onPanStart: (details) =>
+                setState(() => dragging = vertexAt(details.localPosition, size)),
             onPanUpdate: (details) {
               final index = dragging;
               final points = selectedPoints;
@@ -505,9 +575,17 @@ class _ZoneEditorScreenState extends ConsumerState<ZoneEditorScreen> {
                 ),
                 const SizedBox(width: 8),
               ],
-              ActionChip(avatar: const Icon(Icons.add_rounded, size: 16), label: Text(l10n.editorAddZone), onPressed: addZone),
+              ActionChip(
+                avatar: const Icon(Icons.add_rounded, size: 16),
+                label: Text(l10n.editorAddZone),
+                onPressed: addZone,
+              ),
               const SizedBox(width: 8),
-              ActionChip(avatar: const Icon(Icons.add_rounded, size: 16), label: Text(l10n.editorAddLine), onPressed: addLine),
+              ActionChip(
+                avatar: const Icon(Icons.add_rounded, size: 16),
+                label: Text(l10n.editorAddLine),
+                onPressed: addLine,
+              ),
             ],
           ),
         ),
@@ -519,7 +597,10 @@ class _ZoneEditorScreenState extends ConsumerState<ZoneEditorScreen> {
                 if (zone != null)
                   TextButton.icon(
                     onPressed: () => setState(() => adding = !adding),
-                    icon: Icon(adding ? Icons.check_rounded : Icons.add_location_alt_outlined, size: 18),
+                    icon: Icon(
+                      adding ? Icons.check_rounded : Icons.add_location_alt_outlined,
+                      size: 18,
+                    ),
                     label: Text(adding ? l10n.commonDone : l10n.editorAddPoints),
                   ),
                 TextButton.icon(
@@ -529,7 +610,9 @@ class _ZoneEditorScreenState extends ConsumerState<ZoneEditorScreen> {
                 ),
                 if (line != null)
                   TextButton.icon(
-                    onPressed: points.length < 2 ? null : () => touch(() => lines![line!].points = points.reversed.toList()),
+                    onPressed: points.length < 2
+                        ? null
+                        : () => touch(() => lines![line!].points = points.reversed.toList()),
                     icon: const Icon(Icons.swap_vert_rounded, size: 18),
                     label: Text(l10n.editorFlip),
                   ),
@@ -560,14 +643,23 @@ class _ZoneEditorScreenState extends ConsumerState<ZoneEditorScreen> {
 /// A choice of how many seconds a condition must last, shown as chips.
 class DurationPicker extends StatelessWidget {
   /// Creates a picker titled [label] offering [options] with [value] selected.
-  const DurationPicker({super.key, required this.label, required this.value, required this.options, required this.onChanged});
+  const DurationPicker({
+    super.key,
+    required this.label,
+    required this.value,
+    required this.options,
+    required this.onChanged,
+  });
 
   /// The title shown above the options.
   final String label;
+
   /// The selected duration in seconds.
   final double value;
+
   /// The durations offered, in seconds.
   final List<double> options;
+
   /// Called with the duration the user picks.
   final ValueChanged<double> onChanged;
 
@@ -576,7 +668,9 @@ class DurationPicker extends StatelessWidget {
     final l10n = context.l10n;
     String text(double s) => s <= 0
         ? l10n.editorDurationOff
-        : (s >= 60 ? l10n.commonMinutesSeconds(s ~/ 60, (s % 60).round()) : l10n.commonSeconds(s.round()));
+        : (s >= 60
+              ? l10n.commonMinutesSeconds(s ~/ 60, (s % 60).round())
+              : l10n.commonSeconds(s.round()));
     return ListTile(
       title: Text(label),
       trailing: DropdownButton<double>(
@@ -584,7 +678,9 @@ class DurationPicker extends StatelessWidget {
         hint: Text(text(value)),
         underline: const SizedBox.shrink(),
         borderRadius: BorderRadius.circular(Radii.medium),
-        items: [for (final option in options) DropdownMenuItem(value: option, child: Text(text(option)))],
+        items: [
+          for (final option in options) DropdownMenuItem(value: option, child: Text(text(option))),
+        ],
         onChanged: (next) {
           if (next != null) onChanged(next);
         },
@@ -596,12 +692,19 @@ class DurationPicker extends StatelessWidget {
 /// A set of chips for choosing which object kinds apply.
 class LabelChips extends StatelessWidget {
   /// Creates chips for [options] with those in [selected] turned on.
-  const LabelChips({super.key, required this.selected, required this.options, required this.onChanged});
+  const LabelChips({
+    super.key,
+    required this.selected,
+    required this.options,
+    required this.onChanged,
+  });
 
   /// The object kinds currently turned on.
   final List<String> selected;
+
   /// The object kinds that can be chosen.
   final List<String> options;
+
   /// Called with the new selection when a chip is toggled.
   final ValueChanged<List<String>> onChanged;
 
@@ -616,7 +719,8 @@ class LabelChips extends StatelessWidget {
           FilterChip(
             label: Text(l10n.label(label)),
             selected: selected.contains(label),
-            onSelected: (on) => onChanged(on ? [...selected, label] : selected.where((l) => l != label).toList()),
+            onSelected: (on) =>
+                onChanged(on ? [...selected, label] : selected.where((l) => l != label).toList()),
           ),
       ],
     );
@@ -630,6 +734,7 @@ class AlertPolicyField extends StatelessWidget {
 
   /// The alert policy being edited.
   final AlertPolicy policy;
+
   /// Called with the updated policy after each change.
   final ValueChanged<AlertPolicy> onChanged;
 
@@ -638,8 +743,14 @@ class AlertPolicyField extends StatelessWidget {
     final parts = value.split(':');
     final picked = await showTimePicker(
       context: context,
-      initialTime: TimeOfDay(hour: int.tryParse(parts.first) ?? 22, minute: int.tryParse(parts.last) ?? 0),
-      builder: (context, child) => MediaQuery(data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true), child: child!),
+      initialTime: TimeOfDay(
+        hour: int.tryParse(parts.first) ?? 22,
+        minute: int.tryParse(parts.last) ?? 0,
+      ),
+      builder: (context, child) => MediaQuery(
+        data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+        child: child!,
+      ),
     );
     if (picked == null) return null;
     return '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
@@ -648,7 +759,9 @@ class AlertPolicyField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final window = policy.schedule.isEmpty ? const TimeWindow(start: '22:00', end: '07:00') : policy.schedule.first;
+    final window = policy.schedule.isEmpty
+        ? const TimeWindow(start: '22:00', end: '07:00')
+        : policy.schedule.first;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -656,10 +769,16 @@ class AlertPolicyField extends StatelessWidget {
           width: double.infinity,
           child: SegmentedButton<AlertMode>(
             showSelectedIcon: false,
-            segments: [for (final mode in AlertMode.values) ButtonSegment(value: mode, label: Text(l10n.alertMode(mode)))],
+            segments: [
+              for (final mode in AlertMode.values)
+                ButtonSegment(value: mode, label: Text(l10n.alertMode(mode))),
+            ],
             selected: {policy.mode},
             onSelectionChanged: (value) => onChanged(
-              policy.copyWith(mode: value.first, schedule: value.first == AlertMode.schedule ? [window] : policy.schedule),
+              policy.copyWith(
+                mode: value.first,
+                schedule: value.first == AlertMode.schedule ? [window] : policy.schedule,
+              ),
             ),
           ),
         ),
@@ -668,14 +787,23 @@ class AlertPolicyField extends StatelessWidget {
             padding: const EdgeInsets.only(top: Gaps.sm),
             child: Row(
               children: [
-                Expanded(child: Text(l10n.editorAlertHours(window.start, window.end), style: context.text.bodyMedium)),
+                Expanded(
+                  child: Text(
+                    l10n.editorAlertHours(window.start, window.end),
+                    style: context.text.bodyMedium,
+                  ),
+                ),
                 TextButton(
                   onPressed: () async {
                     final start = await pickTime(context, window.start);
                     if (start == null || !context.mounted) return;
                     final end = await pickTime(context, window.end);
                     if (end == null) return;
-                    onChanged(policy.copyWith(schedule: [window.copyWith(start: start, end: end)]));
+                    onChanged(
+                      policy.copyWith(
+                        schedule: [window.copyWith(start: start, end: end)],
+                      ),
+                    );
                   },
                   child: Text(l10n.commonEdit),
                 ),
@@ -694,6 +822,7 @@ class ZoneForm extends StatefulWidget {
 
   /// The zone being edited.
   final DraftZone draft;
+
   /// Called with the updated zone after each change.
   final ValueChanged<Zone> onChanged;
 
@@ -730,7 +859,11 @@ class _ZoneFormState extends State<ZoneForm> {
         const SizedBox(height: Gaps.sm),
         TileGroup(
           children: [
-            SwitchListTile(title: Text(l10n.editorEnabled), value: zone.enabled, onChanged: (v) => set(zone.copyWith(enabled: v))),
+            SwitchListTile(
+              title: Text(l10n.editorEnabled),
+              value: zone.enabled,
+              onChanged: (v) => set(zone.copyWith(enabled: v)),
+            ),
             SwitchListTile(
               title: Text(l10n.analyticsWholeView),
               value: zone.wholeView,
@@ -741,12 +874,19 @@ class _ZoneFormState extends State<ZoneForm> {
         SectionHeader(l10n.editorObjects),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: Gaps.page),
-          child: LabelChips(selected: zone.labels, options: detectionLabels, onChanged: (v) => set(zone.copyWith(labels: v))),
+          child: LabelChips(
+            selected: zone.labels,
+            options: detectionLabels,
+            onChanged: (v) => set(zone.copyWith(labels: v)),
+          ),
         ),
         SectionHeader(l10n.editorAlerts),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: Gaps.page),
-          child: AlertPolicyField(policy: zone.alert, onChanged: (v) => set(zone.copyWith(alert: v))),
+          child: AlertPolicyField(
+            policy: zone.alert,
+            onChanged: (v) => set(zone.copyWith(alert: v)),
+          ),
         ),
         const SizedBox(height: Gaps.md),
         TileGroup(
@@ -770,7 +910,8 @@ class _ZoneFormState extends State<ZoneForm> {
                 underline: const SizedBox.shrink(),
                 borderRadius: BorderRadius.circular(Radii.medium),
                 items: [
-                  for (final n in const [0, 2, 3, 4, 5, 8, 10]) DropdownMenuItem(value: n, child: Text(l10n.editorCrowdPeople(n))),
+                  for (final n in const [0, 2, 3, 4, 5, 8, 10])
+                    DropdownMenuItem(value: n, child: Text(l10n.editorCrowdPeople(n))),
                 ],
                 onChanged: (v) => set(zone.copyWith(crowdCount: v ?? 0)),
               ),
@@ -781,7 +922,10 @@ class _ZoneFormState extends State<ZoneForm> {
                 value: zone.animals,
                 underline: const SizedBox.shrink(),
                 borderRadius: BorderRadius.circular(Radii.medium),
-                items: [for (final m in AnimalMode.values) DropdownMenuItem(value: m, child: Text(l10n.animalMode(m)))],
+                items: [
+                  for (final m in AnimalMode.values)
+                    DropdownMenuItem(value: m, child: Text(l10n.animalMode(m))),
+                ],
                 onChanged: (v) => set(zone.copyWith(animals: v ?? AnimalMode.record)),
               ),
             ),
@@ -815,7 +959,10 @@ class _ZoneFormState extends State<ZoneForm> {
         if (zone.suspended)
           Padding(
             padding: const EdgeInsets.fromLTRB(Gaps.page, Gaps.md, Gaps.page, 0),
-            child: Text(l10n.analyticsSuspended, style: context.text.bodySmall?.copyWith(color: p.warning)),
+            child: Text(
+              l10n.analyticsSuspended,
+              style: context.text.bodySmall?.copyWith(color: p.warning),
+            ),
           ),
       ],
     );
@@ -829,6 +976,7 @@ class LineForm extends StatefulWidget {
 
   /// The line being edited.
   final DraftLine draft;
+
   /// Called with the updated line after each change.
   final ValueChanged<Line> onChanged;
 
@@ -864,7 +1012,11 @@ class _LineFormState extends State<LineForm> {
         const SizedBox(height: Gaps.sm),
         TileGroup(
           children: [
-            SwitchListTile(title: Text(l10n.editorEnabled), value: line.enabled, onChanged: (v) => set(line.copyWith(enabled: v))),
+            SwitchListTile(
+              title: Text(l10n.editorEnabled),
+              value: line.enabled,
+              onChanged: (v) => set(line.copyWith(enabled: v)),
+            ),
           ],
         ),
         SectionHeader(l10n.editorDirection),
@@ -874,7 +1026,10 @@ class _LineFormState extends State<LineForm> {
             width: double.infinity,
             child: SegmentedButton<LineDirection>(
               showSelectedIcon: false,
-              segments: [for (final d in LineDirection.values) ButtonSegment(value: d, label: Text(l10n.direction(d)))],
+              segments: [
+                for (final d in LineDirection.values)
+                  ButtonSegment(value: d, label: Text(l10n.direction(d))),
+              ],
               selected: {line.direction},
               onSelectionChanged: (value) => set(line.copyWith(direction: value.first)),
             ),
@@ -883,12 +1038,19 @@ class _LineFormState extends State<LineForm> {
         SectionHeader(l10n.editorObjects),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: Gaps.page),
-          child: LabelChips(selected: line.labels, options: detectionLabels, onChanged: (v) => set(line.copyWith(labels: v))),
+          child: LabelChips(
+            selected: line.labels,
+            options: detectionLabels,
+            onChanged: (v) => set(line.copyWith(labels: v)),
+          ),
         ),
         SectionHeader(l10n.editorAlerts),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: Gaps.page),
-          child: AlertPolicyField(policy: line.alert, onChanged: (v) => set(line.copyWith(alert: v))),
+          child: AlertPolicyField(
+            policy: line.alert,
+            onChanged: (v) => set(line.copyWith(alert: v)),
+          ),
         ),
       ],
     );

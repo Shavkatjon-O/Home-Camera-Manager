@@ -8,7 +8,13 @@ import 'package:smart_surveillance/core/design/tokens.dart';
 /// A full screen QR scanner that reports the first code it reads.
 class QrScanner extends ConsumerStatefulWidget {
   /// Creates a scanner.
-  const QrScanner({super.key, required this.title, required this.hint, required this.onScanned, this.demoValue});
+  const QrScanner({
+    super.key,
+    required this.title,
+    required this.hint,
+    required this.onScanned,
+    this.demoValue,
+  });
 
   /// The app bar title.
   final String title;

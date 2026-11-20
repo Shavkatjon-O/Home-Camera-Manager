@@ -68,7 +68,11 @@ class MethodCard extends StatelessWidget {
               ),
             ),
             busy
-                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
                 : Icon(Icons.chevron_right_rounded, color: p.text3),
           ],
         ),
@@ -111,7 +115,12 @@ class _ConnectorPairingScreenState extends ConsumerState<ConnectorPairingScreen>
     final l10n = context.l10n;
     final connectors = await ref.read(connectorsProvider(widget.siteId).future);
     if (!mounted) return;
-    final pairing = PairingContext(siteId: widget.siteId, connectors: connectors, code: widget.code, first: widget.first);
+    final pairing = PairingContext(
+      siteId: widget.siteId,
+      connectors: connectors,
+      code: widget.code,
+      first: widget.first,
+    );
     final result = await runPairing(context, ref, method, pairing);
     if (result is! ConnectorPaired || !mounted) return;
     ref.invalidate(connectorsProvider(widget.siteId));
@@ -130,7 +139,11 @@ class _ConnectorPairingScreenState extends ConsumerState<ConnectorPairingScreen>
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final catalog = ref.watch(catalogProvider(widget.siteId));
-    final pairing = PairingContext(siteId: widget.siteId, connectors: const [], first: widget.first);
+    final pairing = PairingContext(
+      siteId: widget.siteId,
+      connectors: const [],
+      first: widget.first,
+    );
     return FlowScaffold(
       title: l10n.onboardingConnectorTitle,
       subtitle: l10n.onboardingConnectorBody,
@@ -230,15 +243,23 @@ class _AddCameraScreenState extends ConsumerState<AddCameraScreen> {
                     children: [
                       Icon(Icons.router_outlined, color: p.warning),
                       const SizedBox(width: Gaps.md),
-                      Expanded(child: Text(l10n.camerasNoConnector, style: context.text.titleMedium)),
+                      Expanded(
+                        child: Text(l10n.camerasNoConnector, style: context.text.titleMedium),
+                      ),
                     ],
                   ),
                   const SizedBox(height: Gaps.sm),
-                  Text(l10n.camerasNoConnectorBody, style: context.text.bodyMedium?.copyWith(color: p.text2)),
+                  Text(
+                    l10n.camerasNoConnectorBody,
+                    style: context.text.bodyMedium?.copyWith(color: p.text2),
+                  ),
                   const SizedBox(height: Gaps.md),
                   OutlinedButton.icon(
                     onPressed: () async {
-                      await OnboardingConnectorRoute(siteId: widget.siteId, first: false).push<void>(context);
+                      await OnboardingConnectorRoute(
+                        siteId: widget.siteId,
+                        first: false,
+                      ).push<void>(context);
                       ref.invalidate(connectorsProvider(widget.siteId));
                       ref.invalidate(catalogProvider(widget.siteId));
                     },
@@ -290,7 +311,11 @@ class _ConnectLinkScreenState extends ConsumerState<ConnectLinkScreen> {
       if (site == null) {
         const OnboardingSiteRoute().pushReplacement(context);
       } else {
-        OnboardingConnectorRoute(siteId: site.site.id, first: false, code: widget.code).pushReplacement(context);
+        OnboardingConnectorRoute(
+          siteId: site.site.id,
+          first: false,
+          code: widget.code,
+        ).pushReplacement(context);
       }
     });
   }

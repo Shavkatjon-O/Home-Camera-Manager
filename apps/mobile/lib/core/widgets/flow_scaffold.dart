@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smart_surveillance/app/l10n/l10n.dart';
 import 'package:smart_surveillance/core/design/palette.dart';
 import 'package:smart_surveillance/core/design/tokens.dart';
+
 /// The page layout of a setup or sign-in step: a title, optional subtitle, content and a bottom
 /// bar.
 class FlowScaffold extends StatelessWidget {
@@ -20,18 +21,25 @@ class FlowScaffold extends StatelessWidget {
 
   /// The heading of the step.
   final String title;
+
   /// A line of explanation under the heading.
   final String? subtitle;
+
   /// The step indicator shown in the app bar.
   final String? step;
+
   /// The content of the step.
   final List<Widget> children;
+
   /// The widget pinned to the bottom, usually the main button.
   final Widget? bottom;
+
   /// The widget at the start of the app bar, replacing the back button.
   final Widget? leading;
+
   /// The actions at the end of the app bar.
   final List<Widget>? actions;
+
   /// Whether the app bar shows a back button.
   final bool showBack;
 
@@ -43,7 +51,9 @@ class FlowScaffold extends StatelessWidget {
         automaticallyImplyLeading: showBack,
         leading: leading,
         actions: actions,
-        title: step == null ? null : Text(step!, style: dataStyle(context, size: 12.5, color: p.text3)),
+        title: step == null
+            ? null
+            : Text(step!, style: dataStyle(context, size: 12.5, color: p.text3)),
       ),
       body: SafeArea(
         top: false,
@@ -82,14 +92,23 @@ class FlowScaffold extends StatelessWidget {
 /// A full-width filled button that shows a spinner in place of its label while busy.
 class BusyButton extends StatelessWidget {
   /// Creates a button labelled [label] that calls [onPressed] unless it is busy.
-  const BusyButton({super.key, required this.label, required this.onPressed, this.busy = false, this.icon});
+  const BusyButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.busy = false,
+    this.icon,
+  });
 
   /// The text of the button.
   final String label;
+
   /// The callback for presses, or null to disable the button.
   final VoidCallback? onPressed;
+
   /// Whether the button shows a spinner and ignores presses.
   final bool busy;
+
   /// The icon shown before the label, if any.
   final IconData? icon;
 
@@ -139,16 +158,22 @@ class PasswordField extends StatefulWidget {
 
   /// The controller holding the entered text.
   final TextEditingController controller;
+
   /// The label shown on the field.
   final String label;
+
   /// The validator, which returns an error message or null when the value is valid.
   final String? Function(String?)? validator;
+
   /// The action of the keyboard's action key.
   final TextInputAction textInputAction;
+
   /// The callback called when the user submits from the keyboard.
   final ValueChanged<String>? onSubmitted;
+
   /// The hints that let the platform autofill the field.
   final Iterable<String> autofillHints;
+
   /// The callback called when the text changes.
   final ValueChanged<String>? onChanged;
 

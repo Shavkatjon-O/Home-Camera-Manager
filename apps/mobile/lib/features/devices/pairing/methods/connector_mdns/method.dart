@@ -20,7 +20,10 @@ class ConnectorMdnsMethod extends PairingMethod {
   IconData get icon => Icons.wifi_find_rounded;
 
   @override
-  bool supported(PairingContext context) => !kIsWeb && (defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS);
+  bool supported(PairingContext context) =>
+      !kIsWeb &&
+      (defaultTargetPlatform == TargetPlatform.android ||
+          defaultTargetPlatform == TargetPlatform.iOS);
 
   @override
   String title(AppLocalizations l10n) => l10n.methodConnectorMdns;
@@ -29,5 +32,6 @@ class ConnectorMdnsMethod extends PairingMethod {
   String subtitle(AppLocalizations l10n) => l10n.methodConnectorMdnsBody;
 
   @override
-  Widget flow(PairingContext context, PairingSession session) => ConnectorMdnsScreen(pairing: context, session: session);
+  Widget flow(PairingContext context, PairingSession session) =>
+      ConnectorMdnsScreen(pairing: context, session: session);
 }

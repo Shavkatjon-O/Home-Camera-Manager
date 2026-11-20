@@ -1,24 +1,33 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'models.freezed.dart';
+
 /// The kind of action an audit entry records.
 enum AuditCategory {
   /// A sign-in or sign-out.
   signIn,
+
   /// A change to the site's members or invitations.
   members,
+
   /// A change to the site's cameras.
   cameras,
+
   /// A change to the alert rules.
   rules,
+
   /// A change of the arm mode.
   arm,
+
   /// Opening a camera's live or recorded view.
   views,
+
   /// An export of data.
   exports,
+
   /// A change to the known faces.
   faces,
+
   /// An administrative action.
   admin,
 }
@@ -42,19 +51,27 @@ abstract class AuditEntry with _$AuditEntry {
 @freezed
 abstract class AuditPage with _$AuditPage {
   /// Creates page number [page] with its [items] out of [total] entries.
-  const factory AuditPage({required List<AuditEntry> items, required int total, required int page}) = _AuditPage;
+  const factory AuditPage({
+    required List<AuditEntry> items,
+    required int total,
+    required int page,
+  }) = _AuditPage;
 }
 
 /// How well a monitored target is working.
 enum HealthStatus {
   /// The target is working.
   up,
+
   /// The target works with problems.
   degraded,
+
   /// The target is not working.
   down,
+
   /// The state of the target is not known.
   unknown,
+
   /// Monitoring of the target is turned off.
   disabled,
 }
@@ -63,11 +80,8 @@ enum HealthStatus {
 @freezed
 abstract class HealthBucket with _$HealthBucket {
   /// Creates a bucket that starts at [start].
-  const factory HealthBucket({
-    required DateTime start,
-    double? availability,
-    double? latencyMs,
-  }) = _HealthBucket;
+  const factory HealthBucket({required DateTime start, double? availability, double? latencyMs}) =
+      _HealthBucket;
 }
 
 /// A monitored connector or camera with its uptime and latency.
@@ -106,8 +120,6 @@ abstract class Outage with _$Outage {
 @freezed
 abstract class HealthReport with _$HealthReport {
   /// Creates a report of [targets] and [outages].
-  const factory HealthReport({
-    required List<HealthTarget> targets,
-    required List<Outage> outages,
-  }) = _HealthReport;
+  const factory HealthReport({required List<HealthTarget> targets, required List<Outage> outages}) =
+      _HealthReport;
 }

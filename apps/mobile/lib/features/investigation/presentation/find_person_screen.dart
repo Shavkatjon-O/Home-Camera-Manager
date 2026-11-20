@@ -11,6 +11,7 @@ import 'package:smart_surveillance/core/widgets/media_view.dart';
 import 'package:smart_surveillance/core/widgets/states.dart';
 import 'package:smart_surveillance/core/widgets/surfaces.dart';
 import 'package:smart_surveillance/features/investigation/domain/models.dart';
+
 /// Loads the sightings that look like the person in the event with the given id.
 final findPersonProvider = FutureProvider.autoDispose.family<List<AppearanceMatch>, String>(
   (ref, eventId) => ref.read(backendProvider).analytics.findPerson(eventId),
@@ -40,7 +41,12 @@ class FindPersonScreen extends ConsumerWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(child: Text(l10n.findPersonBody, style: context.text.bodyMedium?.copyWith(color: p.text2))),
+                Expanded(
+                  child: Text(
+                    l10n.findPersonBody,
+                    style: context.text.bodyMedium?.copyWith(color: p.text2),
+                  ),
+                ),
                 const SizedBox(width: 8),
                 Tag(l10n.commonBeta, tone: TagTone.info, dense: true),
               ],
@@ -48,7 +54,10 @@ class FindPersonScreen extends ConsumerWidget {
           ),
           value.when(
             loading: () => const SizedBox(height: 400, child: ListSkeleton(rows: 5)),
-            error: (error, _) => ErrorState(error: error, onRetry: () => ref.invalidate(findPersonProvider(eventId))),
+            error: (error, _) => ErrorState(
+              error: error,
+              onRetry: () => ref.invalidate(findPersonProvider(eventId)),
+            ),
             data: (matches) => matches.isEmpty
                 ? EmptyState(icon: Icons.person_search_outlined, title: l10n.findPersonEmpty)
                 : Column(
@@ -59,20 +68,35 @@ class FindPersonScreen extends ConsumerWidget {
                               ? null
                               : () => EventRoute(eventId: match.eventId!).push<void>(context),
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: Gaps.page, vertical: 10),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: Gaps.page,
+                              vertical: 10,
+                            ),
                             child: Row(
                               children: [
                                 SizedBox(
                                   width: 104,
-                                  child: Frame(aspect: 16 / 9, radius: 8, child: MediaView(source: match.thumbnail, showStamp: false)),
+                                  child: Frame(
+                                    aspect: 16 / 9,
+                                    radius: 8,
+                                    child: MediaView(source: match.thumbnail, showStamp: false),
+                                  ),
                                 ),
                                 const SizedBox(width: 14),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(match.cameraName, style: context.text.bodyLarge?.copyWith(fontWeight: FontWeight.w600)),
-                                      Text(format.when(match.startedAt), style: context.text.bodySmall),
+                                      Text(
+                                        match.cameraName,
+                                        style: context.text.bodyLarge?.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      Text(
+                                        format.when(match.startedAt),
+                                        style: context.text.bodySmall,
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -113,7 +137,12 @@ class SimilarityMeter extends StatelessWidget {
             const SizedBox(height: 4),
             ClipRRect(
               borderRadius: BorderRadius.circular(2),
-              child: LinearProgressIndicator(value: value.clamp(0, 1), minHeight: 4, color: p.text, backgroundColor: p.surface3),
+              child: LinearProgressIndicator(
+                value: value.clamp(0, 1),
+                minHeight: 4,
+                color: p.text,
+                backgroundColor: p.surface3,
+              ),
             ),
           ],
         ),

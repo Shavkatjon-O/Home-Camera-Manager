@@ -47,11 +47,20 @@ class RankedMethod {
 /// A method appears only when the catalog lists it as available, the app
 /// implements it and it works in [context], so no method is shown that
 /// cannot finish.
-List<RankedMethod> rankMethods(List<PairingCatalogEntry> catalog, PairingTarget target, PairingContext context) {
+List<RankedMethod> rankMethods(
+  List<PairingCatalogEntry> catalog,
+  PairingTarget target,
+  PairingContext context,
+) {
   final ranked = <RankedMethod>[];
   for (final entry in catalog) {
     final method = methodById(entry.id);
-    if (method == null || method.target != target || !entry.available || !method.supported(context)) continue;
+    if (method == null ||
+        method.target != target ||
+        !entry.available ||
+        !method.supported(context)) {
+      continue;
+    }
     ranked.add(RankedMethod(method, entry));
   }
   ranked.sort((a, b) => a.entry.rank.compareTo(b.entry.rank));
@@ -62,7 +71,12 @@ List<RankedMethod> rankMethods(List<PairingCatalogEntry> catalog, PairingTarget 
 ///
 /// Reports the attempt's telemetry and returns the final result, or null when
 /// the user backed out.
-Future<PairingResult?> runPairing(BuildContext context, WidgetRef ref, PairingMethod method, PairingContext pairing) async {
+Future<PairingResult?> runPairing(
+  BuildContext context,
+  WidgetRef ref,
+  PairingMethod method,
+  PairingContext pairing,
+) async {
   final l10n = context.l10n;
   final session = PairingSession(
     method: method.id,
@@ -77,9 +91,8 @@ Future<PairingResult?> runPairing(BuildContext context, WidgetRef ref, PairingMe
     return null;
   }
   if (!context.mounted) return null;
-  final result = await Navigator.of(
-    context,
-  ).push<PairingResult>(MaterialPageRoute(builder: (_) => method.flow(pairing, session)));
+  final result = await Navigator.of(context)
+      .push<PairingResult>(MaterialPageRoute(builder: (_) => method.flow(pairing, session)));
   if (!session.reported) {
     await session.finish(result == null ? PairingOutcome.cancelled : PairingOutcome.success);
   }

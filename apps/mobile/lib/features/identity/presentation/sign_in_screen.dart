@@ -11,6 +11,7 @@ import 'package:smart_surveillance/core/widgets/flow_scaffold.dart';
 import 'package:smart_surveillance/core/widgets/states.dart';
 import 'package:smart_surveillance/features/identity/presentation/session.dart';
 import 'package:smart_surveillance/features/identity/presentation/validators.dart';
+
 /// The screen where a user signs in with an email address and password.
 class SignInScreen extends ConsumerStatefulWidget {
   /// Creates the screen, showing [notice] above the form when given.
@@ -109,7 +110,10 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                       Expanded(
                         child: Semantics(
                           liveRegion: true,
-                          child: Text(error!, style: context.text.bodyMedium?.copyWith(color: p.dangerText)),
+                          child: Text(
+                            error!,
+                            style: context.text.bodyMedium?.copyWith(color: p.dangerText),
+                          ),
                         ),
                       ),
                     ],
@@ -128,7 +132,10 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
         Align(
           alignment: Alignment.centerLeft,
           child: TextButton(
-            style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 4), foregroundColor: p.text2),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              foregroundColor: p.text2,
+            ),
             onPressed: () => const SignUpRoute().pushReplacement(context),
             child: Text(l10n.signInNoAccount),
           ),
@@ -168,7 +175,10 @@ class _ServerTileState extends ConsumerState<ServerTile> {
         ),
         actions: [
           TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.commonCancel)),
-          FilledButton(onPressed: () => Navigator.of(context).pop(controller.text), child: Text(l10n.commonSave)),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(controller.text),
+            child: Text(l10n.commonSave),
+          ),
         ],
       ),
     );
@@ -188,7 +198,10 @@ class _ServerTileState extends ConsumerState<ServerTile> {
     final address = backend.server?.call();
     return Material(
       color: p.surface,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Radii.large), side: BorderSide(color: p.border)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(Radii.large),
+        side: BorderSide(color: p.border),
+      ),
       clipBehavior: Clip.antiAlias,
       child: ListTile(
         leading: Icon(backend.demo ? Icons.science_outlined : Icons.dns_outlined),

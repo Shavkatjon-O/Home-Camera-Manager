@@ -28,5 +28,6 @@ class ConnectorDiscoveryMethod extends PairingMethod {
   String subtitle(AppLocalizations l10n) => l10n.methodConnectorDiscoveryBody;
 
   @override
-  Widget flow(PairingContext context, PairingSession session) => DiscoveredCamerasScreen(pairing: context, session: session);
+  Widget flow(PairingContext context, PairingSession session) =>
+      DiscoveredCamerasScreen(pairing: context, session: session);
 }

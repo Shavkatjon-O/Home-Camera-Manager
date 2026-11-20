@@ -11,6 +11,7 @@ import 'package:smart_surveillance/features/alerting/presentation/labels.dart';
 import 'package:smart_surveillance/features/tenancy/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/site_setup_screen.dart';
+
 /// The settings of the current site, such as its name and how long events are kept.
 class SiteSettingsScreen extends ConsumerStatefulWidget {
   /// Creates the screen.
@@ -36,7 +37,10 @@ class _SiteSettingsScreenState extends ConsumerState<SiteSettingsScreen> {
     if (site == null) return;
     setState(() => busy = true);
     try {
-      await ref.read(backendProvider).tenancy.updateSite(site.copyWith(name: name.text.trim().isEmpty ? site.name : name.text.trim()));
+      await ref
+          .read(backendProvider)
+          .tenancy
+          .updateSite(site.copyWith(name: name.text.trim().isEmpty ? site.name : name.text.trim()));
       ref.invalidate(allSitesProvider);
       if (mounted) showMessage(context, context.l10n.commonSaved);
     } catch (failure) {
@@ -69,13 +73,22 @@ class _SiteSettingsScreenState extends ConsumerState<SiteSettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(Gaps.page, Gaps.sm, Gaps.page, Gaps.xxl),
         children: [
-          TextField(controller: name, decoration: InputDecoration(labelText: l10n.fieldSiteName)),
+          TextField(
+            controller: name,
+            decoration: InputDecoration(labelText: l10n.fieldSiteName),
+          ),
           const SizedBox(height: Gaps.lg),
           Text(l10n.fieldSiteKind, style: context.text.titleSmall?.copyWith(color: p.text2)),
           const SizedBox(height: Gaps.sm),
-          SiteKindPicker(value: site.kind, onChanged: (kind) => setState(() => draft = site.copyWith(kind: kind))),
+          SiteKindPicker(
+            value: site.kind,
+            onChanged: (kind) => setState(() => draft = site.copyWith(kind: kind)),
+          ),
           const SizedBox(height: Gaps.lg),
-          TimezoneField(value: site.timezone, onChanged: (zone) => setState(() => draft = site.copyWith(timezone: zone))),
+          TimezoneField(
+            value: site.timezone,
+            onChanged: (zone) => setState(() => draft = site.copyWith(timezone: zone)),
+          ),
           const SizedBox(height: Gaps.lg),
           Text(l10n.siteRetention, style: context.text.titleSmall?.copyWith(color: p.text2)),
           const SizedBox(height: Gaps.sm),
@@ -98,7 +111,12 @@ class _SiteSettingsScreenState extends ConsumerState<SiteSettingsScreen> {
               children: [
                 Icon(armIcon(site.armMode), color: p.text2),
                 const SizedBox(width: Gaps.md),
-                Expanded(child: Text(l10n.siteArmHelp, style: context.text.bodyMedium?.copyWith(color: p.text2))),
+                Expanded(
+                  child: Text(
+                    l10n.siteArmHelp,
+                    style: context.text.bodyMedium?.copyWith(color: p.text2),
+                  ),
+                ),
               ],
             ),
           ),

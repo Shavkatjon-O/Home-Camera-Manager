@@ -1,22 +1,30 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'models.freezed.dart';
+
 /// A capability that a plan can include.
 enum PlanFeature {
   /// Face recognition.
   faces,
+
   /// Licence plate recognition.
   plates,
+
   /// Appearance search.
   appearance,
+
   /// Journeys of a person across cameras.
   journeys,
+
   /// Fall detection.
   falls,
+
   /// Object detection.
   objects,
+
   /// Following a person across cameras.
   follow,
+
   /// Telegram alerts.
   telegram,
 }

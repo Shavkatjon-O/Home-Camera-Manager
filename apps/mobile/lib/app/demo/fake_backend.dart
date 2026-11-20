@@ -12,6 +12,7 @@ import 'package:smart_surveillance/features/investigation/data/fake_search_repos
 import 'package:smart_surveillance/features/media/data/fake_live_repository.dart';
 import 'package:smart_surveillance/features/operations/data/fake_health_repository.dart';
 import 'package:smart_surveillance/features/tenancy/data/fake_tenancy_repository.dart';
+
 /// Builds a [Backend] whose repositories all read and write the in-memory [store].
 Backend fakeBackend(FakeStore store) {
   final events = FakeEventRepository(store);

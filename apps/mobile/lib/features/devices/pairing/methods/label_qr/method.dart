@@ -31,5 +31,6 @@ class LabelQrMethod extends PairingMethod {
   String subtitle(AppLocalizations l10n) => l10n.methodLabelQrBody;
 
   @override
-  Widget flow(PairingContext context, PairingSession session) => LabelQrScreen(pairing: context, session: session);
+  Widget flow(PairingContext context, PairingSession session) =>
+      LabelQrScreen(pairing: context, session: session);
 }

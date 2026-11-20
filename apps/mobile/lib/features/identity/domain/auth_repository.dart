@@ -1,5 +1,5 @@
-
 import 'package:smart_surveillance/features/identity/domain/models.dart';
+
 /// The outcome of creating an account.
 class SignUpResult {
   /// Creates a result for the account [email] that may need [needsVerification].
@@ -7,6 +7,7 @@ class SignUpResult {
 
   /// The email address the account was created with.
   final String email;
+
   /// Whether the user must confirm the email address before signing in.
   final bool needsVerification;
 }
@@ -20,7 +21,11 @@ abstract interface class AuthRepository {
   Future<User> signIn({required String email, required String password});
 
   /// Creates an account for [name] with [email] and [password].
-  Future<SignUpResult> signUp({required String name, required String email, required String password});
+  Future<SignUpResult> signUp({
+    required String name,
+    required String email,
+    required String password,
+  });
 
   /// Sends the verification email to [email] again.
   Future<void> resendVerification(String email);

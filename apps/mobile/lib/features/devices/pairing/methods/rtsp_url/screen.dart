@@ -10,7 +10,13 @@ import 'package:smart_surveillance/features/devices/pairing/pairing_method.dart'
 /// The parts of an RTSP stream link.
 class RtspLink {
   /// Creates a parsed link.
-  const RtspLink({required this.host, required this.port, required this.path, this.username, this.password});
+  const RtspLink({
+    required this.host,
+    required this.port,
+    required this.path,
+    this.username,
+    this.password,
+  });
 
   /// The camera's host.
   final String host;
@@ -30,7 +36,9 @@ class RtspLink {
   /// Parses [text], or returns null when it is not an rtsp or rtsps link.
   static RtspLink? parse(String text) {
     final uri = Uri.tryParse(text.trim());
-    if (uri == null || (uri.scheme != 'rtsp' && uri.scheme != 'rtsps') || uri.host.isEmpty) return null;
+    if (uri == null || (uri.scheme != 'rtsp' && uri.scheme != 'rtsps') || uri.host.isEmpty) {
+      return null;
+    }
     final info = uri.userInfo.split(':');
     final path = uri.hasQuery ? '${uri.path}?${uri.query}' : uri.path;
     return RtspLink(
@@ -103,7 +111,10 @@ class _RtspUrlScreenState extends ConsumerState<RtspUrlScreen> {
     return FlowScaffold(
       title: l10n.rtspTitle,
       subtitle: l10n.rtspBody,
-      bottom: SizedBox(width: double.infinity, child: FilledButton(onPressed: next, child: Text(l10n.commonNext))),
+      bottom: SizedBox(
+        width: double.infinity,
+        child: FilledButton(onPressed: next, child: Text(l10n.commonNext)),
+      ),
       children: [
         Form(
           key: form,
@@ -115,7 +126,10 @@ class _RtspUrlScreenState extends ConsumerState<RtspUrlScreen> {
             maxLines: 3,
             minLines: 1,
             style: dataStyle(context, size: 14),
-            decoration: InputDecoration(labelText: l10n.rtspField, hintText: 'rtsp://192.168.1.64:554/stream1'),
+            decoration: InputDecoration(
+              labelText: l10n.rtspField,
+              hintText: 'rtsp://192.168.1.64:554/stream1',
+            ),
             validator: (value) => RtspLink.parse(value ?? '') == null ? l10n.rtspInvalid : null,
           ),
         ),

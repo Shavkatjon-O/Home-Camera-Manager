@@ -12,7 +12,12 @@ import 'package:smart_surveillance/features/devices/pairing/pairing_method.dart'
 /// Pairs a connector by the code it shows.
 class ConnectorCodeScreen extends ConsumerStatefulWidget {
   /// Creates the screen.
-  const ConnectorCodeScreen({super.key, required this.pairing, required this.session, this.initialName});
+  const ConnectorCodeScreen({
+    super.key,
+    required this.pairing,
+    required this.session,
+    this.initialName,
+  });
 
   /// The pairing context.
   final PairingContext pairing;
@@ -80,10 +85,23 @@ class _ConnectorCodeScreenState extends ConsumerState<ConnectorCodeScreen> {
                 textCapitalization: TextCapitalization.characters,
                 textAlign: TextAlign.center,
                 maxLength: 9,
-                inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[A-Za-z0-9-]')), const UpperCaseText()],
-                style: dataStyle(context, size: 26, weight: FontWeight.w500).copyWith(letterSpacing: 6),
-                decoration: InputDecoration(labelText: l10n.fieldConnectorCode, counterText: '', hintText: 'ABCD-1234'),
-                validator: (value) => codePattern.hasMatch((value ?? '').trim()) ? null : l10n.validationConnectorCode,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp('[A-Za-z0-9-]')),
+                  const UpperCaseText(),
+                ],
+                style: dataStyle(
+                  context,
+                  size: 26,
+                  weight: FontWeight.w500,
+                ).copyWith(letterSpacing: 6),
+                decoration: InputDecoration(
+                  labelText: l10n.fieldConnectorCode,
+                  counterText: '',
+                  hintText: 'ABCD-1234',
+                ),
+                validator: (value) => codePattern.hasMatch((value ?? '').trim())
+                    ? null
+                    : l10n.validationConnectorCode,
               ),
               const SizedBox(height: Gaps.md),
               TextFormField(

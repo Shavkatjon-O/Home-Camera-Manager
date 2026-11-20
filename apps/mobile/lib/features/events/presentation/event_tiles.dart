@@ -11,17 +11,27 @@ import 'package:smart_surveillance/core/widgets/media_view.dart';
 import 'package:smart_surveillance/core/widgets/surfaces.dart';
 import 'package:smart_surveillance/features/events/domain/models.dart';
 import 'package:smart_surveillance/features/events/presentation/labels.dart';
+
 /// A small preview image of an event, with its object boxes drawn over it.
 class EventThumb extends ConsumerWidget {
   /// Creates a preview of [event] that is [width] wide, with rounded corners of [radius].
-  const EventThumb({super.key, required this.event, this.width = 104, this.boxes = true, this.radius = 8});
+  const EventThumb({
+    super.key,
+    required this.event,
+    this.width = 104,
+    this.boxes = true,
+    this.radius = 8,
+  });
 
   /// The event to preview.
   final CameraEvent event;
+
   /// The width of the preview in logical pixels.
   final double width;
+
   /// Whether the detected objects are outlined on the image.
   final bool boxes;
+
   /// The corner radius of the preview.
   final double radius;
 
@@ -41,7 +51,11 @@ class EventThumb extends ConsumerWidget {
             else
               Center(child: Icon(kindIcon(event.kind), color: context.palette.text3)),
             if (boxes && event.boxes.isNotEmpty)
-              BoxOverlay(boxes: [for (final box in event.boxes) (box: box.box, label: box.label, caption: null)]),
+              BoxOverlay(
+                boxes: [
+                  for (final box in event.boxes) (box: box.box, label: box.label, caption: null),
+                ],
+              ),
           ],
         ),
       ),
@@ -56,6 +70,7 @@ class EventTags extends StatelessWidget {
 
   /// The event the tags describe.
   final CameraEvent event;
+
   /// Whether the tags use the compact style.
   final bool dense;
 
@@ -66,8 +81,10 @@ class EventTags extends StatelessWidget {
       spacing: 6,
       runSpacing: 4,
       children: [
-        if (event.alert && !event.acknowledged) Tag(l10n.eventAlert, tone: TagTone.alert, dense: dense),
-        if (event.alert && event.acknowledged) Tag(l10n.eventReviewed, tone: TagTone.muted, dense: dense),
+        if (event.alert && !event.acknowledged)
+          Tag(l10n.eventAlert, tone: TagTone.alert, dense: dense),
+        if (event.alert && event.acknowledged)
+          Tag(l10n.eventReviewed, tone: TagTone.muted, dense: dense),
         if (event.ongoing) Tag(l10n.eventOngoing, tone: TagTone.warning, dense: dense),
         if (event.kind.beta) Tag(l10n.commonBeta, tone: TagTone.info, dense: dense),
       ],
@@ -82,6 +99,7 @@ class EventRow extends ConsumerWidget {
 
   /// The event shown in the row.
   final CameraEvent event;
+
   /// Called when the row is tapped, or null to open the event screen.
   final VoidCallback? onTap;
 
@@ -90,7 +108,10 @@ class EventRow extends ConsumerWidget {
     final l10n = context.l10n;
     final p = context.palette;
     final format = Formats(context, ref.read(clockProvider)());
-    final place = [event.cameraName, if (event.viewName != null && event.viewName != event.cameraName) event.viewName!];
+    final place = [
+      event.cameraName,
+      if (event.viewName != null && event.viewName != event.cameraName) event.viewName!,
+    ];
     final unread = event.alert && !event.acknowledged;
     return InkWell(
       onTap: onTap ?? () => EventRoute(eventId: event.id).push<void>(context),
@@ -120,7 +141,10 @@ class EventRow extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Text(format.time(event.startedAt), style: dataStyle(context, size: 12, color: p.text3)),
+                      Text(
+                        format.time(event.startedAt),
+                        style: dataStyle(context, size: 12, color: p.text3),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 4),
@@ -159,6 +183,7 @@ class EventCard extends ConsumerWidget {
 
   /// The event shown on the card.
   final CameraEvent event;
+
   /// The width of the card in logical pixels.
   final double width;
 
@@ -172,7 +197,10 @@ class EventCard extends ConsumerWidget {
       child: Material(
         color: p.surface,
         clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Radii.large), side: BorderSide(color: p.border)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(Radii.large),
+          side: BorderSide(color: p.border),
+        ),
         child: InkWell(
           onTap: () => EventRoute(eventId: event.id).push<void>(context),
           child: Column(
@@ -182,7 +210,11 @@ class EventCard extends ConsumerWidget {
                 children: [
                   EventThumb(event: event, width: width, radius: 0),
                   if (event.alert && !event.acknowledged)
-                    Positioned(top: 8, left: 8, child: Tag(l10n.eventAlert, tone: TagTone.alert, dense: true)),
+                    Positioned(
+                      top: 8,
+                      left: 8,
+                      child: Tag(l10n.eventAlert, tone: TagTone.alert, dense: true),
+                    ),
                 ],
               ),
               Padding(

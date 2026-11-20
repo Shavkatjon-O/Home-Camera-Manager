@@ -8,6 +8,7 @@ import 'package:smart_surveillance/core/design/palette.dart';
 import 'package:smart_surveillance/core/design/tokens.dart';
 import 'package:smart_surveillance/core/widgets/logo.dart';
 import 'package:smart_surveillance/core/widgets/surfaces.dart';
+
 /// The first screen, with the choice to sign in or create an account.
 class WelcomeScreen extends ConsumerWidget {
   /// Creates the screen.
@@ -54,7 +55,10 @@ class WelcomeScreen extends ConsumerWidget {
                   const SizedBox(height: Gaps.xl + 4),
                   Text(l10n.appName, style: dataStyle(context, size: 13, color: p.text3)),
                   const SizedBox(height: Gaps.sm),
-                  Semantics(header: true, child: Text(l10n.welcomeTitle, style: context.text.displaySmall)),
+                  Semantics(
+                    header: true,
+                    child: Text(l10n.welcomeTitle, style: context.text.displaySmall),
+                  ),
                   const SizedBox(height: Gaps.md),
                   Text(l10n.welcomeBody, style: context.text.bodyLarge?.copyWith(color: p.text2)),
                   const SizedBox(height: Gaps.xl),
@@ -70,7 +74,10 @@ class WelcomeScreen extends ConsumerWidget {
                 children: [
                   SizedBox(
                     width: double.infinity,
-                    child: FilledButton(onPressed: () => const SignUpRoute().push<void>(context), child: Text(l10n.welcomeCreate)),
+                    child: FilledButton(
+                      onPressed: () => const SignUpRoute().push<void>(context),
+                      child: Text(l10n.welcomeCreate),
+                    ),
                   ),
                   const SizedBox(height: Gaps.sm + 2),
                   SizedBox(

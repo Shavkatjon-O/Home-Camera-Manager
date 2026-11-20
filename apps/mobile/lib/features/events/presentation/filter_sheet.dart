@@ -9,6 +9,7 @@ import 'package:smart_surveillance/core/providers.dart';
 import 'package:smart_surveillance/features/devices/presentation/providers.dart';
 import 'package:smart_surveillance/features/events/domain/models.dart';
 import 'package:smart_surveillance/features/events/presentation/labels.dart';
+
 /// Loads the values available to filter by at the site with the given id.
 final facetsProvider = FutureProvider.autoDispose.family(
   (ref, String siteId) => ref.read(backendProvider).search.facets(siteId),
@@ -30,12 +31,19 @@ Future<EventFilter?> showFilterSheet(
 /// The bottom sheet where an event filter is edited.
 class FilterSheet extends ConsumerStatefulWidget {
   /// Creates a sheet for [siteId] starting from [initial]; [extended] adds the facet filters.
-  const FilterSheet({super.key, required this.siteId, required this.initial, this.extended = false});
+  const FilterSheet({
+    super.key,
+    required this.siteId,
+    required this.initial,
+    this.extended = false,
+  });
 
   /// The id of the site whose cameras and facets are offered.
   final String siteId;
+
   /// The filter the sheet starts with.
   final EventFilter initial;
+
   /// Whether the extra filters from the site's facets are offered.
   final bool extended;
 
@@ -46,7 +54,8 @@ class FilterSheet extends ConsumerStatefulWidget {
 class _FilterSheetState extends ConsumerState<FilterSheet> {
   late EventFilter filter = widget.initial;
 
-  Set<T> toggle<T>(Set<T> set, T value) => set.contains(value) ? ({...set}..remove(value)) : {...set, value};
+  Set<T> toggle<T>(Set<T> set, T value) =>
+      set.contains(value) ? ({...set}..remove(value)) : {...set, value};
 
   Future<void> pickDay() async {
     final now = ref.read(clockProvider)();
@@ -77,12 +86,21 @@ class _FilterSheetState extends ConsumerState<FilterSheet> {
         ],
       ),
     );
-    FilterChip chip(String label, bool selected, VoidCallback onTap) => FilterChip(
-      label: Text(label),
-      selected: selected,
-      onSelected: (_) => onTap(),
-    );
-    final labels = facets?.labels ?? const ['person', 'car', 'truck', 'bicycle', 'dog', 'cat', 'backpack', 'handbag', 'suitcase'];
+    FilterChip chip(String label, bool selected, VoidCallback onTap) =>
+        FilterChip(label: Text(label), selected: selected, onSelected: (_) => onTap());
+    final labels =
+        facets?.labels ??
+        const [
+          'person',
+          'car',
+          'truck',
+          'bicycle',
+          'dog',
+          'cat',
+          'backpack',
+          'handbag',
+          'suitcase',
+        ];
     return DraggableScrollableSheet(
       expand: false,
       initialChildSize: 0.86,
@@ -115,7 +133,11 @@ class _FilterSheetState extends ConsumerState<FilterSheet> {
                 ),
                 const SizedBox(height: Gaps.sm),
                 group(l10n.filterDay, [
-                  chip(l10n.filterAnyDay, filter.day == null, () => setState(() => filter = filter.copyWith(day: null))),
+                  chip(
+                    l10n.filterAnyDay,
+                    filter.day == null,
+                    () => setState(() => filter = filter.copyWith(day: null)),
+                  ),
                   chip(
                     filter.day == null ? l10n.commonToday : format.dayHeader(filter.day!),
                     filter.day != null,
@@ -127,7 +149,11 @@ class _FilterSheetState extends ConsumerState<FilterSheet> {
                     chip(
                       camera.name,
                       filter.cameraIds.contains(camera.id),
-                      () => setState(() => filter = filter.copyWith(cameraIds: toggle(filter.cameraIds, camera.id))),
+                      () => setState(
+                        () => filter = filter.copyWith(
+                          cameraIds: toggle(filter.cameraIds, camera.id),
+                        ),
+                      ),
                     ),
                 ]),
                 group(l10n.filterKinds, [
@@ -136,7 +162,9 @@ class _FilterSheetState extends ConsumerState<FilterSheet> {
                       avatar: Icon(kindIcon(kind), size: 16),
                       label: Text(l10n.kind(kind)),
                       selected: filter.kinds.contains(kind),
-                      onSelected: (_) => setState(() => filter = filter.copyWith(kinds: toggle(filter.kinds, kind))),
+                      onSelected: (_) => setState(
+                        () => filter = filter.copyWith(kinds: toggle(filter.kinds, kind)),
+                      ),
                     ),
                 ]),
                 group(l10n.filterLabels, [
@@ -144,7 +172,9 @@ class _FilterSheetState extends ConsumerState<FilterSheet> {
                     chip(
                       l10n.label(label),
                       filter.labels.contains(label),
-                      () => setState(() => filter = filter.copyWith(labels: toggle(filter.labels, label))),
+                      () => setState(
+                        () => filter = filter.copyWith(labels: toggle(filter.labels, label)),
+                      ),
                     ),
                 ]),
                 if (facets != null) ...[
@@ -154,7 +184,10 @@ class _FilterSheetState extends ConsumerState<FilterSheet> {
                         chip(
                           view.name,
                           filter.viewIds.contains(view.id),
-                          () => setState(() => filter = filter.copyWith(viewIds: toggle(filter.viewIds, view.id))),
+                          () => setState(
+                            () =>
+                                filter = filter.copyWith(viewIds: toggle(filter.viewIds, view.id)),
+                          ),
                         ),
                     ]),
                   if (facets.zones.isNotEmpty)
@@ -163,7 +196,9 @@ class _FilterSheetState extends ConsumerState<FilterSheet> {
                         chip(
                           zone.name,
                           filter.zones.contains(zone.id),
-                          () => setState(() => filter = filter.copyWith(zones: toggle(filter.zones, zone.id))),
+                          () => setState(
+                            () => filter = filter.copyWith(zones: toggle(filter.zones, zone.id)),
+                          ),
                         ),
                     ]),
                   if (facets.lines.isNotEmpty)
@@ -172,7 +207,9 @@ class _FilterSheetState extends ConsumerState<FilterSheet> {
                         chip(
                           line.name,
                           filter.lines.contains(line.id),
-                          () => setState(() => filter = filter.copyWith(lines: toggle(filter.lines, line.id))),
+                          () => setState(
+                            () => filter = filter.copyWith(lines: toggle(filter.lines, line.id)),
+                          ),
                         ),
                     ]),
                   if (facets.people.isNotEmpty || facets.clusters.isNotEmpty)
@@ -210,7 +247,10 @@ class _FilterSheetState extends ConsumerState<FilterSheet> {
               padding: const EdgeInsets.fromLTRB(Gaps.page + 4, Gaps.sm, Gaps.page + 4, Gaps.md),
               child: SizedBox(
                 width: double.infinity,
-                child: FilledButton(onPressed: () => Navigator.of(context).pop(filter), child: Text(l10n.filterShow)),
+                child: FilledButton(
+                  onPressed: () => Navigator.of(context).pop(filter),
+                  child: Text(l10n.filterShow),
+                ),
               ),
             ),
           ),

@@ -7,6 +7,7 @@ import 'package:smart_surveillance/features/alerting/domain/models.dart';
 import 'package:smart_surveillance/features/events/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/domain/tenancy_repository.dart';
+
 /// An in-memory tenancy repository backed by a [FakeStore].
 class FakeTenancyRepository implements TenancyRepository {
   /// Creates a repository that keeps its data in [store].
@@ -85,15 +86,17 @@ class FakeTenancyRepository implements TenancyRepository {
   });
 
   @override
-  Future<({String version, String? text})> facesConsent() => store.delay(() => (version: 'demo-1', text: null));
+  Future<({String version, String? text})> facesConsent() =>
+      store.delay(() => (version: 'demo-1', text: null));
 
   @override
-  Future<Organisation> setFaces(String organisationId, bool enabled, {String? consentVersion}) => store.delay(() {
-    final index = store.data.organisations.indexWhere((o) => o.id == organisationId);
-    final organisation = store.data.organisations[index].copyWith(facesEnabled: enabled);
-    store.data.organisations[index] = organisation;
-    return organisation;
-  });
+  Future<Organisation> setFaces(String organisationId, bool enabled, {String? consentVersion}) =>
+      store.delay(() {
+        final index = store.data.organisations.indexWhere((o) => o.id == organisationId);
+        final organisation = store.data.organisations[index].copyWith(facesEnabled: enabled);
+        store.data.organisations[index] = organisation;
+        return organisation;
+      });
 
   @override
   Future<List<Member>> members(String organisationId) =>
@@ -123,18 +126,23 @@ class FakeTenancyRepository implements TenancyRepository {
   });
 
   @override
-  Future<void> revokeInvitation(String organisationId, String invitationId) =>
-      store.delay(() => store.data.invitations[organisationId]?.removeWhere((i) => i.id == invitationId));
+  Future<void> revokeInvitation(String organisationId, String invitationId) => store.delay(
+    () => store.data.invitations[organisationId]?.removeWhere((i) => i.id == invitationId),
+  );
 
   @override
-  Future<Member> updateMember(String organisationId, String userId, {required Role role, List<String>? siteIds}) =>
-      store.delay(() {
-        final list = store.data.members[organisationId]!;
-        final index = list.indexWhere((m) => m.userId == userId);
-        final member = list[index].copyWith(role: role, siteIds: siteIds);
-        list[index] = member;
-        return member;
-      });
+  Future<Member> updateMember(
+    String organisationId,
+    String userId, {
+    required Role role,
+    List<String>? siteIds,
+  }) => store.delay(() {
+    final list = store.data.members[organisationId]!;
+    final index = list.indexWhere((m) => m.userId == userId);
+    final member = list[index].copyWith(role: role, siteIds: siteIds);
+    list[index] = member;
+    return member;
+  });
 
   @override
   Future<void> removeMember(String organisationId, String userId) =>

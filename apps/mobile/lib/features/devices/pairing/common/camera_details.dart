@@ -49,9 +49,13 @@ class CameraDetailsScreen extends ConsumerStatefulWidget {
 
 class _CameraDetailsScreenState extends ConsumerState<CameraDetailsScreen> {
   final form = GlobalKey<FormState>();
-  late final username = TextEditingController(text: widget.initialUser ?? (widget.needsLogin ? 'admin' : ''));
+  late final username = TextEditingController(
+    text: widget.initialUser ?? (widget.needsLogin ? 'admin' : ''),
+  );
   late final password = TextEditingController(text: widget.initialPassword ?? '');
-  late final name = TextEditingController(text: widget.camera.model ?? widget.camera.manufacturer ?? '');
+  late final name = TextEditingController(
+    text: widget.camera.model ?? widget.camera.manufacturer ?? '',
+  );
   late int lenses = widget.camera.brand == CameraBrand.v380 ? 2 : 1;
   StreamTest? test;
   bool testing = false;
@@ -81,14 +85,21 @@ class _CameraDetailsScreenState extends ConsumerState<CameraDetailsScreen> {
       final result = await ref
           .read(backendProvider)
           .devices
-          .testCamera(connectorId: connector.id, camera: widget.camera, username: user, password: secret);
+          .testCamera(
+            connectorId: connector.id,
+            camera: widget.camera,
+            username: user,
+            password: secret,
+          );
       if (!mounted) return;
       setState(() {
         test = result;
         if (result.ok) lenses = result.lenses;
       });
     } catch (failure) {
-      if (mounted) setState(() => test = StreamTest(ok: false, error: context.l10n.failure(failure)));
+      if (mounted) {
+        setState(() => test = StreamTest(ok: false, error: context.l10n.failure(failure)));
+      }
     } finally {
       if (mounted) setState(() => testing = false);
     }
@@ -117,14 +128,21 @@ class _CameraDetailsScreenState extends ConsumerState<CameraDetailsScreen> {
       await widget.session.fail(failure);
       if (mounted) {
         setState(() => saving = false);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.failure(failure))));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(context.l10n.failure(failure))));
       }
     }
   }
 
   String resultText(AppLocalizations l10n, StreamTest result) {
-    if (!result.ok) return result.error == 'unauthorised' ? l10n.onboardingTestFailed : (result.error ?? l10n.errorUnknown);
-    if (result.codec != null && result.width != null) return l10n.onboardingTestOk(result.codec!, result.width!, result.height ?? 0);
+    if (!result.ok) {
+      return result.error == 'unauthorised'
+          ? l10n.onboardingTestFailed
+          : (result.error ?? l10n.errorUnknown);
+    }
+    if (result.codec != null && result.width != null) {
+      return l10n.onboardingTestOk(result.codec!, result.width!, result.height ?? 0);
+    }
     return l10n.onboardingTestPassed;
   }
 
@@ -138,7 +156,11 @@ class _CameraDetailsScreenState extends ConsumerState<CameraDetailsScreen> {
     return FlowScaffold(
       title: l10n.onboardingCameraTitle,
       subtitle: widget.needsLogin ? l10n.onboardingCameraBody : null,
-      bottom: BusyButton(label: l10n.onboardingSaveCamera, busy: saving, onPressed: result?.ok == true ? save : null),
+      bottom: BusyButton(
+        label: l10n.onboardingSaveCamera,
+        busy: saving,
+        onPressed: result?.ok == true ? save : null,
+      ),
       children: [
         Panel(
           child: Row(
@@ -149,7 +171,10 @@ class _CameraDetailsScreenState extends ConsumerState<CameraDetailsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text([camera.manufacturer, camera.model].whereType<String>().join(' '), style: context.text.titleMedium),
+                    Text(
+                      [camera.manufacturer, camera.model].whereType<String>().join(' '),
+                      style: context.text.titleMedium,
+                    ),
                     Text(camera.host, style: dataStyle(context, size: 12.5, color: p.text2)),
                   ],
                 ),
@@ -183,7 +208,11 @@ class _CameraDetailsScreenState extends ConsumerState<CameraDetailsScreen> {
                 child: OutlinedButton.icon(
                   onPressed: testing ? null : runTest,
                   icon: testing
-                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
                       : const Icon(Icons.play_circle_outline_rounded, size: 19),
                   label: Text(testing ? l10n.onboardingTesting : l10n.onboardingTest),
                 ),
@@ -199,7 +228,9 @@ class _CameraDetailsScreenState extends ConsumerState<CameraDetailsScreen> {
                             Row(
                               children: [
                                 Icon(
-                                  result.ok ? Icons.check_circle_outline_rounded : Icons.error_outline_rounded,
+                                  result.ok
+                                      ? Icons.check_circle_outline_rounded
+                                      : Icons.error_outline_rounded,
                                   color: result.ok ? p.ok : p.dangerText,
                                   size: 20,
                                 ),
@@ -209,7 +240,9 @@ class _CameraDetailsScreenState extends ConsumerState<CameraDetailsScreen> {
                                     liveRegion: true,
                                     child: Text(
                                       resultText(l10n, result),
-                                      style: context.text.bodyMedium?.copyWith(color: result.ok ? p.text : p.dangerText),
+                                      style: context.text.bodyMedium?.copyWith(
+                                        color: result.ok ? p.text : p.dangerText,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -217,7 +250,10 @@ class _CameraDetailsScreenState extends ConsumerState<CameraDetailsScreen> {
                             ),
                             if (result.ok && result.preview != null) ...[
                               const SizedBox(height: Gaps.md),
-                              Frame(aspect: 16 / 9, child: MediaView(source: result.preview, showStamp: false)),
+                              Frame(
+                                aspect: 16 / 9,
+                                child: MediaView(source: result.preview, showStamp: false),
+                              ),
                             ],
                           ],
                         ),
@@ -228,13 +264,19 @@ class _CameraDetailsScreenState extends ConsumerState<CameraDetailsScreen> {
                 TextFormField(
                   controller: name,
                   textCapitalization: TextCapitalization.sentences,
-                  decoration: InputDecoration(labelText: l10n.fieldCameraName, hintText: l10n.fieldCameraNameHint),
+                  decoration: InputDecoration(
+                    labelText: l10n.fieldCameraName,
+                    hintText: l10n.fieldCameraNameHint,
+                  ),
                   validator: (value) => validateRequired(l10n, value),
                 ),
                 const SizedBox(height: Gaps.lg),
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: Text(l10n.fieldLenses, style: context.text.titleSmall?.copyWith(color: p.text2)),
+                  child: Text(
+                    l10n.fieldLenses,
+                    style: context.text.titleSmall?.copyWith(color: p.text2),
+                  ),
                 ),
                 const SizedBox(height: Gaps.sm),
                 SizedBox(
@@ -242,8 +284,16 @@ class _CameraDetailsScreenState extends ConsumerState<CameraDetailsScreen> {
                   child: SegmentedButton<int>(
                     showSelectedIcon: false,
                     segments: [
-                      ButtonSegment(value: 1, label: Text(l10n.lensesOne), icon: const Icon(Icons.crop_16_9_rounded, size: 18)),
-                      ButtonSegment(value: 2, label: Text(l10n.lensesTwo), icon: const Icon(Icons.view_day_outlined, size: 18)),
+                      ButtonSegment(
+                        value: 1,
+                        label: Text(l10n.lensesOne),
+                        icon: const Icon(Icons.crop_16_9_rounded, size: 18),
+                      ),
+                      ButtonSegment(
+                        value: 2,
+                        label: Text(l10n.lensesTwo),
+                        icon: const Icon(Icons.view_day_outlined, size: 18),
+                      ),
                     ],
                     selected: {lenses},
                     onSelectionChanged: (value) => setState(() => lenses = value.first),

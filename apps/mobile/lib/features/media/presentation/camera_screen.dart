@@ -22,19 +22,22 @@ import 'package:smart_surveillance/features/events/presentation/labels.dart';
 import 'package:smart_surveillance/features/media/presentation/live_video.dart';
 import 'package:smart_surveillance/features/tenancy/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
+
 /// The preset positions and light state of a camera, loaded by camera id.
 final cameraControlsProvider = FutureProvider.autoDispose.family<CameraControls, String>(
   (ref, id) => ref.read(backendProvider).devices.controls(id),
 );
 
 /// The latest events of a camera, loaded by a pair of site id and camera id.
-final cameraEventsProvider = FutureProvider.autoDispose.family<List<CameraEvent>, (String, String)>((ref, key) async {
-  final page = await ref
-      .read(backendProvider)
-      .events
-      .events(key.$1, EventFilter(cameraIds: {key.$2}), pageSize: 6);
-  return page.items;
-});
+final cameraEventsProvider = FutureProvider.autoDispose.family<List<CameraEvent>, (String, String)>(
+  (ref, key) async {
+    final page = await ref
+        .read(backendProvider)
+        .events
+        .events(key.$1, EventFilter(cameraIds: {key.$2}), pageSize: 6);
+    return page.items;
+  },
+);
 
 /// The objects detected right now in a live view, streamed by view id.
 final liveObjectsProvider = StreamProvider.autoDispose.family<List<LiveObject>, String>(
@@ -48,6 +51,7 @@ class CameraScreen extends ConsumerStatefulWidget {
 
   /// The camera shown.
   final String cameraId;
+
   /// The lens of the camera that is shown first.
   final int lens;
 
@@ -84,21 +88,32 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
           );
         }
         final lens = camera.lenses > 1 && !whole ? widget.lens : null;
-        final view = views.where((v) => v.cameraId == camera.id && v.lens == (lens ?? 0)).firstOrNull;
+        final view = views
+            .where((v) => v.cameraId == camera.id && v.lens == (lens ?? 0))
+            .firstOrNull;
         return body(context, site, camera, lens, view);
       },
     );
   }
 
-  Widget body(BuildContext context, SiteContext site, Camera camera, int? lens, AnalyticsView? view) {
+  Widget body(
+    BuildContext context,
+    SiteContext site,
+    Camera camera,
+    int? lens,
+    AnalyticsView? view,
+  ) {
     final l10n = context.l10n;
     final p = context.palette;
     final controls = ref.watch(cameraControlsProvider(camera.id)).value;
     final operator = site.can(Role.operator);
-    final title = camera.lenses > 1 && lens != null ? '${camera.name}, ${l10n.liveLens(lens + 1)}' : camera.name;
+    final title = camera.lenses > 1 && lens != null
+        ? '${camera.name}, ${l10n.liveLens(lens + 1)}'
+        : camera.name;
     final aspect = lens == null ? camera.aspect : camera.aspect * camera.lenses;
     final devices = ref.read(backendProvider).devices;
-    Future<void> move(double pan, double tilt, double zoom) => devices.move(camera.id, pan: pan, tilt: tilt, zoom: zoom);
+    Future<void> move(double pan, double tilt, double zoom) =>
+        devices.move(camera.id, pan: pan, tilt: tilt, zoom: zoom);
     Future<void> stop() => devices.stop(camera.id);
     final overlay = boxes && view != null ? LiveBoxes(viewId: view.id) : null;
     return Scaffold(
@@ -134,7 +149,8 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
               },
               itemBuilder: (context) => [
                 PopupMenuItem(value: 'settings', child: Text(l10n.cameraSettings)),
-                if (view != null) PopupMenuItem(value: 'analytics', child: Text(l10n.cameraAnalytics)),
+                if (view != null)
+                  PopupMenuItem(value: 'analytics', child: Text(l10n.cameraAnalytics)),
               ],
             ),
         ],
@@ -149,18 +165,41 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  LiveVideo(camera: camera, lens: lens, quality: quality, audio: sound, overlay: overlay),
-                  Positioned(right: 10, top: 10, child: Tag(l10n.liveBadge, tone: TagTone.alert, icon: Icons.circle, dense: true)),
+                  LiveVideo(
+                    camera: camera,
+                    lens: lens,
+                    quality: quality,
+                    audio: sound,
+                    overlay: overlay,
+                  ),
+                  Positioned(
+                    right: 10,
+                    top: 10,
+                    child: Tag(
+                      l10n.liveBadge,
+                      tone: TagTone.alert,
+                      icon: Icons.circle,
+                      dense: true,
+                    ),
+                  ),
                   Positioned(
                     right: 6,
                     bottom: 6,
                     child: IconButton.filledTonal(
                       tooltip: l10n.cameraFullscreen,
-                      style: IconButton.styleFrom(backgroundColor: const Color(0x99000000), foregroundColor: const Color(0xFFFFFFFF)),
+                      style: IconButton.styleFrom(
+                        backgroundColor: const Color(0x99000000),
+                        foregroundColor: const Color(0xFFFFFFFF),
+                      ),
                       onPressed: () => Navigator.of(context).push(
                         MaterialPageRoute<void>(
                           fullscreenDialog: true,
-                          builder: (_) => FullscreenLive(camera: camera, lens: lens, quality: quality, viewId: view?.id),
+                          builder: (_) => FullscreenLive(
+                            camera: camera,
+                            lens: lens,
+                            quality: quality,
+                            viewId: view?.id,
+                          ),
                         ),
                       ),
                       icon: const Icon(Icons.fullscreen_rounded),
@@ -180,7 +219,11 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
                     showSelectedIcon: false,
                     segments: [
                       ButtonSegment(value: StreamQuality.main, label: Text(l10n.cameraMain)),
-                      ButtonSegment(value: StreamQuality.sub, label: Text(l10n.cameraSub), enabled: camera.hasSub),
+                      ButtonSegment(
+                        value: StreamQuality.sub,
+                        label: Text(l10n.cameraSub),
+                        enabled: camera.hasSub,
+                      ),
                     ],
                     selected: {quality},
                     onSelectionChanged: (value) => setState(() => quality = value.first),
@@ -217,9 +260,12 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
                           onMove: move,
                           onStop: stop,
                           speed: speed,
-                          onHome: camera.capabilities.home ? () => devices.gotoHome(camera.id) : null,
+                          onHome: camera.capabilities.home
+                              ? () => devices.gotoHome(camera.id)
+                              : null,
                         ),
-                        if (camera.capabilities.zoom) ZoomButtons(onMove: move, onStop: stop, speed: speed),
+                        if (camera.capabilities.zoom)
+                          ZoomButtons(onMove: move, onStop: stop, speed: speed),
                       ],
                     ),
                     const SizedBox(height: Gaps.md),
@@ -242,53 +288,60 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
                 ),
               ),
             ),
-            if (camera.capabilities.presets) PresetsRow(camera: camera, presets: controls?.presets ?? const []),
+            if (camera.capabilities.presets)
+              PresetsRow(camera: camera, presets: controls?.presets ?? const []),
           ],
           if ((camera.capabilities.light || camera.capabilities.siren) && operator) ...[
             SectionHeader(l10n.cameraLight),
             TileGroup(
               children: [
                 if (camera.capabilities.light)
-                SwitchListTile(
-                  secondary: const Icon(Icons.light_mode_outlined),
-                  title: Text(l10n.cameraLight),
-                  value: light,
-                  onChanged: (value) async {
-                    setState(() => light = value);
-                    try {
-                      await devices.setLight(camera.id, value);
-                    } catch (failure) {
-                      if (context.mounted) showFailure(context, failure);
-                      setState(() => light = !value);
-                    }
-                  },
-                ),
+                  SwitchListTile(
+                    secondary: const Icon(Icons.light_mode_outlined),
+                    title: Text(l10n.cameraLight),
+                    value: light,
+                    onChanged: (value) async {
+                      setState(() => light = value);
+                      try {
+                        await devices.setLight(camera.id, value);
+                      } catch (failure) {
+                        if (context.mounted) showFailure(context, failure);
+                        setState(() => light = !value);
+                      }
+                    },
+                  ),
                 if (camera.capabilities.siren)
-                ListTile(
-                  leading: Icon(Icons.campaign_outlined, color: p.dangerText),
-                  title: Text(l10n.cameraSiren),
-                  trailing: sirenBusy ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)) : null,
-                  onTap: sirenBusy
-                      ? null
-                      : () async {
-                          final ok = await confirm(
-                            context,
-                            title: l10n.cameraSirenConfirm,
-                            action: l10n.cameraSiren,
-                            destructive: true,
-                          );
-                          if (!ok) return;
-                          setState(() => sirenBusy = true);
-                          try {
-                            await devices.sirenFor(camera.id, const Duration(seconds: 10));
-                            if (context.mounted) showMessage(context, l10n.cameraSirenOn);
-                          } catch (failure) {
-                            if (context.mounted) showFailure(context, failure);
-                          } finally {
-                            if (mounted) setState(() => sirenBusy = false);
-                          }
-                        },
-                ),
+                  ListTile(
+                    leading: Icon(Icons.campaign_outlined, color: p.dangerText),
+                    title: Text(l10n.cameraSiren),
+                    trailing: sirenBusy
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : null,
+                    onTap: sirenBusy
+                        ? null
+                        : () async {
+                            final ok = await confirm(
+                              context,
+                              title: l10n.cameraSirenConfirm,
+                              action: l10n.cameraSiren,
+                              destructive: true,
+                            );
+                            if (!ok) return;
+                            setState(() => sirenBusy = true);
+                            try {
+                              await devices.sirenFor(camera.id, const Duration(seconds: 10));
+                              if (context.mounted) showMessage(context, l10n.cameraSirenOn);
+                            } catch (failure) {
+                              if (context.mounted) showFailure(context, failure);
+                            } finally {
+                              if (mounted) setState(() => sirenBusy = false);
+                            }
+                          },
+                  ),
               ],
             ),
           ],
@@ -303,14 +356,23 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
 /// An icon button that shows a labelled on or off state.
 class ToggleIcon extends StatelessWidget {
   /// Creates a button with [icon] and [label], highlighted when [selected].
-  const ToggleIcon({super.key, required this.icon, required this.label, required this.selected, this.onTap});
+  const ToggleIcon({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.selected,
+    this.onTap,
+  });
 
   /// The icon of the button.
   final IconData icon;
+
   /// The text that names the button.
   final String label;
+
   /// Whether the button is in its on state.
   final bool selected;
+
   /// Called when the button is tapped, or null to disable it.
   final VoidCallback? onTap;
 
@@ -325,14 +387,23 @@ class ToggleIcon extends StatelessWidget {
         button: true,
         child: Material(
           color: selected ? p.surface3 : const Color(0x00000000),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Radii.medium), side: BorderSide(color: p.borderInput)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(Radii.medium),
+            side: BorderSide(color: p.borderInput),
+          ),
           child: InkWell(
             borderRadius: BorderRadius.circular(Radii.medium),
             onTap: onTap,
             child: SizedBox(
               width: 48,
               height: 44,
-              child: Icon(icon, size: 20, color: onTap == null ? p.text3.withValues(alpha: 0.5) : (selected ? p.text : p.text2)),
+              child: Icon(
+                icon,
+                size: 20,
+                color: onTap == null
+                    ? p.text3.withValues(alpha: 0.5)
+                    : (selected ? p.text : p.text2),
+              ),
             ),
           ),
         ),
@@ -355,7 +426,8 @@ class LiveBoxes extends ConsumerWidget {
     final objects = ref.watch(liveObjectsProvider(viewId)).value ?? const [];
     return BoxOverlay(
       boxes: [
-        for (final object in objects) (box: object.box, label: object.label, caption: object.name ?? l10n.label(object.label)),
+        for (final object in objects)
+          (box: object.box, label: object.label, caption: object.name ?? l10n.label(object.label)),
       ],
     );
   }
@@ -368,6 +440,7 @@ class PresetsRow extends ConsumerWidget {
 
   /// The camera that is moved.
   final Camera camera;
+
   /// The preset positions to offer.
   final List<PtzPreset> presets;
 
@@ -395,8 +468,14 @@ class PresetsRow extends ConsumerWidget {
                     onSubmitted: (value) => Navigator.of(context).pop(value),
                   ),
                   actions: [
-                    TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.commonCancel)),
-                    FilledButton(onPressed: () => Navigator.of(context).pop(controller.text), child: Text(l10n.commonSave)),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text(l10n.commonCancel),
+                    ),
+                    FilledButton(
+                      onPressed: () => Navigator.of(context).pop(controller.text),
+                      child: Text(l10n.commonSave),
+                    ),
                   ],
                 ),
               );
@@ -416,7 +495,10 @@ class PresetsRow extends ConsumerWidget {
         if (presets.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Gaps.page),
-            child: Text(l10n.cameraNoPresets, style: context.text.bodyMedium?.copyWith(color: context.palette.text3)),
+            child: Text(
+              l10n.cameraNoPresets,
+              style: context.text.bodyMedium?.copyWith(color: context.palette.text3),
+            ),
           )
         else
           SizedBox(
@@ -445,6 +527,7 @@ class RecentForCamera extends ConsumerWidget {
 
   /// The site that owns the camera.
   final String siteId;
+
   /// The camera whose events are listed.
   final String cameraId;
 
@@ -453,11 +536,18 @@ class RecentForCamera extends ConsumerWidget {
     final value = ref.watch(cameraEventsProvider((siteId, cameraId)));
     return value.when(
       loading: () => const SizedBox(height: 240, child: ListSkeleton(rows: 3)),
-      error: (error, _) => ErrorState(error: error, compact: true, onRetry: () => ref.invalidate(cameraEventsProvider((siteId, cameraId)))),
+      error: (error, _) => ErrorState(
+        error: error,
+        compact: true,
+        onRetry: () => ref.invalidate(cameraEventsProvider((siteId, cameraId))),
+      ),
       data: (events) => events.isEmpty
           ? Padding(
               padding: const EdgeInsets.symmetric(horizontal: Gaps.page),
-              child: Text(context.l10n.homeNoEvents, style: context.text.bodyMedium?.copyWith(color: context.palette.text3)),
+              child: Text(
+                context.l10n.homeNoEvents,
+                style: context.text.bodyMedium?.copyWith(color: context.palette.text3),
+              ),
             )
           : Column(
               children: [
@@ -475,14 +565,23 @@ class RecentForCamera extends ConsumerWidget {
 /// A full-screen live picture of a camera.
 class FullscreenLive extends StatefulWidget {
   /// Creates the view of [camera] at [quality].
-  const FullscreenLive({super.key, required this.camera, this.lens, required this.quality, this.viewId});
+  const FullscreenLive({
+    super.key,
+    required this.camera,
+    this.lens,
+    required this.quality,
+    this.viewId,
+  });
 
   /// The camera shown.
   final Camera camera;
+
   /// The lens shown, or null for all lenses.
   final int? lens;
+
   /// The stream that is played.
   final StreamQuality quality;
+
   /// The live view whose detections are drawn, if any.
   final String? viewId;
 
@@ -496,7 +595,12 @@ class _FullscreenLiveState extends State<FullscreenLive> {
   @override
   void initState() {
     super.initState();
-    unawaited(SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]));
+    unawaited(
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]),
+    );
     unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky));
   }
 
@@ -509,7 +613,9 @@ class _FullscreenLiveState extends State<FullscreenLive> {
 
   @override
   Widget build(BuildContext context) {
-    final aspect = widget.lens == null ? widget.camera.aspect : widget.camera.aspect * widget.camera.lenses;
+    final aspect = widget.lens == null
+        ? widget.camera.aspect
+        : widget.camera.aspect * widget.camera.lenses;
     return Scaffold(
       backgroundColor: const Color(0xFF000000),
       body: GestureDetector(
@@ -521,7 +627,11 @@ class _FullscreenLiveState extends State<FullscreenLive> {
                 maxScale: 4,
                 child: AspectRatio(
                   aspectRatio: aspect,
-                  child: LiveVideo(camera: widget.camera, lens: widget.lens, quality: widget.quality),
+                  child: LiveVideo(
+                    camera: widget.camera,
+                    lens: widget.lens,
+                    quality: widget.quality,
+                  ),
                 ),
               ),
             ),
@@ -537,7 +647,10 @@ class _FullscreenLiveState extends State<FullscreenLive> {
                       onPressed: () => Navigator.of(context).pop(),
                       icon: const Icon(Icons.close_rounded),
                     ),
-                    Text(widget.camera.name, style: const TextStyle(color: Color(0xFFFFFFFF), fontWeight: FontWeight.w600)),
+                    Text(
+                      widget.camera.name,
+                      style: const TextStyle(color: Color(0xFFFFFFFF), fontWeight: FontWeight.w600),
+                    ),
                   ],
                 ),
               ),

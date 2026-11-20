@@ -47,7 +47,8 @@ class _DiscoveredCamerasScreenState extends ConsumerState<DiscoveredCamerasScree
     widget.session.step('pick');
     final result = await navigator.push<PairingResult>(
       MaterialPageRoute(
-        builder: (_) => CameraDetailsScreen(pairing: widget.pairing, session: widget.session, camera: camera),
+        builder: (_) =>
+            CameraDetailsScreen(pairing: widget.pairing, session: widget.session, camera: camera),
       ),
     );
     if (result != null) navigator.pop(result);
@@ -78,16 +79,26 @@ class _DiscoveredCamerasScreenState extends ConsumerState<DiscoveredCamerasScree
         future: cameras,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return ErrorState(error: snapshot.error!, onRetry: () => setState(() => cameras = load(true)));
+            return ErrorState(
+              error: snapshot.error!,
+              onRetry: () => setState(() => cameras = load(true)),
+            );
           }
           if (!snapshot.hasData) {
             return Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2)),
+                  const SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
                   const SizedBox(height: Gaps.lg),
-                  Text(l10n.onboardingSearching, style: context.text.bodyMedium?.copyWith(color: p.text2)),
+                  Text(
+                    l10n.onboardingSearching,
+                    style: context.text.bodyMedium?.copyWith(color: p.text2),
+                  ),
                 ],
               ),
             );
@@ -98,13 +109,19 @@ class _DiscoveredCamerasScreenState extends ConsumerState<DiscoveredCamerasScree
               icon: Icons.radar_rounded,
               title: l10n.onboardingNoCameras,
               body: l10n.onboardingNoCamerasBody,
-              action: OutlinedButton(onPressed: () => setState(() => cameras = load(true)), child: Text(l10n.onboardingRescan)),
+              action: OutlinedButton(
+                onPressed: () => setState(() => cameras = load(true)),
+                child: Text(l10n.onboardingRescan),
+              ),
             );
           }
           return ListView(
             padding: const EdgeInsets.fromLTRB(Gaps.page, 0, Gaps.page, Gaps.xxl),
             children: [
-              Text(l10n.onboardingCamerasBody, style: context.text.bodyMedium?.copyWith(color: p.text2)),
+              Text(
+                l10n.onboardingCamerasBody,
+                style: context.text.bodyMedium?.copyWith(color: p.text2),
+              ),
               const SizedBox(height: Gaps.lg),
               for (final camera in list)
                 Padding(
@@ -114,7 +131,11 @@ class _DiscoveredCamerasScreenState extends ConsumerState<DiscoveredCamerasScree
                     child: Row(
                       children: [
                         IconBadge(
-                          icon: camera.nvr ? Icons.dns_outlined : (camera.ptz ? Icons.control_camera_rounded : Icons.videocam_outlined),
+                          icon: camera.nvr
+                              ? Icons.dns_outlined
+                              : (camera.ptz
+                                    ? Icons.control_camera_rounded
+                                    : Icons.videocam_outlined),
                         ),
                         const SizedBox(width: Gaps.md),
                         Expanded(
@@ -122,14 +143,20 @@ class _DiscoveredCamerasScreenState extends ConsumerState<DiscoveredCamerasScree
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(title(camera), style: context.text.titleMedium),
-                              Text('${camera.host}, ${camera.ports.join(' ')}', style: dataStyle(context, size: 12, color: p.text3)),
+                              Text(
+                                '${camera.host}, ${camera.ports.join(' ')}',
+                                style: dataStyle(context, size: 12, color: p.text3),
+                              ),
                             ],
                           ),
                         ),
                         if (camera.cameraId != null)
                           Tag(l10n.onboardingAdded, tone: TagTone.ok, icon: Icons.check_rounded)
                         else
-                          Text(camera.nvr ? l10n.discoveredImport : l10n.onboardingAddCamera, style: context.text.labelLarge),
+                          Text(
+                            camera.nvr ? l10n.discoveredImport : l10n.onboardingAddCamera,
+                            style: context.text.labelLarge,
+                          ),
                       ],
                     ),
                   ),

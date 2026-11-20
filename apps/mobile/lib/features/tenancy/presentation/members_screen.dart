@@ -12,6 +12,7 @@ import 'package:smart_surveillance/features/identity/presentation/validators.dar
 import 'package:smart_surveillance/features/tenancy/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/labels.dart';
+
 /// The members of an organisation, loaded by organisation id.
 final membersProvider = FutureProvider.autoDispose.family<List<Member>, String>(
   (ref, id) => ref.read(backendProvider).tenancy.members(id),
@@ -84,13 +85,19 @@ class MembersScreen extends ConsumerWidget {
                     title: Row(
                       children: [
                         Flexible(child: Text(member.name, overflow: TextOverflow.ellipsis)),
-                        if (member.you) ...[const SizedBox(width: 8), Tag(l10n.membersYou, dense: true, tone: TagTone.info)],
+                        if (member.you) ...[
+                          const SizedBox(width: 8),
+                          Tag(l10n.membersYou, dense: true, tone: TagTone.info),
+                        ],
                       ],
                     ),
                     subtitle: Text('${member.email}\n${scope(member.siteIds)}'),
                     isThreeLine: true,
                     trailing: Tag(l10n.role(member.role)),
-                    onTap: admin && !member.you && (member.role != Role.owner || site.can(Role.owner)) ? () => open(member) : null,
+                    onTap:
+                        admin && !member.you && (member.role != Role.owner || site.can(Role.owner))
+                        ? () => open(member)
+                        : null,
                   ),
               ],
             ),
@@ -98,7 +105,9 @@ class MembersScreen extends ConsumerWidget {
               SectionHeader(l10n.membersPending),
               TileGroup(
                 children: [
-                  for (final invitation in invitations.where((i) => i.state == InvitationState.pending))
+                  for (final invitation in invitations.where(
+                    (i) => i.state == InvitationState.pending,
+                  ))
                     ListTile(
                       leading: const Icon(Icons.mail_outline_rounded),
                       title: Text(invitation.email),
@@ -118,7 +127,10 @@ class MembersScreen extends ConsumerWidget {
                                   destructive: true,
                                 );
                                 if (!ok) return;
-                                await ref.read(backendProvider).tenancy.revokeInvitation(organisation.id, invitation.id);
+                                await ref
+                                    .read(backendProvider)
+                                    .tenancy
+                                    .revokeInvitation(organisation.id, invitation.id);
                                 ref.invalidate(invitationsProvider(organisation.id));
                               },
                               icon: const Icon(Icons.close_rounded),
@@ -142,8 +154,10 @@ class MemberSheet extends ConsumerStatefulWidget {
 
   /// The organisation the member belongs to.
   final Organisation organisation;
+
   /// The sites a member can be limited to.
   final List<Site> sites;
+
   /// The member being edited, or null to invite a new one.
   final Member? member;
 
@@ -174,11 +188,21 @@ class _MemberSheetState extends ConsumerState<MemberSheet> {
     try {
       final scope = allSites ? null : sites.toList();
       if (widget.member == null) {
-        await tenancy.invite(organisationId: organisation.id, email: email.text.trim(), role: role, siteIds: scope);
+        await tenancy.invite(
+          organisationId: organisation.id,
+          email: email.text.trim(),
+          role: role,
+          siteIds: scope,
+        );
         ref.invalidate(invitationsProvider(organisation.id));
         if (mounted) showMessage(context, l10n.membersInviteSent(email.text.trim()));
       } else {
-        await tenancy.updateMember(organisation.id, widget.member!.userId, role: role, siteIds: scope);
+        await tenancy.updateMember(
+          organisation.id,
+          widget.member!.userId,
+          role: role,
+          siteIds: scope,
+        );
         ref.invalidate(membersProvider(organisation.id));
       }
       if (mounted) Navigator.of(context).pop();
@@ -203,7 +227,10 @@ class _MemberSheetState extends ConsumerState<MemberSheet> {
           shrinkWrap: true,
           padding: const EdgeInsets.fromLTRB(Gaps.page + 4, 0, Gaps.page + 4, Gaps.lg),
           children: [
-            Text(widget.member == null ? l10n.membersInviteTitle : widget.member!.name, style: context.text.titleLarge),
+            Text(
+              widget.member == null ? l10n.membersInviteTitle : widget.member!.name,
+              style: context.text.titleLarge,
+            ),
             const SizedBox(height: Gaps.xs),
             Text(
               widget.member == null ? l10n.membersInviteBody : widget.member!.email,
@@ -254,7 +281,8 @@ class _MemberSheetState extends ConsumerState<MemberSheet> {
                       avatar: Icon(siteKindIcon(site.kind), size: 16),
                       label: Text(site.name),
                       selected: sites.contains(site.id),
-                      onSelected: (on) => setState(() => on ? sites.add(site.id) : sites.remove(site.id)),
+                      onSelected: (on) =>
+                          setState(() => on ? sites.add(site.id) : sites.remove(site.id)),
                     ),
                 ],
               ),
@@ -281,7 +309,10 @@ class _MemberSheetState extends ConsumerState<MemberSheet> {
                       destructive: true,
                     );
                     if (!ok) return;
-                    await ref.read(backendProvider).tenancy.removeMember(widget.organisation.id, widget.member!.userId);
+                    await ref
+                        .read(backendProvider)
+                        .tenancy
+                        .removeMember(widget.organisation.id, widget.member!.userId);
                     ref.invalidate(membersProvider(widget.organisation.id));
                     if (context.mounted) Navigator.of(context).pop();
                   },

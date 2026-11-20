@@ -1,5 +1,5 @@
-
 import 'package:smart_surveillance/features/devices/domain/models.dart';
+
 /// Manages connectors and cameras of a site and controls camera hardware.
 abstract interface class DeviceRepository {
   /// Returns the connectors of the site [siteId].
@@ -47,7 +47,12 @@ abstract interface class DeviceRepository {
   Future<CameraControls> controls(String cameraId);
 
   /// Moves the camera [cameraId] by [pan], [tilt] and [zoom] speeds until [stop] is called.
-  Future<void> move(String cameraId, {required double pan, required double tilt, required double zoom});
+  Future<void> move(
+    String cameraId, {
+    required double pan,
+    required double tilt,
+    required double zoom,
+  });
 
   /// Stops any movement of the camera [cameraId].
   Future<void> stop(String cameraId);

@@ -19,6 +19,7 @@ import 'package:smart_surveillance/features/events/presentation/labels.dart';
 import 'package:smart_surveillance/features/investigation/domain/models.dart';
 import 'package:smart_surveillance/features/investigation/presentation/people_screens.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
+
 /// The search screen with tabs for events, faces and license plates.
 class SearchScreen extends ConsumerStatefulWidget {
   /// Creates the screen opened on the tab with index [tab].
@@ -32,7 +33,11 @@ class SearchScreen extends ConsumerStatefulWidget {
 }
 
 class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerProviderStateMixin {
-  late final TabController tabs = TabController(length: 4, vsync: this, initialIndex: widget.tab.clamp(0, 3));
+  late final TabController tabs = TabController(
+    length: 4,
+    vsync: this,
+    initialIndex: widget.tab.clamp(0, 3),
+  );
 
   @override
   void didUpdateWidget(SearchScreen oldWidget) {
@@ -72,7 +77,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
               controller: tabs,
               children: [
                 EventSearch(siteId: site.site.id),
-                site.organisation.facesEnabled ? PeopleTab(organisationId: site.organisation.id) : const FacesOff(),
+                site.organisation.facesEnabled
+                    ? PeopleTab(organisationId: site.organisation.id)
+                    : const FacesOff(),
                 site.organisation.facesEnabled
                     ? FaceSearch(organisationId: site.organisation.id)
                     : const FacesOff(),
@@ -93,7 +100,10 @@ class FacesOff extends StatelessWidget {
     icon: Icons.face_retouching_off_outlined,
     title: context.l10n.facesOffTitle,
     body: context.l10n.facesOffBody,
-    action: OutlinedButton(onPressed: () => const FacesRoute().go(context), child: Text(context.l10n.facesTurnOn)),
+    action: OutlinedButton(
+      onPressed: () => const FacesRoute().go(context),
+      child: Text(context.l10n.facesTurnOn),
+    ),
   );
 }
 
@@ -127,7 +137,12 @@ class _EventSearchState extends ConsumerState<EventSearch> with AutomaticKeepAli
     return value.copyWith(from: from, until: now);
   }
 
-  void run() => setState(() => results = ref.read(backendProvider).search.search(widget.siteId, withRange(filter), pageSize: 60));
+  void run() => setState(
+    () => results = ref
+        .read(backendProvider)
+        .search
+        .search(widget.siteId, withRange(filter), pageSize: 60),
+  );
 
   @override
   void initState() {
@@ -163,7 +178,10 @@ class _EventSearchState extends ConsumerState<EventSearch> with AutomaticKeepAli
                   width: double.infinity,
                   child: SegmentedButton<int>(
                     showSelectedIcon: false,
-                    segments: [for (var i = 0; i < 3; i++) ButtonSegment(value: i, label: Text(ranges[i], maxLines: 1))],
+                    segments: [
+                      for (var i = 0; i < 3; i++)
+                        ButtonSegment(value: i, label: Text(ranges[i], maxLines: 1)),
+                    ],
                     selected: {range},
                     onSelectionChanged: (value) {
                       setState(() => range = value.first);
@@ -174,14 +192,21 @@ class _EventSearchState extends ConsumerState<EventSearch> with AutomaticKeepAli
                 const SizedBox(height: Gaps.md),
                 OutlinedButton.icon(
                   onPressed: () async {
-                    final next = await showFilterSheet(context, siteId: widget.siteId, filter: filter, extended: true);
+                    final next = await showFilterSheet(
+                      context,
+                      siteId: widget.siteId,
+                      filter: filter,
+                      extended: true,
+                    );
                     if (next == null) return;
                     setState(() => filter = next);
                     run();
                   },
                   icon: const Icon(Icons.tune_rounded, size: 18),
                   label: Text(
-                    filter.activeCount == 0 ? l10n.eventsFilters : l10n.eventsFilterCount(filter.activeCount),
+                    filter.activeCount == 0
+                        ? l10n.eventsFilters
+                        : l10n.eventsFilterCount(filter.activeCount),
                   ),
                 ),
                 if (parts.isNotEmpty) ...[
@@ -195,7 +220,9 @@ class _EventSearchState extends ConsumerState<EventSearch> with AutomaticKeepAli
         FutureBuilder<EventPage>(
           future: results,
           builder: (context, snapshot) {
-            if (snapshot.hasError) return ErrorState(error: snapshot.error!, onRetry: run, compact: true);
+            if (snapshot.hasError) {
+              return ErrorState(error: snapshot.error!, onRetry: run, compact: true);
+            }
             if (!snapshot.hasData) {
               return const SizedBox(height: 320, child: ListSkeleton(rows: 4));
             }
@@ -205,7 +232,12 @@ class _EventSearchState extends ConsumerState<EventSearch> with AutomaticKeepAli
               children: [
                 SectionHeader(l10n.searchResults(page.total)),
                 if (page.items.isEmpty)
-                  EmptyState(icon: Icons.search_off_rounded, title: l10n.eventsEmpty, body: l10n.eventsEmptyBody, compact: true)
+                  EmptyState(
+                    icon: Icons.search_off_rounded,
+                    title: l10n.eventsEmpty,
+                    body: l10n.eventsEmptyBody,
+                    compact: true,
+                  )
                 else
                   for (final event in page.items) EventRow(event: event),
               ],
@@ -253,7 +285,9 @@ class _FaceSearchState extends ConsumerState<FaceSearch> with AutomaticKeepAlive
     final p = context.palette;
     final demo = ref.read(backendProvider).demo;
     // Tighter padding keeps both labels on one line on narrow phones.
-    final compact = ButtonStyle(padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: Gaps.md)));
+    final compact = ButtonStyle(
+      padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: Gaps.md)),
+    );
     return ListView(
       padding: const EdgeInsets.only(bottom: Gaps.xxl),
       children: [
@@ -277,7 +311,10 @@ class _FaceSearchState extends ConsumerState<FaceSearch> with AutomaticKeepAlive
                   ],
                 ),
                 const SizedBox(height: Gaps.md),
-                Text(l10n.searchFacesBody, style: context.text.bodyMedium?.copyWith(color: p.text2)),
+                Text(
+                  l10n.searchFacesBody,
+                  style: context.text.bodyMedium?.copyWith(color: p.text2),
+                ),
                 const SizedBox(height: Gaps.lg),
                 Row(
                   children: [
@@ -304,7 +341,10 @@ class _FaceSearchState extends ConsumerState<FaceSearch> with AutomaticKeepAlive
                   const SizedBox(height: Gaps.sm),
                   TextButton(
                     onPressed: () => setState(
-                      () => results = ref.read(backendProvider).search.similarFaces(widget.organisationId, sampleId: 's-a3'),
+                      () => results = ref
+                          .read(backendProvider)
+                          .search
+                          .similarFaces(widget.organisationId, sampleId: 's-a3'),
                     ),
                     child: Text(l10n.commonDemo),
                   ),
@@ -318,7 +358,12 @@ class _FaceSearchState extends ConsumerState<FaceSearch> with AutomaticKeepAlive
             future: results,
             builder: (context, snapshot) {
               if (snapshot.hasError) return ErrorState(error: snapshot.error!, compact: true);
-              if (!snapshot.hasData) return const Padding(padding: EdgeInsets.all(40), child: Center(child: CircularProgressIndicator(strokeWidth: 2)));
+              if (!snapshot.hasData) {
+                return const Padding(
+                  padding: EdgeInsets.all(40),
+                  child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                );
+              }
               final faces = snapshot.data!;
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -381,7 +426,10 @@ class SimilarFaceTile extends ConsumerWidget {
                     bottom: 4,
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                      decoration: BoxDecoration(color: const Color(0xB3000000), borderRadius: BorderRadius.circular(4)),
+                      decoration: BoxDecoration(
+                        color: const Color(0xB3000000),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
                       child: Text(
                         '${(face.score * 100).round()}%',
                         style: dataStyle(context, size: 11, color: const Color(0xFFFFFFFF)),
@@ -393,7 +441,12 @@ class SimilarFaceTile extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 6),
-          Text(name, maxLines: 1, overflow: TextOverflow.ellipsis, style: context.text.labelMedium?.copyWith(color: p.text)),
+          Text(
+            name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: context.text.labelMedium?.copyWith(color: p.text),
+          ),
           Text(format.ago(face.seenAt), style: context.text.labelSmall),
         ],
       ),
@@ -432,7 +485,11 @@ class _PlateSearchState extends ConsumerState<PlateSearch> with AutomaticKeepAli
       () => results = ref
           .read(backendProvider)
           .search
-          .search(widget.siteId, EventFilter(kinds: const {EventKind.vehicle}, plate: text.isEmpty ? null : text), pageSize: 50),
+          .search(
+            widget.siteId,
+            EventFilter(kinds: const {EventKind.vehicle}, plate: text.isEmpty ? null : text),
+            pageSize: 50,
+          ),
     );
   }
 
@@ -471,7 +528,11 @@ class _PlateSearchState extends ConsumerState<PlateSearch> with AutomaticKeepAli
                 decoration: InputDecoration(
                   hintText: l10n.searchPlatesHint,
                   prefixIcon: const Icon(Icons.directions_car_outlined),
-                  suffixIcon: IconButton(tooltip: l10n.searchRun, onPressed: run, icon: const Icon(Icons.search_rounded)),
+                  suffixIcon: IconButton(
+                    tooltip: l10n.searchRun,
+                    onPressed: run,
+                    icon: const Icon(Icons.search_rounded),
+                  ),
                 ),
               ),
               const SizedBox(height: Gaps.sm),
@@ -483,8 +544,12 @@ class _PlateSearchState extends ConsumerState<PlateSearch> with AutomaticKeepAli
           FutureBuilder<EventPage>(
             future: results,
             builder: (context, snapshot) {
-              if (snapshot.hasError) return ErrorState(error: snapshot.error!, compact: true, onRetry: run);
-              if (!snapshot.hasData) return const SizedBox(height: 240, child: ListSkeleton(rows: 3));
+              if (snapshot.hasError) {
+                return ErrorState(error: snapshot.error!, compact: true, onRetry: run);
+              }
+              if (!snapshot.hasData) {
+                return const SizedBox(height: 240, child: ListSkeleton(rows: 3));
+              }
               final page = snapshot.data!;
               final items = page.items.where((e) => e.hasPlates).toList();
               return Column(
@@ -528,10 +593,16 @@ class PlateResult extends StatelessWidget {
                     borderRadius: BorderRadius.circular(5),
                     border: Border.all(color: p.borderStrong),
                   ),
-                  child: Text(best.display, style: dataStyle(context, size: 13, weight: FontWeight.w600)),
+                  child: Text(
+                    best.display,
+                    style: dataStyle(context, size: 13, weight: FontWeight.w600),
+                  ),
                 ),
                 const SizedBox(width: 8),
-                Text('${(best.score * 100).round()}%', style: dataStyle(context, size: 12, color: p.text3)),
+                Text(
+                  '${(best.score * 100).round()}%',
+                  style: dataStyle(context, size: 12, color: p.text3),
+                ),
               ],
             ),
           ),

@@ -9,6 +9,7 @@ import 'package:smart_surveillance/core/widgets/states.dart';
 import 'package:smart_surveillance/features/identity/presentation/token.dart';
 import 'package:smart_surveillance/features/identity/presentation/validators.dart';
 import 'package:smart_surveillance/features/identity/presentation/verify_screen.dart';
+
 /// The screen where the user asks for a password reset email.
 class ForgotScreen extends ConsumerStatefulWidget {
   /// Creates the screen.
@@ -99,7 +100,10 @@ class _ResetScreenState extends ConsumerState<ResetScreen> {
     if (!form.currentState!.validate()) return;
     setState(() => busy = true);
     try {
-      await ref.read(backendProvider).auth.resetPassword(token: extractToken(code.text), password: password.text);
+      await ref
+          .read(backendProvider)
+          .auth
+          .resetPassword(token: extractToken(code.text), password: password.text);
       if (mounted) SignInRoute(notice: context.l10n.resetDone).go(context);
     } catch (failure) {
       if (mounted) showFailure(context, failure);

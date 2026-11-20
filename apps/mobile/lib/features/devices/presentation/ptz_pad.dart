@@ -4,22 +4,34 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:smart_surveillance/app/l10n/l10n.dart';
 import 'package:smart_surveillance/core/design/palette.dart';
+
 /// Moves a camera by pan, tilt and zoom speeds.
 typedef PtzMove = Future<void> Function(double pan, double tilt, double zoom);
 
 /// A directional pad that pans and tilts a camera while it is held.
 class PtzPad extends StatefulWidget {
   /// Creates a pad of [size] that calls [onMove] and [onStop], and [onHome] when given.
-  const PtzPad({super.key, required this.onMove, required this.onStop, this.onHome, required this.speed, this.size = 196});
+  const PtzPad({
+    super.key,
+    required this.onMove,
+    required this.onStop,
+    this.onHome,
+    required this.speed,
+    this.size = 196,
+  });
 
   /// Called with the speeds to apply while a direction is held.
   final PtzMove onMove;
+
   /// Called when the direction is released.
   final Future<void> Function() onStop;
+
   /// Called when the centre button asks for the home position, or null to hide it.
   final VoidCallback? onHome;
+
   /// The speed applied to a movement.
   final double speed;
+
   /// The width and height of the pad.
   final double size;
 
@@ -84,10 +96,30 @@ class _PtzPadState extends State<PtzPad> {
         ),
         child: Stack(
           children: [
-            arrow(const Offset(0, -1), Icons.keyboard_arrow_up_rounded, l10n.ptzUp, Alignment.topCenter),
-            arrow(const Offset(0, 1), Icons.keyboard_arrow_down_rounded, l10n.ptzDown, Alignment.bottomCenter),
-            arrow(const Offset(-1, 0), Icons.keyboard_arrow_left_rounded, l10n.ptzLeft, Alignment.centerLeft),
-            arrow(const Offset(1, 0), Icons.keyboard_arrow_right_rounded, l10n.ptzRight, Alignment.centerRight),
+            arrow(
+              const Offset(0, -1),
+              Icons.keyboard_arrow_up_rounded,
+              l10n.ptzUp,
+              Alignment.topCenter,
+            ),
+            arrow(
+              const Offset(0, 1),
+              Icons.keyboard_arrow_down_rounded,
+              l10n.ptzDown,
+              Alignment.bottomCenter,
+            ),
+            arrow(
+              const Offset(-1, 0),
+              Icons.keyboard_arrow_left_rounded,
+              l10n.ptzLeft,
+              Alignment.centerLeft,
+            ),
+            arrow(
+              const Offset(1, 0),
+              Icons.keyboard_arrow_right_rounded,
+              l10n.ptzRight,
+              Alignment.centerRight,
+            ),
             Center(
               child: Material(
                 color: p.surface,
@@ -100,7 +132,10 @@ class _PtzPadState extends State<PtzPad> {
                     height: size * 0.3,
                     child: Tooltip(
                       message: l10n.cameraHome,
-                      child: Icon(Icons.home_outlined, color: widget.onHome == null ? p.text3 : p.text),
+                      child: Icon(
+                        Icons.home_outlined,
+                        color: widget.onHome == null ? p.text3 : p.text,
+                      ),
                     ),
                   ),
                 ),
@@ -120,8 +155,10 @@ class ZoomButtons extends StatelessWidget {
 
   /// Called with the speeds to apply while a button is held.
   final PtzMove onMove;
+
   /// Called when the button is released.
   final Future<void> Function() onStop;
+
   /// The speed applied to a zoom movement.
   final double speed;
 
@@ -139,7 +176,11 @@ class ZoomButtons extends StatelessWidget {
         child: Container(
           width: 52,
           height: 52,
-          decoration: BoxDecoration(color: p.surface2, shape: BoxShape.circle, border: Border.all(color: p.borderInput)),
+          decoration: BoxDecoration(
+            color: p.surface2,
+            shape: BoxShape.circle,
+            border: Border.all(color: p.borderInput),
+          ),
           child: Icon(icon, color: p.text2),
         ),
       ),

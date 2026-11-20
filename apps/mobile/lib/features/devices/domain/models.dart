@@ -2,12 +2,15 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:smart_surveillance/core/media/media_source.dart';
 
 part 'models.freezed.dart';
+
 /// Whether a connector is reachable.
 enum ConnectorState {
   /// The connector is reachable.
   online,
+
   /// The connector cannot be reached.
   offline,
+
   /// The connector is waiting to be paired.
   pairing,
 }
@@ -16,10 +19,13 @@ enum ConnectorState {
 enum CameraBrand {
   /// An EZVIZ camera.
   ezviz,
+
   /// A V380 camera.
   v380,
+
   /// Any ONVIF-compatible camera.
   onvif,
+
   /// A camera reached by a plain RTSP address.
   rtsp,
 }
@@ -28,6 +34,7 @@ enum CameraBrand {
 enum StreamQuality {
   /// The full-resolution stream.
   main,
+
   /// The lighter, lower-resolution stream.
   sub,
 }
@@ -144,11 +151,8 @@ abstract class CameraTile with _$CameraTile {
   const CameraTile._();
 
   /// Creates the tile for [lens] of [camera], optionally with a saved view [viewId].
-  const factory CameraTile({
-    required Camera camera,
-    required int lens,
-    String? viewId,
-  }) = _CameraTile;
+  const factory CameraTile({required Camera camera, required int lens, String? viewId}) =
+      _CameraTile;
 
   /// The unique key of the tile, made of the camera id and the lens.
   String get key => '${camera.id}:$lens';

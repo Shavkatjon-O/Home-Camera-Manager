@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:smart_surveillance/core/providers.dart';
 
 part 'appearance.g.dart';
+
 /// The notifier holding the chosen theme mode and language, persisted in preferences.
 @Riverpod(keepAlive: true)
 class AppearanceSettings extends _$AppearanceSettings {

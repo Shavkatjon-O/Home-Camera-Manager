@@ -3,6 +3,7 @@ import 'package:smart_surveillance/core/config.dart';
 import 'package:smart_surveillance/core/storage/preferences.dart';
 
 part 'providers.g.dart';
+
 /// The provider of the app configuration; it is overridden at start-up.
 @Riverpod(keepAlive: true)
 AppConfig config(Ref ref) => throw UnimplementedError();

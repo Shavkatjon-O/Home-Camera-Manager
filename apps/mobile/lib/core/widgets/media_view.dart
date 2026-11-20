@@ -7,15 +7,23 @@ import 'package:smart_surveillance/app/backend.dart';
 import 'package:smart_surveillance/core/design/palette.dart';
 import 'package:smart_surveillance/core/media/media_source.dart';
 import 'package:smart_surveillance/core/widgets/synthetic_scene.dart';
+
 /// A widget that shows a [MediaSource] filling its space, with a placeholder while it loads.
 class MediaView extends ConsumerWidget {
   /// Creates a view of [source] fitted with [fit].
-  const MediaView({super.key, required this.source, this.fit = BoxFit.cover, this.showStamp = true});
+  const MediaView({
+    super.key,
+    required this.source,
+    this.fit = BoxFit.cover,
+    this.showStamp = true,
+  });
 
   /// The media to show, or null to show an empty frame.
   final MediaSource? source;
+
   /// How the media is fitted into the available space.
   final BoxFit fit;
+
   /// Whether synthetic scenes draw their camera stamp.
   final bool showStamp;
 
@@ -27,7 +35,11 @@ class MediaView extends ConsumerWidget {
     return switch (media) {
       null => placeholder,
       SyntheticMedia() => SyntheticScene(media: media, showStamp: showStamp),
-      MemoryMedia() => Image.memory(Uint8List.fromList(media.bytes), fit: fit, gaplessPlayback: true),
+      MemoryMedia() => Image.memory(
+        Uint8List.fromList(media.bytes),
+        fit: fit,
+        gaplessPlayback: true,
+      ),
       NetworkMedia() => CachedNetworkImage(
         imageUrl: media.url,
         cacheKey: media.cacheKey,
@@ -51,8 +63,10 @@ class LensCrop extends StatelessWidget {
 
   /// The index of the lens to show, from the top.
   final int lens;
+
   /// The number of lenses stacked vertically in the image.
   final int lenses;
+
   /// The stacked image to crop.
   final Widget child;
 
@@ -76,14 +90,23 @@ class LensCrop extends StatelessWidget {
 /// A rounded frame with a fixed aspect ratio, used around camera pictures.
 class Frame extends StatelessWidget {
   /// Creates a frame of aspect ratio [aspect] around [child].
-  const Frame({super.key, required this.aspect, required this.child, this.radius = 12, this.border = true});
+  const Frame({
+    super.key,
+    required this.aspect,
+    required this.child,
+    this.radius = 12,
+    this.border = true,
+  });
 
   /// The width divided by the height of the frame.
   final double aspect;
+
   /// The content shown inside the frame.
   final Widget child;
+
   /// The corner radius of the frame.
   final double radius;
+
   /// Whether a thin border is drawn around the frame.
   final bool border;
 
@@ -114,13 +137,16 @@ class BoxOverlay extends StatelessWidget {
 
   /// The boxes to draw, as fractions of the picture, each with a label and an optional caption.
   final List<({Rect box, String label, String? caption})> boxes;
+
   /// Captions keyed by object label.
   final Map<String, String> captions;
 
-
   @override
   Widget build(BuildContext context) => IgnorePointer(
-    child: CustomPaint(painter: _BoxPainter(boxes, context.palette), child: const SizedBox.expand()),
+    child: CustomPaint(
+      painter: _BoxPainter(boxes, context.palette),
+      child: const SizedBox.expand(),
+    ),
   );
 }
 
@@ -156,7 +182,9 @@ class _BoxPainter extends CustomPainter {
             fontFamily: 'Geist',
             fontSize: 11,
             fontWeight: FontWeight.w600,
-            color: color.computeLuminance() > 0.35 ? const Color(0xFF000000) : const Color(0xFFFFFFFF),
+            color: color.computeLuminance() > 0.35
+                ? const Color(0xFF000000)
+                : const Color(0xFFFFFFFF),
           ),
         ),
         textDirection: TextDirection.ltr,
@@ -168,11 +196,15 @@ class _BoxPainter extends CustomPainter {
         painter.width + 8,
         painter.height + 4,
       );
-      canvas.drawRRect(RRect.fromRectAndRadius(label, const Radius.circular(3)), Paint()..color = color);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(label, const Radius.circular(3)),
+        Paint()..color = color,
+      );
       painter.paint(canvas, label.topLeft + const Offset(4, 2));
     }
   }
 
   @override
-  bool shouldRepaint(_BoxPainter oldDelegate) => oldDelegate.boxes != boxes || oldDelegate.palette != palette;
+  bool shouldRepaint(_BoxPainter oldDelegate) =>
+      oldDelegate.boxes != boxes || oldDelegate.palette != palette;
 }

@@ -1,6 +1,6 @@
-
 import 'package:smart_surveillance/features/alerting/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/domain/models.dart';
+
 /// Manages organisations, sites, members and invitations.
 abstract interface class TenancyRepository {
   /// Returns the organisations the user belongs to.
@@ -51,7 +51,12 @@ abstract interface class TenancyRepository {
   Future<void> revokeInvitation(String organisationId, String invitationId);
 
   /// Changes the [role] and [siteIds] of the member [userId] of [organisationId].
-  Future<Member> updateMember(String organisationId, String userId, {required Role role, List<String>? siteIds});
+  Future<Member> updateMember(
+    String organisationId,
+    String userId, {
+    required Role role,
+    List<String>? siteIds,
+  });
 
   /// Removes the member [userId] from [organisationId].
   Future<void> removeMember(String organisationId, String userId);

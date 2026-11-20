@@ -10,6 +10,7 @@ import 'package:smart_surveillance/features/alerting/domain/models.dart';
 import 'package:smart_surveillance/features/alerting/presentation/labels.dart';
 import 'package:smart_surveillance/features/tenancy/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
+
 /// A card that shows and changes the arm mode of a site.
 class ArmControl extends ConsumerStatefulWidget {
   /// Creates the control for [site].
@@ -83,7 +84,12 @@ class _ArmControlState extends ConsumerState<ArmControl> {
                   ],
                 ),
               ),
-              if (pending != null) const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)),
+              if (pending != null)
+                const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
             ],
           ),
           const SizedBox(height: 12),
@@ -100,7 +106,9 @@ class _ArmControlState extends ConsumerState<ArmControl> {
                   ),
               ],
               selected: {mode},
-              onSelectionChanged: allowed && pending == null ? (value) => change(value.first) : null,
+              onSelectionChanged: allowed && pending == null
+                  ? (value) => change(value.first)
+                  : null,
             ),
           ),
           const SizedBox(height: 10),

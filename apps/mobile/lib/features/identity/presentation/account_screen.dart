@@ -12,6 +12,7 @@ import 'package:smart_surveillance/core/widgets/states.dart';
 import 'package:smart_surveillance/core/widgets/surfaces.dart';
 import 'package:smart_surveillance/features/identity/domain/models.dart';
 import 'package:smart_surveillance/features/identity/presentation/session.dart';
+
 /// The devices signed in to the user's account.
 final sessionsProvider = FutureProvider.autoDispose<List<DeviceSession>>(
   (ref) => ref.read(backendProvider).auth.sessions(),
@@ -36,10 +37,17 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.fieldName),
-        content: TextField(controller: controller, autofocus: true, textCapitalization: TextCapitalization.words),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          textCapitalization: TextCapitalization.words,
+        ),
         actions: [
           TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.commonCancel)),
-          FilledButton(onPressed: () => Navigator.of(context).pop(controller.text), child: Text(l10n.commonSave)),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(controller.text),
+            child: Text(l10n.commonSave),
+          ),
         ],
       ),
     );
@@ -85,9 +93,15 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(l10n.commonCancel),
+          ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: context.palette.danger, foregroundColor: const Color(0xFFFFFFFF)),
+            style: FilledButton.styleFrom(
+              backgroundColor: context.palette.danger,
+              foregroundColor: const Color(0xFFFFFFFF),
+            ),
             onPressed: () => Navigator.of(context).pop(true),
             child: Text(l10n.accountDeleteConfirm),
           ),
@@ -117,7 +131,10 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
       body: ListView(
         padding: const EdgeInsets.only(bottom: Gaps.xxl),
         children: [
-          SectionHeader(l10n.accountProfile, padding: const EdgeInsets.fromLTRB(Gaps.page, Gaps.sm, Gaps.page, Gaps.sm)),
+          SectionHeader(
+            l10n.accountProfile,
+            padding: const EdgeInsets.fromLTRB(Gaps.page, Gaps.sm, Gaps.page, Gaps.sm),
+          ),
           TileGroup(
             children: [
               ListTile(
@@ -143,14 +160,21 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
           ),
           SectionHeader(l10n.accountSessions),
           sessions.when(
-            loading: () => const SizedBox(height: 160, child: ListSkeleton(rows: 2, thumbnail: false)),
-            error: (error, _) => ErrorState(error: error, compact: true, onRetry: () => ref.invalidate(sessionsProvider)),
+            loading: () =>
+                const SizedBox(height: 160, child: ListSkeleton(rows: 2, thumbnail: false)),
+            error: (error, _) => ErrorState(
+              error: error,
+              compact: true,
+              onRetry: () => ref.invalidate(sessionsProvider),
+            ),
             data: (sessions) => TileGroup(
               children: [
                 for (final session in sessions)
                   ListTile(
                     leading: Icon(
-                      session.platform.toLowerCase() == 'web' ? Icons.computer_outlined : Icons.smartphone_outlined,
+                      session.platform.toLowerCase() == 'web'
+                          ? Icons.computer_outlined
+                          : Icons.smartphone_outlined,
                     ),
                     title: Row(
                       children: [
@@ -170,7 +194,9 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                               try {
                                 await ref.read(backendProvider).auth.revokeSession(session.id);
                                 ref.invalidate(sessionsProvider);
-                                if (context.mounted) showMessage(context, l10n.accountRevoked(session.deviceName));
+                                if (context.mounted) {
+                                  showMessage(context, l10n.accountRevoked(session.deviceName));
+                                }
                               } catch (failure) {
                                 if (context.mounted) showFailure(context, failure);
                               }

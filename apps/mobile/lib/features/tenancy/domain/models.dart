@@ -2,14 +2,18 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:smart_surveillance/features/alerting/domain/models.dart';
 
 part 'models.freezed.dart';
+
 /// What a member may do, from the least to the most.
 enum Role {
   /// Can watch cameras and events.
   viewer,
+
   /// Can also control cameras and the arm mode.
   operator,
+
   /// Can also manage cameras, members and settings.
   admin,
+
   /// Has full control, including the organisation itself.
   owner;
 
@@ -21,12 +25,16 @@ enum Role {
 enum SiteKind {
   /// A home.
   home,
+
   /// A shop.
   store,
+
   /// An office.
   office,
+
   /// A warehouse.
   warehouse,
+
   /// Any other kind of place.
   other,
 }
@@ -78,10 +86,13 @@ abstract class Member with _$Member {
 enum InvitationState {
   /// The invitation can still be accepted.
   pending,
+
   /// The invitation was accepted.
   accepted,
+
   /// The invitation ran out of time.
   expired,
+
   /// The invitation was cancelled by an administrator.
   revoked,
 }

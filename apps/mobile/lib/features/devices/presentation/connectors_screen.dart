@@ -12,6 +12,7 @@ import 'package:smart_surveillance/core/widgets/surfaces.dart';
 import 'package:smart_surveillance/features/devices/domain/models.dart';
 import 'package:smart_surveillance/features/devices/presentation/providers.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
+
 /// The list of the current site's connectors with their state.
 class ConnectorsScreen extends ConsumerWidget {
   /// Creates the screen.
@@ -43,7 +44,11 @@ class ConnectorsScreen extends ConsumerWidget {
         onRetry: () => ref.invalidate(connectorsProvider(id)),
         loading: const ListSkeleton(thumbnail: false),
         data: (connectors) => connectors.isEmpty
-            ? EmptyState(icon: Icons.router_outlined, title: l10n.connectorsEmpty, body: l10n.connectorsEmptyBody)
+            ? EmptyState(
+                icon: Icons.router_outlined,
+                title: l10n.connectorsEmpty,
+                body: l10n.connectorsEmptyBody,
+              )
             : ListView(
                 padding: const EdgeInsets.fromLTRB(Gaps.page, 0, Gaps.page, 96),
                 children: [
@@ -65,10 +70,15 @@ class ConnectorsScreen extends ConsumerWidget {
                                       Text(connector.name, style: context.text.titleMedium),
                                       Row(
                                         children: [
-                                          StatusDot(online: connector.state == ConnectorState.online, size: 7),
+                                          StatusDot(
+                                            online: connector.state == ConnectorState.online,
+                                            size: 7,
+                                          ),
                                           const SizedBox(width: 6),
                                           Text(
-                                            connector.state == ConnectorState.online ? l10n.commonOnline : l10n.commonOffline,
+                                            connector.state == ConnectorState.online
+                                                ? l10n.commonOnline
+                                                : l10n.commonOffline,
                                             style: context.text.labelSmall,
                                           ),
                                         ],
@@ -79,7 +89,10 @@ class ConnectorsScreen extends ConsumerWidget {
                                 PopupMenuButton<String>(
                                   onSelected: (action) async {
                                     if (action == 'find') {
-                                      await OnboardingAddRoute(siteId: id, first: false).push<void>(context);
+                                      await OnboardingAddRoute(
+                                        siteId: id,
+                                        first: false,
+                                      ).push<void>(context);
                                       ref.invalidate(camerasProvider(id));
                                     }
                                     if (action == 'remove' && context.mounted) {
@@ -92,7 +105,10 @@ class ConnectorsScreen extends ConsumerWidget {
                                       );
                                       if (!ok) return;
                                       try {
-                                        await ref.read(backendProvider).devices.removeConnector(connector.id);
+                                        await ref
+                                            .read(backendProvider)
+                                            .devices
+                                            .removeConnector(connector.id);
                                         ref.invalidate(connectorsProvider(id));
                                       } catch (failure) {
                                         if (context.mounted) showFailure(context, failure);
@@ -103,22 +119,38 @@ class ConnectorsScreen extends ConsumerWidget {
                                     PopupMenuItem(value: 'find', child: Text(l10n.connectorsFind)),
                                     PopupMenuItem(
                                       value: 'remove',
-                                      child: Text(l10n.connectorsRemove, style: TextStyle(color: p.dangerText)),
+                                      child: Text(
+                                        l10n.connectorsRemove,
+                                        style: TextStyle(color: p.dangerText),
+                                      ),
                                     ),
                                   ],
                                 ),
                               ],
                             ),
                             const SizedBox(height: Gaps.md),
-                            ReadOut(label: l10n.moreCameras, value: '${connector.cameraCount}', mono: true),
+                            ReadOut(
+                              label: l10n.moreCameras,
+                              value: '${connector.cameraCount}',
+                              mono: true,
+                            ),
                             if (connector.version != null)
-                              ReadOut(label: l10n.connectorsVersionLabel, value: connector.version!, mono: true),
+                              ReadOut(
+                                label: l10n.connectorsVersionLabel,
+                                value: connector.version!,
+                                mono: true,
+                              ),
                             ReadOut(
                               label: l10n.connectorsConnection,
-                              value: connector.mode == 'tunnel' ? l10n.connectorsTunnel : l10n.connectorsMode,
+                              value: connector.mode == 'tunnel'
+                                  ? l10n.connectorsTunnel
+                                  : l10n.connectorsMode,
                             ),
                             if (connector.lastSeenAt != null)
-                              ReadOut(label: l10n.connectorsLastSeen, value: format.ago(connector.lastSeenAt!)),
+                              ReadOut(
+                                label: l10n.connectorsLastSeen,
+                                value: format.ago(connector.lastSeenAt!),
+                              ),
                           ],
                         ),
                       ),

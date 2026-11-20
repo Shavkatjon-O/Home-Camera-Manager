@@ -1,10 +1,12 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'models.freezed.dart';
+
 /// The time span one count is grouped into.
 enum Bucket {
   /// One count per hour.
   hour,
+
   /// One count per day.
   day,
 }

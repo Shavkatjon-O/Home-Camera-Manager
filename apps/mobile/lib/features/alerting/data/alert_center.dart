@@ -10,6 +10,7 @@ import 'package:smart_surveillance/app/routes.dart';
 import 'package:smart_surveillance/features/events/domain/models.dart';
 
 part 'alert_center.g.dart';
+
 /// Delivers local and push notifications for camera events and opens the tapped event.
 class AlertCenter with WidgetsBindingObserver {
   /// Creates an alert center that reads events from [backend] and navigates through [open].
@@ -17,22 +18,31 @@ class AlertCenter with WidgetsBindingObserver {
 
   /// The backend used to register push targets and load events.
   final Backend backend;
+
   /// Navigates the app to a route location.
   final void Function(String location) open;
+
   /// Whether notifications are shown at all.
   final bool enabled;
+
   /// The local notifications plugin that displays alerts.
   final plugin = FlutterLocalNotificationsPlugin();
+
   /// The platform push bridge that supplies tokens and incoming messages.
   final PushBridge push = createPushBridge();
+
   /// The last known app lifecycle state, used to skip alerts while the app is in the foreground.
   AppLifecycleState lifecycle = AppLifecycleState.resumed;
+
   /// Whether [start] has already initialised the plugin.
   bool ready = false;
+
   /// The subscription to incoming push messages.
   StreamSubscription<PushMessage>? messages;
+
   /// The subscription to push token changes.
   StreamSubscription<String>? tokens;
+
   /// The id given to the next notification shown.
   int next = 1;
 
@@ -51,7 +61,9 @@ class AlertCenter with WidgetsBindingObserver {
     ready = true;
     WidgetsBinding.instance.addObserver(this);
     await plugin.initialize(
-      settings: const InitializationSettings(android: AndroidInitializationSettings('@drawable/ic_notification')),
+      settings: const InitializationSettings(
+        android: AndroidInitializationSettings('@drawable/ic_notification'),
+      ),
       onDidReceiveNotificationResponse: (response) {
         final payload = response.payload;
         if (payload != null && payload.isNotEmpty) open(EventRoute(eventId: payload).location);
@@ -60,12 +72,19 @@ class AlertCenter with WidgetsBindingObserver {
     await plugin
         .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(
-          AndroidNotificationChannel('alerts', channelName, description: channelBody, importance: Importance.high),
+          AndroidNotificationChannel(
+            'alerts',
+            channelName,
+            description: channelBody,
+            importance: Importance.high,
+          ),
         );
     if (!push.available) return;
     await push.start();
     final token = await push.token();
-    if (token != null) await backend.notifications.registerPushTarget(provider: push.provider, token: token);
+    if (token != null) {
+      await backend.notifications.registerPushTarget(provider: push.provider, token: token);
+    }
     tokens = push.tokenChanges.listen(
       (token) => backend.notifications.registerPushTarget(provider: push.provider, token: token),
     );
@@ -82,7 +101,8 @@ class AlertCenter with WidgetsBindingObserver {
 
   /// Asks the user for notification permission and returns whether it was granted.
   Future<bool> requestPermission() async {
-    final android = plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    final android = plugin
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
     return await android?.requestNotificationsPermission() ?? false;
   }
 

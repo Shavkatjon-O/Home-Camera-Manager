@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'models.freezed.dart';
+
 /// A signed-in person.
 @freezed
 abstract class User with _$User {

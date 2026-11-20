@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:smart_surveillance/app/demo/fake_store.dart';
 import 'package:smart_surveillance/features/alerting/domain/models.dart';
 import 'package:smart_surveillance/features/alerting/domain/notification_repository.dart';
+
 /// An in-memory notification repository backed by a [FakeStore].
 class FakeNotificationRepository implements NotificationRepository {
   /// Creates a repository that keeps its data in [store].
@@ -22,5 +23,6 @@ class FakeNotificationRepository implements NotificationRepository {
   });
 
   @override
-  Future<void> registerPushTarget({required String provider, required String token}) => store.delay(() {});
+  Future<void> registerPushTarget({required String provider, required String token}) =>
+      store.delay(() {});
 }

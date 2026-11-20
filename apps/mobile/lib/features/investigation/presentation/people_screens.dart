@@ -16,6 +16,7 @@ import 'package:smart_surveillance/features/identity/presentation/validators.dar
 import 'package:smart_surveillance/features/investigation/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
+
 /// Loads the saved people of the organisation with the given id.
 final peopleProvider = FutureProvider.autoDispose.family<List<Person>, String>(
   (ref, organisationId) => ref.read(backendProvider).people.people(organisationId),
@@ -43,8 +44,10 @@ class FaceAvatar extends StatelessWidget {
 
   /// The face image to show, or null for the placeholder.
   final MediaSource? source;
+
   /// The diameter of the avatar in logical pixels.
   final double size;
+
   /// The placeholder tint as an ARGB value, or null for the default.
   final int? color;
 
@@ -95,12 +98,18 @@ class PeopleTab extends ConsumerWidget {
                 validator: (value) => validateRequired(l10n, value),
               ),
               const SizedBox(height: Gaps.md),
-              TextFormField(controller: notes, decoration: InputDecoration(labelText: l10n.peopleNotes)),
+              TextFormField(
+                controller: notes,
+                decoration: InputDecoration(labelText: l10n.peopleNotes),
+              ),
             ],
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(l10n.commonCancel),
+          ),
           FilledButton(
             onPressed: () {
               if (key.currentState!.validate()) Navigator.of(context).pop(true);
@@ -115,7 +124,11 @@ class PeopleTab extends ConsumerWidget {
       final person = await ref
           .read(backendProvider)
           .people
-          .createPerson(organisationId, name: name.text.trim(), notes: notes.text.trim().isEmpty ? null : notes.text.trim());
+          .createPerson(
+            organisationId,
+            name: name.text.trim(),
+            notes: notes.text.trim().isEmpty ? null : notes.text.trim(),
+          );
       ref.invalidate(peopleProvider(organisationId));
       if (context.mounted) await PersonRoute(personId: person.id).push<void>(context);
     } catch (failure) {
@@ -158,16 +171,26 @@ class PeopleTab extends ConsumerWidget {
                   : null,
             ),
             if (list.isEmpty)
-              EmptyState(icon: Icons.people_outline_rounded, title: l10n.peopleEmpty, body: l10n.peopleEmptyBody, compact: true)
+              EmptyState(
+                icon: Icons.people_outline_rounded,
+                title: l10n.peopleEmpty,
+                body: l10n.peopleEmptyBody,
+                compact: true,
+              )
             else
               TileGroup(
                 children: [
                   for (final person in list)
                     ListTile(
-                      leading: FaceAvatar(source: person.samples.isEmpty ? null : person.samples.first.crop, color: person.color),
+                      leading: FaceAvatar(
+                        source: person.samples.isEmpty ? null : person.samples.first.crop,
+                        color: person.color,
+                      ),
                       title: Text(person.name),
                       subtitle: Text(
-                        person.lastSeenAt == null ? l10n.peopleNeverSeen : l10n.peopleLastSeen(format.ago(person.lastSeenAt!)),
+                        person.lastSeenAt == null
+                            ? l10n.peopleNeverSeen
+                            : l10n.peopleLastSeen(format.ago(person.lastSeenAt!)),
                       ),
                       trailing: const Icon(Icons.chevron_right_rounded),
                       onTap: () => PersonRoute(personId: person.id).push<void>(context),
@@ -184,12 +207,17 @@ class PeopleTab extends ConsumerWidget {
                       children: [
                         for (final cluster in clusters)
                           ListTile(
-                            leading: FaceAvatar(source: cluster.samples.isEmpty ? null : cluster.samples.first.crop),
+                            leading: FaceAvatar(
+                              source: cluster.samples.isEmpty ? null : cluster.samples.first.crop,
+                            ),
                             title: Text(cluster.label),
-                            subtitle: Text('${l10n.peopleSeen(cluster.seenCount)}, ${format.ago(cluster.lastSeenAt)}'),
+                            subtitle: Text(
+                              '${l10n.peopleSeen(cluster.seenCount)}, ${format.ago(cluster.lastSeenAt)}',
+                            ),
                             trailing: admin
                                 ? TextButton(
-                                    onPressed: () => ClusterRoute(clusterId: cluster.id).push<void>(context),
+                                    onPressed: () =>
+                                        ClusterRoute(clusterId: cluster.id).push<void>(context),
                                     child: Text(l10n.clusterWhoTitle),
                                   )
                                 : null,
@@ -212,6 +240,7 @@ class SampleGrid extends StatelessWidget {
 
   /// The face samples shown.
   final List<FaceSample> samples;
+
   /// Called with the sample the user chooses to delete, or null to hide the delete buttons.
   final ValueChanged<FaceSample>? onDelete;
 
@@ -262,7 +291,10 @@ class SightingList extends ConsumerWidget {
     if (sightings.isEmpty) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: Gaps.page),
-        child: Text(l10n.peopleNoSightings, style: context.text.bodyMedium?.copyWith(color: context.palette.text3)),
+        child: Text(
+          l10n.peopleNoSightings,
+          style: context.text.bodyMedium?.copyWith(color: context.palette.text3),
+        ),
       );
     }
     return TileGroup(
@@ -277,11 +309,14 @@ class SightingList extends ConsumerWidget {
             subtitle: Text(
               [
                 format.when(sighting.seenAt),
-                if (sighting.confidence != null) l10n.eventConfidence((sighting.confidence! * 100).round()),
+                if (sighting.confidence != null)
+                  l10n.eventConfidence((sighting.confidence! * 100).round()),
               ].join(', '),
             ),
             trailing: sighting.eventId == null ? null : const Icon(Icons.chevron_right_rounded),
-            onTap: sighting.eventId == null ? null : () => EventRoute(eventId: sighting.eventId!).push<void>(context),
+            onTap: sighting.eventId == null
+                ? null
+                : () => EventRoute(eventId: sighting.eventId!).push<void>(context),
           ),
       ],
     );
@@ -317,9 +352,16 @@ class PersonScreen extends ConsumerWidget {
   }
 
   /// Asks which person to merge [person] into and merges them.
-  Future<void> merge(BuildContext context, WidgetRef ref, Person person, String organisationId) async {
+  Future<void> merge(
+    BuildContext context,
+    WidgetRef ref,
+    Person person,
+    String organisationId,
+  ) async {
     final l10n = context.l10n;
-    final others = (await ref.read(peopleProvider(organisationId).future)).where((p) => p.id != person.id).toList();
+    final others = (await ref.read(peopleProvider(organisationId).future))
+        .where((p) => p.id != person.id)
+        .toList();
     if (!context.mounted) return;
     final target = await showModalBottomSheet<Person>(
       context: context,
@@ -333,7 +375,11 @@ class PersonScreen extends ConsumerWidget {
             ),
             for (final other in others)
               ListTile(
-                leading: FaceAvatar(source: other.samples.isEmpty ? null : other.samples.first.crop, color: other.color, size: 40),
+                leading: FaceAvatar(
+                  source: other.samples.isEmpty ? null : other.samples.first.crop,
+                  color: other.color,
+                  size: 40,
+                ),
                 title: Text(other.name),
                 onTap: () => Navigator.of(context).pop(other),
               ),
@@ -352,7 +398,12 @@ class PersonScreen extends ConsumerWidget {
   }
 
   /// Asks for confirmation and deletes [person].
-  Future<void> delete(BuildContext context, WidgetRef ref, Person person, String organisationId) async {
+  Future<void> delete(
+    BuildContext context,
+    WidgetRef ref,
+    Person person,
+    String organisationId,
+  ) async {
     final l10n = context.l10n;
     final ok = await confirm(
       context,
@@ -393,7 +444,10 @@ class PersonScreen extends ConsumerWidget {
               },
               itemBuilder: (context) => [
                 PopupMenuItem(value: 'merge', child: Text(l10n.peopleMerge)),
-                PopupMenuItem(value: 'delete', child: Text(l10n.peopleDelete, style: TextStyle(color: p.dangerText))),
+                PopupMenuItem(
+                  value: 'delete',
+                  child: Text(l10n.peopleDelete, style: TextStyle(color: p.dangerText)),
+                ),
               ],
             ),
         ],
@@ -408,17 +462,27 @@ class PersonScreen extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(Gaps.page, Gaps.sm, Gaps.page, 0),
               child: Row(
                 children: [
-                  FaceAvatar(source: person.samples.isEmpty ? null : person.samples.first.crop, color: person.color, size: 72),
+                  FaceAvatar(
+                    source: person.samples.isEmpty ? null : person.samples.first.crop,
+                    color: person.color,
+                    size: 72,
+                  ),
                   const SizedBox(width: Gaps.lg),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(person.name, style: context.text.headlineSmall),
-                        if (person.notes != null) Text(person.notes!, style: context.text.bodyMedium?.copyWith(color: p.text2)),
+                        if (person.notes != null)
+                          Text(
+                            person.notes!,
+                            style: context.text.bodyMedium?.copyWith(color: p.text2),
+                          ),
                         const SizedBox(height: 4),
                         Text(
-                          person.lastSeenAt == null ? l10n.peopleNeverSeen : l10n.peopleLastSeen(format.ago(person.lastSeenAt!)),
+                          person.lastSeenAt == null
+                              ? l10n.peopleNeverSeen
+                              : l10n.peopleLastSeen(format.ago(person.lastSeenAt!)),
                           style: context.text.bodySmall,
                         ),
                       ],
@@ -456,7 +520,12 @@ class PersonScreen extends ConsumerWidget {
               onDelete: !admin
                   ? null
                   : (sample) async {
-                      final ok = await confirm(context, title: l10n.commonDelete, action: l10n.commonDelete, destructive: true);
+                      final ok = await confirm(
+                        context,
+                        title: l10n.commonDelete,
+                        action: l10n.commonDelete,
+                        destructive: true,
+                      );
                       if (!ok) return;
                       await ref.read(backendProvider).people.deleteSample(person.id, sample.id);
                       ref.invalidate(personProvider(personId));
@@ -504,7 +573,11 @@ class _ClusterScreenState extends ConsumerState<ClusterScreen> {
       final person = await ref
           .read(backendProvider)
           .people
-          .nameCluster(widget.clusterId, personId: existing ? personId : null, name: existing ? null : name.text.trim());
+          .nameCluster(
+            widget.clusterId,
+            personId: existing ? personId : null,
+            name: existing ? null : name.text.trim(),
+          );
       ref.invalidate(clustersProvider(organisationId));
       ref.invalidate(peopleProvider(organisationId));
       if (!mounted) return;
@@ -574,7 +647,10 @@ class _ClusterScreenState extends ConsumerState<ClusterScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(l10n.clusterWhoBody, style: context.text.bodyMedium?.copyWith(color: p.text2)),
+                      Text(
+                        l10n.clusterWhoBody,
+                        style: context.text.bodyMedium?.copyWith(color: p.text2),
+                      ),
                       const SizedBox(height: Gaps.md),
                       SizedBox(
                         width: double.infinity,
@@ -582,7 +658,11 @@ class _ClusterScreenState extends ConsumerState<ClusterScreen> {
                           showSelectedIcon: false,
                           segments: [
                             ButtonSegment(value: false, label: Text(l10n.clusterNewPerson)),
-                            ButtonSegment(value: true, label: Text(l10n.clusterExisting), enabled: people.isNotEmpty),
+                            ButtonSegment(
+                              value: true,
+                              label: Text(l10n.clusterExisting),
+                              enabled: people.isNotEmpty,
+                            ),
                           ],
                           selected: {existing},
                           onSelectionChanged: (value) => setState(() => existing = value.first),

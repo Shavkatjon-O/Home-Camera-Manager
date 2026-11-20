@@ -10,6 +10,7 @@ import 'package:smart_surveillance/core/media/media_source.dart';
 import 'package:smart_surveillance/core/widgets/synthetic_scene.dart';
 import 'package:smart_surveillance/features/media/domain/media_repository.dart';
 import 'package:video_player/video_player.dart';
+
 /// A player for a recorded clip with its detection boxes.
 class ClipPlayer extends ConsumerStatefulWidget {
   /// Creates a player of [clip] that fits the width to height ratio [aspect].
@@ -17,6 +18,7 @@ class ClipPlayer extends ConsumerStatefulWidget {
 
   /// The clip that is played.
   final ClipSource clip;
+
   /// The width to height ratio of the picture.
   final double aspect;
 
@@ -74,7 +76,9 @@ class _ClipPlayerState extends ConsumerState<ClipPlayer> with SingleTickerProvid
     return synthetic?.value ?? 0;
   }
 
-  Duration get length => video?.value.duration ?? (widget.clip is SyntheticClip ? (widget.clip as SyntheticClip).length : Duration.zero);
+  Duration get length =>
+      video?.value.duration ??
+      (widget.clip is SyntheticClip ? (widget.clip as SyntheticClip).length : Duration.zero);
 
   void toggle() {
     final v = video;
@@ -125,10 +129,16 @@ class _ClipPlayerState extends ConsumerState<ClipPlayer> with SingleTickerProvid
       return Center(child: Icon(Icons.error_outline_rounded, color: context.palette.text3));
     }
     if (!v.value.isInitialized) {
-      return const Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)));
+      return const Center(
+        child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+      );
     }
     return FittedBox(
-      child: SizedBox(width: v.value.size.width, height: v.value.size.height, child: VideoPlayer(v)),
+      child: SizedBox(
+        width: v.value.size.width,
+        height: v.value.size.height,
+        child: VideoPlayer(v),
+      ),
     );
   }
 
@@ -155,8 +165,15 @@ class _ClipPlayerState extends ConsumerState<ClipPlayer> with SingleTickerProvid
                       child: Container(
                         width: 56,
                         height: 56,
-                        decoration: const BoxDecoration(color: Color(0x99000000), shape: BoxShape.circle),
-                        child: const Icon(Icons.play_arrow_rounded, color: Color(0xFFFFFFFF), size: 32),
+                        decoration: const BoxDecoration(
+                          color: Color(0x99000000),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.play_arrow_rounded,
+                          color: Color(0xFFFFFFFF),
+                          size: 32,
+                        ),
                       ),
                     ),
                   ),
@@ -166,8 +183,14 @@ class _ClipPlayerState extends ConsumerState<ClipPlayer> with SingleTickerProvid
                       top: 8,
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(color: const Color(0x99000000), borderRadius: BorderRadius.circular(4)),
-                        child: Text(l10n.eventDemoClip, style: const TextStyle(fontSize: 10.5, color: Color(0xFFFFFFFF))),
+                        decoration: BoxDecoration(
+                          color: const Color(0x99000000),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          l10n.eventDemoClip,
+                          style: const TextStyle(fontSize: 10.5, color: Color(0xFFFFFFFF)),
+                        ),
                       ),
                     ),
                 ],
@@ -183,7 +206,9 @@ class _ClipPlayerState extends ConsumerState<ClipPlayer> with SingleTickerProvid
               icon: Icon(playing ? Icons.pause_rounded : Icons.play_arrow_rounded),
             ),
             Text(stamp(length * progress), style: dataStyle(context, size: 12, color: p.text2)),
-            Expanded(child: Slider(value: progress.clamp(0, 1), onChanged: seek)),
+            Expanded(
+              child: Slider(value: progress.clamp(0, 1), onChanged: seek),
+            ),
             Text(stamp(length), style: dataStyle(context, size: 12, color: p.text3)),
             const SizedBox(width: 8),
           ],

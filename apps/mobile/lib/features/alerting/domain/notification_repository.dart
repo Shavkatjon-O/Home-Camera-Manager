@@ -1,5 +1,5 @@
-
 import 'package:smart_surveillance/features/alerting/domain/models.dart';
+
 /// Reads and saves notification preferences and registers push targets.
 abstract interface class NotificationRepository {
   /// Returns the notification preferences of the site [siteId].

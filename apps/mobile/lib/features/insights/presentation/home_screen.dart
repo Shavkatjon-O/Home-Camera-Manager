@@ -20,6 +20,7 @@ import 'package:smart_surveillance/features/insights/domain/models.dart';
 import 'package:smart_surveillance/features/insights/presentation/providers.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/site_switcher.dart';
+
 /// The home tab showing the current site's state, attention items, recent events and visitors.
 class HomeScreen extends ConsumerWidget {
   /// Creates the home screen.
@@ -88,7 +89,10 @@ class HomeBody extends ConsumerWidget {
             child: ArmControl(site: site),
           ),
           const SizedBox(height: Gaps.md),
-          Padding(padding: const EdgeInsets.symmetric(horizontal: Gaps.page), child: TodayMetrics(site: site)),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: Gaps.page),
+            child: TodayMetrics(site: site),
+          ),
           AttentionSection(siteId: id),
           RecentStrip(siteId: id),
           VisitorsSection(siteId: id),
@@ -132,7 +136,9 @@ class TodayMetrics extends ConsumerWidget {
           label: l10n.homeAlertsToday,
           value: value(counts?.alerts),
           tone: unreviewed > 0 ? p.dangerText : null,
-          detail: counts == null ? null : (unreviewed > 0 ? l10n.homeUnacknowledged(unreviewed) : l10n.homeAllReviewed),
+          detail: counts == null
+              ? null
+              : (unreviewed > 0 ? l10n.homeUnacknowledged(unreviewed) : l10n.homeAllReviewed),
           onTap: () => const EventsRoute(alerts: true).go(context),
         ),
         MetricTile(
@@ -219,7 +225,11 @@ class AttentionSection extends ConsumerWidget {
                 title: Text(l10n.homeAllGood),
                 subtitle: online.isEmpty
                     ? null
-                    : Text(online.map((c) => l10n.homeConnectorOnline(c.name, c.version ?? '-')).join(', ')),
+                    : Text(
+                        online
+                            .map((c) => l10n.homeConnectorOnline(c.name, c.version ?? '-'))
+                            .join(', '),
+                      ),
               ),
             ],
           )
@@ -247,7 +257,10 @@ class RecentStrip extends ConsumerWidget {
       children: [
         SectionHeader(
           l10n.homeRecent,
-          action: TextButton(onPressed: () => const EventsRoute().go(context), child: Text(l10n.commonSeeAll)),
+          action: TextButton(
+            onPressed: () => const EventsRoute().go(context),
+            child: Text(l10n.commonSeeAll),
+          ),
           padding: const EdgeInsets.fromLTRB(Gaps.page, Gaps.lg, Gaps.sm, 0),
         ),
         SizedBox(
@@ -261,10 +274,18 @@ class RecentStrip extends ConsumerWidget {
               separatorBuilder: (_, _) => const SizedBox(width: 10),
               itemBuilder: (_, _) => const Skeleton(width: 220, height: 190, radius: Radii.large),
             ),
-            error: (error, _) =>
-                ErrorState(error: error, compact: true, onRetry: () => ref.invalidate(recentEventsProvider(siteId))),
+            error: (error, _) => ErrorState(
+              error: error,
+              compact: true,
+              onRetry: () => ref.invalidate(recentEventsProvider(siteId)),
+            ),
             data: (events) => events.isEmpty
-                ? Center(child: Text(l10n.homeNoEvents, style: context.text.bodyMedium?.copyWith(color: context.palette.text3)))
+                ? Center(
+                    child: Text(
+                      l10n.homeNoEvents,
+                      style: context.text.bodyMedium?.copyWith(color: context.palette.text3),
+                    ),
+                  )
                 : ListView.separated(
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(horizontal: Gaps.page),
@@ -288,7 +309,11 @@ CountsSeries hourlySeries(CountsReport report, {String? lineId}) {
     inward[bucket.at.hour] += bucket.inward;
     outward[bucket.at.hour] += bucket.outward;
   }
-  return CountsSeries(labels: [for (var h = 0; h < 24; h++) h.toString().padLeft(2, '0')], inward: inward, outward: outward);
+  return CountsSeries(
+    labels: [for (var h = 0; h < 24; h++) h.toString().padLeft(2, '0')],
+    inward: inward,
+    outward: outward,
+  );
 }
 
 /// The section charting today's visitor counts.
@@ -312,7 +337,10 @@ class VisitorsSection extends ConsumerWidget {
       children: [
         SectionHeader(
           l10n.homeCountsToday,
-          action: TextButton(onPressed: () => const CountsRoute().go(context), child: Text(l10n.commonSeeAll)),
+          action: TextButton(
+            onPressed: () => const CountsRoute().go(context),
+            child: Text(l10n.commonSeeAll),
+          ),
           padding: const EdgeInsets.fromLTRB(Gaps.page, Gaps.lg, Gaps.sm, 0),
         ),
         Padding(
@@ -325,14 +353,20 @@ class VisitorsSection extends ConsumerWidget {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text('${series.totalIn}', style: dataStyle(context, size: 26, weight: FontWeight.w500)),
+                    Text(
+                      '${series.totalIn}',
+                      style: dataStyle(context, size: 26, weight: FontWeight.w500),
+                    ),
                     const SizedBox(width: 6),
                     Padding(
                       padding: const EdgeInsets.only(bottom: 4),
                       child: Text(l10n.homeCountsIn.toLowerCase(), style: context.text.bodySmall),
                     ),
                     const SizedBox(width: 16),
-                    Text('${series.totalOut}', style: dataStyle(context, size: 26, weight: FontWeight.w500, color: p.text2)),
+                    Text(
+                      '${series.totalOut}',
+                      style: dataStyle(context, size: 26, weight: FontWeight.w500, color: p.text2),
+                    ),
                     const SizedBox(width: 6),
                     Padding(
                       padding: const EdgeInsets.only(bottom: 4),
@@ -354,7 +388,8 @@ class VisitorsSection extends ConsumerWidget {
                   series: series,
                   height: 150,
                   labelEvery: 6,
-                  semanticLabel: '${l10n.homeCountsToday}: ${l10n.countsTotalIn(series.totalIn)}, ${l10n.countsTotalOut(series.totalOut)}',
+                  semanticLabel:
+                      '${l10n.homeCountsToday}: ${l10n.countsTotalIn(series.totalIn)}, ${l10n.countsTotalOut(series.totalOut)}',
                 ),
               ],
             ),

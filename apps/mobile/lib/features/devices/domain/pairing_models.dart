@@ -2,10 +2,12 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:smart_surveillance/features/devices/domain/models.dart';
 
 part 'pairing_models.freezed.dart';
+
 /// What a pairing flow sets up.
 enum PairingTarget {
   /// A connector.
   connector,
+
   /// A camera.
   camera,
 }
@@ -14,8 +16,10 @@ enum PairingTarget {
 enum PairingOutcome {
   /// Pairing worked.
   success,
+
   /// Pairing failed.
   failure,
+
   /// The user stopped pairing.
   cancelled,
 }

@@ -16,19 +16,31 @@ import 'package:smart_surveillance/features/events/presentation/labels.dart';
 import 'package:smart_surveillance/features/events/presentation/providers.dart';
 import 'package:smart_surveillance/features/tenancy/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
+
 /// The searchable, filterable list of events at the current site.
 class EventsScreen extends ConsumerStatefulWidget {
   /// Creates the list, optionally preset to [camera], [kind], [person], [cluster] or [alertsOnly].
-  const EventsScreen({super.key, this.camera, this.kind, this.person, this.cluster, this.alertsOnly = false});
+  const EventsScreen({
+    super.key,
+    this.camera,
+    this.kind,
+    this.person,
+    this.cluster,
+    this.alertsOnly = false,
+  });
 
   /// The id of a camera to filter by.
   final String? camera;
+
   /// The name of an event kind to filter by.
   final String? kind;
+
   /// The id of a saved person whose face events are shown.
   final String? person;
+
   /// The id of an unknown-face cluster whose events are shown.
   final String? cluster;
+
   /// Whether only alerts are shown.
   final bool alertsOnly;
 
@@ -59,23 +71,30 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
   }
 
   void applyRouteFilter(String siteId) {
-    final key = '$siteId ${widget.camera} ${widget.kind} ${widget.person} ${widget.cluster} ${widget.alertsOnly}';
+    final key =
+        '$siteId ${widget.camera} ${widget.kind} ${widget.person} ${widget.cluster} ${widget.alertsOnly}';
     if (appliedFor == key) return;
     appliedFor = key;
     final hasRoute =
-        widget.camera != null || widget.kind != null || widget.person != null || widget.cluster != null || widget.alertsOnly;
+        widget.camera != null ||
+        widget.kind != null ||
+        widget.person != null ||
+        widget.cluster != null ||
+        widget.alertsOnly;
     if (!hasRoute) return;
     final kind = EventKind.values.where((k) => k.name == widget.kind).firstOrNull;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(eventFilterStateProvider(siteId).notifier).set(
-        EventFilter(
-          cameraIds: widget.camera == null ? const {} : {widget.camera!},
-          kinds: kind == null ? const {} : {kind},
-          personId: widget.person,
-          clusterId: widget.cluster,
-          alertsOnly: widget.alertsOnly,
-        ),
-      );
+      ref
+          .read(eventFilterStateProvider(siteId).notifier)
+          .set(
+            EventFilter(
+              cameraIds: widget.camera == null ? const {} : {widget.camera!},
+              kinds: kind == null ? const {} : {kind},
+              personId: widget.person,
+              clusterId: widget.cluster,
+              alertsOnly: widget.alertsOnly,
+            ),
+          );
     });
   }
 
@@ -92,7 +111,9 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
       final update = next.value;
       if (update is EventChanged) {
         final atTop = !scroll.hasClients || scroll.offset < 80;
-        ref.read(eventFeedProvider(id).notifier).receive(update.event, created: update.created, atTop: atTop);
+        ref
+            .read(eventFeedProvider(id).notifier)
+            .receive(update.event, created: update.created, atTop: atTop);
       }
     });
     final pending = feed.value?.pending.length ?? 0;
@@ -130,7 +151,10 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
           ),
           const SizedBox(width: 4),
         ],
-        bottom: PreferredSize(preferredSize: const Size.fromHeight(52), child: QuickFilters(siteId: id, filter: filter)),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(52),
+          child: QuickFilters(siteId: id, filter: filter),
+        ),
       ),
       body: Stack(
         children: [
@@ -143,7 +167,8 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
               value: feed,
               loading: const ListSkeleton(),
               onRetry: () => ref.invalidate(eventFeedProvider(id)),
-              data: (state) => EventList(state: state, scroll: scroll, filtered: filter.activeCount > 0),
+              data: (state) =>
+                  EventList(state: state, scroll: scroll, filtered: filter.activeCount > 0),
             ),
           ),
           Positioned(
@@ -156,10 +181,17 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
                 child: pending == 0
                     ? const SizedBox.shrink()
                     : FilledButton.icon(
-                        style: FilledButton.styleFrom(minimumSize: const Size(0, 40), shape: const StadiumBorder()),
+                        style: FilledButton.styleFrom(
+                          minimumSize: const Size(0, 40),
+                          shape: const StadiumBorder(),
+                        ),
                         onPressed: () {
                           ref.read(eventFeedProvider(id).notifier).showPending();
-                          scroll.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeOutCubic);
+                          scroll.animateTo(
+                            0,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeOutCubic,
+                          );
                         },
                         icon: const Icon(Icons.arrow_upward_rounded, size: 18),
                         label: Text(l10n.eventsNew(pending)),
@@ -180,6 +212,7 @@ class QuickFilters extends ConsumerWidget {
 
   /// The id of the site whose filter is changed.
   final String siteId;
+
   /// The filter currently applied.
   final EventFilter filter;
 
@@ -190,7 +223,8 @@ class QuickFilters extends ConsumerWidget {
     final today = startOfDay(now);
     final yesterday = today.subtract(const Duration(days: 1));
     final notifier = ref.read(eventFilterStateProvider(siteId).notifier);
-    bool sameDay(DateTime? a, DateTime b) => a != null && a.year == b.year && a.month == b.month && a.day == b.day;
+    bool sameDay(DateTime? a, DateTime b) =>
+        a != null && a.year == b.year && a.month == b.month && a.day == b.day;
     final cameras = ref.watch(camerasProvider(siteId)).value ?? const [];
     return SizedBox(
       height: 52,
@@ -223,7 +257,9 @@ class QuickFilters extends ConsumerWidget {
               selected: filter.cameraIds.contains(camera.id),
               onSelected: (value) => notifier.set(
                 filter.copyWith(
-                  cameraIds: value ? {...filter.cameraIds, camera.id} : ({...filter.cameraIds}..remove(camera.id)),
+                  cameraIds: value
+                      ? {...filter.cameraIds, camera.id}
+                      : ({...filter.cameraIds}..remove(camera.id)),
                 ),
               ),
             ),
@@ -241,8 +277,10 @@ class EventList extends ConsumerWidget {
 
   /// The loaded events and paging state.
   final FeedState state;
+
   /// The scroll controller used to detect when the next page is needed.
   final ScrollController scroll;
+
   /// Whether a filter is applied, which changes the empty message.
   final bool filtered;
 
@@ -288,7 +326,10 @@ class EventList extends ConsumerWidget {
         rows.add(
           Padding(
             padding: const EdgeInsets.fromLTRB(Gaps.page, Gaps.lg, Gaps.page, Gaps.xs),
-            child: Semantics(header: true, child: Text(format.dayHeader(eventDay), style: context.text.titleSmall)),
+            child: Semantics(
+              header: true,
+              child: Text(format.dayHeader(eventDay), style: context.text.titleSmall),
+            ),
           ),
         );
       }
@@ -300,14 +341,22 @@ class EventList extends ConsumerWidget {
           padding: const EdgeInsets.all(Gaps.lg),
           child: Center(
             child: state.loadingMore
-                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
                 : const SizedBox(height: 20),
           ),
         ),
       );
     }
     rows.add(const SizedBox(height: Gaps.xxl));
-    return ListView(controller: scroll, physics: const AlwaysScrollableScrollPhysics(), children: rows);
+    return ListView(
+      controller: scroll,
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: rows,
+    );
   }
 }
 

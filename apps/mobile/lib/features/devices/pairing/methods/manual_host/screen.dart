@@ -51,7 +51,11 @@ class _ManualHostScreenState extends ConsumerState<ManualHostScreen> {
       final camera = await ref
           .read(backendProvider)
           .pairing
-          .identifyHost(connectorId: widget.pairing.connector!.id, host: host.text.trim(), port: int.tryParse(port.text.trim()));
+          .identifyHost(
+            connectorId: widget.pairing.connector!.id,
+            host: host.text.trim(),
+            port: int.tryParse(port.text.trim()),
+          );
       final label = widget.pairing.label;
       final identified = label == null
           ? camera
@@ -63,7 +67,11 @@ class _ManualHostScreenState extends ConsumerState<ManualHostScreen> {
       if (!mounted) return;
       final result = await navigator.push<PairingResult>(
         MaterialPageRoute(
-          builder: (_) => CameraDetailsScreen(pairing: widget.pairing, session: widget.session, camera: identified),
+          builder: (_) => CameraDetailsScreen(
+            pairing: widget.pairing,
+            session: widget.session,
+            camera: identified,
+          ),
         ),
       );
       if (result != null) navigator.pop(result);
@@ -82,7 +90,11 @@ class _ManualHostScreenState extends ConsumerState<ManualHostScreen> {
     return FlowScaffold(
       title: l10n.manualTitle,
       subtitle: l10n.manualBody,
-      bottom: BusyButton(label: busy ? l10n.manualIdentifying : l10n.manualIdentify, busy: busy, onPressed: identify),
+      bottom: BusyButton(
+        label: busy ? l10n.manualIdentifying : l10n.manualIdentify,
+        busy: busy,
+        onPressed: identify,
+      ),
       children: [
         Form(
           key: form,
@@ -95,19 +107,25 @@ class _ManualHostScreenState extends ConsumerState<ManualHostScreen> {
                 autocorrect: false,
                 style: dataStyle(context, size: 16),
                 decoration: InputDecoration(labelText: l10n.manualHost, hintText: '192.168.1.64'),
-                validator: (value) => hostPattern.hasMatch((value ?? '').trim()) ? null : l10n.validationRequired,
+                validator: (value) =>
+                    hostPattern.hasMatch((value ?? '').trim()) ? null : l10n.validationRequired,
               ),
               const SizedBox(height: Gaps.md),
               TextFormField(
                 controller: port,
                 keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(5)],
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(5),
+                ],
                 style: dataStyle(context, size: 16),
                 decoration: InputDecoration(labelText: l10n.manualPort, hintText: '80'),
                 validator: (value) {
                   if (value == null || value.isEmpty) return null;
                   final number = int.tryParse(value);
-                  return number != null && number > 0 && number < 65536 ? null : validateRequired(l10n, '');
+                  return number != null && number > 0 && number < 65536
+                      ? null
+                      : validateRequired(l10n, '');
                 },
               ),
             ],

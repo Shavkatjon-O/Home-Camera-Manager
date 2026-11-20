@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 /// The app's colours for one brightness, exposed as a theme extension.
 @immutable
 class Palette extends ThemeExtension<Palette> {
@@ -31,48 +32,70 @@ class Palette extends ThemeExtension<Palette> {
 
   /// The page background.
   final Color background;
+
   /// The fill of cards and panels.
   final Color surface;
+
   /// A raised fill above [surface], such as inputs and pressed rows.
   final Color surface2;
+
   /// The strongest neutral fill, such as skeleton shimmer, avatars and chart tooltips.
   final Color surface3;
+
   /// The hairline border of cards and dividers.
   final Color border;
+
   /// The border of text fields.
   final Color borderInput;
+
   /// A stronger border for emphasis and hover.
   final Color borderStrong;
+
   /// The primary text colour.
   final Color text;
+
   /// The secondary text colour.
   final Color text2;
+
   /// The muted text colour for hints and captions.
   final Color text3;
+
   /// The accent colour for focus rings and links.
   final Color focus;
+
   /// The overlay colour of selected rows.
   final Color selection;
+
   /// The fill of chips and tags.
   final Color chip;
+
   /// The colour for success and online states.
   final Color ok;
+
   /// The colour for error states.
   final Color error;
+
   /// The colour for warnings.
   final Color warning;
+
   /// The colour for unknown, disabled and offline-unknown states.
   final Color off;
+
   /// The fill of destructive actions.
   final Color danger;
+
   /// The colour of text on a destructive surface, such as an error message.
   final Color dangerText;
+
   /// The box colour for detected people.
   final Color person;
+
   /// The box colour for detected vehicles.
   final Color vehicle;
+
   /// The box colour for detected animals.
   final Color animal;
+
   /// The background behind camera frames and video.
   final Color frame;
 
@@ -140,6 +163,7 @@ class Palette extends ThemeExtension<Palette> {
 
   /// The labels treated as vehicles.
   static const vehicleLabels = {'car', 'truck', 'bus', 'motorcycle', 'bicycle', 'vehicle'};
+
   /// The labels treated as animals.
   static const animalLabels = {'dog', 'cat', 'bird', 'animal'};
 

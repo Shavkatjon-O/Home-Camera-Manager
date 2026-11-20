@@ -5,6 +5,7 @@ import 'package:smart_surveillance/core/providers.dart';
 import 'package:smart_surveillance/features/events/domain/models.dart';
 
 part 'providers.g.dart';
+
 /// Returns midnight at the start of the day containing [at].
 DateTime startOfDay(DateTime at) => DateTime(at.year, at.month, at.day);
 
@@ -18,13 +19,17 @@ Future<EventCounts> todayCounts(Ref ref, String siteId) {
 /// Loads the latest events at [siteId] for the home screen.
 @riverpod
 Future<List<CameraEvent>> recentEvents(Ref ref, String siteId) async {
-  final page = await ref.watch(backendProvider).events.events(siteId, const EventFilter(), pageSize: 12);
+  final page = await ref
+      .watch(backendProvider)
+      .events
+      .events(siteId, const EventFilter(), pageSize: 12);
   return page.items;
 }
 
 /// Streams live updates for [siteId] as they arrive.
 @riverpod
-Stream<LiveUpdate> liveUpdates(Ref ref, String siteId) => ref.watch(backendProvider).events.updates(siteId);
+Stream<LiveUpdate> liveUpdates(Ref ref, String siteId) =>
+    ref.watch(backendProvider).events.updates(siteId);
 
 /// Refreshing helpers for the data shown on the site's home screen.
 extension SiteRefresh on WidgetRef {

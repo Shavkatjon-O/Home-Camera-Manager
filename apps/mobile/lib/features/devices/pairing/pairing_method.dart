@@ -10,10 +10,13 @@ import 'package:smart_surveillance/features/devices/domain/pairing_repository.da
 enum PairingPermission {
   /// Access to the camera.
   camera,
+
   /// Access to Bluetooth.
   bluetooth,
+
   /// Access to nearby Wi-Fi devices.
   nearbyWifi,
+
   /// Access to the location.
   location,
 }
@@ -56,15 +59,19 @@ class PairingContext {
   bool get hasConnector => connector != null;
 
   /// Returns a copy with the given fields replaced.
-  PairingContext copyWith({List<Connector>? connectors, LabelIdentity? label, DiscoveredCamera? discovered, String? code}) =>
-      PairingContext(
-        siteId: siteId,
-        connectors: connectors ?? this.connectors,
-        label: label ?? this.label,
-        discovered: discovered ?? this.discovered,
-        code: code ?? this.code,
-        first: first,
-      );
+  PairingContext copyWith({
+    List<Connector>? connectors,
+    LabelIdentity? label,
+    DiscoveredCamera? discovered,
+    String? code,
+  }) => PairingContext(
+    siteId: siteId,
+    connectors: connectors ?? this.connectors,
+    label: label ?? this.label,
+    discovered: discovered ?? this.discovered,
+    code: code ?? this.code,
+    first: first,
+  );
 }
 
 /// The outcome a pairing flow returns when it finishes.
@@ -106,9 +113,13 @@ class ContinueWith extends PairingResult {
 /// Tracks one pairing attempt and reports its telemetry once.
 class PairingSession {
   /// Starts a session for [method] on [siteId].
-  PairingSession({required this.method, required this.siteId, required this.repository, DateTime Function()? clock})
-    : clock = clock ?? DateTime.now,
-      started = (clock ?? DateTime.now)();
+  PairingSession({
+    required this.method,
+    required this.siteId,
+    required this.repository,
+    DateTime Function()? clock,
+  }) : clock = clock ?? DateTime.now,
+       started = (clock ?? DateTime.now)();
 
   /// The id of the method being tried.
   final String method;
@@ -155,8 +166,10 @@ class PairingSession {
   }
 
   /// Reports a failure caused by [error].
-  Future<void> fail(Object error) =>
-      finish(PairingOutcome.failure, errorCode: error is ApiFailure ? (error.detail ?? error.kind.name) : 'unknown');
+  Future<void> fail(Object error) => finish(
+    PairingOutcome.failure,
+    errorCode: error is ApiFailure ? (error.detail ?? error.kind.name) : 'unknown',
+  );
 }
 
 /// One way of adding a camera or pairing a connector.

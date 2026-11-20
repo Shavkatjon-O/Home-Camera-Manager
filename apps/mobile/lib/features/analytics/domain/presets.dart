@@ -26,11 +26,21 @@ const nightAlerts = AlertPolicy(
 );
 
 /// Builds what [preset] does to [view], naming new shapes [zoneName] and [lineName].
-PresetPlan presetPlan(AnalyticsPreset preset, AnalyticsView view, {String zoneName = 'Area', String lineName = 'Entrance'}) {
+PresetPlan presetPlan(
+  AnalyticsPreset preset,
+  AnalyticsView view, {
+  String zoneName = 'Area',
+  String lineName = 'Entrance',
+}) {
   switch (preset) {
     case AnalyticsPreset.perimeter:
       return PresetPlan(
-        view: view.copyWith(enabled: true, profile: Profile.perimeter, tamper: true, stream: StreamQuality.sub),
+        view: view.copyWith(
+          enabled: true,
+          profile: Profile.perimeter,
+          tamper: true,
+          stream: StreamQuality.sub,
+        ),
         zones: [
           Zone(
             name: zoneName,
@@ -45,7 +55,12 @@ PresetPlan presetPlan(AnalyticsPreset preset, AnalyticsView view, {String zoneNa
       );
     case AnalyticsPreset.entrance:
       return PresetPlan(
-        view: view.copyWith(enabled: true, profile: Profile.perimeter, tamper: true, appearance: true),
+        view: view.copyWith(
+          enabled: true,
+          profile: Profile.perimeter,
+          tamper: true,
+          appearance: true,
+        ),
         zones: const [],
         lines: [
           Line(

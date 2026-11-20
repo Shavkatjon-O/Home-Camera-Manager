@@ -5,9 +5,15 @@ import 'package:smart_surveillance/app/settings/appearance.dart';
 import 'package:smart_surveillance/core/design/palette.dart';
 import 'package:smart_surveillance/core/design/tokens.dart';
 import 'package:smart_surveillance/core/widgets/surfaces.dart';
+
 /// The display names of the supported languages, keyed by language code, in their own language.
 /// The display names of the supported languages, keyed by language code, in their own language.
-const languageNames = {'en': 'English', 'ru': '\u0420\u0443\u0441\u0441\u043A\u0438\u0439', 'uz': 'O\u02BBzbekcha'};
+const languageNames = {
+  'en': 'English',
+  'ru': '\u0420\u0443\u0441\u0441\u043A\u0438\u0439',
+  'uz': 'O\u02BBzbekcha',
+};
+
 /// Returns the display name of the language [code], or [code] itself when it is unknown.
 
 /// Returns the display name of the language [code], or [code] itself when it is unknown.
@@ -33,7 +39,9 @@ Future<void> showLanguageSheet(BuildContext context, WidgetRef ref) => showModal
             RadioGroup<String?>(
               groupValue: current,
               onChanged: (value) {
-                ref.read(appearanceSettingsProvider.notifier).setLocale(value == null ? null : Locale(value));
+                ref
+                    .read(appearanceSettingsProvider.notifier)
+                    .setLocale(value == null ? null : Locale(value));
                 Navigator.of(context).pop();
               },
               child: Column(
@@ -49,9 +57,11 @@ Future<void> showLanguageSheet(BuildContext context, WidgetRef ref) => showModal
         ),
       );
     },
-  /// The screen for choosing the theme mode and language.
+
+    /// The screen for choosing the theme mode and language.
   ),
-/// Creates the appearance screen.
+
+  /// Creates the appearance screen.
 );
 
 /// The screen for choosing the theme mode and language.
@@ -69,15 +79,30 @@ class AppearanceScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.only(bottom: Gaps.xxl),
         children: [
-          SectionHeader(l10n.appearanceTheme, padding: const EdgeInsets.fromLTRB(Gaps.page, Gaps.sm, Gaps.page, Gaps.sm)),
+          SectionHeader(
+            l10n.appearanceTheme,
+            padding: const EdgeInsets.fromLTRB(Gaps.page, Gaps.sm, Gaps.page, Gaps.sm),
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Gaps.page),
             child: SegmentedButton<ThemeMode>(
               showSelectedIcon: false,
               segments: [
-                ButtonSegment(value: ThemeMode.system, label: Text(l10n.themeSystem), icon: const Icon(Icons.brightness_auto_outlined, size: 18)),
-                ButtonSegment(value: ThemeMode.light, label: Text(l10n.themeLight), icon: const Icon(Icons.light_mode_outlined, size: 18)),
-                ButtonSegment(value: ThemeMode.dark, label: Text(l10n.themeDark), icon: const Icon(Icons.dark_mode_outlined, size: 18)),
+                ButtonSegment(
+                  value: ThemeMode.system,
+                  label: Text(l10n.themeSystem),
+                  icon: const Icon(Icons.brightness_auto_outlined, size: 18),
+                ),
+                ButtonSegment(
+                  value: ThemeMode.light,
+                  label: Text(l10n.themeLight),
+                  icon: const Icon(Icons.light_mode_outlined, size: 18),
+                ),
+                ButtonSegment(
+                  value: ThemeMode.dark,
+                  label: Text(l10n.themeDark),
+                  icon: const Icon(Icons.dark_mode_outlined, size: 18),
+                ),
               ],
               selected: {settings.theme},
               onSelectionChanged: (value) => notifier.setTheme(value.first),

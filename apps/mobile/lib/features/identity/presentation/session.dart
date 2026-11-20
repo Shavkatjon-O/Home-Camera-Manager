@@ -7,6 +7,7 @@ import 'package:smart_surveillance/features/identity/domain/auth_repository.dart
 import 'package:smart_surveillance/features/identity/domain/models.dart';
 
 part 'session.g.dart';
+
 /// The authentication state of the app.
 sealed class SessionState {
   const SessionState();

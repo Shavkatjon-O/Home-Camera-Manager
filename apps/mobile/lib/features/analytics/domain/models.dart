@@ -4,14 +4,18 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:smart_surveillance/features/devices/domain/models.dart';
 
 part 'models.freezed.dart';
+
 /// The detection profile a camera view runs.
 enum Profile {
   /// Watches for people and animals around the property.
   perimeter,
+
   /// Watches for vehicles.
   vehicle,
+
   /// Watches for a person's presence.
   identity,
+
   /// Watches only for camera tampering.
   tamper,
 }
@@ -20,10 +24,13 @@ enum Profile {
 enum AnalyticsPreset {
   /// Raises alerts when people or vehicles appear in the view, mostly at night.
   perimeter,
+
   /// Counts who comes in and out through a door or gate.
   entrance,
+
   /// Counts people and occupancy without raising alerts.
   counting,
+
   /// Watches only for the camera being covered or moved.
   tamperOnly,
 }
@@ -32,8 +39,10 @@ enum AnalyticsPreset {
 enum AlertMode {
   /// Never alerts.
   off,
+
   /// Alerts at any time.
   always,
+
   /// Alerts only inside the configured time windows.
   schedule,
 }
@@ -42,8 +51,10 @@ enum AlertMode {
 enum AnimalMode {
   /// Animals are detected and alerted on like any other object.
   include,
+
   /// Animals are recorded in the event history without alerts.
   record,
+
   /// Animals are ignored.
   exclude,
 }
@@ -52,8 +63,10 @@ enum AnimalMode {
 enum LineDirection {
   /// Only crossings into the property count.
   inward,
+
   /// Only crossings out of the property count.
   outward,
+
   /// Crossings in both directions count.
   both,
 }

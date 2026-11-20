@@ -11,6 +11,7 @@ import 'package:smart_surveillance/features/insights/domain/models.dart';
 import 'package:smart_surveillance/features/investigation/domain/models.dart';
 import 'package:smart_surveillance/features/operations/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/domain/models.dart';
+
 /// A demo camera together with the scene types drawn for each of its lenses.
 class CameraFixture {
   /// Creates a fixture for [camera] drawing [scenes], one per lens.
@@ -18,6 +19,7 @@ class CameraFixture {
 
   /// The camera record served by the fake device repository.
   final Camera camera;
+
   /// The synthetic scene shown for each lens of the camera.
   final List<SceneKind> scenes;
 }
@@ -34,45 +36,64 @@ class Fixtures {
 
   /// The signed-in demo user.
   late User user;
+
   /// The demo organisations.
   final organisations = <Organisation>[];
+
   /// The demo sites across all organisations.
   final sites = <Site>[];
+
   /// The demo connectors, which bridge cameras to the cloud.
   final connectors = <Connector>[];
+
   /// The demo cameras with their scene types.
   final cameras = <CameraFixture>[];
+
   /// The demo analytics views, one or more per camera.
   final views = <AnalyticsView>[];
+
   /// The demo events, newest first once live events are inserted.
   final events = <CameraEvent>[];
+
   /// The known people.
   final people = <Person>[];
+
   /// The clusters of similar unnamed faces.
   final clusters = <FaceCluster>[];
+
   /// The members of each organisation, keyed by organisation id.
   final members = <String, List<Member>>{};
+
   /// The pending invitations of each organisation, keyed by organisation id.
   final invitations = <String, List<Invitation>>{};
+
   /// The devices the user is signed in on.
   final sessions = <DeviceSession>[];
+
   /// The areas of each site, keyed by site id.
   final areas = <String, List<Area>>{};
+
   /// The cameras found by network discovery for each connector, keyed by connector id.
   final discovered = <String, List<DiscoveredCamera>>{};
+
   /// The PTZ presets of each camera, keyed by camera id.
   final presets = <String, List<PtzPreset>>{};
+
   /// The notification preferences for each site, keyed by site id.
   final prefs = <String, NotificationPrefs>{};
+
   /// The linked Telegram chats for each organisation, keyed by organisation id.
   final telegram = <String, List<TelegramChat>>{};
+
   /// The audit log entries for each organisation, keyed by organisation id.
   final audit = <String, List<AuditEntry>>{};
 
   /// The id of the demo home site.
   static const homeSite = 'site-home';
+
   /// The id of the demo store site.
   static const storeSite = 'site-store';
+
   /// The id of the main demo organisation.
   static const demoOrg = 'org-demo';
 
@@ -81,10 +102,21 @@ class Fixtures {
     user = const User(id: 'user-demo', name: 'Demo owner', email: 'owner@demo.example');
     organisations.addAll(const [
       Organisation(id: demoOrg, name: 'Demo organisation', role: Role.owner, facesEnabled: true),
-      Organisation(id: 'org-corner', name: 'Corner bakery', role: Role.viewer, siteScope: ['site-bakery']),
+      Organisation(
+        id: 'org-corner',
+        name: 'Corner bakery',
+        role: Role.viewer,
+        siteScope: ['site-bakery'],
+      ),
     ]);
     sites.addAll(const [
-      Site(id: homeSite, organisationId: demoOrg, name: 'Demo home', kind: SiteKind.home, timezone: 'Asia/Tashkent'),
+      Site(
+        id: homeSite,
+        organisationId: demoOrg,
+        name: 'Demo home',
+        kind: SiteKind.home,
+        timezone: 'Asia/Tashkent',
+      ),
       Site(
         id: storeSite,
         organisationId: demoOrg,
@@ -172,8 +204,12 @@ class Fixtures {
     );
 
     cameras.addAll([
-      CameraFixture(cam('cam-gate', homeSite, 'Front gate', CameraBrand.ezviz, model: 'CS-H3'), [SceneKind.street]),
-      CameraFixture(cam('cam-drive', homeSite, 'Driveway', CameraBrand.onvif, position: 1), [SceneKind.driveway]),
+      CameraFixture(cam('cam-gate', homeSite, 'Front gate', CameraBrand.ezviz, model: 'CS-H3'), [
+        SceneKind.street,
+      ]),
+      CameraFixture(cam('cam-drive', homeSite, 'Driveway', CameraBrand.onvif, position: 1), [
+        SceneKind.driveway,
+      ]),
       CameraFixture(
         cam(
           'cam-porch',
@@ -188,15 +224,23 @@ class Fixtures {
         ),
         [SceneKind.yard, SceneKind.entrance],
       ),
-      CameraFixture(cam('cam-back', homeSite, 'Backyard', CameraBrand.onvif, online: false, position: 3), [
-        SceneKind.yard,
+      CameraFixture(
+        cam('cam-back', homeSite, 'Backyard', CameraBrand.onvif, online: false, position: 3),
+        [SceneKind.yard],
+      ),
+      CameraFixture(cam('cam-entrance', storeSite, 'Entrance', CameraBrand.onvif), [
+        SceneKind.entrance,
       ]),
-      CameraFixture(cam('cam-entrance', storeSite, 'Entrance', CameraBrand.onvif), [SceneKind.entrance]),
-      CameraFixture(cam('cam-checkout', storeSite, 'Checkout', CameraBrand.onvif, position: 1), [SceneKind.checkout]),
-      CameraFixture(cam('cam-aisle', storeSite, 'Aisle 3', CameraBrand.rtsp, position: 2), [SceneKind.aisle]),
-      CameraFixture(cam('cam-stock', storeSite, 'Stock room', CameraBrand.onvif, ptz: true, position: 3), [
-        SceneKind.stockroom,
+      CameraFixture(cam('cam-checkout', storeSite, 'Checkout', CameraBrand.onvif, position: 1), [
+        SceneKind.checkout,
       ]),
+      CameraFixture(cam('cam-aisle', storeSite, 'Aisle 3', CameraBrand.rtsp, position: 2), [
+        SceneKind.aisle,
+      ]),
+      CameraFixture(
+        cam('cam-stock', storeSite, 'Stock room', CameraBrand.onvif, ptz: true, position: 3),
+        [SceneKind.stockroom],
+      ),
       CameraFixture(cam('cam-bakery', 'site-bakery', 'Counter', CameraBrand.onvif, online: null), [
         SceneKind.checkout,
       ]),
@@ -221,7 +265,12 @@ class Fixtures {
           const Zone(
             id: 'zone-gate',
             name: 'Gate',
-            polygon: [Offset(0.18, 0.52), Offset(0.62, 0.48), Offset(0.78, 0.96), Offset(0.08, 0.98)],
+            polygon: [
+              Offset(0.18, 0.52),
+              Offset(0.62, 0.48),
+              Offset(0.78, 0.96),
+              Offset(0.08, 0.98),
+            ],
             labels: ['person', 'car', 'dog'],
             loiterSeconds: 120,
             alert: evening,
@@ -275,7 +324,12 @@ class Fixtures {
           const Zone(
             id: 'zone-yard',
             name: 'Yard',
-            polygon: [Offset(0.05, 0.35), Offset(0.95, 0.35), Offset(0.95, 0.95), Offset(0.05, 0.95)],
+            polygon: [
+              Offset(0.05, 0.35),
+              Offset(0.95, 0.35),
+              Offset(0.95, 0.95),
+              Offset(0.05, 0.95),
+            ],
             labels: ['person', 'dog', 'cat'],
             animals: AnimalMode.include,
           ),
@@ -404,13 +458,7 @@ class Fixtures {
         ptz: true,
         fpsMeasured: 8.0,
         zones: [
-          const Zone(
-            id: 'zone-stock',
-            name: 'Stock',
-            polygon: [],
-            wholeView: true,
-            alert: evening,
-          ),
+          const Zone(id: 'zone-stock', name: 'Stock', polygon: [], wholeView: true, alert: evening),
         ],
       ),
     ]);
@@ -420,7 +468,10 @@ class Fixtures {
       PtzPreset(token: '2', name: 'Yard'),
       PtzPreset(token: '3', name: 'Street'),
     ];
-    presets['cam-stock'] = const [PtzPreset(token: '1', name: 'Shelves'), PtzPreset(token: '2', name: 'Back door')];
+    presets['cam-stock'] = const [
+      PtzPreset(token: '1', name: 'Shelves'),
+      PtzPreset(token: '2', name: 'Back door'),
+    ];
 
     buildPeople();
     buildEvents();
@@ -510,7 +561,13 @@ class Fixtures {
       prefs[site.id] = NotificationPrefs(siteId: site.id, quietFrom: '23:00', quietUntil: '06:30');
     }
     telegram[demoOrg] = [
-      TelegramChat(id: 'chat-1', title: 'Demo family', group: true, linkedAt: now.subtract(const Duration(days: 4)), linkedBy: user.name),
+      TelegramChat(
+        id: 'chat-1',
+        title: 'Demo family',
+        group: true,
+        linkedAt: now.subtract(const Duration(days: 4)),
+        linkedBy: user.name,
+      ),
     ];
     buildAudit();
   }
@@ -520,7 +577,12 @@ class Fixtures {
 
   /// Generates the known people and face clusters.
   void buildPeople() {
-    FaceSample sample(String id, int seed, int minutes, {SampleSource source = SampleSource.event}) => FaceSample(
+    FaceSample sample(
+      String id,
+      int seed,
+      int minutes, {
+      SampleSource source = SampleSource.event,
+    }) => FaceSample(
       id: id,
       source: source,
       quality: 0.6 + (seed % 4) / 10,
@@ -555,7 +617,10 @@ class Fixtures {
         name: 'Sam',
         notes: 'Courier on weekdays',
         color: 0xFF45C25F,
-        samples: [sample('s-s1', 2, 900, source: SampleSource.upload), sample('s-s2', 2, 130)],
+        samples: [
+          sample('s-s1', 2, 900, source: SampleSource.upload),
+          sample('s-s2', 2, 130),
+        ],
         lastSeenAt: now.subtract(const Duration(minutes: 130)),
         sightings: [sighting('s-s2', 2, 130, 'Porch')],
       ),
@@ -628,11 +693,21 @@ class Fixtures {
       final started = now.subtract(Duration(minutes: minutesAgo, seconds: random.nextInt(50)));
       final boxes = <EventBox>[];
       for (var i = 0; i < objects; i++) {
-        final w = label == 'person' ? 0.09 + random.nextDouble() * 0.05 : 0.22 + random.nextDouble() * 0.08;
-        final h = label == 'person' ? 0.32 + random.nextDouble() * 0.12 : 0.18 + random.nextDouble() * 0.06;
+        final w = label == 'person'
+            ? 0.09 + random.nextDouble() * 0.05
+            : 0.22 + random.nextDouble() * 0.08;
+        final h = label == 'person'
+            ? 0.32 + random.nextDouble() * 0.12
+            : 0.18 + random.nextDouble() * 0.06;
         final x = 0.12 + random.nextDouble() * (0.7 - w);
         final y = 0.38 + random.nextDouble() * (0.55 - h);
-        boxes.add(EventBox(object: 100 + counter * 3 + i, label: label ?? 'object', box: Rect.fromLTWH(x, y, w, h)));
+        boxes.add(
+          EventBox(
+            object: 100 + counter * 3 + i,
+            label: label ?? 'object',
+            box: Rect.fromLTWH(x, y, w, h),
+          ),
+        );
       }
       return CameraEvent(
         id: 'event-$counter',
@@ -678,7 +753,13 @@ class Fixtures {
       sampleId: 's-u1',
     );
     events.addAll([
-      make(cameraId: 'cam-entrance', kind: EventKind.faceUnknown, minutesAgo: 18, face: unknown, alert: true),
+      make(
+        cameraId: 'cam-entrance',
+        kind: EventKind.faceUnknown,
+        minutesAgo: 18,
+        face: unknown,
+        alert: true,
+      ),
       make(
         cameraId: 'cam-gate',
         kind: EventKind.lineCrossing,
@@ -687,7 +768,13 @@ class Fixtures {
         direction: 'in',
         alert: true,
       ),
-      make(cameraId: 'cam-checkout', kind: EventKind.crowd, minutesAgo: 31, zone: 'Counter queue', objects: 5),
+      make(
+        cameraId: 'cam-checkout',
+        kind: EventKind.crowd,
+        minutesAgo: 31,
+        zone: 'Counter queue',
+        objects: 5,
+      ),
       make(cameraId: 'cam-porch', lens: 1, kind: EventKind.faceKnown, minutesAgo: 42, face: alex),
       make(
         cameraId: 'cam-drive',
@@ -696,8 +783,20 @@ class Fixtures {
         label: 'car',
         zone: 'Parking',
         plates: const [
-          PlateCandidate(text: '00D001EM', display: '00 D 001 EM', format: 'private', score: 0.91, reads: 4),
-          PlateCandidate(text: '00D007EM', display: '00 D 007 EM', format: 'private', score: 0.62, reads: 1),
+          PlateCandidate(
+            text: '00D001EM',
+            display: '00 D 001 EM',
+            format: 'private',
+            score: 0.91,
+            reads: 4,
+          ),
+          PlateCandidate(
+            text: '00D007EM',
+            display: '00 D 007 EM',
+            format: 'private',
+            score: 0.62,
+            reads: 1,
+          ),
         ],
       ),
       make(
@@ -709,7 +808,13 @@ class Fixtures {
         alert: true,
         acknowledged: true,
       ),
-      make(cameraId: 'cam-porch', kind: EventKind.animal, minutesAgo: 80, label: 'cat', zone: 'Yard'),
+      make(
+        cameraId: 'cam-porch',
+        kind: EventKind.animal,
+        minutesAgo: 80,
+        label: 'cat',
+        zone: 'Yard',
+      ),
       make(
         cameraId: 'cam-checkout',
         kind: EventKind.objectLeft,
@@ -728,7 +833,13 @@ class Fixtures {
         objects: 0,
         clip: false,
       ),
-      make(cameraId: 'cam-gate', kind: EventKind.intrusion, minutesAgo: 140, zone: 'Gate', objects: 2),
+      make(
+        cameraId: 'cam-gate',
+        kind: EventKind.intrusion,
+        minutesAgo: 140,
+        zone: 'Gate',
+        objects: 2,
+      ),
       make(
         cameraId: 'cam-entrance',
         kind: EventKind.lineCrossing,
@@ -737,8 +848,20 @@ class Fixtures {
         direction: 'in',
         objects: 2,
       ),
-      make(cameraId: 'cam-aisle', kind: EventKind.fall, minutesAgo: 175, alert: true, acknowledged: true),
-      make(cameraId: 'cam-gate', kind: EventKind.loitering, minutesAgo: 230, zone: 'Gate', alert: true),
+      make(
+        cameraId: 'cam-aisle',
+        kind: EventKind.fall,
+        minutesAgo: 175,
+        alert: true,
+        acknowledged: true,
+      ),
+      make(
+        cameraId: 'cam-gate',
+        kind: EventKind.loitering,
+        minutesAgo: 230,
+        zone: 'Gate',
+        alert: true,
+      ),
       make(
         cameraId: 'cam-drive',
         kind: EventKind.vehicle,
@@ -747,7 +870,13 @@ class Fixtures {
         zone: 'Parking',
         plateStatus: 'too_small',
       ),
-      make(cameraId: 'cam-stock', kind: EventKind.intrusion, minutesAgo: 610, zone: 'Stock', alert: true),
+      make(
+        cameraId: 'cam-stock',
+        kind: EventKind.intrusion,
+        minutesAgo: 610,
+        zone: 'Stock',
+        alert: true,
+      ),
       make(
         cameraId: 'cam-gate',
         kind: EventKind.motion,
@@ -757,7 +886,13 @@ class Fixtures {
         clip: false,
         objects: 0,
       ),
-      make(cameraId: 'cam-porch', lens: 1, kind: EventKind.faceUnknown, minutesAgo: 260, face: unknown),
+      make(
+        cameraId: 'cam-porch',
+        lens: 1,
+        kind: EventKind.faceUnknown,
+        minutesAgo: 260,
+        face: unknown,
+      ),
       make(
         cameraId: 'cam-entrance',
         kind: EventKind.lineCrossing,
@@ -773,9 +908,28 @@ class Fixtures {
         direction: 'out',
         label: 'car',
       ),
-      make(cameraId: 'cam-checkout', kind: EventKind.crowd, minutesAgo: 1700, zone: 'Counter queue', objects: 4),
-      make(cameraId: 'cam-stock', kind: EventKind.intrusion, minutesAgo: 1900, zone: 'Stock', alert: true, acknowledged: true),
-      make(cameraId: 'cam-porch', kind: EventKind.intrusion, minutesAgo: 2100, zone: 'Yard', acknowledged: true),
+      make(
+        cameraId: 'cam-checkout',
+        kind: EventKind.crowd,
+        minutesAgo: 1700,
+        zone: 'Counter queue',
+        objects: 4,
+      ),
+      make(
+        cameraId: 'cam-stock',
+        kind: EventKind.intrusion,
+        minutesAgo: 1900,
+        zone: 'Stock',
+        alert: true,
+        acknowledged: true,
+      ),
+      make(
+        cameraId: 'cam-porch',
+        kind: EventKind.intrusion,
+        minutesAgo: 2100,
+        zone: 'Yard',
+        acknowledged: true,
+      ),
     ]);
     events.sort((a, b) => b.startedAt.compareTo(a.startedAt));
   }
@@ -852,7 +1006,14 @@ class Fixtures {
 
   /// Generates the audit log entries.
   void buildAudit() {
-    AuditEntry entry(int minutes, String actor, String action, AuditCategory category, {String? target, String? site}) => AuditEntry(
+    AuditEntry entry(
+      int minutes,
+      String actor,
+      String action,
+      AuditCategory category, {
+      String? target,
+      String? site,
+    }) => AuditEntry(
       id: 'audit-$minutes-${action.hashCode}',
       at: now.subtract(Duration(minutes: minutes)),
       actor: actor,
@@ -863,19 +1024,61 @@ class Fixtures {
     );
     audit[demoOrg] = [
       entry(3, user.name, 'live.view', AuditCategory.views, target: 'Porch', site: 'Demo home'),
-      entry(12, user.name, 'clip.view', AuditCategory.views, target: 'Gate line', site: 'Demo home'),
-      entry(26, 'Demo operator', 'arm.change', AuditCategory.arm, target: 'Home', site: 'Demo store'),
-      entry(44, 'Demo admin', 'rules.update', AuditCategory.rules, target: 'Checkout', site: 'Demo store'),
-      entry(70, user.name, 'clip.export', AuditCategory.exports, target: 'Aisle 3', site: 'Demo store'),
+      entry(
+        12,
+        user.name,
+        'clip.view',
+        AuditCategory.views,
+        target: 'Gate line',
+        site: 'Demo home',
+      ),
+      entry(
+        26,
+        'Demo operator',
+        'arm.change',
+        AuditCategory.arm,
+        target: 'Home',
+        site: 'Demo store',
+      ),
+      entry(
+        44,
+        'Demo admin',
+        'rules.update',
+        AuditCategory.rules,
+        target: 'Checkout',
+        site: 'Demo store',
+      ),
+      entry(
+        70,
+        user.name,
+        'clip.export',
+        AuditCategory.exports,
+        target: 'Aisle 3',
+        site: 'Demo store',
+      ),
       entry(95, 'Demo admin', 'face.enrol', AuditCategory.faces, target: 'Mira'),
       entry(130, user.name, 'member.invite', AuditCategory.members, target: 'guard@demo.example'),
       entry(190, 'Demo operator', 'auth.sign_in', AuditCategory.signIn, target: 'Android'),
-      entry(260, 'Demo admin', 'camera.add', AuditCategory.cameras, target: 'Stock room', site: 'Demo store'),
+      entry(
+        260,
+        'Demo admin',
+        'camera.add',
+        AuditCategory.cameras,
+        target: 'Stock room',
+        site: 'Demo store',
+      ),
       entry(400, user.name, 'member.role', AuditCategory.members, target: 'Demo operator'),
       entry(520, user.name, 'auth.sign_in', AuditCategory.signIn, target: 'Web'),
       entry(900, 'Demo admin', 'face.delete', AuditCategory.faces, target: 'Unknown 2'),
       entry(1300, 'Platform', 'org.plan', AuditCategory.admin, target: 'Internal'),
-      entry(1500, user.name, 'camera.update', AuditCategory.cameras, target: 'Backyard', site: 'Demo home'),
+      entry(
+        1500,
+        user.name,
+        'camera.update',
+        AuditCategory.cameras,
+        target: 'Backyard',
+        site: 'Demo home',
+      ),
     ];
   }
 
@@ -885,7 +1088,14 @@ class Fixtures {
     final lines = <CountLine>[];
     for (final view in siteViews) {
       for (final line in view.lines) {
-        lines.add(CountLine(id: line.id!, name: line.name, viewName: view.name, cameraName: view.cameraName));
+        lines.add(
+          CountLine(
+            id: line.id!,
+            name: line.name,
+            viewName: view.name,
+            cameraName: view.cameraName,
+          ),
+        );
       }
     }
     final buckets = <CountBucket>[];
@@ -901,7 +1111,9 @@ class Fixtures {
         final scale = bucket == Bucket.hour ? 1.0 : (siteId == storeSite ? 9.0 : 7.0);
         final inward = (base * weight * scale * (0.7 + random.nextDouble() * 0.6)).round();
         final outward = (inward * (0.8 + random.nextDouble() * 0.35)).round();
-        buckets.add(CountBucket(lineId: line.id, at: at, label: 'person', inward: inward, outward: outward));
+        buckets.add(
+          CountBucket(lineId: line.id, at: at, label: 'person', inward: inward, outward: outward),
+        );
         at = at.add(step);
         index++;
         if (index > 400) break;

@@ -1,4 +1,5 @@
 import 'package:smart_surveillance/app/l10n/l10n.dart';
+
 /// The shape an email address must have.
 final emailPattern = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
 

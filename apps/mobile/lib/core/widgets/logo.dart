@@ -4,7 +4,8 @@ import 'package:smart_surveillance/core/design/svg_path.dart';
 
 /// The eye outline of the Smart Surveillance mark on its 24 unit grid,
 /// the same path as packages/brand/mark.svg.
-const markOutline = 'M2.5 12C5 7.5 8.4 5.5 12 5.5C15.6 5.5 19 7.5 21.5 12C19 16.5 15.6 18.5 12 18.5C8.4 18.5 5 16.5 2.5 12Z';
+const markOutline =
+    'M2.5 12C5 7.5 8.4 5.5 12 5.5C15.6 5.5 19 7.5 21.5 12C19 16.5 15.6 18.5 12 18.5C8.4 18.5 5 16.5 2.5 12Z';
 
 final _outline = parseSvgPath(markOutline);
 
@@ -78,5 +79,6 @@ class MarkPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(MarkPainter oldDelegate) => oldDelegate.color != color || oldDelegate.dot != dot;
+  bool shouldRepaint(MarkPainter oldDelegate) =>
+      oldDelegate.color != color || oldDelegate.dot != dot;
 }

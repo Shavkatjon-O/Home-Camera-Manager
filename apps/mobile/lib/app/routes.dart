@@ -39,6 +39,7 @@ import 'package:smart_surveillance/features/tenancy/presentation/site_settings_s
 import 'package:smart_surveillance/features/tenancy/presentation/site_setup_screen.dart';
 
 part 'routes.g.dart';
+
 /// The key of the root navigator, used to show screens above the tab bar.
 final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
@@ -155,8 +156,10 @@ class OnboardingConnectorRoute extends GoRouteData with $OnboardingConnectorRout
 
   /// The id of the site the step belongs to.
   final String siteId;
+
   /// Whether the step is part of first-time setup rather than adding to an existing site.
   final bool first;
+
   /// The pairing code to prefill, when the link carried one.
   final String? code;
 
@@ -173,11 +176,13 @@ class OnboardingAddRoute extends GoRouteData with $OnboardingAddRoute {
 
   /// The id of the site the step belongs to.
   final String siteId;
+
   /// Whether the step is part of first-time setup rather than adding to an existing site.
   final bool first;
 
   @override
-  Widget build(BuildContext context, GoRouterState state) => AddCameraScreen(siteId: siteId, first: first);
+  Widget build(BuildContext context, GoRouterState state) =>
+      AddCameraScreen(siteId: siteId, first: first);
 }
 
 /// The route to the setup step for choosing an analytics preset for a camera.
@@ -188,8 +193,10 @@ class OnboardingAnalyticsRoute extends GoRouteData with $OnboardingAnalyticsRout
 
   /// The id of the site the step belongs to.
   final String siteId;
+
   /// The id of the camera.
   final String cameraId;
+
   /// Whether the step is part of first-time setup rather than adding to an existing site.
   final bool first;
 
@@ -265,11 +272,13 @@ class CameraRoute extends GoRouteData with $CameraRoute {
 
   /// The id of the camera.
   final String cameraId;
+
   /// The index of the camera lens to show.
   final int lens;
 
   @override
-  Widget build(BuildContext context, GoRouterState state) => CameraScreen(cameraId: cameraId, lens: lens);
+  Widget build(BuildContext context, GoRouterState state) =>
+      CameraScreen(cameraId: cameraId, lens: lens);
 }
 
 /// The route to the details of one event.
@@ -351,8 +360,14 @@ class ZoneEditorRoute extends GoRouteData with $ZoneEditorRoute {
           routes: [
             TypedGoRoute<CountsRoute>(path: 'counts'),
             TypedGoRoute<SiteSettingsRoute>(path: 'site'),
-            TypedGoRoute<CamerasRoute>(path: 'cameras', routes: [TypedGoRoute<CameraSettingsRoute>(path: ':cameraId')]),
-            TypedGoRoute<AnalyticsRoute>(path: 'analytics', routes: [TypedGoRoute<ViewRoute>(path: ':viewId')]),
+            TypedGoRoute<CamerasRoute>(
+              path: 'cameras',
+              routes: [TypedGoRoute<CameraSettingsRoute>(path: ':cameraId')],
+            ),
+            TypedGoRoute<AnalyticsRoute>(
+              path: 'analytics',
+              routes: [TypedGoRoute<ViewRoute>(path: ':viewId')],
+            ),
             TypedGoRoute<ConnectorsRoute>(path: 'connectors'),
             TypedGoRoute<HealthRoute>(path: 'health'),
             TypedGoRoute<MembersRoute>(path: 'members'),
@@ -374,8 +389,11 @@ class AppShellRoute extends StatefulShellRouteData {
   const AppShellRoute();
 
   @override
-  Widget builder(BuildContext context, GoRouterState state, StatefulNavigationShell navigationShell) =>
-      AppShell(shell: navigationShell);
+  Widget builder(
+    BuildContext context,
+    GoRouterState state,
+    StatefulNavigationShell navigationShell,
+  ) => AppShell(shell: navigationShell);
 }
 
 /// The tab branch of the home tab.
@@ -433,18 +451,27 @@ class EventsRoute extends GoRouteData with $EventsRoute {
 
   /// The id of the camera to filter by.
   final String? camera;
+
   /// The event kind to filter by.
   final String? kind;
+
   /// The id of the person to filter by.
   final String? person;
+
   /// The id of the face cluster to filter by.
   final String? cluster;
+
   /// Whether to list only events that raised alerts.
   final bool alerts;
 
   @override
-  Widget build(BuildContext context, GoRouterState state) =>
-      EventsScreen(camera: camera, kind: kind, person: person, cluster: cluster, alertsOnly: alerts);
+  Widget build(BuildContext context, GoRouterState state) => EventsScreen(
+    camera: camera,
+    kind: kind,
+    person: person,
+    cluster: cluster,
+    alertsOnly: alerts,
+  );
 }
 
 /// The route to the search tab.
@@ -504,7 +531,8 @@ class CameraSettingsRoute extends GoRouteData with $CameraSettingsRoute {
   final String cameraId;
 
   @override
-  Widget build(BuildContext context, GoRouterState state) => CameraSettingsScreen(cameraId: cameraId);
+  Widget build(BuildContext context, GoRouterState state) =>
+      CameraSettingsScreen(cameraId: cameraId);
 }
 
 /// The route to the list of analytics views.

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 /// The settings stored on this device, such as theme, language and the chosen site.
 class Preferences {
   /// Creates preferences backed by [store].
@@ -10,11 +11,14 @@ class Preferences {
 
   /// Opens the device store and returns the preferences backed by it.
   static Future<Preferences> open() async => Preferences(
-    await SharedPreferencesWithCache.create(cacheOptions: const SharedPreferencesWithCacheOptions()),
+    await SharedPreferencesWithCache.create(
+      cacheOptions: const SharedPreferencesWithCacheOptions(),
+    ),
   );
 
   /// The chosen theme mode, following the system by default.
-  ThemeMode get themeMode => ThemeMode.values.byName(store.getString('theme') ?? ThemeMode.system.name);
+  ThemeMode get themeMode =>
+      ThemeMode.values.byName(store.getString('theme') ?? ThemeMode.system.name);
 
   /// Saves [mode] as the theme mode.
   Future<void> setThemeMode(ThemeMode mode) => store.setString('theme', mode.name);
@@ -33,13 +37,15 @@ class Preferences {
   String? get siteId => store.getString('site');
 
   /// Saves [id] as the selected site, or removes the choice when null.
-  Future<void> setSiteId(String? id) => id == null ? store.remove('site') : store.setString('site', id);
+  Future<void> setSiteId(String? id) =>
+      id == null ? store.remove('site') : store.setString('site', id);
 
   /// The address of the server the app connects to, or null when none was chosen.
   String? get serverUrl => store.getString('server');
 
   /// Saves [url] as the server address, or removes it when null.
-  Future<void> setServerUrl(String? url) => url == null ? store.remove('server') : store.setString('server', url);
+  Future<void> setServerUrl(String? url) =>
+      url == null ? store.remove('server') : store.setString('server', url);
 
   /// The index of the layout last chosen for the live grid.
   int get liveLayout => store.getInt('layout') ?? 0;

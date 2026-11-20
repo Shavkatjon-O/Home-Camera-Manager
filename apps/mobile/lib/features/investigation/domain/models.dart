@@ -2,10 +2,12 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:smart_surveillance/core/media/media_source.dart';
 
 part 'models.freezed.dart';
+
 /// Where a face sample came from.
 enum SampleSource {
   /// The sample was uploaded as a photo.
   upload,
+
   /// The sample was cut out of a camera event.
   event,
 }
@@ -94,10 +96,8 @@ abstract class SimilarFace with _$SimilarFace {
 @freezed
 abstract class PhotoResult with _$PhotoResult {
   /// Creates a result with [added] accepted photos and the names of those [rejected].
-  const factory PhotoResult({
-    required int added,
-    @Default(<String>[]) List<String> rejected,
-  }) = _PhotoResult;
+  const factory PhotoResult({required int added, @Default(<String>[]) List<String> rejected}) =
+      _PhotoResult;
 }
 
 /// One stop of a person's journey, on one camera.

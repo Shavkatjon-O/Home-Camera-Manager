@@ -4,6 +4,7 @@ import 'package:smart_surveillance/app/demo/fake_store.dart';
 import 'package:smart_surveillance/core/network/failure.dart';
 import 'package:smart_surveillance/features/identity/domain/auth_repository.dart';
 import 'package:smart_surveillance/features/identity/domain/models.dart';
+
 /// An in-memory authentication repository backed by a [FakeStore].
 class FakeAuthRepository implements AuthRepository {
   /// Creates a repository that keeps its accounts in [store].
@@ -23,13 +24,16 @@ class FakeAuthRepository implements AuthRepository {
   });
 
   @override
-  Future<SignUpResult> signUp({required String name, required String email, required String password}) =>
-      store.delay(() {
-        if (email.startsWith('taken@')) throw const ApiFailure(FailureKind.conflict);
-        store.data.user = User(id: 'user-new', name: name, email: email, verified: false);
-        store.fresh = true;
-        return SignUpResult(email: email, needsVerification: true);
-      });
+  Future<SignUpResult> signUp({
+    required String name,
+    required String email,
+    required String password,
+  }) => store.delay(() {
+    if (email.startsWith('taken@')) throw const ApiFailure(FailureKind.conflict);
+    store.data.user = User(id: 'user-new', name: name, email: email, verified: false);
+    store.fresh = true;
+    return SignUpResult(email: email, needsVerification: true);
+  });
 
   @override
   Future<void> resendVerification(String email) => store.delay(() {});
@@ -62,7 +66,8 @@ class FakeAuthRepository implements AuthRepository {
   Future<List<DeviceSession>> sessions() => store.delay(() => List.of(store.data.sessions));
 
   @override
-  Future<void> revokeSession(String id) => store.delay(() => store.data.sessions.removeWhere((s) => s.id == id));
+  Future<void> revokeSession(String id) =>
+      store.delay(() => store.data.sessions.removeWhere((s) => s.id == id));
 
   @override
   Future<User> updateProfile({required String name}) => store.delay(() {

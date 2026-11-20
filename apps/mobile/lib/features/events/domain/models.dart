@@ -3,38 +3,54 @@ import 'dart:ui';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'models.freezed.dart';
+
 /// What kind of thing an event reports.
 enum EventKind {
   /// Movement was detected in the view.
   motion,
+
   /// A person was detected.
   person,
+
   /// A vehicle was detected.
   vehicle,
+
   /// Something entered a watched zone.
   intrusion,
+
   /// Something crossed a watched line.
   lineCrossing,
+
   /// Someone stayed in a zone longer than allowed.
   loitering,
+
   /// A zone holds more people than allowed.
   crowd,
+
   /// A known person's face was recognized.
   faceKnown,
+
   /// An unrecognized face was seen.
   faceUnknown,
+
   /// The camera was covered, moved or lost its picture.
   tamper,
+
   /// The recording storage has a problem.
   storage,
+
   /// The camera restarted.
   reboot,
+
   /// An animal was detected.
   animal,
+
   /// An object was left behind in a zone.
   objectLeft,
+
   /// An object was taken from a zone.
   objectTaken,
+
   /// A person fell.
   fall;
 
@@ -49,6 +65,7 @@ enum EventKind {
 enum EventSource {
   /// The camera's own detection.
   camera,
+
   /// The app's analytics running on the camera's picture.
   analytics,
 }
@@ -57,6 +74,7 @@ enum EventSource {
 enum FaceStatus {
   /// The face matches a saved person.
   known,
+
   /// The face matches no saved person.
   unknown,
 }
@@ -144,7 +162,8 @@ abstract class CameraEvent with _$CameraEvent {
   bool get hasPlates => plates.isNotEmpty || plateStatus != null;
 
   /// Whether the event concerns a person, by label or by a face kind.
-  bool get personLike => label == 'person' || kind == EventKind.faceKnown || kind == EventKind.faceUnknown;
+  bool get personLike =>
+      label == 'person' || kind == EventKind.faceKnown || kind == EventKind.faceUnknown;
 }
 
 /// The choices a user applied to narrow the event list.
@@ -221,6 +240,7 @@ class EventChanged extends LiveUpdate {
 
   /// The event that changed.
   final CameraEvent event;
+
   /// Whether the event is new rather than updated.
   final bool created;
 }
@@ -241,6 +261,7 @@ class CameraStatusChanged extends LiveUpdate {
 
   /// The camera whose status changed.
   final String cameraId;
+
   /// Whether the camera is now online.
   final bool online;
 }

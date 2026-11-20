@@ -1,8 +1,8 @@
-
 import 'package:smart_surveillance/core/media/media_source.dart';
 import 'package:smart_surveillance/features/analytics/domain/models.dart';
 import 'package:smart_surveillance/features/insights/domain/models.dart';
 import 'package:smart_surveillance/features/investigation/domain/models.dart';
+
 /// The source of camera analytics configuration, live detections, counts and person tracking.
 abstract interface class AnalyticsRepository {
   /// Returns the analytics views of every camera at the site [siteId].
@@ -17,7 +17,11 @@ abstract interface class AnalyticsRepository {
   /// Replaces the zones and lines of view [viewId] with [zones] and [lines].
   ///
   /// Returns the stored view.
-  Future<AnalyticsView> saveRules(String viewId, {required List<Zone> zones, required List<Line> lines});
+  Future<AnalyticsView> saveRules(
+    String viewId, {
+    required List<Zone> zones,
+    required List<Line> lines,
+  });
 
   /// Returns a still image of view [viewId] to draw zones and lines on.
   Future<MediaSource> viewSnapshot(String viewId);
@@ -26,7 +30,12 @@ abstract interface class AnalyticsRepository {
   Stream<List<LiveObject>> liveObjects(String viewId);
 
   /// Returns the entry and exit counts at [siteId] between [start] and [end], grouped by [bucket].
-  Future<CountsReport> counts(String siteId, {required DateTime start, required DateTime end, required Bucket bucket});
+  Future<CountsReport> counts(
+    String siteId, {
+    required DateTime start,
+    required DateTime end,
+    required Bucket bucket,
+  });
 
   /// Returns the counted areas of the site [siteId] with their current occupancy.
   Future<List<Area>> areas(String siteId);

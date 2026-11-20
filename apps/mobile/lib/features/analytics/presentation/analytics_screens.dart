@@ -18,6 +18,7 @@ import 'package:smart_surveillance/features/analytics/presentation/zone_editor_s
 import 'package:smart_surveillance/features/devices/domain/models.dart';
 import 'package:smart_surveillance/features/events/presentation/labels.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
+
 /// Loads the still image of the analytics view with the given id.
 final viewSnapshotProvider = FutureProvider.autoDispose.family<MediaSource, String>(
   (ref, viewId) => ref.read(backendProvider).analytics.viewSnapshot(viewId),
@@ -43,13 +44,20 @@ class AnalyticsScreen extends ConsumerWidget {
         onRetry: () => ref.invalidate(viewsProvider(site.site.id)),
         loading: const ListSkeleton(),
         data: (views) => views.isEmpty
-            ? EmptyState(icon: Icons.auto_awesome_outlined, title: l10n.liveNoCameras, body: l10n.liveNoCamerasBody)
+            ? EmptyState(
+                icon: Icons.auto_awesome_outlined,
+                title: l10n.liveNoCameras,
+                body: l10n.liveNoCamerasBody,
+              )
             : ListView(
                 padding: const EdgeInsets.only(bottom: Gaps.xxl),
                 children: [
                   Padding(
                     padding: const EdgeInsets.fromLTRB(Gaps.page, 0, Gaps.page, Gaps.sm),
-                    child: Text(l10n.analyticsViewsBody, style: context.text.bodyMedium?.copyWith(color: p.text2)),
+                    child: Text(
+                      l10n.analyticsViewsBody,
+                      style: context.text.bodyMedium?.copyWith(color: p.text2),
+                    ),
                   ),
                   for (final view in views)
                     InkWell(
@@ -64,7 +72,12 @@ class AnalyticsScreen extends ConsumerWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(view.title, style: context.text.bodyLarge?.copyWith(fontWeight: FontWeight.w600)),
+                                  Text(
+                                    view.title,
+                                    style: context.text.bodyLarge?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
                                   const SizedBox(height: 2),
                                   Text(
                                     view.enabled
@@ -78,10 +91,22 @@ class AnalyticsScreen extends ConsumerWidget {
                                     runSpacing: 4,
                                     children: [
                                       if (view.enabled && view.fpsMeasured != null)
-                                        Tag(l10n.analyticsFps(format.number(view.fpsMeasured!, digits: 1)), dense: true),
-                                      if (view.faces) Tag(l10n.featureFaces, dense: true, tone: TagTone.info),
-                                      if (view.plates) Tag(l10n.featurePlates, dense: true, tone: TagTone.info),
-                                      if (view.suspended) Tag(l10n.analyticsSuspended, dense: true, tone: TagTone.warning),
+                                        Tag(
+                                          l10n.analyticsFps(
+                                            format.number(view.fpsMeasured!, digits: 1),
+                                          ),
+                                          dense: true,
+                                        ),
+                                      if (view.faces)
+                                        Tag(l10n.featureFaces, dense: true, tone: TagTone.info),
+                                      if (view.plates)
+                                        Tag(l10n.featurePlates, dense: true, tone: TagTone.info),
+                                      if (view.suspended)
+                                        Tag(
+                                          l10n.analyticsSuspended,
+                                          dense: true,
+                                          tone: TagTone.warning,
+                                        ),
                                     ],
                                   ),
                                 ],
@@ -106,6 +131,7 @@ class ViewThumb extends ConsumerWidget {
 
   /// The view shown in the thumbnail.
   final AnalyticsView view;
+
   /// Whether the view's zones and lines are drawn over the snapshot.
   final bool rules;
 
@@ -121,7 +147,14 @@ class ViewThumb extends ConsumerWidget {
           MediaView(source: snapshot, showStamp: false),
           if (rules)
             IgnorePointer(
-              child: CustomPaint(painter: RulesPainter(zones: view.zones, lines: view.lines, palette: context.palette, thin: true)),
+              child: CustomPaint(
+                painter: RulesPainter(
+                  zones: view.zones,
+                  lines: view.lines,
+                  palette: context.palette,
+                  thin: true,
+                ),
+              ),
             ),
         ],
       ),
@@ -174,20 +207,34 @@ class _ViewScreenState extends ConsumerState<ViewScreen> {
     final views = ref.watch(viewsProvider(site.site.id)).value ?? const [];
     final loaded = views.where((v) => v.id == widget.viewId).firstOrNull;
     final view = draft ?? loaded;
-    if (view == null) return Scaffold(appBar: AppBar(), body: const Center(child: CircularProgressIndicator(strokeWidth: 2)));
+    if (view == null) {
+      return Scaffold(
+        appBar: AppBar(),
+        body: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+      );
+    }
     final faces = site.organisation.facesEnabled;
-    SwitchListTile feature(String title, String body, bool value, AnalyticsView Function(bool) apply, {bool enabled = true, bool beta = false}) =>
-        SwitchListTile(
-          title: Row(
-            children: [
-              Flexible(child: Text(title)),
-              if (beta) ...[const SizedBox(width: 8), Tag(l10n.commonBeta, tone: TagTone.info, dense: true)],
-            ],
-          ),
-          subtitle: Text(body),
-          value: value,
-          onChanged: enabled && view.enabled && !busy ? (next) => save(apply(next)) : null,
-        );
+    SwitchListTile feature(
+      String title,
+      String body,
+      bool value,
+      AnalyticsView Function(bool) apply, {
+      bool enabled = true,
+      bool beta = false,
+    }) => SwitchListTile(
+      title: Row(
+        children: [
+          Flexible(child: Text(title)),
+          if (beta) ...[
+            const SizedBox(width: 8),
+            Tag(l10n.commonBeta, tone: TagTone.info, dense: true),
+          ],
+        ],
+      ),
+      subtitle: Text(body),
+      value: value,
+      onChanged: enabled && view.enabled && !busy ? (next) => save(apply(next)) : null,
+    );
     return Scaffold(
       appBar: AppBar(
         title: Text(view.title),
@@ -195,7 +242,13 @@ class _ViewScreenState extends ConsumerState<ViewScreen> {
           if (busy)
             const Padding(
               padding: EdgeInsets.only(right: 16),
-              child: Center(child: SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))),
+              child: Center(
+                child: SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
             ),
         ],
       ),
@@ -231,7 +284,9 @@ class _ViewScreenState extends ConsumerState<ViewScreen> {
                   ChoiceChip(
                     label: Text(l10n.profile(profile)),
                     selected: view.profile == profile,
-                    onSelected: view.enabled && !busy ? (_) => save(view.copyWith(profile: profile)) : null,
+                    onSelected: view.enabled && !busy
+                        ? (_) => save(view.copyWith(profile: profile))
+                        : null,
                   ),
               ],
             ),
@@ -246,8 +301,14 @@ class _ViewScreenState extends ConsumerState<ViewScreen> {
                 },
                 child: Column(
                   children: [
-                    RadioListTile<StreamQuality>(value: StreamQuality.sub, title: Text(l10n.analyticsStreamSub)),
-                    RadioListTile<StreamQuality>(value: StreamQuality.main, title: Text(l10n.analyticsStreamMain)),
+                    RadioListTile<StreamQuality>(
+                      value: StreamQuality.sub,
+                      title: Text(l10n.analyticsStreamSub),
+                    ),
+                    RadioListTile<StreamQuality>(
+                      value: StreamQuality.main,
+                      title: Text(l10n.analyticsStreamMain),
+                    ),
                   ],
                 ),
               ),
@@ -256,7 +317,12 @@ class _ViewScreenState extends ConsumerState<ViewScreen> {
           SectionHeader(l10n.analyticsFeatures),
           TileGroup(
             children: [
-              feature(l10n.featureTamper, l10n.featureTamperBody, view.tamper, (v) => view.copyWith(tamper: v)),
+              feature(
+                l10n.featureTamper,
+                l10n.featureTamperBody,
+                view.tamper,
+                (v) => view.copyWith(tamper: v),
+              ),
               feature(
                 l10n.featureFaces,
                 faces ? l10n.featureFacesBody : l10n.featureFacesLocked,
@@ -264,12 +330,40 @@ class _ViewScreenState extends ConsumerState<ViewScreen> {
                 (v) => view.copyWith(faces: v),
                 enabled: faces,
               ),
-              feature(l10n.featureAppearance, l10n.featureAppearanceBody, view.appearance, (v) => view.copyWith(appearance: v), beta: true),
-              feature(l10n.featureFalls, l10n.featureFallsBody, view.falls, (v) => view.copyWith(falls: v), beta: true),
-              feature(l10n.featurePlates, l10n.featurePlatesBody, view.plates, (v) => view.copyWith(plates: v), beta: true),
+              feature(
+                l10n.featureAppearance,
+                l10n.featureAppearanceBody,
+                view.appearance,
+                (v) => view.copyWith(appearance: v),
+                beta: true,
+              ),
+              feature(
+                l10n.featureFalls,
+                l10n.featureFallsBody,
+                view.falls,
+                (v) => view.copyWith(falls: v),
+                beta: true,
+              ),
+              feature(
+                l10n.featurePlates,
+                l10n.featurePlatesBody,
+                view.plates,
+                (v) => view.copyWith(plates: v),
+                beta: true,
+              ),
               if (view.ptz) ...[
-                feature(l10n.featureMoving, l10n.featureMovingBody, view.moving, (v) => view.copyWith(moving: v)),
-                feature(l10n.featureFollow, l10n.featureFollowBody, view.follow, (v) => view.copyWith(follow: v)),
+                feature(
+                  l10n.featureMoving,
+                  l10n.featureMovingBody,
+                  view.moving,
+                  (v) => view.copyWith(moving: v),
+                ),
+                feature(
+                  l10n.featureFollow,
+                  l10n.featureFollowBody,
+                  view.follow,
+                  (v) => view.copyWith(follow: v),
+                ),
               ],
             ],
           ),
@@ -285,7 +379,10 @@ class _ViewScreenState extends ConsumerState<ViewScreen> {
           if (view.zones.isEmpty && view.lines.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: Gaps.page),
-              child: Text(l10n.analyticsNoRules, style: context.text.bodyMedium?.copyWith(color: p.text3)),
+              child: Text(
+                l10n.analyticsNoRules,
+                style: context.text.bodyMedium?.copyWith(color: p.text3),
+              ),
             )
           else
             TileGroup(
@@ -301,14 +398,18 @@ class _ViewScreenState extends ConsumerState<ViewScreen> {
                         l10n.alertMode(zone.alert.mode),
                       ].where((s) => s.isNotEmpty).join(', '),
                     ),
-                    trailing: zone.suspended ? Tag(l10n.analyticsSuspended, tone: TagTone.warning, dense: true) : null,
+                    trailing: zone.suspended
+                        ? Tag(l10n.analyticsSuspended, tone: TagTone.warning, dense: true)
+                        : null,
                     onTap: () => ZoneEditorRoute(viewId: view.id).push<void>(context),
                   ),
                 for (final line in view.lines)
                   ListTile(
                     leading: const Icon(Icons.timeline_rounded),
                     title: Text(line.name),
-                    subtitle: Text('${l10n.direction(line.direction)}, ${line.labels.map(l10n.label).join(', ')}'),
+                    subtitle: Text(
+                      '${l10n.direction(line.direction)}, ${line.labels.map(l10n.label).join(', ')}',
+                    ),
                     onTap: () => ZoneEditorRoute(viewId: view.id).push<void>(context),
                   ),
               ],

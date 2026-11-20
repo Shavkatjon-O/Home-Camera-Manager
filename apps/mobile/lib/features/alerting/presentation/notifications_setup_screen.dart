@@ -37,11 +37,20 @@ class NotificationsSetupScreen extends ConsumerWidget {
               label: Text(l10n.onboardingNotificationsAllow),
             ),
           ),
-          TextButton(onPressed: () => finish(context, ref, ask: false), child: Text(l10n.commonSkip)),
+          TextButton(
+            onPressed: () => finish(context, ref, ask: false),
+            child: Text(l10n.commonSkip),
+          ),
         ],
       ),
       children: [
-        Center(child: IconBadge(icon: Icons.notifications_active_outlined, size: 88, color: context.palette.text)),
+        Center(
+          child: IconBadge(
+            icon: Icons.notifications_active_outlined,
+            size: 88,
+            color: context.palette.text,
+          ),
+        ),
       ],
     );
   }

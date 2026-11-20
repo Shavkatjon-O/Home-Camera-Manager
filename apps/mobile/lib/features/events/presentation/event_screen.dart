@@ -19,6 +19,7 @@ import 'package:smart_surveillance/features/investigation/domain/models.dart';
 import 'package:smart_surveillance/features/media/presentation/clip_player.dart';
 import 'package:smart_surveillance/features/tenancy/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
+
 /// Loads the event with the given id.
 final eventProvider = FutureProvider.autoDispose.family<CameraEvent, String>(
   (ref, id) => ref.read(backendProvider).events.event(id),
@@ -65,7 +66,12 @@ class _EventScreenState extends ConsumerState<EventScreen> {
   Future<void> share(CameraEvent event) async {
     try {
       final path = await ref.read(backendProvider).events.downloadClip(event);
-      await SharePlus.instance.share(ShareParams(files: [XFile(path, mimeType: 'video/mp4')], text: event.cameraName));
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(path, mimeType: 'video/mp4')],
+          text: event.cameraName,
+        ),
+      );
     } catch (failure) {
       if (mounted) showFailure(context, failure);
     }
@@ -78,7 +84,9 @@ class _EventScreenState extends ConsumerState<EventScreen> {
     final site = ref.watch(currentSiteProvider).value;
     return Scaffold(
       appBar: AppBar(
-        title: Text(value.value == null ? l10n.eventsTitle : l10n.kind((updated ?? value.value!).kind)),
+        title: Text(
+          value.value == null ? l10n.eventsTitle : l10n.kind((updated ?? value.value!).kind),
+        ),
         actions: [
           if (value.value?.hasClip == true && (site?.can(Role.operator) ?? false))
             IconButton(
@@ -120,8 +128,16 @@ class _EventScreenState extends ConsumerState<EventScreen> {
                     child: SegmentedButton<bool>(
                       showSelectedIcon: false,
                       segments: [
-                        ButtonSegment(value: false, label: Text(l10n.eventSnapshot), icon: const Icon(Icons.image_outlined, size: 18)),
-                        ButtonSegment(value: true, label: Text(l10n.eventClip), icon: const Icon(Icons.movie_outlined, size: 18)),
+                        ButtonSegment(
+                          value: false,
+                          label: Text(l10n.eventSnapshot),
+                          icon: const Icon(Icons.image_outlined, size: 18),
+                        ),
+                        ButtonSegment(
+                          value: true,
+                          label: Text(l10n.eventClip),
+                          icon: const Icon(Icons.movie_outlined, size: 18),
+                        ),
                       ],
                       selected: {clip},
                       onSelectionChanged: (value) => setState(() => clip = value.first),
@@ -143,7 +159,13 @@ class _EventScreenState extends ConsumerState<EventScreen> {
                         fit: StackFit.expand,
                         children: [
                           if (event.hasSnapshot) MediaView(source: events.snapshot(event)),
-                          if (boxes && event.boxes.isNotEmpty) BoxOverlay(boxes: [for (final box in event.boxes) (box: box.box, label: box.label, caption: l10n.label(box.label))]),
+                          if (boxes && event.boxes.isNotEmpty)
+                            BoxOverlay(
+                              boxes: [
+                                for (final box in event.boxes)
+                                  (box: box.box, label: box.label, caption: l10n.label(box.label)),
+                              ],
+                            ),
                         ],
                       ),
                     ),
@@ -170,7 +192,8 @@ class _EventScreenState extends ConsumerState<EventScreen> {
                 children: [
                   Tag(l10n.kind(event.kind), icon: kindIcon(event.kind)),
                   if (event.alert && !event.acknowledged) Tag(l10n.eventAlert, tone: TagTone.alert),
-                  if (event.acknowledged) Tag(l10n.eventReviewed, tone: TagTone.ok, icon: Icons.check_rounded),
+                  if (event.acknowledged)
+                    Tag(l10n.eventReviewed, tone: TagTone.ok, icon: Icons.check_rounded),
                   if (event.ongoing) Tag(l10n.eventOngoing, tone: TagTone.warning),
                   if (event.kind.beta) Tag(l10n.commonBeta, tone: TagTone.info),
                 ],
@@ -187,15 +210,20 @@ class _EventScreenState extends ConsumerState<EventScreen> {
                   icon: const Icon(Icons.check_rounded, size: 19),
                   label: Text(l10n.eventAcknowledge),
                 ),
-              if (event.label == 'person' || event.kind == EventKind.faceKnown || event.kind == EventKind.faceUnknown)
+              if (event.label == 'person' ||
+                  event.kind == EventKind.faceKnown ||
+                  event.kind == EventKind.faceUnknown)
                 OutlinedButton.icon(
                   onPressed: () => FindPersonRoute(eventId: event.id).push<void>(context),
                   icon: const Icon(Icons.person_search_outlined, size: 19),
                   label: Text(l10n.eventFindPerson),
                 ),
-              if (faces && event.face?.status == FaceStatus.unknown && event.face?.clusterId != null)
+              if (faces &&
+                  event.face?.status == FaceStatus.unknown &&
+                  event.face?.clusterId != null)
                 OutlinedButton.icon(
-                  onPressed: () => ClusterRoute(clusterId: event.face!.clusterId!).push<void>(context),
+                  onPressed: () =>
+                      ClusterRoute(clusterId: event.face!.clusterId!).push<void>(context),
                   icon: const Icon(Icons.badge_outlined, size: 19),
                   label: Text(l10n.eventWhoIsThis),
                 ),
@@ -224,12 +252,23 @@ class _EventScreenState extends ConsumerState<EventScreen> {
                     label: l10n.eventDirection,
                     value: event.direction == 'in' ? l10n.eventDirectionIn : l10n.eventDirectionOut,
                   ),
-                if (event.count != null && event.count! > 0) ReadOut(label: l10n.eventObjects, value: '${event.count}', mono: true),
-                ReadOut(label: l10n.eventStarted, value: format.timeSeconds(event.startedAt), mono: true),
-                ReadOut(label: l10n.eventDuration, value: format.duration(event.duration), mono: true),
+                if (event.count != null && event.count! > 0)
+                  ReadOut(label: l10n.eventObjects, value: '${event.count}', mono: true),
+                ReadOut(
+                  label: l10n.eventStarted,
+                  value: format.timeSeconds(event.startedAt),
+                  mono: true,
+                ),
+                ReadOut(
+                  label: l10n.eventDuration,
+                  value: format.duration(event.duration),
+                  mono: true,
+                ),
                 ReadOut(
                   label: l10n.eventSource,
-                  value: event.source == EventSource.analytics ? l10n.eventSourceAnalytics : l10n.eventSourceCamera,
+                  value: event.source == EventSource.analytics
+                      ? l10n.eventSourceAnalytics
+                      : l10n.eventSourceCamera,
                 ),
               ],
             ),
@@ -267,12 +306,22 @@ class FaceSection extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(8),
                 child: SizedBox(width: 44, height: 44, child: MediaView(source: source)),
               ),
-              title: Text(known ? (face.personName ?? l10n.kindFaceKnown) : (face.clusterLabel ?? l10n.kindFaceUnknown)),
-              subtitle: face.confidence == null ? null : Text(l10n.eventConfidence((face.confidence! * 100).round())),
+              title: Text(
+                known
+                    ? (face.personName ?? l10n.kindFaceKnown)
+                    : (face.clusterLabel ?? l10n.kindFaceUnknown),
+              ),
+              subtitle: face.confidence == null
+                  ? null
+                  : Text(l10n.eventConfidence((face.confidence! * 100).round())),
               trailing: const Icon(Icons.chevron_right_rounded),
               onTap: () {
-                if (known && face.personId != null) PersonRoute(personId: face.personId!).push<void>(context);
-                if (!known && face.clusterId != null) ClusterRoute(clusterId: face.clusterId!).push<void>(context);
+                if (known && face.personId != null) {
+                  PersonRoute(personId: face.personId!).push<void>(context);
+                }
+                if (!known && face.clusterId != null) {
+                  ClusterRoute(clusterId: face.clusterId!).push<void>(context);
+                }
               },
             ),
           ],
@@ -305,12 +354,18 @@ class PlatesSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SectionHeader(l10n.eventPlate, action: Tag(l10n.commonBeta, tone: TagTone.info, dense: true)),
+        SectionHeader(
+          l10n.eventPlate,
+          action: Tag(l10n.commonBeta, tone: TagTone.info, dense: true),
+        ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: Gaps.page),
           child: Panel(
             child: event.plates.isEmpty
-                ? Text(status ?? l10n.plateUnreadable, style: context.text.bodyMedium?.copyWith(color: p.text2))
+                ? Text(
+                    status ?? l10n.plateUnreadable,
+                    style: context.text.bodyMedium?.copyWith(color: p.text2),
+                  )
                 : Column(
                     children: [
                       for (final plate in event.plates)
@@ -325,12 +380,21 @@ class PlatesSection extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(6),
                                   border: Border.all(color: p.borderStrong),
                                 ),
-                                child: Text(plate.display, style: dataStyle(context, size: 16, weight: FontWeight.w600)),
+                                child: Text(
+                                  plate.display,
+                                  style: dataStyle(context, size: 16, weight: FontWeight.w600),
+                                ),
                               ),
                               const Spacer(),
-                              Text('${(plate.score * 100).round()}%', style: dataStyle(context, size: 13, color: p.text2)),
+                              Text(
+                                '${(plate.score * 100).round()}%',
+                                style: dataStyle(context, size: 13, color: p.text2),
+                              ),
                               const SizedBox(width: 12),
-                              Text(l10n.eventPlateReads(plate.reads), style: context.text.bodySmall),
+                              Text(
+                                l10n.eventPlateReads(plate.reads),
+                                style: context.text.bodySmall,
+                              ),
                             ],
                           ),
                         ),
@@ -361,7 +425,10 @@ class JourneySection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SectionHeader(l10n.eventJourney, action: Tag(l10n.commonBeta, tone: TagTone.info, dense: true)),
+        SectionHeader(
+          l10n.eventJourney,
+          action: Tag(l10n.commonBeta, tone: TagTone.info, dense: true),
+        ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: Gaps.page),
           child: Panel(
@@ -386,7 +453,8 @@ class JourneySection extends ConsumerWidget {
                                   border: Border.all(color: p.borderStrong),
                                 ),
                               ),
-                              if (i < journey.steps.length - 1) Expanded(child: Container(width: 1.5, color: p.borderInput)),
+                              if (i < journey.steps.length - 1)
+                                Expanded(child: Container(width: 1.5, color: p.borderInput)),
                             ],
                           ),
                         ),
@@ -397,12 +465,19 @@ class JourneySection extends ConsumerWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(journey.steps[i].cameraName, style: context.text.bodyLarge?.copyWith(fontWeight: FontWeight.w600)),
+                                Text(
+                                  journey.steps[i].cameraName,
+                                  style: context.text.bodyLarge?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                                 Text(
                                   [
                                     format.timeSeconds(journey.steps[i].startedAt),
                                     if (journey.steps[i].similarity != null)
-                                      l10n.findPersonMatch((journey.steps[i].similarity! * 100).round()),
+                                      l10n.findPersonMatch(
+                                        (journey.steps[i].similarity! * 100).round(),
+                                      ),
                                   ].join(', '),
                                   style: dataStyle(context, size: 12, color: p.text3),
                                 ),
@@ -412,7 +487,8 @@ class JourneySection extends ConsumerWidget {
                         ),
                         if (journey.steps[i].eventId != null && journey.steps[i].eventId != eventId)
                           IconButton(
-                            onPressed: () => EventRoute(eventId: journey.steps[i].eventId!).push<void>(context),
+                            onPressed: () =>
+                                EventRoute(eventId: journey.steps[i].eventId!).push<void>(context),
                             icon: const Icon(Icons.chevron_right_rounded),
                           ),
                       ],

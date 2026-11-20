@@ -7,6 +7,7 @@ import 'package:smart_surveillance/core/design/tokens.dart';
 import 'package:smart_surveillance/features/alerting/presentation/labels.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/labels.dart';
+
 /// A button that shows the current site and opens the site sheet.
 class SiteSwitcherButton extends ConsumerWidget {
   /// Creates the button.
@@ -35,8 +36,16 @@ class SiteSwitcherButton extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(site.site.name, style: context.text.titleLarge, overflow: TextOverflow.ellipsis),
-                    Text(site.organisation.name, style: context.text.labelSmall, overflow: TextOverflow.ellipsis),
+                    Text(
+                      site.site.name,
+                      style: context.text.titleLarge,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      site.organisation.name,
+                      style: context.text.labelSmall,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ],
                 ),
               ),
@@ -86,7 +95,10 @@ class SiteSheet extends ConsumerWidget {
                 child: Row(
                   children: [
                     Expanded(child: Text(organisation.name, style: context.text.labelMedium)),
-                    Text(l10n.role(organisation.role), style: dataStyle(context, size: 11.5, color: p.text3)),
+                    Text(
+                      l10n.role(organisation.role),
+                      style: dataStyle(context, size: 11.5, color: p.text3),
+                    ),
                   ],
                 ),
               ),
@@ -94,7 +106,9 @@ class SiteSheet extends ConsumerWidget {
                 ListTile(
                   leading: Icon(siteKindIcon(site.kind)),
                   title: Text(site.name),
-                  subtitle: Text('${l10n.siteKind(site.kind)}, ${l10n.arm(site.armMode).toLowerCase()}'),
+                  subtitle: Text(
+                    '${l10n.siteKind(site.kind)}, ${l10n.arm(site.armMode).toLowerCase()}',
+                  ),
                   trailing: site.id == current ? Icon(Icons.check_rounded, color: p.text) : null,
                   selected: site.id == current,
                   selectedTileColor: p.surface2,

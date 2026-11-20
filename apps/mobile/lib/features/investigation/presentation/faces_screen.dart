@@ -8,6 +8,7 @@ import 'package:smart_surveillance/core/widgets/states.dart';
 import 'package:smart_surveillance/core/widgets/surfaces.dart';
 import 'package:smart_surveillance/features/tenancy/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
+
 /// The screen where face recognition is turned on or off for the organisation, with its consent.
 class FacesScreen extends ConsumerStatefulWidget {
   /// Creates the faces screen.
@@ -34,8 +35,14 @@ class _FacesScreenState extends ConsumerState<FacesScreen> {
           title: Text(l10n.facesConsentTitle),
           content: SingleChildScrollView(child: Text(consent.text ?? l10n.facesConsentBody)),
           actions: [
-            TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(l10n.commonCancel)),
-            FilledButton(onPressed: () => Navigator.of(context).pop(true), child: Text(l10n.facesConsentConfirm)),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(l10n.commonCancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(l10n.facesConsentConfirm),
+            ),
           ],
         ),
       );
@@ -74,11 +81,15 @@ class _FacesScreenState extends ConsumerState<FacesScreen> {
             children: [
               SwitchListTile(
                 secondary: Icon(
-                  organisation.facesEnabled ? Icons.face_retouching_natural_outlined : Icons.face_retouching_off_outlined,
+                  organisation.facesEnabled
+                      ? Icons.face_retouching_natural_outlined
+                      : Icons.face_retouching_off_outlined,
                 ),
                 title: Text(organisation.name),
                 subtitle: Text(
-                  allowed ? (organisation.facesEnabled ? l10n.facesEnabled : l10n.facesDisabled) : l10n.facesOwnerOnly,
+                  allowed
+                      ? (organisation.facesEnabled ? l10n.facesEnabled : l10n.facesDisabled)
+                      : l10n.facesOwnerOnly,
                 ),
                 value: organisation.facesEnabled,
                 onChanged: allowed && !busy ? (value) => change(organisation, value) : null,

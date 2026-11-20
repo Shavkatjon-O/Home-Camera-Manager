@@ -15,13 +15,19 @@ import 'package:smart_surveillance/features/insights/domain/models.dart';
 import 'package:smart_surveillance/features/insights/presentation/providers.dart';
 import 'package:smart_surveillance/features/tenancy/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
+
 /// Identifies a counts report by site, first day and bucket size.
 typedef ReportKey = ({String siteId, DateTime start, Bucket bucket});
 
 /// Loads the line crossing counts for a day or week, depending on the bucket size.
 final reportProvider = FutureProvider.autoDispose.family<CountsReport, ReportKey>((ref, key) {
-  final end = key.bucket == Bucket.hour ? key.start.add(const Duration(days: 1)) : key.start.add(const Duration(days: 7));
-  return ref.read(backendProvider).analytics.counts(key.siteId, start: key.start, end: end, bucket: key.bucket);
+  final end = key.bucket == Bucket.hour
+      ? key.start.add(const Duration(days: 1))
+      : key.start.add(const Duration(days: 7));
+  return ref
+      .read(backendProvider)
+      .analytics
+      .counts(key.siteId, start: key.start, end: end, bucket: key.bucket);
 });
 
 /// Returns the in and out counts of line [lineId] in [report], ready to chart.
@@ -33,7 +39,11 @@ CountsSeries seriesFor(CountsReport report, String lineId, Formats format) {
       inward[bucket.at.hour] += bucket.inward;
       outward[bucket.at.hour] += bucket.outward;
     }
-    return CountsSeries(labels: [for (var h = 0; h < 24; h++) h.toString().padLeft(2, '0')], inward: inward, outward: outward);
+    return CountsSeries(
+      labels: [for (var h = 0; h < 24; h++) h.toString().padLeft(2, '0')],
+      inward: inward,
+      outward: outward,
+    );
   }
   final days = [for (var i = 0; i < 7; i++) report.start.add(Duration(days: i))];
   final inward = List<int>.filled(7, 0);
@@ -44,7 +54,11 @@ CountsSeries seriesFor(CountsReport report, String lineId, Formats format) {
     inward[index] += bucket.inward;
     outward[index] += bucket.outward;
   }
-  return CountsSeries(labels: [for (final day in days) format.weekday(day)], inward: inward, outward: outward);
+  return CountsSeries(
+    labels: [for (final day in days) format.weekday(day)],
+    inward: inward,
+    outward: outward,
+  );
 }
 
 /// The screen showing how many people crossed each count line and how many are in each area.
@@ -101,12 +115,16 @@ class _CountsScreenState extends ConsumerState<CountsScreen> {
                 children: [
                   IconButton(
                     tooltip: MaterialLocalizations.of(context).previousPageTooltip,
-                    onPressed: () => setState(() => day = day.subtract(Duration(days: bucket == Bucket.hour ? 1 : 7))),
+                    onPressed: () => setState(
+                      () => day = day.subtract(Duration(days: bucket == Bucket.hour ? 1 : 7)),
+                    ),
                     icon: const Icon(Icons.chevron_left_rounded),
                   ),
                   Expanded(
                     child: Text(
-                      bucket == Bucket.hour ? format.dayHeader(day) : '${format.dayMonth(start)} - ${format.dayMonth(day)}',
+                      bucket == Bucket.hour
+                          ? format.dayHeader(day)
+                          : '${format.dayMonth(start)} - ${format.dayMonth(day)}',
                       textAlign: TextAlign.center,
                       style: context.text.titleSmall,
                     ),
@@ -130,12 +148,25 @@ class _CountsScreenState extends ConsumerState<CountsScreen> {
                 padding: const EdgeInsets.all(Gaps.page),
                 child: Skeleton(height: 260, radius: Radii.large),
               ),
-              error: (error, _) => ErrorState(error: error, compact: true, onRetry: () => ref.invalidate(reportProvider(key))),
+              error: (error, _) => ErrorState(
+                error: error,
+                compact: true,
+                onRetry: () => ref.invalidate(reportProvider(key)),
+              ),
               data: (report) => report.lines.isEmpty
-                  ? EmptyState(icon: Icons.timeline_rounded, title: l10n.countsNoLines, body: l10n.countsNoLinesBody)
+                  ? EmptyState(
+                      icon: Icons.timeline_rounded,
+                      title: l10n.countsNoLines,
+                      body: l10n.countsNoLinesBody,
+                    )
                   : Column(
                       children: [
-                        for (final line in report.lines) LineCard(line: line, series: seriesFor(report, line.id, format), hourly: bucket == Bucket.hour),
+                        for (final line in report.lines)
+                          LineCard(
+                            line: line,
+                            series: seriesFor(report, line.id, format),
+                            hourly: bucket == Bucket.hour,
+                          ),
                       ],
                     ),
             ),
@@ -148,12 +179,15 @@ class _CountsScreenState extends ConsumerState<CountsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         SectionHeader(l10n.countsAreas),
-                        for (final area in areas) AreaCard(area: area, canReset: site.can(Role.operator)),
+                        for (final area in areas)
+                          AreaCard(area: area, canReset: site.can(Role.operator)),
                       ],
                     ),
             ),
             const SizedBox(height: Gaps.lg),
-            Center(child: ChartLegend(inLabel: l10n.countsIn, outLabel: l10n.countsOut)),
+            Center(
+              child: ChartLegend(inLabel: l10n.countsIn, outLabel: l10n.countsOut),
+            ),
           ],
         ),
       ),
@@ -168,8 +202,10 @@ class LineCard extends StatelessWidget {
 
   /// The count line shown.
   final CountLine line;
+
   /// The in and out counts to chart.
   final CountsSeries series;
+
   /// Whether the series is grouped by hour rather than by day.
   final bool hourly;
 
@@ -196,9 +232,15 @@ class LineCard extends StatelessWidget {
             const SizedBox(height: 10),
             Row(
               children: [
-                Text(l10n.countsTotalIn(series.totalIn), style: dataStyle(context, size: 15, weight: FontWeight.w500)),
+                Text(
+                  l10n.countsTotalIn(series.totalIn),
+                  style: dataStyle(context, size: 15, weight: FontWeight.w500),
+                ),
                 const SizedBox(width: 14),
-                Text(l10n.countsTotalOut(series.totalOut), style: dataStyle(context, size: 15, color: p.text2)),
+                Text(
+                  l10n.countsTotalOut(series.totalOut),
+                  style: dataStyle(context, size: 15, color: p.text2),
+                ),
                 const Spacer(),
                 if (series.totalIn + series.totalOut > 0 && hourly)
                   Text(l10n.countsPeak('$peak:00'), style: context.text.labelSmall),
@@ -208,7 +250,8 @@ class LineCard extends StatelessWidget {
             CountsChart(
               series: series,
               labelEvery: hourly ? 4 : 1,
-              semanticLabel: '${line.name}: ${l10n.countsTotalIn(series.totalIn)}, ${l10n.countsTotalOut(series.totalOut)}',
+              semanticLabel:
+                  '${line.name}: ${l10n.countsTotalIn(series.totalIn)}, ${l10n.countsTotalOut(series.totalOut)}',
             ),
           ],
         ),
@@ -224,6 +267,7 @@ class AreaCard extends ConsumerWidget {
 
   /// The area shown.
   final Area area;
+
   /// Whether the user may reset the occupancy.
   final bool canReset;
 
@@ -269,7 +313,9 @@ class AreaCard extends ConsumerWidget {
     final p = context.palette;
     final format = Formats(context, ref.read(clockProvider)());
     final capacity = area.capacity;
-    final fill = capacity == null || capacity == 0 ? null : (area.occupancy / capacity).clamp(0.0, 1.0);
+    final fill = capacity == null || capacity == 0
+        ? null
+        : (area.occupancy / capacity).clamp(0.0, 1.0);
     return Padding(
       padding: const EdgeInsets.fromLTRB(Gaps.page, 0, Gaps.page, Gaps.md),
       child: Panel(
@@ -297,7 +343,10 @@ class AreaCard extends ConsumerWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text('${area.occupancy}', style: dataStyle(context, size: 34, weight: FontWeight.w500)),
+                Text(
+                  '${area.occupancy}',
+                  style: dataStyle(context, size: 34, weight: FontWeight.w500),
+                ),
                 const SizedBox(width: 8),
                 Padding(
                   padding: const EdgeInsets.only(bottom: 6),
@@ -321,8 +370,12 @@ class AreaCard extends ConsumerWidget {
               ),
             ],
             const SizedBox(height: Gaps.sm),
-            Text(l10n.countsSince(area.entered, area.exited, format.time(area.since)), style: context.text.bodySmall),
-            if (area.resetAt != null) Text(l10n.countsDailyReset(area.resetAt!), style: context.text.bodySmall),
+            Text(
+              l10n.countsSince(area.entered, area.exited, format.time(area.since)),
+              style: context.text.bodySmall,
+            ),
+            if (area.resetAt != null)
+              Text(l10n.countsDailyReset(area.resetAt!), style: context.text.bodySmall),
           ],
         ),
       ),

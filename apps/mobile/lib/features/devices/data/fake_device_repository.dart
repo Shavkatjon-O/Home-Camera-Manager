@@ -6,6 +6,7 @@ import 'package:smart_surveillance/core/media/media_source.dart';
 import 'package:smart_surveillance/features/analytics/domain/models.dart';
 import 'package:smart_surveillance/features/devices/domain/device_repository.dart';
 import 'package:smart_surveillance/features/devices/domain/models.dart';
+
 /// An in-memory device repository backed by a [FakeStore].
 class FakeDeviceRepository implements DeviceRepository {
   /// Creates a repository that keeps its data in [store].
@@ -24,7 +25,9 @@ class FakeDeviceRepository implements DeviceRepository {
 
   @override
   Future<List<DiscoveredCamera>> discovered(String connectorId, {bool rescan = false}) async {
-    if (rescan && store.latency > Duration.zero) await Future<void>.delayed(const Duration(milliseconds: 1400));
+    if (rescan && store.latency > Duration.zero) {
+      await Future<void>.delayed(const Duration(milliseconds: 1400));
+    }
     return store.delay(() => List.of(store.data.discovered[connectorId] ?? const []));
   }
 
@@ -35,7 +38,9 @@ class FakeDeviceRepository implements DeviceRepository {
     String? username,
     String? password,
   }) async {
-    if (store.latency > Duration.zero) await Future<void>.delayed(const Duration(milliseconds: 1200));
+    if (store.latency > Duration.zero) {
+      await Future<void>.delayed(const Duration(milliseconds: 1200));
+    }
     if (camera.brand != CameraBrand.rtsp && (password == null || password.isEmpty)) {
       return const StreamTest(ok: false, error: 'unauthorised');
     }
@@ -83,7 +88,10 @@ class FakeDeviceRepository implements DeviceRepository {
       checkedAt: store.clock(),
     );
     store.data.cameras.add(
-      CameraFixture(created, lenses == 2 ? [SceneKind.yard, SceneKind.entrance] : [SceneKind.street]),
+      CameraFixture(
+        created,
+        lenses == 2 ? [SceneKind.yard, SceneKind.entrance] : [SceneKind.street],
+      ),
     );
     for (var lens = 0; lens < lenses; lens++) {
       store.data.views.add(
@@ -130,7 +138,10 @@ class FakeDeviceRepository implements DeviceRepository {
     for (var i = 0; i < cameraIds.length; i++) {
       final index = store.data.cameras.indexWhere((c) => c.camera.id == cameraIds[i]);
       final fixture = store.data.cameras[index];
-      store.data.cameras[index] = CameraFixture(fixture.camera.copyWith(position: i), fixture.scenes);
+      store.data.cameras[index] = CameraFixture(
+        fixture.camera.copyWith(position: i),
+        fixture.scenes,
+      );
     }
   });
 
@@ -139,7 +150,12 @@ class FakeDeviceRepository implements DeviceRepository {
       store.delay(() => CameraControls(presets: store.data.presets[cameraId] ?? const []));
 
   @override
-  Future<void> move(String cameraId, {required double pan, required double tilt, required double zoom}) async {}
+  Future<void> move(
+    String cameraId, {
+    required double pan,
+    required double tilt,
+    required double zoom,
+  }) async {}
 
   @override
   Future<void> stop(String cameraId) async {}
@@ -177,8 +193,24 @@ class FakeDeviceRepository implements DeviceRepository {
         canReboot: true,
       ),
       encoders: const [
-        VideoEncoder(token: 'main', name: 'Main stream', encoding: 'H.265', width: 2560, height: 1440, fps: 15, bitrate: 2048),
-        VideoEncoder(token: 'sub', name: 'Sub stream', encoding: 'H.264', width: 768, height: 432, fps: 15, bitrate: 512),
+        VideoEncoder(
+          token: 'main',
+          name: 'Main stream',
+          encoding: 'H.265',
+          width: 2560,
+          height: 1440,
+          fps: 15,
+          bitrate: 2048,
+        ),
+        VideoEncoder(
+          token: 'sub',
+          name: 'Sub stream',
+          encoding: 'H.264',
+          width: 768,
+          height: 432,
+          fps: 15,
+          bitrate: 512,
+        ),
       ],
       image: const ImageSettings(
         brightness: 50,

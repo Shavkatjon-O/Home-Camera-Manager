@@ -4,9 +4,11 @@ import 'package:smart_surveillance/features/analytics/presentation/providers.dar
 import 'package:smart_surveillance/features/devices/domain/models.dart';
 
 part 'providers.g.dart';
+
 /// Loads the cameras of the site [siteId].
 @riverpod
-Future<List<Camera>> cameras(Ref ref, String siteId) => ref.watch(backendProvider).devices.cameras(siteId);
+Future<List<Camera>> cameras(Ref ref, String siteId) =>
+    ref.watch(backendProvider).devices.cameras(siteId);
 
 /// Builds one tile per lens of every enabled camera of [siteId], with its saved view.
 @riverpod
@@ -26,4 +28,5 @@ Future<List<CameraTile>> tiles(Ref ref, String siteId) async {
 
 /// Loads the connectors of the site [siteId].
 @riverpod
-Future<List<Connector>> connectors(Ref ref, String siteId) => ref.watch(backendProvider).devices.connectors(siteId);
+Future<List<Connector>> connectors(Ref ref, String siteId) =>
+    ref.watch(backendProvider).devices.connectors(siteId);

@@ -27,7 +27,9 @@ class NvrImportScreen extends ConsumerStatefulWidget {
 }
 
 class _NvrImportScreenState extends ConsumerState<NvrImportScreen> {
-  late DiscoveredCamera? recorder = widget.pairing.discovered?.nvr == true ? widget.pairing.discovered : null;
+  late DiscoveredCamera? recorder = widget.pairing.discovered?.nvr == true
+      ? widget.pairing.discovered
+      : null;
   late final Future<List<DiscoveredCamera>> recorders = ref
       .read(backendProvider)
       .devices
@@ -46,7 +48,9 @@ class _NvrImportScreenState extends ConsumerState<NvrImportScreen> {
     super.dispose();
   }
 
-  Iterable<int> get free => (channels ?? const <NvrChannel>[]).where((c) => c.online && c.cameraId == null).map((c) => c.index);
+  Iterable<int> get free => (channels ?? const <NvrChannel>[])
+      .where((c) => c.online && c.cameraId == null)
+      .map((c) => c.index);
 
   Future<void> load() async {
     final nvr = recorder;
@@ -57,7 +61,12 @@ class _NvrImportScreenState extends ConsumerState<NvrImportScreen> {
       final list = await ref
           .read(backendProvider)
           .pairing
-          .nvrChannels(connectorId: widget.pairing.connector!.id, nvr: nvr, username: username.text.trim(), password: password.text);
+          .nvrChannels(
+            connectorId: widget.pairing.connector!.id,
+            nvr: nvr,
+            username: username.text.trim(),
+            password: password.text,
+          );
       setState(() {
         channels = list;
         selected
@@ -108,9 +117,17 @@ class _NvrImportScreenState extends ConsumerState<NvrImportScreen> {
         future: recorders,
         builder: (context, snapshot) {
           if (snapshot.hasError) return ErrorState(error: snapshot.error!);
-          if (!snapshot.hasData) return const Center(child: CircularProgressIndicator(strokeWidth: 2));
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator(strokeWidth: 2));
+          }
           final found = snapshot.data!;
-          if (found.isEmpty) return EmptyState(icon: Icons.dns_outlined, title: l10n.nvrNone, body: l10n.onboardingNoCamerasBody);
+          if (found.isEmpty) {
+            return EmptyState(
+              icon: Icons.dns_outlined,
+              title: l10n.nvrNone,
+              body: l10n.onboardingNoCamerasBody,
+            );
+          }
           return ListView(
             padding: const EdgeInsets.all(Gaps.page),
             children: [
@@ -127,7 +144,10 @@ class _NvrImportScreenState extends ConsumerState<NvrImportScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text([item.manufacturer, item.model].whereType<String>().join(' '), style: context.text.titleMedium),
+                              Text(
+                                [item.manufacturer, item.model].whereType<String>().join(' '),
+                                style: context.text.titleMedium,
+                              ),
                               Text(item.host, style: dataStyle(context, size: 12, color: p.text3)),
                             ],
                           ),
@@ -157,18 +177,35 @@ class _NvrImportScreenState extends ConsumerState<NvrImportScreen> {
       subtitle: [nvr.manufacturer, nvr.model, nvr.host].whereType<String>().join(', '),
       bottom: list == null
           ? BusyButton(label: l10n.nvrLoad, busy: busy, onPressed: load)
-          : BusyButton(label: l10n.nvrAdd(selected.length), busy: busy, onPressed: selected.isEmpty ? null : add),
+          : BusyButton(
+              label: l10n.nvrAdd(selected.length),
+              busy: busy,
+              onPressed: selected.isEmpty ? null : add,
+            ),
       children: [
         if (list == null) ...[
           Text(l10n.nvrLogin, style: context.text.titleSmall?.copyWith(color: p.text2)),
           const SizedBox(height: Gaps.sm),
-          TextField(controller: username, autocorrect: false, decoration: InputDecoration(labelText: l10n.fieldCameraUser)),
+          TextField(
+            controller: username,
+            autocorrect: false,
+            decoration: InputDecoration(labelText: l10n.fieldCameraUser),
+          ),
           const SizedBox(height: Gaps.md),
-          PasswordField(controller: password, label: l10n.fieldCameraPassword, autofillHints: const []),
+          PasswordField(
+            controller: password,
+            label: l10n.fieldCameraPassword,
+            autofillHints: const [],
+          ),
         ] else ...[
           Row(
             children: [
-              Expanded(child: Text(l10n.nvrChannels, style: context.text.titleSmall?.copyWith(color: p.text2))),
+              Expanded(
+                child: Text(
+                  l10n.nvrChannels,
+                  style: context.text.titleSmall?.copyWith(color: p.text2),
+                ),
+              ),
               TextButton(
                 onPressed: () => setState(() {
                   final available = free.toSet();
@@ -189,13 +226,22 @@ class _NvrImportScreenState extends ConsumerState<NvrImportScreen> {
                 CheckboxListTile(
                   value: selected.contains(channel.index),
                   onChanged: channel.online && channel.cameraId == null
-                      ? (on) => setState(() => on == true ? selected.add(channel.index) : selected.remove(channel.index))
+                      ? (on) => setState(
+                          () => on == true
+                              ? selected.add(channel.index)
+                              : selected.remove(channel.index),
+                        )
                       : null,
                   title: Text(channel.name),
                   subtitle: channel.cameraId != null
                       ? Text(l10n.onboardingAdded)
-                      : (channel.online ? null : Text(l10n.nvrOffline, style: TextStyle(color: p.dangerText))),
-                  secondary: Text('${channel.index}', style: dataStyle(context, size: 13, color: p.text3)),
+                      : (channel.online
+                            ? null
+                            : Text(l10n.nvrOffline, style: TextStyle(color: p.dangerText))),
+                  secondary: Text(
+                    '${channel.index}',
+                    style: dataStyle(context, size: 13, color: p.text3),
+                  ),
                 ),
             ],
           ),

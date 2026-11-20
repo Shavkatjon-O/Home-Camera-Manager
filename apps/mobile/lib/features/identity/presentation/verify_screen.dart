@@ -111,7 +111,10 @@ class _VerifyScreenState extends ConsumerState<VerifyScreen> {
       ),
       bottom: BusyButton(label: l10n.verifyAction, busy: busy, onPressed: submit),
       children: [
-        Form(key: form, child: TokenField(controller: code, onSubmitted: (_) => submit())),
+        Form(
+          key: form,
+          child: TokenField(controller: code, onSubmitted: (_) => submit()),
+        ),
         const SizedBox(height: Gaps.lg),
         Wrap(
           spacing: 8,

@@ -14,6 +14,7 @@ import 'package:smart_surveillance/features/identity/presentation/session.dart';
 import 'package:smart_surveillance/features/tenancy/domain/models.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/labels.dart';
+
 /// What an invitation offers, loaded by its token.
 final invitationProvider = FutureProvider.autoDispose.family<InvitationPreview, String>(
   (ref, token) => ref.read(backendProvider).tenancy.previewInvitation(token),
@@ -92,24 +93,38 @@ class _InviteScreenState extends ConsumerState<InviteScreen> {
                   children: [
                     const IconBadge(icon: Icons.mail_outline_rounded),
                     const SizedBox(width: 12),
-                    Expanded(child: Text(preview.organisationName, style: context.text.titleMedium)),
+                    Expanded(
+                      child: Text(preview.organisationName, style: context.text.titleMedium),
+                    ),
                   ],
                 ),
                 const SizedBox(height: Gaps.lg),
                 Text(
-                  l10n.inviteBody(preview.invitedBy, preview.organisationName, l10n.role(preview.role).toLowerCase()),
+                  l10n.inviteBody(
+                    preview.invitedBy,
+                    preview.organisationName,
+                    l10n.role(preview.role).toLowerCase(),
+                  ),
                   style: context.text.bodyLarge,
                 ),
                 const SizedBox(height: Gaps.sm),
                 Text(
-                  preview.siteNames.isEmpty ? l10n.inviteAllSites : l10n.inviteSites(preview.siteNames.join(', ')),
+                  preview.siteNames.isEmpty
+                      ? l10n.inviteAllSites
+                      : l10n.inviteSites(preview.siteNames.join(', ')),
                   style: context.text.bodyMedium?.copyWith(color: p.text2),
                 ),
                 const SizedBox(height: Gaps.sm),
-                Text(l10n.inviteExpires(format.date(preview.expiresAt)), style: context.text.bodySmall),
+                Text(
+                  l10n.inviteExpires(format.date(preview.expiresAt)),
+                  style: context.text.bodySmall,
+                ),
                 if (!signedIn) ...[
                   const SizedBox(height: Gaps.lg),
-                  Text(l10n.inviteSignInFirst, style: context.text.bodyMedium?.copyWith(color: p.text2)),
+                  Text(
+                    l10n.inviteSignInFirst,
+                    style: context.text.bodyMedium?.copyWith(color: p.text2),
+                  ),
                 ],
               ],
             ),

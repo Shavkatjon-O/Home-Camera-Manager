@@ -40,7 +40,11 @@ class _ConnectorMdnsScreenState extends ConsumerState<ConnectorMdnsScreen> {
     if (found.code == null) {
       final result = await navigator.push<PairingResult>(
         MaterialPageRoute(
-          builder: (_) => ConnectorCodeScreen(pairing: widget.pairing, session: widget.session, initialName: found.name),
+          builder: (_) => ConnectorCodeScreen(
+            pairing: widget.pairing,
+            session: widget.session,
+            initialName: found.name,
+          ),
         ),
       );
       if (result != null) navigator.pop(result);
@@ -48,7 +52,13 @@ class _ConnectorMdnsScreenState extends ConsumerState<ConnectorMdnsScreen> {
     }
     setState(() => busy = found.host);
     try {
-      final connector = await claim(ref, widget.pairing, widget.session, found.code!, name: found.name);
+      final connector = await claim(
+        ref,
+        widget.pairing,
+        widget.session,
+        found.code!,
+        name: found.name,
+      );
       navigator.pop(ConnectorPaired(connector));
     } catch (failure) {
       if (mounted) showFailure(context, failure);
@@ -71,18 +81,35 @@ class _ConnectorMdnsScreenState extends ConsumerState<ConnectorMdnsScreen> {
         children: [
           Row(
             children: [
-              const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)),
+              const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
               const SizedBox(width: Gaps.md),
-              Expanded(child: Text(l10n.mdnsSearching, style: context.text.bodyMedium?.copyWith(color: p.text2))),
+              Expanded(
+                child: Text(
+                  l10n.mdnsSearching,
+                  style: context.text.bodyMedium?.copyWith(color: p.text2),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: Gaps.lg),
           if (found.hasError)
-            ErrorState(error: found.error!, compact: true, onRetry: () => ref.invalidate(foundConnectorsProvider))
+            ErrorState(
+              error: found.error!,
+              compact: true,
+              onRetry: () => ref.invalidate(foundConnectorsProvider),
+            )
           else if (list.isEmpty)
             Padding(
               padding: const EdgeInsets.only(top: Gaps.xl),
-              child: Text(l10n.mdnsNone, textAlign: TextAlign.center, style: context.text.bodyMedium?.copyWith(color: p.text3)),
+              child: Text(
+                l10n.mdnsNone,
+                textAlign: TextAlign.center,
+                style: context.text.bodyMedium?.copyWith(color: p.text3),
+              ),
             )
           else
             for (final connector in list)
@@ -107,7 +134,11 @@ class _ConnectorMdnsScreenState extends ConsumerState<ConnectorMdnsScreen> {
                         ),
                       ),
                       busy == connector.host
-                          ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
                           : Text(l10n.onboardingPair, style: context.text.labelLarge),
                     ],
                   ),

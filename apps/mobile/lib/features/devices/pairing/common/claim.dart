@@ -21,7 +21,13 @@ String formatCode(String code) {
 }
 
 /// Claims the connector behind [code] for the pairing's site.
-Future<Connector> claim(WidgetRef ref, PairingContext pairing, PairingSession session, String code, {String? name}) async {
+Future<Connector> claim(
+  WidgetRef ref,
+  PairingContext pairing,
+  PairingSession session,
+  String code, {
+  String? name,
+}) async {
   session.step('claim');
   try {
     return await ref

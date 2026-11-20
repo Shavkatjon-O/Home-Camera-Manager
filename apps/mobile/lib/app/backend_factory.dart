@@ -5,4 +5,5 @@ import 'package:smart_surveillance/core/config.dart';
 import 'package:smart_surveillance/core/storage/preferences.dart';
 
 /// Builds the backend the app talks to.
-Future<Backend> createBackend(AppConfig config, Preferences preferences) async => fakeBackend(FakeStore());
+Future<Backend> createBackend(AppConfig config, Preferences preferences) async =>
+    fakeBackend(FakeStore());

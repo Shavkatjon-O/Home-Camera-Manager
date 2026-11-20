@@ -6,8 +6,17 @@ import 'package:smart_surveillance/features/identity/presentation/session.dart';
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
 
 part 'router.g.dart';
+
 /// The path prefixes of screens reachable while signed out.
-const authPaths = ['/welcome', '/sign-in', '/sign-up', '/forgot', '/reset', '/verify-email', '/reset-password'];
+const authPaths = [
+  '/welcome',
+  '/sign-in',
+  '/sign-up',
+  '/forgot',
+  '/reset',
+  '/verify-email',
+  '/reset-password',
+];
 
 /// The deep link saved while signed out, so it can be opened after signing in.
 @Riverpod(keepAlive: true)
@@ -56,7 +65,9 @@ String? redirectFor(Ref ref, GoRouterState state) {
     if (location.startsWith('/setup')) return null;
     return const OnboardingSiteRoute().location;
   }
-  if (auth || location == '/splash' || location.startsWith('/verify')) return const HomeRoute().location;
+  if (auth || location == '/splash' || location.startsWith('/verify')) {
+    return const HomeRoute().location;
+  }
   return null;
 }
 

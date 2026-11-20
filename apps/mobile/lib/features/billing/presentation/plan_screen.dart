@@ -61,7 +61,9 @@ class PlanScreen extends ConsumerWidget {
               children: [
                 Expanded(child: Text(label, style: context.text.bodyLarge)),
                 Text(
-                  max == null ? format.number(used) : l10n.planOf(format.number(used), format.number(max)),
+                  max == null
+                      ? format.number(used)
+                      : l10n.planOf(format.number(used), format.number(max)),
                   style: dataStyle(context, size: 13, color: p.text2),
                 ),
               ],
@@ -125,11 +127,19 @@ class PlanScreen extends ConsumerWidget {
                     meter(l10n.planSites, usage.sites, plan.limits.sites),
                     meter(l10n.planCameras, usage.cameras, plan.limits.cameras),
                     meter(l10n.planMembers, usage.members, plan.limits.members),
-                    ListTile(title: Text(l10n.planEventRetention), trailing: Text(days(plan.limits.eventRetentionDays))),
-                    ListTile(title: Text(l10n.planClipRetention), trailing: Text(days(plan.limits.clipRetentionDays))),
+                    ListTile(
+                      title: Text(l10n.planEventRetention),
+                      trailing: Text(days(plan.limits.eventRetentionDays)),
+                    ),
+                    ListTile(
+                      title: Text(l10n.planClipRetention),
+                      trailing: Text(days(plan.limits.clipRetentionDays)),
+                    ),
                   ],
                 ),
-                SectionHeader('${l10n.planUsage}, ${l10n.planSince(format.date(usage.periodStart))}'),
+                SectionHeader(
+                  '${l10n.planUsage}, ${l10n.planSince(format.date(usage.periodStart))}',
+                ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: Gaps.page),
                   child: GridView.count(
@@ -140,15 +150,31 @@ class PlanScreen extends ConsumerWidget {
                     crossAxisSpacing: 10,
                     childAspectRatio: 1.6,
                     children: [
-                      MetricTile(label: l10n.planCameraHours, value: format.number(usage.cameraHours), icon: Icons.videocam_outlined),
-                      MetricTile(label: l10n.planAnalyticsHours, value: format.number(usage.analyticsHours), icon: Icons.auto_awesome_outlined),
-                      MetricTile(label: l10n.planEvents, value: format.number(usage.events), icon: Icons.list_alt_rounded),
+                      MetricTile(
+                        label: l10n.planCameraHours,
+                        value: format.number(usage.cameraHours),
+                        icon: Icons.videocam_outlined,
+                      ),
+                      MetricTile(
+                        label: l10n.planAnalyticsHours,
+                        value: format.number(usage.analyticsHours),
+                        icon: Icons.auto_awesome_outlined,
+                      ),
+                      MetricTile(
+                        label: l10n.planEvents,
+                        value: format.number(usage.events),
+                        icon: Icons.list_alt_rounded,
+                      ),
                       MetricTile(
                         label: l10n.planClipStorage,
                         value: l10n.planGigabytes(format.number(usage.clipBytes / 1e9, digits: 1)),
                         icon: Icons.sd_storage_outlined,
                       ),
-                      MetricTile(label: l10n.planNotifications, value: format.number(usage.notifications), icon: Icons.notifications_outlined),
+                      MetricTile(
+                        label: l10n.planNotifications,
+                        value: format.number(usage.notifications),
+                        icon: Icons.notifications_outlined,
+                      ),
                     ],
                   ),
                 ),
@@ -158,10 +184,15 @@ class PlanScreen extends ConsumerWidget {
                     for (final feature in PlanFeature.values)
                       ListTile(
                         leading: Icon(
-                          plan.has(feature) ? Icons.check_circle_outline_rounded : Icons.remove_circle_outline_rounded,
+                          plan.has(feature)
+                              ? Icons.check_circle_outline_rounded
+                              : Icons.remove_circle_outline_rounded,
                           color: plan.has(feature) ? p.ok : p.text3,
                         ),
-                        title: Text(featureName(l10n, feature), style: TextStyle(color: plan.has(feature) ? p.text : p.text2)),
+                        title: Text(
+                          featureName(l10n, feature),
+                          style: TextStyle(color: plan.has(feature) ? p.text : p.text2),
+                        ),
                         trailing: Text(
                           plan.has(feature) ? l10n.planIncluded : l10n.planNotIncluded,
                           style: context.text.labelMedium,

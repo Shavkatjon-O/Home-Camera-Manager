@@ -7,6 +7,7 @@ import 'package:smart_surveillance/features/alerting/domain/models.dart';
 import 'package:smart_surveillance/features/billing/domain/business_repository.dart';
 import 'package:smart_surveillance/features/billing/domain/models.dart';
 import 'package:smart_surveillance/features/operations/domain/models.dart';
+
 /// An in-memory business repository backed by a [FakeStore].
 class FakeBusinessRepository implements BusinessRepository {
   /// Creates a repository that keeps its data in [store].
@@ -17,16 +18,31 @@ class FakeBusinessRepository implements BusinessRepository {
 
   @override
   Future<PlanReport> plan(String organisationId) => store.delay(() {
-    final internal = organisationId == Fixtures.demoOrg || store.createdOrganisations.contains(organisationId);
-    final sites = store.data.sites.where((s) => s.organisationId == organisationId).map((s) => s.id).toSet();
+    final internal =
+        organisationId == Fixtures.demoOrg || store.createdOrganisations.contains(organisationId);
+    final sites = store.data.sites
+        .where((s) => s.organisationId == organisationId)
+        .map((s) => s.id)
+        .toSet();
     final cameras = store.data.cameras.where((c) => sites.contains(c.camera.siteId)).length;
     final now = store.clock();
     final plan = internal
-        ? const Plan(id: 'internal', name: 'Internal', internal: true, features: {...PlanFeature.values})
+        ? const Plan(
+            id: 'internal',
+            name: 'Internal',
+            internal: true,
+            features: {...PlanFeature.values},
+          )
         : const Plan(
             id: 'free',
             name: 'Free',
-            limits: PlanLimits(sites: 1, cameras: 4, members: 5, eventRetentionDays: 7, clipRetentionDays: 7),
+            limits: PlanLimits(
+              sites: 1,
+              cameras: 4,
+              members: 5,
+              eventRetentionDays: 7,
+              clipRetentionDays: 7,
+            ),
             features: {PlanFeature.appearance, PlanFeature.journeys, PlanFeature.objects},
           );
     return PlanReport(
@@ -53,8 +69,19 @@ class FakeBusinessRepository implements BusinessRepository {
   Future<TelegramLink> linkTelegram(String organisationId) => store.delay(() {
     final now = store.clock();
     final list = store.data.telegram[organisationId] ??= [];
-    list.add(TelegramChat(id: 'chat-${store.sequence++}', title: 'Demo night shift', group: true, linkedAt: now, linkedBy: store.data.user.name));
-    return TelegramLink(url: 'https://t.me/demo_bot?start=demo-link', expiresAt: now.add(const Duration(minutes: 15)));
+    list.add(
+      TelegramChat(
+        id: 'chat-${store.sequence++}',
+        title: 'Demo night shift',
+        group: true,
+        linkedAt: now,
+        linkedBy: store.data.user.name,
+      ),
+    );
+    return TelegramLink(
+      url: 'https://t.me/demo_bot?start=demo-link',
+      expiresAt: now.add(const Duration(minutes: 15)),
+    );
   });
 
   @override
@@ -62,10 +89,16 @@ class FakeBusinessRepository implements BusinessRepository {
       store.delay(() => store.data.telegram[organisationId]?.removeWhere((c) => c.id == chatId));
 
   @override
-  Future<int> testTelegram(String organisationId) => store.delay(() => store.data.telegram[organisationId]?.length ?? 0);
+  Future<int> testTelegram(String organisationId) =>
+      store.delay(() => store.data.telegram[organisationId]?.length ?? 0);
 
   @override
-  Future<AuditPage> audit(String organisationId, {AuditCategory? category, int page = 1, int pageSize = 40}) => store.delay(() {
+  Future<AuditPage> audit(
+    String organisationId, {
+    AuditCategory? category,
+    int page = 1,
+    int pageSize = 40,
+  }) => store.delay(() {
     final all = (store.data.audit[organisationId] ?? const <AuditEntry>[])
         .where((e) => category == null || e.category == category)
         .toList();

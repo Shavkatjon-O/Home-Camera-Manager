@@ -7,6 +7,7 @@ import 'package:smart_surveillance/core/network/failure.dart';
 import 'package:smart_surveillance/features/events/domain/event_repository.dart';
 import 'package:smart_surveillance/features/events/domain/models.dart';
 import 'package:smart_surveillance/features/media/domain/media_repository.dart';
+
 /// An in-memory [EventRepository] backed by demo data.
 class FakeEventRepository implements EventRepository {
   /// Creates a repository reading and writing [store].
@@ -20,7 +21,8 @@ class FakeEventRepository implements EventRepository {
     if (filter.day != null) {
       final day = filter.day!;
       final start = DateTime(day.year, day.month, day.day);
-      if (event.startedAt.isBefore(start) || !event.startedAt.isBefore(start.add(const Duration(days: 1)))) {
+      if (event.startedAt.isBefore(start) ||
+          !event.startedAt.isBefore(start.add(const Duration(days: 1)))) {
         return false;
       }
     }
@@ -43,12 +45,17 @@ class FakeEventRepository implements EventRepository {
   }
 
   @override
-  Future<EventPage> events(String siteId, EventFilter filter, {int page = 1, int pageSize = 30}) => store.delay(() {
-    final all = store.data.events.where((e) => e.siteId == siteId && matches(e, filter)).toList();
-    final start = (page - 1) * pageSize;
-    final items = start >= all.length ? <CameraEvent>[] : all.sublist(start, min(all.length, start + pageSize));
-    return EventPage(items: items, total: all.length, page: page, pageSize: pageSize);
-  });
+  Future<EventPage> events(String siteId, EventFilter filter, {int page = 1, int pageSize = 30}) =>
+      store.delay(() {
+        final all = store.data.events
+            .where((e) => e.siteId == siteId && matches(e, filter))
+            .toList();
+        final start = (page - 1) * pageSize;
+        final items = start >= all.length
+            ? <CameraEvent>[]
+            : all.sublist(start, min(all.length, start + pageSize));
+        return EventPage(items: items, total: all.length, page: page, pageSize: pageSize);
+      });
 
   @override
   Future<EventCounts> counts(String siteId, EventFilter filter) => store.delay(() {
@@ -124,8 +131,9 @@ class FakeEventRepository implements EventRepository {
   }
 
   @override
-  ClipSource? clip(CameraEvent event) =>
-      event.hasClip ? SyntheticClip(store.eventScene(event), event.boxes, const Duration(seconds: 12)) : null;
+  ClipSource? clip(CameraEvent event) => event.hasClip
+      ? SyntheticClip(store.eventScene(event), event.boxes, const Duration(seconds: 12))
+      : null;
 
   @override
   Future<String> downloadClip(CameraEvent event) =>

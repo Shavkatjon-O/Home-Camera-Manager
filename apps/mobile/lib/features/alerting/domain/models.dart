@@ -1,14 +1,18 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'models.freezed.dart';
+
 /// How a site's cameras react to activity.
 enum ArmMode {
   /// Alerts are off.
   disarmed,
+
   /// Alerts are on while people are at home.
   home,
+
   /// Alerts are on while nobody is home.
   away,
+
   /// Alerts follow a weekly schedule.
   schedule,
 }

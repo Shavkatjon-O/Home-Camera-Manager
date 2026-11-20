@@ -9,6 +9,7 @@ import 'package:smart_surveillance/features/analytics/domain/analytics_repositor
 import 'package:smart_surveillance/features/analytics/domain/models.dart';
 import 'package:smart_surveillance/features/insights/domain/models.dart';
 import 'package:smart_surveillance/features/investigation/domain/models.dart';
+
 /// An in-memory [AnalyticsRepository] backed by demo data.
 class FakeAnalyticsRepository implements AnalyticsRepository {
   /// Creates a repository reading and writing [store].
@@ -19,11 +20,14 @@ class FakeAnalyticsRepository implements AnalyticsRepository {
 
   @override
   Future<List<AnalyticsView>> views(String siteId) => store.delay(
-    () => store.data.views.where((v) => store.data.camera(v.cameraId).camera.siteId == siteId).toList(),
+    () => store.data.views
+        .where((v) => store.data.camera(v.cameraId).camera.siteId == siteId)
+        .toList(),
   );
 
   @override
-  Future<AnalyticsView> view(String viewId) => store.delay(() => store.data.views.firstWhere((v) => v.id == viewId));
+  Future<AnalyticsView> view(String viewId) =>
+      store.delay(() => store.data.views.firstWhere((v) => v.id == viewId));
 
   @override
   Future<AnalyticsView> updateView(AnalyticsView view) => store.delay(() {
@@ -33,17 +37,24 @@ class FakeAnalyticsRepository implements AnalyticsRepository {
   });
 
   @override
-  Future<AnalyticsView> saveRules(String viewId, {required List<Zone> zones, required List<Line> lines}) =>
-      store.delay(() {
-        final index = store.data.views.indexWhere((v) => v.id == viewId);
-        var next = 0;
-        final view = store.data.views[index].copyWith(
-          zones: [for (final zone in zones) zone.id == null ? zone.copyWith(id: 'zone-new-${next++}') : zone],
-          lines: [for (final line in lines) line.id == null ? line.copyWith(id: 'line-new-${next++}') : line],
-        );
-        store.data.views[index] = view;
-        return view;
-      });
+  Future<AnalyticsView> saveRules(
+    String viewId, {
+    required List<Zone> zones,
+    required List<Line> lines,
+  }) => store.delay(() {
+    final index = store.data.views.indexWhere((v) => v.id == viewId);
+    var next = 0;
+    final view = store.data.views[index].copyWith(
+      zones: [
+        for (final zone in zones) zone.id == null ? zone.copyWith(id: 'zone-new-${next++}') : zone,
+      ],
+      lines: [
+        for (final line in lines) line.id == null ? line.copyWith(id: 'line-new-${next++}') : line,
+      ],
+    );
+    store.data.views[index] = view;
+    return view;
+  });
 
   @override
   Future<MediaSource> viewSnapshot(String viewId) => store.delay(() {
@@ -58,7 +69,12 @@ class FakeAnalyticsRepository implements AnalyticsRepository {
     while (true) {
       final x = 0.2 + 0.5 * (0.5 + 0.5 * sin(t));
       yield [
-        LiveObject(track: 41, label: 'person', box: Rect.fromLTWH(x, 0.4, 0.1, 0.38), name: view.faces ? 'Alex' : null),
+        LiveObject(
+          track: 41,
+          label: 'person',
+          box: Rect.fromLTWH(x, 0.4, 0.1, 0.38),
+          name: view.faces ? 'Alex' : null,
+        ),
         if (view.profile == Profile.vehicle)
           const LiveObject(track: 12, label: 'car', box: Rect.fromLTWH(0.56, 0.52, 0.3, 0.24)),
       ];
@@ -69,18 +85,28 @@ class FakeAnalyticsRepository implements AnalyticsRepository {
   }
 
   @override
-  Future<CountsReport> counts(String siteId, {required DateTime start, required DateTime end, required Bucket bucket}) =>
-      store.delay(() => store.data.counts(siteId, start, end, bucket));
+  Future<CountsReport> counts(
+    String siteId, {
+    required DateTime start,
+    required DateTime end,
+    required Bucket bucket,
+  }) => store.delay(() => store.data.counts(siteId, start, end, bucket));
 
   @override
-  Future<List<Area>> areas(String siteId) => store.delay(() => List.of(store.data.areas[siteId] ?? const []));
+  Future<List<Area>> areas(String siteId) =>
+      store.delay(() => List.of(store.data.areas[siteId] ?? const []));
 
   @override
   Future<Area> resetArea(String areaId, int occupancy) => store.delay(() {
     for (final list in store.data.areas.values) {
       final index = list.indexWhere((a) => a.id == areaId);
       if (index >= 0) {
-        final area = list[index].copyWith(occupancy: occupancy, entered: 0, exited: 0, since: store.clock());
+        final area = list[index].copyWith(
+          occupancy: occupancy,
+          entered: 0,
+          exited: 0,
+          since: store.clock(),
+        );
         list[index] = area;
         return area;
       }

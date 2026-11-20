@@ -4,6 +4,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_surveillance/core/design/palette.dart';
 import 'package:smart_surveillance/core/design/tokens.dart';
+
 /// Inward and outward counts for a run of time buckets, ready to chart.
 class CountsSeries {
   /// Creates a series from per-bucket [labels], [inward] counts and [outward] counts.
@@ -11,8 +12,10 @@ class CountsSeries {
 
   /// The label of each bucket, such as the hour or day.
   final List<String> labels;
+
   /// The number of objects that crossed inward in each bucket.
   final List<int> inward;
+
   /// The number of objects that crossed outward in each bucket.
   final List<int> outward;
 
@@ -46,12 +49,16 @@ class CountsChart extends StatelessWidget {
 
   /// The counts to draw.
   final CountsSeries series;
+
   /// The height of the chart.
   final double height;
+
   /// Whether the outward bars are drawn beside the inward ones.
   final bool showOut;
+
   /// How many buckets apart the labels under the bars are shown.
   final int labelEvery;
+
   /// The description read out by screen readers.
   final String? semanticLabel;
 
@@ -59,7 +66,9 @@ class CountsChart extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = context.palette;
     final count = series.labels.length;
-    final top = [for (var i = 0; i < count; i++) max(series.inward[i], showOut ? series.outward[i] : 0)].fold(0, max);
+    final top = [
+      for (var i = 0; i < count; i++) max(series.inward[i], showOut ? series.outward[i] : 0),
+    ].fold(0, max);
     final ceiling = max(4, (top * 1.15).ceil()).toDouble();
     final rodWidth = count > 16 ? (showOut ? 3.5 : 6.0) : (showOut ? 7.0 : 12.0);
     return Semantics(
@@ -87,7 +96,10 @@ class CountsChart extends StatelessWidget {
                   interval: max(1, (ceiling / 4).ceilToDouble()),
                   getTitlesWidget: (value, meta) => SideTitleWidget(
                     meta: meta,
-                    child: Text(value.toInt().toString(), style: dataStyle(context, size: 10, color: p.text3)),
+                    child: Text(
+                      value.toInt().toString(),
+                      style: dataStyle(context, size: 10, color: p.text3),
+                    ),
                   ),
                 ),
               ),
@@ -97,10 +109,15 @@ class CountsChart extends StatelessWidget {
                   reservedSize: 22,
                   getTitlesWidget: (value, meta) {
                     final index = value.toInt();
-                    if (index < 0 || index >= count || index % labelEvery != 0) return const SizedBox.shrink();
+                    if (index < 0 || index >= count || index % labelEvery != 0) {
+                      return const SizedBox.shrink();
+                    }
                     return SideTitleWidget(
                       meta: meta,
-                      child: Text(series.labels[index], style: dataStyle(context, size: 10, color: p.text3)),
+                      child: Text(
+                        series.labels[index],
+                        style: dataStyle(context, size: 10, color: p.text3),
+                      ),
                     );
                   },
                 ),
@@ -153,6 +170,7 @@ class ChartLegend extends StatelessWidget {
 
   /// The label of the inward bars.
   final String inLabel;
+
   /// The label of the outward bars.
   final String outLabel;
 
@@ -162,7 +180,11 @@ class ChartLegend extends StatelessWidget {
     Widget item(Color color, String text) => Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(width: 10, height: 10, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(3))),
+        Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(3)),
+        ),
         const SizedBox(width: 6),
         Text(text, style: context.text.labelMedium),
       ],
@@ -181,8 +203,10 @@ class Sparkline extends StatelessWidget {
 
   /// The value of each bucket from 0 to 1, or null when there is no data.
   final List<double?> values;
+
   /// The height of the tallest bar.
   final double height;
+
   /// The colour of healthy bars, defaulting to the success colour.
   final Color? color;
 

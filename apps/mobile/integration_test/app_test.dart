@@ -17,7 +17,9 @@ void main() {
     await settle(tester);
   }
 
-  testWidgets('signs in, sets up, tours every tab and reviews an alert on the simulated site', (tester) async {
+  testWidgets('signs in, sets up, tours every tab and reviews an alert on the simulated site', (
+    tester,
+  ) async {
     final container = await launch(tester);
     if (screenshots) await binding.convertFlutterSurfaceToImage();
     await settle(tester);

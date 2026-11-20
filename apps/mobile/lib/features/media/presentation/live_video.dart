@@ -11,14 +11,18 @@ import 'package:smart_surveillance/core/widgets/media_view.dart';
 import 'package:smart_surveillance/core/widgets/synthetic_scene.dart';
 import 'package:smart_surveillance/features/devices/domain/models.dart';
 import 'package:smart_surveillance/features/media/domain/media_repository.dart';
+
 /// The connection state of a live picture.
 enum LiveState {
   /// The picture is being set up.
   connecting,
+
   /// The picture is playing.
   playing,
+
   /// The picture could not be started.
   failed,
+
   /// The camera is offline.
   offline,
 }
@@ -38,14 +42,19 @@ class LiveVideo extends ConsumerStatefulWidget {
 
   /// The camera shown.
   final Camera camera;
+
   /// The lens shown, or null for all lenses.
   final int? lens;
+
   /// The stream that is played.
   final StreamQuality quality;
+
   /// Whether sound is played.
   final bool audio;
+
   /// A widget drawn over the picture.
   final Widget? overlay;
+
   /// Called when the connection state changes.
   final ValueChanged<LiveState>? onState;
 
@@ -97,7 +106,10 @@ class _LiveVideoState extends ConsumerState<LiveVideo> {
       return;
     }
     report(LiveState.connecting);
-    final live = ref.read(backendProvider).live.live(widget.camera, quality: widget.quality, audio: widget.audio);
+    final live = ref
+        .read(backendProvider)
+        .live
+        .live(widget.camera, quality: widget.quality, audio: widget.audio);
     source = live;
     final run = ++attempt;
     switch (live) {
@@ -118,7 +130,10 @@ class _LiveVideoState extends ConsumerState<LiveVideo> {
       final view = RTCVideoRenderer();
       await view.initialize();
       renderer = view;
-      final pc = await createPeerConnection({'sdpSemantics': 'unified-plan', 'iceServers': <Object>[]});
+      final pc = await createPeerConnection({
+        'sdpSemantics': 'unified-plan',
+        'iceServers': <Object>[],
+      });
       connection = pc;
       await pc.addTransceiver(
         kind: RTCRtpMediaType.RTCRtpMediaTypeVideo,
@@ -139,11 +154,15 @@ class _LiveVideoState extends ConsumerState<LiveVideo> {
         if (run == attempt) report(LiveState.playing);
       };
       pc.onConnectionState = (value) {
-        if (value == RTCPeerConnectionState.RTCPeerConnectionStateFailed && run == attempt) report(LiveState.failed);
+        if (value == RTCPeerConnectionState.RTCPeerConnectionStateFailed && run == attempt) {
+          report(LiveState.failed);
+        }
       };
       final gathered = Completer<void>();
       pc.onIceGatheringState = (value) {
-        if (value == RTCIceGatheringState.RTCIceGatheringStateComplete && !gathered.isCompleted) gathered.complete();
+        if (value == RTCIceGatheringState.RTCIceGatheringStateComplete && !gathered.isCompleted) {
+          gathered.complete();
+        }
       };
       final offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
@@ -185,13 +204,23 @@ class _LiveVideoState extends ConsumerState<LiveVideo> {
     if (current is SyntheticLive && state == LiveState.playing) {
       final full = Column(
         children: [
-          for (final media in current.lenses) Expanded(child: SyntheticScene(media: media, clock: now)),
+          for (final media in current.lenses)
+            Expanded(
+              child: SyntheticScene(media: media, clock: now),
+            ),
         ],
       );
-      picture = widget.lens == null ? full : LensCrop(lens: widget.lens!, lenses: lenses, child: full);
+      picture = widget.lens == null
+          ? full
+          : LensCrop(lens: widget.lens!, lenses: lenses, child: full);
     } else if (renderer != null && state != LiveState.failed) {
-      final video = RTCVideoView(renderer!, objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitContain);
-      picture = widget.lens == null ? video : LensCrop(lens: widget.lens!, lenses: lenses, child: video);
+      final video = RTCVideoView(
+        renderer!,
+        objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitContain,
+      );
+      picture = widget.lens == null
+          ? video
+          : LensCrop(lens: widget.lens!, lenses: lenses, child: video);
     } else {
       picture = ColoredBox(color: p.frame, child: const SizedBox.expand());
     }
@@ -205,14 +234,21 @@ class _LiveVideoState extends ConsumerState<LiveVideo> {
             child: switch (state) {
               LiveState.connecting => Semantics(
                 label: l10n.liveConnecting,
-                child: const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+                child: const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
               ),
               LiveState.failed => _Notice(
                 icon: Icons.refresh_rounded,
                 text: l10n.liveFailed,
                 onTap: () => unawaited(close().then((_) => open())),
               ),
-              LiveState.offline => _Notice(icon: Icons.videocam_off_outlined, text: l10n.liveCameraOffline),
+              LiveState.offline => _Notice(
+                icon: Icons.videocam_off_outlined,
+                text: l10n.liveCameraOffline,
+              ),
               LiveState.playing => const SizedBox.shrink(),
             },
           ),

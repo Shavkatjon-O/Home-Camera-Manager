@@ -1,17 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:smart_surveillance/core/design/palette.dart';
 import 'package:smart_surveillance/core/design/tokens.dart';
+
 /// A bordered card that holds [child] and is tappable when [onTap] is set.
 class Panel extends StatelessWidget {
   /// Creates a panel around [child] with the given [padding] and fill [color].
-  const Panel({super.key, required this.child, this.padding = const EdgeInsets.all(Gaps.lg), this.onTap, this.color});
+  const Panel({
+    super.key,
+    required this.child,
+    this.padding = const EdgeInsets.all(Gaps.lg),
+    this.onTap,
+    this.color,
+  });
 
   /// The content of the panel.
   final Widget child;
+
   /// The space between the border and [child].
   final EdgeInsetsGeometry padding;
+
   /// The callback for taps, or null when the panel is not tappable.
   final VoidCallback? onTap;
+
   /// The fill colour, defaulting to the surface colour.
   final Color? color;
 
@@ -21,7 +31,10 @@ class Panel extends StatelessWidget {
     final content = Padding(padding: padding, child: child);
     return Material(
       color: color ?? p.surface,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Radii.large), side: BorderSide(color: p.border)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(Radii.large),
+        side: BorderSide(color: p.border),
+      ),
       clipBehavior: Clip.antiAlias,
       child: onTap == null ? content : InkWell(onTap: onTap, child: content),
     );
@@ -35,8 +48,10 @@ class SectionHeader extends StatelessWidget {
 
   /// The heading text.
   final String title;
+
   /// The widget shown at the end of the heading, such as a button.
   final Widget? action;
+
   /// The padding around the heading, defaulting to the standard section spacing.
   final EdgeInsetsGeometry? padding;
 
@@ -48,7 +63,10 @@ class SectionHeader extends StatelessWidget {
         Expanded(
           child: Semantics(
             header: true,
-            child: Text(title, style: context.text.titleSmall?.copyWith(color: context.palette.text2)),
+            child: Text(
+              title,
+              style: context.text.titleSmall?.copyWith(color: context.palette.text2),
+            ),
           ),
         ),
         ?action,
@@ -61,14 +79,19 @@ class SectionHeader extends StatelessWidget {
 enum TagTone {
   /// A plain grey tag.
   neutral,
+
   /// A red tag for alerts and errors.
   alert,
+
   /// A green tag for success.
   ok,
+
   /// An amber tag for warnings.
   warning,
+
   /// A blue tag for information.
   info,
+
   /// A dimmed tag for secondary information.
   muted,
 }
@@ -80,10 +103,13 @@ class Tag extends StatelessWidget {
 
   /// The text of the tag.
   final String text;
+
   /// The colour treatment of the tag.
   final TagTone tone;
+
   /// The icon shown before the text, if any.
   final IconData? icon;
+
   /// Whether the tag is drawn smaller.
   final bool dense;
 
@@ -104,7 +130,10 @@ class Tag extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (icon != null) ...[Icon(icon, size: dense ? 12 : 14, color: fg), const SizedBox(width: 4)],
+          if (icon != null) ...[
+            Icon(icon, size: dense ? 12 : 14, color: fg),
+            const SizedBox(width: 4),
+          ],
           Text(
             text,
             style: TextStyle(
@@ -128,6 +157,7 @@ class StatusDot extends StatelessWidget {
 
   /// Whether the item is online, or null when its state is unknown.
   final bool? online;
+
   /// The diameter of the dot.
   final double size;
 
@@ -146,18 +176,31 @@ class StatusDot extends StatelessWidget {
 /// A card showing one headline value with a label, such as a count or uptime.
 class MetricTile extends StatelessWidget {
   /// Creates a tile showing [value] under [label].
-  const MetricTile({super.key, required this.label, required this.value, this.detail, this.tone, this.onTap, this.icon});
+  const MetricTile({
+    super.key,
+    required this.label,
+    required this.value,
+    this.detail,
+    this.tone,
+    this.onTap,
+    this.icon,
+  });
 
   /// The name of the measurement.
   final String label;
+
   /// The headline value.
   final String value;
+
   /// A line of extra context under the value.
   final String? detail;
+
   /// The colour of the value, defaulting to the text colour.
   final Color? tone;
+
   /// The callback for taps, or null when the tile is not tappable.
   final VoidCallback? onTap;
+
   /// The icon shown beside the label.
   final IconData? icon;
 
@@ -174,15 +217,28 @@ class MetricTile extends StatelessWidget {
             children: [
               if (icon != null) ...[Icon(icon, size: 16, color: p.text3), const SizedBox(width: 6)],
               Expanded(
-                child: Text(label, style: context.text.labelMedium, maxLines: 1, overflow: TextOverflow.ellipsis),
+                child: Text(
+                  label,
+                  style: context.text.labelMedium,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),
           const SizedBox(height: 10),
-          Text(value, style: dataStyle(context, size: 26, weight: FontWeight.w500, color: tone ?? p.text)),
+          Text(
+            value,
+            style: dataStyle(context, size: 26, weight: FontWeight.w500, color: tone ?? p.text),
+          ),
           if (detail != null) ...[
             const SizedBox(height: 4),
-            Text(detail!, style: context.text.bodySmall, maxLines: 1, overflow: TextOverflow.ellipsis),
+            Text(
+              detail!,
+              style: context.text.bodySmall,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ],
         ],
       ),
@@ -197,8 +253,10 @@ class ReadOut extends StatelessWidget {
 
   /// The name of the value.
   final String label;
+
   /// The value shown at the end of the row.
   final String value;
+
   /// Whether the value uses the monospace data font.
   final bool mono;
 
@@ -208,7 +266,13 @@ class ReadOut extends StatelessWidget {
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(width: 118, child: Text(label, style: context.text.bodyMedium?.copyWith(color: context.palette.text3))),
+        SizedBox(
+          width: 118,
+          child: Text(
+            label,
+            style: context.text.bodyMedium?.copyWith(color: context.palette.text3),
+          ),
+        ),
         Expanded(
           child: Text(
             value,
@@ -228,6 +292,7 @@ class TileGroup extends StatelessWidget {
 
   /// The rows to stack, usually list tiles.
   final List<Widget> children;
+
   /// The space around the group, defaulting to the page margins.
   final EdgeInsetsGeometry? margin;
 
@@ -244,7 +309,10 @@ class TileGroup extends StatelessWidget {
       child: Material(
         color: p.surface,
         clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Radii.large), side: BorderSide(color: p.border)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(Radii.large),
+          side: BorderSide(color: p.border),
+        ),
         child: Column(mainAxisSize: MainAxisSize.min, children: items),
       ),
     );
@@ -258,8 +326,10 @@ class IconBadge extends StatelessWidget {
 
   /// The icon to show.
   final IconData icon;
+
   /// The icon colour, defaulting to the secondary text colour.
   final Color? color;
+
   /// The width and height of the badge.
   final double size;
 
@@ -269,7 +339,11 @@ class IconBadge extends StatelessWidget {
     return Container(
       width: size,
       height: size,
-      decoration: BoxDecoration(color: p.surface2, borderRadius: BorderRadius.circular(Radii.medium), border: Border.all(color: p.border)),
+      decoration: BoxDecoration(
+        color: p.surface2,
+        borderRadius: BorderRadius.circular(Radii.medium),
+        border: Border.all(color: p.border),
+      ),
       child: Icon(icon, size: size * 0.5, color: color ?? p.text2),
     );
   }
@@ -282,6 +356,7 @@ class Bullet extends StatelessWidget {
 
   /// The number shown in the circle.
   final int number;
+
   /// The text of the step.
   final String text;
 
@@ -301,7 +376,9 @@ class Bullet extends StatelessWidget {
             child: Text('$number', style: dataStyle(context, size: 12, weight: FontWeight.w600)),
           ),
           const SizedBox(width: 12),
-          Expanded(child: Text(text, style: context.text.bodyMedium?.copyWith(color: p.text2))),
+          Expanded(
+            child: Text(text, style: context.text.bodyMedium?.copyWith(color: p.text2)),
+          ),
         ],
       ),
     );

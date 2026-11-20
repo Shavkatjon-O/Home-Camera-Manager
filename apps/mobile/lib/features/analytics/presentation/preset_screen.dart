@@ -26,7 +26,12 @@ IconData presetIcon(AnalyticsPreset preset) => switch (preset) {
 /// Offers the analytics presets for a newly added camera.
 class AnalyticsPresetScreen extends ConsumerStatefulWidget {
   /// Creates the screen for [cameraId] on [siteId].
-  const AnalyticsPresetScreen({super.key, required this.siteId, required this.cameraId, this.first = false});
+  const AnalyticsPresetScreen({
+    super.key,
+    required this.siteId,
+    required this.cameraId,
+    this.first = false,
+  });
 
   /// The site of the camera.
   final String siteId;
@@ -51,7 +56,12 @@ class _AnalyticsPresetScreenState extends ConsumerState<AnalyticsPresetScreen> {
     setState(() => busy = true);
     try {
       for (final view in views) {
-        final plan = presetPlan(preset, view, zoneName: l10n.presetZoneName, lineName: l10n.presetLineName);
+        final plan = presetPlan(
+          preset,
+          view,
+          zoneName: l10n.presetZoneName,
+          lineName: l10n.presetLineName,
+        );
         await analytics.updateView(plan.view);
         await analytics.saveRules(view.id, zones: plan.zones, lines: plan.lines);
       }
@@ -90,13 +100,20 @@ class _AnalyticsPresetScreenState extends ConsumerState<AnalyticsPresetScreen> {
       bottom: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          BusyButton(label: l10n.commonApply, busy: busy, onPressed: views.isEmpty ? null : () => apply(views)),
+          BusyButton(
+            label: l10n.commonApply,
+            busy: busy,
+            onPressed: views.isEmpty ? null : () => apply(views),
+          ),
           TextButton(onPressed: busy ? null : next, child: Text(l10n.commonSkip)),
         ],
       ),
       children: [
         if (views.isNotEmpty)
-          Padding(padding: const EdgeInsets.only(bottom: Gaps.lg), child: ViewThumb(view: views.first, rules: false)),
+          Padding(
+            padding: const EdgeInsets.only(bottom: Gaps.lg),
+            child: ViewThumb(view: views.first, rules: false),
+          ),
         RadioGroup<AnalyticsPreset>(
           groupValue: preset,
           onChanged: (value) => setState(() => preset = value ?? preset),
