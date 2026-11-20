@@ -1,14 +1,16 @@
 ---
 title: Console
-description: "The web app of a site: the wall, camera pages and control, events, counts, people, search, discovery, coverage and health."
+description: "The web app of a site: the wall, camera pages and control, events, counts, people, search, adding cameras, coverage, health, the organisation's plan, activity and alerts, and platform administration."
 icon: Monitor
 ---
 
 The console is the web app in apps/console, a Next.js static export served by nginx, which also proxies the API and the video websocket. It signs in with a session cookie, and every page, API call and video connection needs that session.
 
-## Top bar
+## Layout
 
-The top bar holds the page tabs, the number of cameras online, the clock, the site switcher for members of several sites, the arm mode of the current site and a switch that mutes alert toasts. On a phone the tabs turn into icons.
+The top bar holds the organisation and site switcher, one status button whose popover shows cameras online, network health, the event stream and the local time, the site's arm mode, the notifications bell with the latest events and the pop-up alert switch, and the account menu with the theme (system, light or dark) and sign out.
+
+The sidebar lists the pages by area: Monitor (Wall, Events, Counts), Investigate (Search, People), Devices (Cameras, Add camera, Health), Site (Coverage), Organisation (Plan and usage, Activity, Notifications) and Platform (Admin). It shows only the pages the member's role at the current site may open, collapses to an icon rail on wide screens and becomes a drawer on a phone. Each page carries its own header with its title, actions and filters, and pages hide the actions the member's role cannot use.
 
 ## Wall
 
@@ -28,7 +30,7 @@ The registry of cameras: add, edit, order and remove them. The brand fills the d
 
 ## Events
 
-A live list of events with filters for camera, kind, label and day, counts for the filtered events, and a side panel with the snapshot, the boxes of its objects, the clip, plate candidates, the person's journey and Find this person. Alerts raise a toast on every page unless muted, and count on the Events tab. [Arm modes and alerts](../analytics/arm-modes.mdx) explains which events alert.
+A live list of events with filters for camera, kind, label and day, counts for the filtered events, and a side panel with the snapshot, the boxes of its objects, the clip, plate candidates, the person's journey and Find this person. Alerts raise a toast on every page unless pop-up alerts are off, and the notifications bell counts the ones not yet seen. [Arm modes and alerts](../analytics/arm-modes.mdx) explains which events alert.
 
 ## Counts
 
@@ -38,7 +40,7 @@ Crossings in and out per line by hour and day, and the occupancy of areas bounde
 
 Known people with their sample faces and latest sightings, unknown clusters, enrolment from photos, merging and deleting; and search over every event. [Faces](../analytics/faces.mdx) and [search](../analytics/search.mdx) describe both.
 
-## Discover
+## Add camera
 
 Scans the local subnet in SSS_DISCOVERY_SUBNET for cameras: a TCP sweep of the usual camera ports followed by ONVIF identification. It opens the add form prefilled for any camera it finds.
 
@@ -49,3 +51,11 @@ Plans Wi-Fi coverage on a floor plan with routers, walls by material and devices
 ## Health
 
 Probes every router and camera with a TCP connect every SSS_HEALTH_INTERVAL_SECONDS and shows uptime, latency and outages. Two failed samples open an outage and the first answer closes it; when the device a target connects through is down at the same time, the outage names the top device of that chain as its cause. A bridged V380 camera is probed on its own address and port 8800, never on its bridge, because the bridge answers even when the camera is gone.
+
+## Organisation
+
+Plan and usage shows the organisation's plan, its limits and features to every member, and its metered usage to admins and owners. Activity lists who did what in the organisation and when, for admins and owners. Notifications links Telegram chats and groups that receive the organisation's alerts.
+
+## Admin
+
+Platform admins see every organisation with its plan and usage, change plans and suspend or restore organisations, list every connector with its last heartbeat, and read the audit log of the whole platform.
