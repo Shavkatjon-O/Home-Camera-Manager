@@ -15,7 +15,6 @@ final packageInfoProvider = FutureProvider<PackageInfo>((ref) => PackageInfo.fro
 void registerLicences() {
   LicenseRegistry.addLicense(() async* {
     yield LicenseEntryWithLineBreaks(['Geist'], await rootBundle.loadString('assets/licenses/geist-ofl.txt'));
-    yield LicenseEntryWithLineBreaks(['Lucide'], await rootBundle.loadString('assets/licenses/lucide-isc.txt'));
   });
 }
 

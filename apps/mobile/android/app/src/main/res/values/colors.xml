@@ -4,4 +4,6 @@
     <color name="launch_mark">#171717</color>
     <color name="icon_background">#0A0A0A</color>
     <color name="icon_mark">#EDEDED</color>
+    <color name="icon_dot">#F2555A</color>
+    <color name="launch_dot">#E5484D</color>
 </resources>
