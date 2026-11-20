@@ -38,7 +38,7 @@ class IdentitySettings:
     and 92 percent of small grey faces against an enrolled photo, before averaging over a track improves them.
 
     Attributes:
-        models_dir: Mount point of the face model folder; HC_ANALYTICS_FACE_MODELS_DIR names the host folder compose
+        models_dir: Mount point of the face model folder; SSS_ANALYTICS_FACE_MODELS_DIR names the host folder compose
             mounts there read-only.
         detector_size: Square input size of the face detector in pixels.
         embed_batch: Largest batch the embedder engine is built for.
@@ -62,18 +62,18 @@ class IdentitySettings:
     detector_size: int = 640
     embed_batch: int = 8
 
-    min_score: float = field(default_factory=lambda: env_float("HC_FACES_MIN_SCORE", 0.6))
-    min_face: float = field(default_factory=lambda: env_float("HC_FACES_MIN_SIZE", 36.0))
-    min_quality: float = field(default_factory=lambda: env_float("HC_FACES_MIN_QUALITY", 0.15))
-    cluster_quality: float = field(default_factory=lambda: env_float("HC_FACES_CLUSTER_QUALITY", 0.35))
+    min_score: float = field(default_factory=lambda: env_float("SSS_FACES_MIN_SCORE", 0.6))
+    min_face: float = field(default_factory=lambda: env_float("SSS_FACES_MIN_SIZE", 36.0))
+    min_quality: float = field(default_factory=lambda: env_float("SSS_FACES_MIN_QUALITY", 0.15))
+    cluster_quality: float = field(default_factory=lambda: env_float("SSS_FACES_CLUSTER_QUALITY", 0.35))
 
-    known_threshold: float = field(default_factory=lambda: env_float("HC_FACES_KNOWN_THRESHOLD", 0.45))
-    ir_extra: float = field(default_factory=lambda: env_float("HC_FACES_IR_EXTRA", 0.05))
-    margin: float = field(default_factory=lambda: env_float("HC_FACES_MARGIN", 0.08))
-    candidate_threshold: float = field(default_factory=lambda: env_float("HC_FACES_CANDIDATE_THRESHOLD", 0.3))
-    cluster_threshold: float = field(default_factory=lambda: env_float("HC_FACES_CLUSTER_THRESHOLD", 0.45))
+    known_threshold: float = field(default_factory=lambda: env_float("SSS_FACES_KNOWN_THRESHOLD", 0.45))
+    ir_extra: float = field(default_factory=lambda: env_float("SSS_FACES_IR_EXTRA", 0.05))
+    margin: float = field(default_factory=lambda: env_float("SSS_FACES_MARGIN", 0.08))
+    candidate_threshold: float = field(default_factory=lambda: env_float("SSS_FACES_CANDIDATE_THRESHOLD", 0.3))
+    cluster_threshold: float = field(default_factory=lambda: env_float("SSS_FACES_CLUSTER_THRESHOLD", 0.45))
 
-    cooldown: float = field(default_factory=lambda: env_float("HC_FACES_COOLDOWN_SECONDS", 600.0))
+    cooldown: float = field(default_factory=lambda: env_float("SSS_FACES_COOLDOWN_SECONDS", 600.0))
 
     faces_per_track: int = 5
     decide_faces: int = 3

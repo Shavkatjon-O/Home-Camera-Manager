@@ -1,6 +1,6 @@
 # Analytics
 
-Video analytics for the home cameras on NVIDIA DeepStream 9.1 (the newest DeepStream image on nvcr.io, with CUDA
+Video analytics of Smart Surveillance System on NVIDIA DeepStream 9.1 (the newest DeepStream image on nvcr.io, with CUDA
 13.2 and TensorRT 10.16): people, vehicle and animal detection, tracking, zones,
 lines, loitering, crowding and tamper watch, with an event clip and snapshot for every event.
 
@@ -145,8 +145,8 @@ scripts/download-secondary-models.sh
 docker compose up -d --build analytics
 ```
 
-Without HC_ANALYTICS_BACKEND_URL the service reads the same configuration from the JSON file in
-HC_ANALYTICS_CONFIG_FILE instead, for a host without the backend. The first start builds the TensorRT engine into
+Without SSS_ANALYTICS_BACKEND_URL the service reads the same configuration from the JSON file in
+SSS_ANALYTICS_CONFIG_FILE instead, for a host without the backend. The first start builds the TensorRT engine into
 the engine volume, which takes about a minute.
 
 ## Configuration
@@ -157,21 +157,21 @@ their defaults unless set:
 
 | Name | Default | Meaning |
 |---|---|---|
-| HC_ANALYTICS_BACKEND_URL | empty | Backend the configuration comes from and events go to; compose sets it |
-| HC_ANALYTICS_CONFIG_FILE | /config/analytics.json | JSON configuration read when no backend is set |
-| HC_ANALYTICS_RTSP_URL | rtsp://go2rtc:8554 | go2rtc RTSP server the streams are read from |
-| HC_ANALYTICS_ENGINE_BATCH | 8 | Largest batch the detector engine is built for |
-| HC_ANALYTICS_WORKSPACE_MB | 1024 | TensorRT builder workspace |
-| HC_FACES_MIN_SCORE | 0.6 | Lowest face detection score |
-| HC_FACES_MIN_SIZE | 36 | Smallest face height in pixels at the muxer resolution |
-| HC_FACES_MIN_QUALITY | 0.15 | Lowest quality of a face the pipeline sends |
-| HC_FACES_CLUSTER_QUALITY | 0.35 | Mean face quality a track needs to start a cluster |
-| HC_FACES_KNOWN_THRESHOLD | 0.45 | Similarity that names a person |
-| HC_FACES_IR_EXTRA | 0.05 | Added to the known threshold for grey faces |
-| HC_FACES_MARGIN | 0.08 | Lead over the next person needed to name one |
-| HC_FACES_CANDIDATE_THRESHOLD | 0.3 | Similarity from which an unknown face records its closest person |
-| HC_FACES_CLUSTER_THRESHOLD | 0.45 | Similarity that joins an unknown cluster |
-| HC_FACES_COOLDOWN_SECONDS | 600 | Seconds during which a person or cluster makes one event per view |
+| SSS_ANALYTICS_BACKEND_URL | empty | Backend the configuration comes from and events go to; compose sets it |
+| SSS_ANALYTICS_CONFIG_FILE | /config/analytics.json | JSON configuration read when no backend is set |
+| SSS_ANALYTICS_RTSP_URL | rtsp://go2rtc:8554 | go2rtc RTSP server the streams are read from |
+| SSS_ANALYTICS_ENGINE_BATCH | 8 | Largest batch the detector engine is built for |
+| SSS_ANALYTICS_WORKSPACE_MB | 1024 | TensorRT builder workspace |
+| SSS_FACES_MIN_SCORE | 0.6 | Lowest face detection score |
+| SSS_FACES_MIN_SIZE | 36 | Smallest face height in pixels at the muxer resolution |
+| SSS_FACES_MIN_QUALITY | 0.15 | Lowest quality of a face the pipeline sends |
+| SSS_FACES_CLUSTER_QUALITY | 0.35 | Mean face quality a track needs to start a cluster |
+| SSS_FACES_KNOWN_THRESHOLD | 0.45 | Similarity that names a person |
+| SSS_FACES_IR_EXTRA | 0.05 | Added to the known threshold for grey faces |
+| SSS_FACES_MARGIN | 0.08 | Lead over the next person needed to name one |
+| SSS_FACES_CANDIDATE_THRESHOLD | 0.3 | Similarity from which an unknown face records its closest person |
+| SSS_FACES_CLUSTER_THRESHOLD | 0.45 | Similarity that joins an unknown cluster |
+| SSS_FACES_COOLDOWN_SECONDS | 600 | Seconds during which a person or cluster makes one event per view |
 
 ## Status
 
@@ -184,6 +184,6 @@ reference with reference=1.
 ## Tests
 
 ```
-docker build --target test -t home-cameras-analytics:test analytics
-docker run --rm home-cameras-analytics:test
+docker build --target test -t smart-surveillance-system-analytics:test analytics
+docker run --rm smart-surveillance-system-analytics:test
 ```

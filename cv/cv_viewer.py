@@ -231,7 +231,7 @@ def main():
             c.stop = True
         return
 
-    win = "Home Cameras"
+    win = "Smart Surveillance"
     cv2.namedWindow(win, cv2.WINDOW_NORMAL)
     cv2.resizeWindow(win, tw, th)
     full = False

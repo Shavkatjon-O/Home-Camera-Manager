@@ -59,7 +59,7 @@ def require_analytics_token(authorization: str = Header("")) -> None:
         Unauthorized: The header does not carry the token.
     """
     if not settings.analytics_token:
-        raise Unavailable("analytics_disabled", "HC_ANALYTICS_TOKEN is not set")
+        raise Unavailable("analytics_disabled", "SSS_ANALYTICS_TOKEN is not set")
     if not hmac.compare_digest(authorization.encode(), f"Bearer {settings.analytics_token}".encode()):
         raise Unauthorized("invalid_token", "The analytics token is missing or wrong")
 

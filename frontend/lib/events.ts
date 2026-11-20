@@ -219,7 +219,7 @@ export function topicLabel(topic: string): string {
   return meaningful.slice(-2).join(" / ") || topic
 }
 
-const MUTE_KEY = "hc-event-alerts-muted"
+const MUTE_KEY = "sss-event-alerts-muted"
 const muteListeners = new Set<() => void>()
 let memoryMuted = false
 
@@ -253,7 +253,7 @@ export function useAlertsMuted(): boolean {
   return useSyncExternalStore(subscribeMuted, readMuted, () => false)
 }
 
-const UNSEEN_KEY = "hc-unseen-alerts"
+const UNSEEN_KEY = "sss-unseen-alerts"
 const UNSEEN_LIMIT = 200
 const unseenListeners = new Set<() => void>()
 let memoryUnseen: string[] = []

@@ -4,7 +4,7 @@ import { useSyncExternalStore } from "react"
 
 import { isWallLayout, type WallLayout } from "@/lib/grid"
 
-const LAYOUT_KEY = "hc-wall-layout"
+const LAYOUT_KEY = "sss-wall-layout"
 const layoutListeners = new Set<() => void>()
 let memoryLayout: WallLayout = "auto"
 

@@ -75,7 +75,7 @@ def test_duration_runs_to_now_while_ongoing():
 
 
 def test_bridged_cameras_are_probed_on_the_device_port():
-    assert camera_address("home-cameras-v380-ptz-1", "192.168.1.237", 8554) == (
+    assert camera_address("smart-surveillance-system-v380-ptz-1", "192.168.1.237", 8554) == (
         "192.168.1.237",
         BRIDGED_DEVICE_PORT,
     )
@@ -84,7 +84,9 @@ def test_bridged_cameras_are_probed_on_the_device_port():
 
 def test_targets_take_camera_parents_from_their_links():
     router = NetworkDevice(uuid=uuid4(), name="Router", host="192.168.1.1", probe_port=80, parent_uuid=None)
-    bridged = Camera(uuid=uuid4(), host="home-cameras-v380-ptz-2", device_host="192.168.1.127", rtsp_port=8554)
+    bridged = Camera(
+        uuid=uuid4(), host="smart-surveillance-system-v380-ptz-2", device_host="192.168.1.127", rtsp_port=8554
+    )
     direct = Camera(uuid=uuid4(), host="192.168.1.106", device_host=None, rtsp_port=554)
     link = CameraLink(camera_uuid=bridged.uuid, parent_uuid=router.uuid, link="cable")
     targets = build_targets([router], [bridged, direct], [link])

@@ -1,4 +1,4 @@
-# Home Cameras - OpenCV viewer
+# Smart Surveillance System - OpenCV viewer
 
 A single window showing every camera at once, security-monitor style.
 OpenCV opens the RTSP streams and decodes H.265 directly, then draws all
@@ -8,7 +8,7 @@ lighter and smoother than a web player. Software decode only; no GPU.
 ## Build (once)
 
     cd cv
-    docker build -t home-cameras-cv:latest .
+    docker build -t smart-surveillance-system-cv:latest .
 
 The password comes from `../.env` (`CAMERA_PASSWORD=...`) and the camera addresses from
 `CV_CAMERA_HOSTS`, a comma-separated list, in the same file the web stack uses.
@@ -33,7 +33,7 @@ Lighter mode (uses the small 768x432 sub-stream instead of 5MP):
 Saves one composed grid image and exits, for verifying access without a display:
 
     docker run --rm --network host --env-file ../.env \
-      -v "$PWD":/out home-cameras-cv:latest --snapshot /out/grid.jpg
+      -v "$PWD":/out smart-surveillance-system-cv:latest --snapshot /out/grid.jpg
 
 ## Notes
 

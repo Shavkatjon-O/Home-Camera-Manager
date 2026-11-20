@@ -16,9 +16,9 @@ from starlette.responses import Response
 from app.core.config import APP_NAME, settings
 
 ALGORITHM = "HS256"
-SESSION_KEY_LABEL = b"home-cameras session"
+SESSION_KEY_LABEL = b"smart-surveillance-system session"
 
-SESSION_COOKIE = "hc_session"
+SESSION_COOKIE = "sss_session"
 SESSION_COOKIE_PATH = "/"
 SESSION_COOKIE_SAMESITE = "lax"
 
@@ -34,10 +34,10 @@ def require_secret_key() -> str:
         The configured secret key.
 
     Raises:
-        RuntimeError: HC_SECRET_KEY is not set.
+        RuntimeError: SSS_SECRET_KEY is not set.
     """
     if not settings.secret_key:
-        raise RuntimeError("HC_SECRET_KEY is not set")
+        raise RuntimeError("SSS_SECRET_KEY is not set")
     return settings.secret_key
 
 

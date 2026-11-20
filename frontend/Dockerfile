@@ -6,7 +6,7 @@ ENV PATH=$PNPM_HOME:$PATH
 RUN corepack enable
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN --mount=type=cache,id=home-cameras-pnpm,target=/pnpm/store pnpm install --frozen-lockfile --store-dir /pnpm/store
+RUN --mount=type=cache,id=smart-surveillance-system-pnpm,target=/pnpm/store pnpm install --frozen-lockfile --store-dir /pnpm/store
 COPY . .
 RUN pnpm build
 

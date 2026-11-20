@@ -9,11 +9,11 @@ SCREEN_W="${SIZE%x*}"; SCREEN_H="${SIZE#*x}"
 : "${SCREEN_W:=1920}"; : "${SCREEN_H:=1080}"
 
 docker run --rm -it \
-  --name home-cameras-cv \
+  --name smart-surveillance-system-cv \
   --network host \
   -e DISPLAY="${DISPLAY:-:0}" \
   -e STREAM="${STREAM:-main}" \
   -e SCREEN_W="$SCREEN_W" -e SCREEN_H="$SCREEN_H" \
   --env-file ../.env \
   -v /tmp/.X11-unix:/tmp/.X11-unix \
-  home-cameras-cv:latest "$@"
+  smart-surveillance-system-cv:latest "$@"

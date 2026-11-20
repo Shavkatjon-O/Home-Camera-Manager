@@ -1,1 +1,1 @@
-"""Video analytics service for the home cameras."""
+"""Video analytics service of Smart Surveillance System."""

@@ -16,7 +16,7 @@ TILE_PATTERN = re.compile(r"^tv_tile_(\d{1,2})$")
 
 TV_RTSP_PORT = 8554
 LOCAL_RTSP = "rtsp://127.0.0.1:8554"
-INPUT_AGENT = "HomeCamerasComposer"
+INPUT_AGENT = "SmartSurveillanceComposer"
 
 WALL_WIDTH = 1920
 WALL_HEIGHT = 1080

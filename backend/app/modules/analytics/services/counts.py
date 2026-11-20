@@ -139,7 +139,7 @@ def timezone() -> ZoneInfo:
     """Return the time zone of schedules and counts.
 
     Returns:
-        The zone named by HC_TIMEZONE.
+        The zone named by SSS_TIMEZONE.
     """
     return ZoneInfo(settings.timezone)
 

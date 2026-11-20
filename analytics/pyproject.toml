@@ -1,7 +1,7 @@
 [project]
-name = "home-cameras-analytics"
+name = "smart-surveillance-analytics"
 version = "0.1.0"
-description = "Video analytics for the home cameras on NVIDIA DeepStream"
+description = "Video analytics of Smart Surveillance System on NVIDIA DeepStream"
 requires-python = ">=3.12"
 dependencies = [
     "numpy>=1.26",

@@ -1,6 +1,6 @@
-# Home Camera Manager
+# Smart Surveillance System
 
-A self-hosted manager for the IP cameras of a home. It shows every camera live in the browser, drives PTZ cameras and their settings over ONVIF, records what the cameras report, and runs its own video analytics on an NVIDIA GPU with DeepStream: people, vehicles and animals in zones and across lines, faces, tampering, counts, objects left behind, falls, number plates and a person's way across the cameras. An Android TV app shows the cameras on the TV straight from the cameras. Everything runs on one computer in the home network; no picture, face or event leaves it.
+Smart Surveillance System is a self-hosted video surveillance platform for IP cameras. It shows every camera live in the browser, drives PTZ cameras and their settings over ONVIF, records what the cameras report, and runs its own video analytics on an NVIDIA GPU with DeepStream: people, vehicles and animals in zones and across lines, faces, tampering, counts, objects left behind, falls, number plates and a person's way across the cameras. An Android TV app shows the cameras on a TV straight from the cameras. Everything runs on one computer in the site's own network; no picture, face or event leaves it.
 
 ## Features
 
@@ -45,13 +45,13 @@ analytics/README.md describes the pipeline, the rules and every feature in detai
 
 ### Network
 
-- Discover scans the home subnet for cameras and opens the add form prefilled for any it finds.
+- Discover scans the local subnet for cameras and opens the add form prefilled for any it finds.
 - Coverage plans Wi-Fi coverage on a floor plan with routers, walls by material and devices, shows a heatmap per band and suggests router placement.
 - Health probes every router and camera every 10 s and shows uptime, latency, outages and the device that caused each outage.
 
 ### TV
 
-tv/ holds an Android TV app that connects straight to the cameras on the home Wi-Fi and needs nothing from this computer: a grid of every camera, fullscreen with sound and PTZ from the remote. tv/README.md describes it.
+tv/ holds an Android TV app that connects straight to the cameras on the local Wi-Fi and needs nothing from this computer: a grid of every camera, fullscreen with sound and PTZ from the remote. tv/README.md describes it.
 
 ## Supported cameras
 
@@ -71,7 +71,7 @@ The brand fills the defaults of fields left empty:
 | onvif | given | from ONVIF GetStreamUri | from ONVIF GetStreamUri | from the profile |
 | rtsp | none | required | optional | no |
 
-A V380 bridge needs the camera's address and device ID in V380_PTZ_n_HOST and V380_PTZ_n_ID, and the shared V380_USERNAME and V380_PASSWORD set as the device login in the V380 Pro app. Register the camera with brand onvif, host home-cameras-v380-ptz-n, device address the camera's own address, RTSP port 8554, ONVIF port 8080, main path /live, no sub path, no login and PTZ on. Another V380 camera gets another bridge service and variable group in the same shape. A dual-lens camera sends both pictures stacked in one frame; set Lenses to 2 and every view, the wall and the analytics treat each band as its own lens.
+A V380 bridge needs the camera's address and device ID in V380_PTZ_n_HOST and V380_PTZ_n_ID, and the shared V380_USERNAME and V380_PASSWORD set as the device login in the V380 Pro app. Register the camera with brand onvif, host smart-surveillance-system-v380-ptz-n, device address the camera's own address, RTSP port 8554, ONVIF port 8080, main path /live, no sub path, no login and PTZ on. Another V380 camera gets another bridge service and variable group in the same shape. A dual-lens camera sends both pictures stacked in one frame; set Lenses to 2 and every view, the wall and the analytics treat each band as its own lens.
 
 ## Architecture
 
@@ -108,12 +108,12 @@ flowchart LR
 |---|---|---|
 | postgres | postgres:17.6-alpine | Users, cameras, analytics configuration, events, people, faces, appearances, counts, floor plans and health samples |
 | go2rtc | alexxit/go2rtc:1.9.14-hardware | Pulls each camera's stream, serves the original to the analytics over RTSP and an H.264 transcode encoded on NVENC to the browser |
-| backend | home-cameras-backend:local | FastAPI: sign in, cameras, discovery, ONVIF control and events, analytics configuration, events, people, search, counts, floor plans, health and the go2rtc stream registry |
-| analytics | home-cameras-analytics:local | DeepStream 9.1: detection, tracking, rules, faces, appearance, pose, plates, tamper watch, the rolling recording buffer and event clips |
-| v380-ptz-1, v380-ptz-2 | home-cameras-v380-bridge:local | One bridge per V380 camera: V380 protocol in, RTSP on 8554 and ONVIF with PTZ, light and siren on 8080 out |
-| web | home-cameras-web:local | nginx serving the Next.js static export and proxying the API and the video websocket |
+| backend | smart-surveillance-system-backend:local | FastAPI: sign in, cameras, discovery, ONVIF control and events, analytics configuration, events, people, search, counts, floor plans, health and the go2rtc stream registry |
+| analytics | smart-surveillance-system-analytics:local | DeepStream 9.1: detection, tracking, rules, faces, appearance, pose, plates, tamper watch, the rolling recording buffer and event clips |
+| v380-ptz-1, v380-ptz-2 | smart-surveillance-system-v380-bridge:local | One bridge per V380 camera: V380 protocol in, RTSP on 8554 and ONVIF with PTZ, light and siren on 8080 out |
+| web | smart-surveillance-system-web:local | nginx serving the Next.js static export and proxying the API and the video websocket |
 
-The analytics service reads its configuration from the backend every 5 s, so zone and rule changes apply without a restart, and posts events and observations back on internal routes that nginx never serves. Only web and go2rtc's RTSP port publish ports: web on loopback and on HC_LAN_BIND, RTSP on HC_LAN_BIND only, so phones on the home Wi-Fi reach the app while a VPN on the same computer does not.
+The analytics service reads its configuration from the backend every 5 s, so zone and rule changes apply without a restart, and posts events and observations back on internal routes that nginx never serves. Only web and go2rtc's RTSP port publish ports: web on loopback and on SSS_LAN_BIND, RTSP on SSS_LAN_BIND only, so phones on the local Wi-Fi reach the app while a VPN on the same computer does not.
 
 ## Requirements
 
@@ -122,7 +122,7 @@ The analytics service reads its configuration from the backend every 5 s, so zon
 - GPU memory: about 2.1 GB for the analytics with every feature on, and 0.2 to 0.3 GB for each H.264 transcode go2rtc runs while a browser watches.
 - RAM: the analytics container is capped at 6 GB and uses about 1.5 GB with four cameras; the other services together use under 1 GB.
 - CPU: go2rtc decodes the browser transcodes on the CPU, under half a core for four 5 MP cameras on the wall; the analytics uses about a quarter of a core.
-- Disk: about 30 GB for the images, most of it the DeepStream base image, 2.5 GB for the models, 0.5 GB for the TensorRT engines, and the events volume, which grows by a few GB a day of clips with several people about and is pruned by HC_EVENTS_RETENTION_DAYS.
+- Disk: about 30 GB for the images, most of it the DeepStream base image, 2.5 GB for the models, 0.5 GB for the TensorRT engines, and the events volume, which grows by a few GB a day of clips with several people about and is pruned by SSS_EVENTS_RETENTION_DAYS.
 
 A Jetson Orin Nano profile exists but has not run on a Jetson; see Jetson Orin Nano below.
 
@@ -134,7 +134,7 @@ A Jetson Orin Nano profile exists but has not run on a Jetson; see Jetson Orin N
    cp .env.example .env
    ```
 
-   Set HC_SECRET_KEY to a long random value, HC_TV_RTSP_PASSWORD and HC_ANALYTICS_TOKEN to two other random values, HC_ADMIN_PASSWORD, HC_TIMEZONE to the zone schedules use, and HC_LAN_BIND to this computer's home network address, reserved in the router so it does not change.
+   Set SSS_SECRET_KEY to a long random value, SSS_TV_RTSP_PASSWORD and SSS_ANALYTICS_TOKEN to two other random values, SSS_ADMIN_PASSWORD, SSS_TIMEZONE to the zone schedules use, and SSS_LAN_BIND to this computer's local network address, reserved in the router so it does not change.
 
 2. Download the models. Each script checks every file against a pinned checksum and prints its licence; read the licences before use.
 
@@ -144,7 +144,7 @@ A Jetson Orin Nano profile exists but has not run on a Jetson; see Jetson Orin N
    scripts/download-secondary-models.sh
    ```
 
-   The first fetches RF-DETR and exports it to ONNX, the second the InsightFace face models, which are published for non-commercial research only, and the third the appearance, pose and plate models. The scripts read HC_ANALYTICS_MODELS_DIR and HC_ANALYTICS_FACE_MODELS_DIR from the shell, not from .env, and default to analytics/models and analytics/models/face, the folders compose mounts by default.
+   The first fetches RF-DETR and exports it to ONNX, the second the InsightFace face models, which are published for non-commercial research only, and the third the appearance, pose and plate models. The scripts read SSS_ANALYTICS_MODELS_DIR and SSS_ANALYTICS_FACE_MODELS_DIR from the shell, not from .env, and default to analytics/models and analytics/models/face, the folders compose mounts by default.
 
 3. Start the stack:
 
@@ -154,7 +154,7 @@ A Jetson Orin Nano profile exists but has not run on a Jetson; see Jetson Orin N
 
    The first start of the analytics builds its TensorRT engines into the analytics-engines volume, which takes a few minutes; later starts reuse them.
 
-4. Open http://127.0.0.1:8750 and sign in with HC_ADMIN_USERNAME and HC_ADMIN_PASSWORD. The backend creates that user on first start and never overwrites its password afterwards.
+4. Open http://127.0.0.1:8750 and sign in with SSS_ADMIN_USERNAME and SSS_ADMIN_PASSWORD. The backend creates that user on first start and never overwrites its password afterwards.
 
 5. Add cameras on the Cameras page or find them with Discover, then turn on analytics per view on each camera's page and draw zones and lines there.
 
@@ -164,49 +164,49 @@ Every variable lives in .env, which mirrors .env.example group by group.
 
 | Name | Default | Meaning |
 |---|---|---|
-| HC_LAN_BIND | none | Home network address the web app and go2rtc's RTSP port are published on |
-| HC_WEB_PORT | 8750 | Port of the web app |
-| HC_DB_HOST | postgres | Postgres host |
-| HC_DB_PORT | 5432 | Postgres port |
-| HC_DB_NAME | home_cameras | Postgres database |
-| HC_DB_USER | home_cameras | Postgres user |
-| HC_DB_PASSWORD | home_cameras | Postgres password |
-| HC_SECRET_KEY | none | Signs sessions and encrypts camera passwords; changing it makes stored camera passwords unreadable |
-| HC_ADMIN_USERNAME | admin | User created on first start |
-| HC_ADMIN_PASSWORD | none | Password of that user on first start |
-| HC_SESSION_HOURS | 168 | Lifetime of a session |
-| HC_GO2RTC_URL | http://go2rtc:1984 | go2rtc API address |
-| HC_TRANSCODE_HARDWARE | empty | go2rtc hardware option added to every transcode, such as cuda for GPU decoding; empty decodes on the CPU |
-| HC_TV_RTSP_USERNAME | tv | RTSP user go2rtc asks every client outside its container for |
-| HC_TV_RTSP_PASSWORD | none | RTSP password of go2rtc |
-| HC_DISCOVERY_SUBNET | 192.168.1.0/24 | Subnet Discover scans |
-| HC_MONITOR_INTERVAL_SECONDS | 20 | Interval of the camera status monitor and the go2rtc reconciliation |
-| HC_HEALTH_INTERVAL_SECONDS | 10 | Interval of the health probes |
-| HC_HEALTH_RETENTION_DAYS | 14 | Days health samples are kept |
-| HC_EVENTS_RETENTION_DAYS | 30 | Days events are kept with their snapshots, clips and face samples, and person appearances and journeys with them, so Find this person never offers a sighting whose event is gone |
-| HC_COUNTS_RETENTION_DAYS | 400 | Days line counts are kept; a count is one small row per line, minute, direction and label, a few hundred a day, so a year of them costs little and a day can be compared with the same day a year before |
-| HC_REPLAY_ENABLED | false | Offers SD card playback, one session per camera |
-| HC_TIMEZONE | UTC | Time zone of schedules, counts and area resets |
-| HC_ANALYTICS_URL | http://analytics:8080 | Status endpoint of the analytics service |
-| HC_ANALYTICS_TOKEN | none | Shared token of the backend's internal analytics routes and the analytics status endpoint |
-| HC_ANALYTICS_MODELS_DIR | ./analytics/models | Host folder of the analytics models, mounted read-only |
-| HC_ANALYTICS_FACE_MODELS_DIR | ./analytics/models/face | Host folder of the face models, mounted read-only |
-| HC_ANALYTICS_DETECTOR | rfdetr-medium | Shared detector |
-| HC_ANALYTICS_APPEARANCE | true | Appearance vectors and journeys on views that allow them |
-| HC_ANALYTICS_POSE | true | Pose and falls on views with falls on |
-| HC_ANALYTICS_PLATES | true | Plate reading on views with plates on |
-| HC_ANALYTICS_PLATE_FINDER | text | text for the PaddleOCR text detector, lpdnet for NVIDIA LPDNet |
-| HC_ANALYTICS_FPS | 8 | Analysis rate of views that set none |
-| HC_ANALYTICS_CLIP_ENCODER | auto | auto, h264_nvenc, libx264 or copy |
-| HC_ANALYTICS_CLIP_BEFORE | 5 | Seconds a clip starts before its event |
-| HC_ANALYTICS_CLIP_AFTER | 5 | Seconds a clip runs after its event ends |
-| HC_ANALYTICS_CLIP_MAX | 60 | Longest clip in seconds |
-| HC_ANALYTICS_BUFFER_SECONDS | 120 | Seconds of each camera's stream kept in memory for clips |
+| SSS_LAN_BIND | none | Local network address the web app and go2rtc's RTSP port are published on |
+| SSS_WEB_PORT | 8750 | Port of the web app |
+| SSS_DB_HOST | postgres | Postgres host |
+| SSS_DB_PORT | 5432 | Postgres port |
+| SSS_DB_NAME | surveillance | Postgres database |
+| SSS_DB_USER | surveillance | Postgres user |
+| SSS_DB_PASSWORD | surveillance | Postgres password |
+| SSS_SECRET_KEY | none | Signs sessions and encrypts camera passwords; changing it makes stored camera passwords unreadable |
+| SSS_ADMIN_USERNAME | admin | User created on first start |
+| SSS_ADMIN_PASSWORD | none | Password of that user on first start |
+| SSS_SESSION_HOURS | 168 | Lifetime of a session |
+| SSS_GO2RTC_URL | http://go2rtc:1984 | go2rtc API address |
+| SSS_TRANSCODE_HARDWARE | empty | go2rtc hardware option added to every transcode, such as cuda for GPU decoding; empty decodes on the CPU |
+| SSS_TV_RTSP_USERNAME | tv | RTSP user go2rtc asks every client outside its container for |
+| SSS_TV_RTSP_PASSWORD | none | RTSP password of go2rtc |
+| SSS_DISCOVERY_SUBNET | 192.168.1.0/24 | Subnet Discover scans |
+| SSS_MONITOR_INTERVAL_SECONDS | 20 | Interval of the camera status monitor and the go2rtc reconciliation |
+| SSS_HEALTH_INTERVAL_SECONDS | 10 | Interval of the health probes |
+| SSS_HEALTH_RETENTION_DAYS | 14 | Days health samples are kept |
+| SSS_EVENTS_RETENTION_DAYS | 30 | Days events are kept with their snapshots, clips and face samples, and person appearances and journeys with them, so Find this person never offers a sighting whose event is gone |
+| SSS_COUNTS_RETENTION_DAYS | 400 | Days line counts are kept; a count is one small row per line, minute, direction and label, a few hundred a day, so a year of them costs little and a day can be compared with the same day a year before |
+| SSS_REPLAY_ENABLED | false | Offers SD card playback, one session per camera |
+| SSS_TIMEZONE | UTC | Time zone of schedules, counts and area resets |
+| SSS_ANALYTICS_URL | http://analytics:8080 | Status endpoint of the analytics service |
+| SSS_ANALYTICS_TOKEN | none | Shared token of the backend's internal analytics routes and the analytics status endpoint |
+| SSS_ANALYTICS_MODELS_DIR | ./analytics/models | Host folder of the analytics models, mounted read-only |
+| SSS_ANALYTICS_FACE_MODELS_DIR | ./analytics/models/face | Host folder of the face models, mounted read-only |
+| SSS_ANALYTICS_DETECTOR | rfdetr-medium | Shared detector |
+| SSS_ANALYTICS_APPEARANCE | true | Appearance vectors and journeys on views that allow them |
+| SSS_ANALYTICS_POSE | true | Pose and falls on views with falls on |
+| SSS_ANALYTICS_PLATES | true | Plate reading on views with plates on |
+| SSS_ANALYTICS_PLATE_FINDER | text | text for the PaddleOCR text detector, lpdnet for NVIDIA LPDNet |
+| SSS_ANALYTICS_FPS | 8 | Analysis rate of views that set none |
+| SSS_ANALYTICS_CLIP_ENCODER | auto | auto, h264_nvenc, libx264 or copy |
+| SSS_ANALYTICS_CLIP_BEFORE | 5 | Seconds a clip starts before its event |
+| SSS_ANALYTICS_CLIP_AFTER | 5 | Seconds a clip runs after its event ends |
+| SSS_ANALYTICS_CLIP_MAX | 60 | Longest clip in seconds |
+| SSS_ANALYTICS_BUFFER_SECONDS | 120 | Seconds of each camera's stream kept in memory for clips |
 | CAMERA_PASSWORD | none | Password of the EZVIZ cameras for the OpenCV viewer in cv/ |
 | CV_CAMERA_HOSTS | 192.168.1.104,192.168.1.106 | Addresses the OpenCV viewer opens |
 | V380_USERNAME | admin | Device login of the V380 cameras |
 | V380_PASSWORD | none | Device password of the V380 cameras |
-| HC_DEVICE_ONVIF_PORT | 8899 | ONVIF port of bridged V380 cameras on their own address |
+| SSS_DEVICE_ONVIF_PORT | 8899 | ONVIF port of bridged V380 cameras on their own address |
 | V380_PTZ_1_HOST | none | Address of the first V380 camera |
 | V380_PTZ_1_ID | none | Device ID of the first V380 camera |
 | V380_PTZ_2_HOST | none | Address of the second V380 camera |
@@ -218,8 +218,8 @@ The face recognition thresholds and the analytics service's own settings are in 
 
 - Everything runs on this computer. Video, snapshots, clips, faces, appearance vectors and plate reads are stored in its postgres and events volumes and never sent anywhere; no cloud service is used.
 - Faces never leave the machine: enrollment photos go from the browser to the backend and on to the local analytics service, which answers with the face's position, quality and embedding.
-- Event data, face samples seen by the cameras, appearances and journeys are deleted after HC_EVENTS_RETENTION_DAYS. Enrolled photos stay until their person is deleted, which wipes the person's embeddings and crops.
-- The web app publishes only on loopback and the home network address, and every page, API call and video connection needs a session.
+- Event data, face samples seen by the cameras, appearances and journeys are deleted after SSS_EVENTS_RETENTION_DAYS. Enrolled photos stay until their person is deleted, which wipes the person's embeddings and crops.
+- The web app publishes only on loopback and the local network address, and every page, API call and video connection needs a session.
 
 ## Model licences
 
@@ -249,9 +249,9 @@ The weights are never committed. The DeepStream base image is under the NVIDIA D
 ## Security
 
 - Every page, API call and video connection needs a session; nginx checks it before it proxies the video websocket and snapshots, and answers 404 for every other go2rtc path and for /internal.
-- Camera passwords are stored encrypted with a key derived from HC_SECRET_KEY and are never returned by the API.
-- go2rtc asks RTSP clients for HC_TV_RTSP_USERNAME and HC_TV_RTSP_PASSWORD except on loopback, so its own ffmpeg transcodes need no credentials.
-- The analytics service publishes no port; its status endpoint and the backend's internal analytics routes need HC_ANALYTICS_TOKEN as a bearer token.
+- Camera passwords are stored encrypted with a key derived from SSS_SECRET_KEY and are never returned by the API.
+- go2rtc asks RTSP clients for SSS_TV_RTSP_USERNAME and SSS_TV_RTSP_PASSWORD except on loopback, so its own ffmpeg transcodes need no credentials.
+- The analytics service publishes no port; its status endpoint and the backend's internal analytics routes need SSS_ANALYTICS_TOKEN as a bearer token.
 - The bridges serve RTSP and ONVIF without authentication and sound the siren through an unauthenticated API, so they stay on the internal network and never publish ports.
 
 ## How it works
@@ -262,11 +262,11 @@ The backend registers two go2rtc streams per enabled camera, main and sub, each 
 
 ### Events
 
-One ONVIF PullPoint subscription per enabled camera reads its event topics, long-polls PullMessages, renews before the subscription expires and reconnects with backoff; a camera that refuses PullMessages is polled by subscribing every 5 s. A bridged camera is subscribed on its own address and HC_DEVICE_ONVIF_PORT. Start and stop messages within 5 s merge into one event, an open event closes after 10 minutes, and states a camera reports when a subscription starts never open an event, because their start is unknown. Event times use this computer's clock and keep the camera's own time beside it. GET /api/v1/events lists events with filters and paging, and /api/v1/events/stream pushes changes as server-sent events.
+One ONVIF PullPoint subscription per enabled camera reads its event topics, long-polls PullMessages, renews before the subscription expires and reconnects with backoff; a camera that refuses PullMessages is polled by subscribing every 5 s. A bridged camera is subscribed on its own address and SSS_DEVICE_ONVIF_PORT. Start and stop messages within 5 s merge into one event, an open event closes after 10 minutes, and states a camera reports when a subscription starts never open an event, because their start is unknown. Event times use this computer's clock and keep the camera's own time beside it. GET /api/v1/events lists events with filters and paging, and /api/v1/events/stream pushes changes as server-sent events.
 
 ### Health
 
-Every enabled network device and camera is probed with a TCP connect every HC_HEALTH_INTERVAL_SECONDS. A bridged camera is probed on its own address and port 8800, never on the bridge, because the bridge answers even when the camera is gone. Two failed samples open an outage and the first answer closes it; when the device a target connects through is down at the same time, the outage names the top device of that chain as its cause.
+Every enabled network device and camera is probed with a TCP connect every SSS_HEALTH_INTERVAL_SECONDS. A bridged camera is probed on its own address and port 8800, never on the bridge, because the bridge answers even when the camera is gone. Two failed samples open an outage and the first answer closes it; when the device a target connects through is down at the same time, the outage names the top device of that chain as its cause.
 
 ### Composed TV streams
 

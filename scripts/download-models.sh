@@ -4,7 +4,7 @@ set -eu
 usage() {
   echo "usage: scripts/download-models.sh [--all]"
   echo
-  echo "Downloads the analytics detector into HC_ANALYTICS_MODELS_DIR (default analytics/models),"
+  echo "Downloads the analytics detector into SSS_ANALYTICS_MODELS_DIR (default analytics/models),"
   echo "checks every file against its pinned checksum, exports the ONNX model and prints each licence."
   echo "--all also fetches the candidates the detector was chosen from, to repeat the measurement."
 }
@@ -17,7 +17,7 @@ case "${1:-}" in
 esac
 
 root=$(cd "$(dirname "$0")/.." && pwd)
-models=${HC_ANALYTICS_MODELS_DIR:-$root/analytics/models}
+models=${SSS_ANALYTICS_MODELS_DIR:-$root/analytics/models}
 mkdir -p "$models"
 models=$(cd "$models" && pwd)
 

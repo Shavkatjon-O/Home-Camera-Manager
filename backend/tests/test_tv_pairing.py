@@ -101,8 +101,8 @@ def test_config_without_cameras_has_no_wall_url():
 
 def test_discovery_matches_bridged_cameras_by_device_host():
     direct = Camera(uuid=UUID(int=1), host="192.168.1.104", device_host=None)
-    bridged = Camera(uuid=UUID(int=2), host="home-cameras-v380-ptz-1", device_host="192.168.1.237")
+    bridged = Camera(uuid=UUID(int=2), host="smart-surveillance-system-v380-ptz-1", device_host="192.168.1.237")
     hosts = index_hosts([direct, bridged])
     assert hosts["192.168.1.104"] is direct
     assert hosts["192.168.1.237"] is bridged
-    assert hosts["home-cameras-v380-ptz-1"] is bridged
+    assert hosts["smart-surveillance-system-v380-ptz-1"] is bridged

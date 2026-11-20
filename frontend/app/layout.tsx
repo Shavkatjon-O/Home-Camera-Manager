@@ -9,8 +9,8 @@ import "./globals.css"
 
 export const metadata: Metadata = {
   title: {
-    default: "Home cameras",
-    template: "%s - Home cameras",
+    default: "Smart Surveillance",
+    template: "%s - Smart Surveillance",
   },
   robots: { index: false, follow: false },
 }

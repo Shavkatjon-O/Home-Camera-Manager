@@ -6,8 +6,8 @@ api:
 
 rtsp:
   listen: ":8554"
-  username: "${HC_TV_RTSP_USERNAME}"
-  password: "${HC_TV_RTSP_PASSWORD}"
+  username: "${SSS_TV_RTSP_USERNAME}"
+  password: "${SSS_TV_RTSP_PASSWORD}"
 
 webrtc:
   listen: ""

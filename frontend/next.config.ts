@@ -1,6 +1,6 @@
 import type { NextConfig } from "next"
 
-const devOrigin = process.env.HC_DEV_ORIGIN || "http://127.0.0.1:8750"
+const devOrigin = process.env.SSS_DEV_ORIGIN || "http://127.0.0.1:8750"
 
 const nextConfig: NextConfig = {
   output: "export",

@@ -114,7 +114,7 @@ function CameraView({ id }: { id: string }) {
 
   const name = camera?.name
   React.useEffect(() => {
-    if (name) document.title = `${name} - Home cameras`
+    if (name) document.title = `${name} - Smart Surveillance`
   }, [name])
 
   const ptzEnabled = camera?.ptz_enabled ?? false

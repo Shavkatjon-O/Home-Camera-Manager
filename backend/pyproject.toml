@@ -1,7 +1,7 @@
 [project]
-name = "home-cameras-backend"
+name = "smart-surveillance-backend"
 version = "0.1.0"
-description = "Camera registry, live view and PTZ control for the home cameras"
+description = "Camera registry, live view, PTZ control, events and analytics API of Smart Surveillance System"
 requires-python = ">=3.13,<3.14"
 dependencies = [
     "alembic>=1.16",

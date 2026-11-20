@@ -1,14 +1,14 @@
-name: home-cameras
+name: smart-surveillance-system
 
 services:
   postgres:
     image: postgres:17.6-alpine
-    container_name: home-cameras-postgres
+    container_name: smart-surveillance-system-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${HC_DB_NAME:-home_cameras}
-      POSTGRES_USER: ${HC_DB_USER:-home_cameras}
-      POSTGRES_PASSWORD: ${HC_DB_PASSWORD:-home_cameras}
+      POSTGRES_DB: ${SSS_DB_NAME:-surveillance}
+      POSTGRES_USER: ${SSS_DB_USER:-surveillance}
+      POSTGRES_PASSWORD: ${SSS_DB_PASSWORD:-surveillance}
     volumes:
       - postgres:/var/lib/postgresql/data
     healthcheck:
@@ -20,7 +20,7 @@ services:
 
   go2rtc:
     image: alexxit/go2rtc:1.9.14-hardware
-    container_name: home-cameras-go2rtc
+    container_name: smart-surveillance-system-go2rtc
     restart: unless-stopped
     deploy:
       resources:
@@ -30,19 +30,19 @@ services:
               count: all
               capabilities: [gpu, video]
     environment:
-      HC_TV_RTSP_USERNAME: ${HC_TV_RTSP_USERNAME:-tv}
-      HC_TV_RTSP_PASSWORD: ${HC_TV_RTSP_PASSWORD:?set HC_TV_RTSP_PASSWORD}
+      SSS_TV_RTSP_USERNAME: ${SSS_TV_RTSP_USERNAME:-tv}
+      SSS_TV_RTSP_PASSWORD: ${SSS_TV_RTSP_PASSWORD:?set SSS_TV_RTSP_PASSWORD}
     volumes:
       - ./go2rtc.yaml:/config/go2rtc.yaml:ro
       - ./go2rtc-tv.sh:/config/tv.sh:ro
     ports:
-      - "${HC_LAN_BIND:?set HC_LAN_BIND to this machine home network address}:8554:8554"
+      - "${SSS_LAN_BIND:?set SSS_LAN_BIND to this machine LAN address}:8554:8554"
     networks: [cams]
 
   backend:
     build: ./backend
-    image: home-cameras-backend:local
-    container_name: home-cameras-backend
+    image: smart-surveillance-system-backend:local
+    container_name: smart-surveillance-system-backend
     restart: unless-stopped
     env_file: .env
     volumes:
@@ -58,12 +58,12 @@ services:
     build:
       context: ./analytics
       target: runtime
-    image: home-cameras-analytics:local
-    container_name: home-cameras-analytics
+    image: smart-surveillance-system-analytics:local
+    container_name: smart-surveillance-system-analytics
     restart: unless-stopped
     env_file: .env
     environment:
-      HC_ANALYTICS_BACKEND_URL: http://backend:8000
+      SSS_ANALYTICS_BACKEND_URL: http://backend:8000
 
       NVIDIA_DRIVER_CAPABILITIES: compute,utility,video
     deploy:
@@ -76,8 +76,8 @@ services:
               count: all
               capabilities: [gpu, compute, utility, video]
     volumes:
-      - ${HC_ANALYTICS_MODELS_DIR:-./analytics/models}:/models:ro
-      - ${HC_ANALYTICS_FACE_MODELS_DIR:-./analytics/models/face}:/face-models:ro
+      - ${SSS_ANALYTICS_MODELS_DIR:-./analytics/models}:/models:ro
+      - ${SSS_ANALYTICS_FACE_MODELS_DIR:-./analytics/models/face}:/face-models:ro
       - analytics-engines:/engines
       - events:/data/events
       - type: tmpfs
@@ -94,8 +94,8 @@ services:
 
   v380-ptz-1:
     build: ./v380-bridge
-    image: home-cameras-v380-bridge:local
-    container_name: home-cameras-v380-ptz-1
+    image: smart-surveillance-system-v380-bridge:local
+    container_name: smart-surveillance-system-v380-ptz-1
     restart: unless-stopped
     command:
       - --id
@@ -118,8 +118,8 @@ services:
 
   v380-ptz-2:
     build: ./v380-bridge
-    image: home-cameras-v380-bridge:local
-    container_name: home-cameras-v380-ptz-2
+    image: smart-surveillance-system-v380-bridge:local
+    container_name: smart-surveillance-system-v380-ptz-2
     restart: unless-stopped
     command:
       - --id
@@ -142,13 +142,13 @@ services:
 
   web:
     build: ./frontend
-    image: home-cameras-web:local
-    container_name: home-cameras-web
+    image: smart-surveillance-system-web:local
+    container_name: smart-surveillance-system-web
     restart: unless-stopped
     depends_on: [backend, go2rtc]
     ports:
-      - "127.0.0.1:${HC_WEB_PORT:-8750}:80"
-      - "${HC_LAN_BIND:?set HC_LAN_BIND to this machine home network address}:${HC_WEB_PORT:-8750}:80"
+      - "127.0.0.1:${SSS_WEB_PORT:-8750}:80"
+      - "${SSS_LAN_BIND:?set SSS_LAN_BIND to this machine LAN address}:${SSS_WEB_PORT:-8750}:80"
     networks: [cams]
 
 volumes:

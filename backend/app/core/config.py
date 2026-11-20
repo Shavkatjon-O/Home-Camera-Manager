@@ -1,10 +1,10 @@
-"""Application settings read from HC_ environment variables and the .env file."""
+"""Application settings read from SSS_ environment variables and the .env file."""
 
 from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.engine import URL
 
-APP_NAME = "home-cameras"
+APP_NAME = "smart-surveillance-system"
 APP_VERSION = "0.1.0"
 
 
@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     """Every setting of the backend.
 
     Attributes:
-        lan_bind: Home network address the web app and the TV streams are published on.
+        lan_bind: Local network address the web app and the TV streams are published on.
         db_host: Postgres host.
         db_port: Postgres port.
         db_name: Postgres database.
@@ -42,15 +42,15 @@ class Settings(BaseSettings):
         device_onvif_port: ONVIF port of bridged V380 cameras on their own address.
     """
 
-    model_config = SettingsConfigDict(env_prefix="HC_", env_file=".env", case_sensitive=False, extra="ignore")
+    model_config = SettingsConfigDict(env_prefix="SSS_", env_file=".env", case_sensitive=False, extra="ignore")
 
     lan_bind: str = ""
 
     db_host: str = "127.0.0.1"
     db_port: int = 5432
-    db_name: str = "home_cameras"
-    db_user: str = "home_cameras"
-    db_password: str = "home_cameras"
+    db_name: str = "surveillance"
+    db_user: str = "surveillance"
+    db_password: str = "surveillance"
 
     secret_key: str = ""
     admin_username: str = "admin"
@@ -81,8 +81,8 @@ class Settings(BaseSettings):
     analytics_url: str = "http://analytics:8080"
     analytics_token: str = ""
 
-    device_username: str = Field(default="admin", validation_alias=AliasChoices("hc_device_username", "v380_username"))
-    device_password: str = Field(default="", validation_alias=AliasChoices("hc_device_password", "v380_password"))
+    device_username: str = Field(default="admin", validation_alias=AliasChoices("sss_device_username", "v380_username"))
+    device_password: str = Field(default="", validation_alias=AliasChoices("sss_device_password", "v380_password"))
     device_onvif_port: int = 8899
 
     @property
