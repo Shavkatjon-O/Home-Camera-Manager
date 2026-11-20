@@ -1,10 +1,23 @@
 #!/bin/sh
+#
+# Downloads the models of the secondary analytics stages (person re-identification, body pose, plate text
+# detection and recognition) into SSS_ANALYTICS_MODELS_DIR, checks every file against its pinned checksum and
+# prints each licence.
+# Arguments:
+#   --all: also fetch NVIDIA LPDNet, an optional plate finder
+#   -h, --help: print the usage
+# Globals:
+#   SSS_ANALYTICS_MODELS_DIR: target folder, default services/analytics/models
+
 set -eu
 
+# Prints the usage text.
+# Outputs:
+#   Writes the usage to stdout.
 usage() {
   echo "usage: scripts/download-secondary-models.sh [--all]"
   echo
-  echo "Downloads the models of the secondary analytics stages into SSS_ANALYTICS_MODELS_DIR (default analytics/models):"
+  echo "Downloads the models of the secondary analytics stages into SSS_ANALYTICS_MODELS_DIR (default services/analytics/models):"
   echo "person re-identification, body pose for falls, and text detection and recognition for number plates."
   echo "Every file is checked against its pinned checksum and each licence is printed."
   echo "--all also fetches NVIDIA LPDNet, an optional plate finder under the NVIDIA AI Enterprise EULA."
@@ -18,7 +31,7 @@ case "${1:-}" in
 esac
 
 root=$(cd "$(dirname "$0")/.." && pwd)
-models=${SSS_ANALYTICS_MODELS_DIR:-$root/analytics/models}
+models=${SSS_ANALYTICS_MODELS_DIR:-$root/services/analytics/models}
 mkdir -p "$models"
 models=$(cd "$models" && pwd)
 
@@ -26,10 +39,24 @@ ngc=https://api.ngc.nvidia.com/v2/models/nvidia/tao
 openmmlab=https://download.openmmlab.com/mmpose/v1/projects/rtmposev1/onnx_sdk
 rapidocr=https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0
 
+# Prints the SHA-256 checksum of a file.
+# Arguments:
+#   $1: path of the file
+# Outputs:
+#   Writes the checksum to stdout.
 checksum() {
   sha256sum "$1" | cut -d' ' -f1
 }
 
+# Downloads a file unless a copy with the pinned checksum exists, and verifies it.
+# Arguments:
+#   $1: URL to download
+#   $2: target path, whose folder is created
+#   $3: expected SHA-256 checksum
+# Outputs:
+#   Writes "ok" or "fetching" lines to stdout and a mismatch message to stderr.
+# Returns:
+#   Exits with status 1 on a checksum mismatch, after removing the partial download.
 fetch() {
   url=$1 target=$2 sum=$3
   mkdir -p "$(dirname "$target")"
@@ -49,6 +76,16 @@ fetch() {
   echo "ok       $target"
 }
 
+# Extracts one member of a zip archive to a target file unless a copy with the pinned checksum exists.
+# Arguments:
+#   $1: archive path
+#   $2: member path inside the archive
+#   $3: target path
+#   $4: expected SHA-256 checksum
+# Outputs:
+#   Writes an "ok" line to stdout and a mismatch message to stderr.
+# Returns:
+#   Exits with status 1 on a checksum mismatch, after removing the partial file.
 extract() {
   archive=$1 member=$2 target=$3 sum=$4
   if [ -f "$target" ] && [ "$(checksum "$target")" = "$sum" ]; then

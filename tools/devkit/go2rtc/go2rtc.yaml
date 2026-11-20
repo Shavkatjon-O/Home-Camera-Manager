@@ -1,0 +1,18 @@
+log:
+  level: info
+
+api:
+  listen: ":1984"
+
+rtsp:
+  listen: ":8554"
+  username: "${SSS_TV_RTSP_USERNAME}"
+  password: "${SSS_TV_RTSP_PASSWORD}"
+
+webrtc:
+  listen: ":8555"
+  candidates:
+    - 127.0.0.1:18755
+    - 10.0.2.2:18755
+
+streams: {}

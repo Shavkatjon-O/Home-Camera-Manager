@@ -1,0 +1,44 @@
+name: camera-adapters
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/camera-adapters/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/camera-adapters.yml"
+  pull_request:
+    paths:
+      - "packages/camera-adapters/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/camera-adapters.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  camera-adapters:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.13"
+      - name: Install the workspace
+        run: uv sync --frozen --all-packages
+      - name: Lint
+        working-directory: packages/camera-adapters
+        run: uv run --frozen ruff check .
+      - name: Check formatting
+        working-directory: packages/camera-adapters
+        run: uv run --frozen ruff format --check .
+      - name: Test
+        working-directory: packages/camera-adapters
+        run: uv run --frozen pytest -q

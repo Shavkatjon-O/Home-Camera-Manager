@@ -1,0 +1,56 @@
+[project]
+name = "smart-surveillance-connector"
+version = "0.1.0"
+description = "Connector agent of Smart Surveillance System: pairs with the backend and serves a site's cameras"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "camera-adapters",
+    "cryptography>=45",
+    "fastapi>=0.115",
+    "httpx>=0.28",
+    "segno>=1.6",
+    "uvicorn>=0.35",
+]
+
+[project.scripts]
+sss-connector = "connector_agent.__main__:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4",
+    "pytest-asyncio>=1.1",
+    "ruff>=0.12",
+]
+
+[tool.uv.sources]
+camera-adapters = { workspace = true }
+
+[build-system]
+requires = ["uv_build>=0.9,<0.12"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "connector_agent"
+module-root = ""
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "D"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+known-first-party = ["connector_agent"]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["D"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"

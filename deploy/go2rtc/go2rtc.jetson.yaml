@@ -1,0 +1,20 @@
+log:
+  level: info
+
+api:
+  listen: ":1984"
+
+rtsp:
+  listen: ":8554"
+  username: "${SSS_TV_RTSP_USERNAME}"
+  password: "${SSS_TV_RTSP_PASSWORD}"
+
+webrtc:
+  listen: ":8555"
+  candidates:
+    - "${SSS_LAN_BIND}:8555"
+
+ffmpeg:
+  h264: "-codec:v libx264 -g:v 30 -bf:v 0 -profile:v high -preset:v superfast -tune:v zerolatency -pix_fmt:v yuv420p"
+
+streams: {}

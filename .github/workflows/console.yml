@@ -1,0 +1,42 @@
+name: console
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/console/**"
+      - ".github/workflows/console.yml"
+  pull_request:
+    paths:
+      - "apps/console/**"
+      - ".github/workflows/console.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  console:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: apps/console
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Enable pnpm
+        run: corepack enable
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Lint
+        run: pnpm lint
+      - name: Type check
+        run: pnpm typecheck
+      - name: Build
+        run: pnpm build

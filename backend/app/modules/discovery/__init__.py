@@ -1,1 +1,0 @@
-"""Camera discovery API module."""

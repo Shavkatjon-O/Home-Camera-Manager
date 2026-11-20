@@ -1,0 +1,248 @@
+name: smart-surveillance-system
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: "3"
+
+x-restart: &restart
+  restart: unless-stopped
+
+x-hardening: &hardening
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+
+x-v380-bridge: &v380-bridge
+  <<: [*restart, *hardening]
+  build: ./services/v380-bridge
+  image: smart-surveillance-system-v380-bridge:local
+  logging: *logging
+  mem_limit: 512m
+  healthcheck:
+    test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/8554"]
+    interval: 30s
+    timeout: 5s
+    retries: 3
+    start_period: 30s
+  networks: [cams]
+
+services:
+  postgres:
+    <<: [*restart, *hardening]
+    image: postgres:17.6-alpine
+    container_name: smart-surveillance-system-postgres
+    logging: *logging
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+    read_only: true
+    tmpfs:
+      - /var/run/postgresql
+      - /tmp
+    mem_limit: 1g
+    shm_size: 256m
+    environment:
+      POSTGRES_DB: ${SSS_DB_NAME:-surveillance}
+      POSTGRES_USER: ${SSS_DB_USER:-surveillance}
+      POSTGRES_PASSWORD: ${SSS_DB_PASSWORD:-surveillance}
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [database]
+
+  go2rtc:
+    <<: [*restart, *hardening]
+    image: alexxit/go2rtc:1.9.14-hardware
+    container_name: smart-surveillance-system-go2rtc
+    logging: *logging
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp
+    mem_limit: 2g
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu, video]
+    environment:
+      SSS_TV_RTSP_USERNAME: ${SSS_TV_RTSP_USERNAME:-tv}
+      SSS_TV_RTSP_PASSWORD: ${SSS_TV_RTSP_PASSWORD:?set SSS_TV_RTSP_PASSWORD}
+
+      SSS_LAN_BIND: ${SSS_LAN_BIND:?set SSS_LAN_BIND to this machine LAN address}
+    volumes:
+      - ./deploy/go2rtc/go2rtc.yaml:/config/go2rtc.yaml:ro
+      - ./deploy/go2rtc/go2rtc-tv.sh:/config/tv.sh:ro
+    ports:
+      - "${SSS_LAN_BIND:?set SSS_LAN_BIND to this machine LAN address}:8554:8554"
+      - "${SSS_LAN_BIND:?set SSS_LAN_BIND to this machine LAN address}:8555:8555/tcp"
+      - "${SSS_LAN_BIND:?set SSS_LAN_BIND to this machine LAN address}:8555:8555/udp"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:1984/api"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks: [cams]
+
+  backend:
+    <<: [*restart, *hardening]
+    build:
+      context: .
+      dockerfile: services/api/Dockerfile
+    image: smart-surveillance-system-backend:local
+    container_name: smart-surveillance-system-backend
+    logging: *logging
+    read_only: true
+    tmpfs:
+      - /tmp
+    mem_limit: 1g
+    env_file: .env
+    volumes:
+      - events:/data/events
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/version', timeout=4)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      go2rtc:
+        condition: service_healthy
+    networks: [cams, database]
+
+  analytics:
+    <<: [*restart, *hardening]
+    build:
+      context: ./services/analytics
+      target: runtime
+    image: smart-surveillance-system-analytics:local
+    container_name: smart-surveillance-system-analytics
+    logging: *logging
+    init: true
+    env_file: .env
+    environment:
+      SSS_ANALYTICS_BACKEND_URL: http://backend:8000
+
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility,video
+    deploy:
+      resources:
+        limits:
+          memory: 6g
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu, compute, utility, video]
+    volumes:
+      - ${SSS_ANALYTICS_MODELS_DIR:-./services/analytics/models}:/models:ro
+      - ${SSS_ANALYTICS_FACE_MODELS_DIR:-./services/analytics/models/face}:/face-models:ro
+      - analytics-engines:/engines
+      - events:/data/events
+      - type: tmpfs
+        target: /buffer
+        tmpfs:
+          size: 1073741824
+          mode: 01777
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=4)"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 600s
+    depends_on:
+      backend:
+        condition: service_healthy
+      go2rtc:
+        condition: service_healthy
+    networks: [cams, database]
+
+  v380-ptz-1:
+    <<: *v380-bridge
+    container_name: smart-surveillance-system-v380-ptz-1
+    command:
+      - --id
+      - ${V380_PTZ_1_ID:?set V380_PTZ_1_ID}
+      - --username
+      - ${V380_USERNAME:-admin}
+      - --password
+      - ${V380_PASSWORD:?set V380_PASSWORD}
+      - --ip
+      - ${V380_PTZ_1_HOST:?set V380_PTZ_1_HOST}
+      - --output
+      - rtsp
+      - --enable-onvif
+      - --enable-api
+      - --rtsp-port
+      - "8554"
+      - --http-port
+      - "8080"
+
+  v380-ptz-2:
+    <<: *v380-bridge
+    container_name: smart-surveillance-system-v380-ptz-2
+    command:
+      - --id
+      - ${V380_PTZ_2_ID:?set V380_PTZ_2_ID}
+      - --username
+      - ${V380_USERNAME:-admin}
+      - --password
+      - ${V380_PASSWORD:?set V380_PASSWORD}
+      - --ip
+      - ${V380_PTZ_2_HOST:?set V380_PTZ_2_HOST}
+      - --output
+      - rtsp
+      - --enable-onvif
+      - --enable-api
+      - --rtsp-port
+      - "8554"
+      - --http-port
+      - "8080"
+
+  web:
+    <<: [*restart, *hardening]
+    build: ./apps/console
+    image: smart-surveillance-system-web:local
+    container_name: smart-surveillance-system-web
+    logging: *logging
+    read_only: true
+    tmpfs:
+      - /tmp
+    mem_limit: 128m
+    ports:
+      - "127.0.0.1:${SSS_WEB_PORT:-8750}:8080"
+      - "${SSS_LAN_BIND:?set SSS_LAN_BIND to this machine LAN address}:${SSS_WEB_PORT:-8750}:8080"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      backend:
+        condition: service_healthy
+      go2rtc:
+        condition: service_healthy
+    networks: [cams]
+
+volumes:
+  postgres:
+  events:
+  analytics-engines:
+
+networks:
+  cams:
+  database:
+    internal: true

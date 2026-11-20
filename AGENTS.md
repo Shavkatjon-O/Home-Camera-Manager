@@ -10,24 +10,39 @@ docker compose logs -f backend
 docker compose down
 ```
 
-The host has no Node or project Python environment; run tools in containers as your own user.
+The host has no Node or project Python environment; run tools in containers as your own user, from the repository root.
 
 ```
-docker run --rm -u $(id -u):$(id -g) -e HOME=/tmp -e UV_PROJECT_ENVIRONMENT=/tmp/venv -e UV_CACHE_DIR=/tmp/uv-cache -v $PWD/backend:/work -w /work ghcr.io/astral-sh/uv:python3.13-bookworm-slim sh -c "uv sync --frozen && uv run --frozen ruff check . && uv run --frozen ruff format --check . && uv run --frozen pytest -q"
+docker run --rm -u $(id -u):$(id -g) -e HOME=/tmp -e UV_PROJECT_ENVIRONMENT=/tmp/venv -e UV_CACHE_DIR=/tmp/uv-cache -v $PWD:/repo -w /repo/services/api ghcr.io/astral-sh/uv:python3.13-bookworm-slim sh -c "uv sync --frozen --all-packages && uv run --frozen ruff check . && uv run --frozen ruff format --check . && uv run --frozen pytest -q"
 
-docker build --target test -t smart-surveillance-system-analytics:test analytics
-docker run --rm -u $(id -u):$(id -g) -e RUFF_CACHE_DIR=/tmp/ruff-cache -v $PWD/analytics:/work:ro -w /work --entrypoint sh smart-surveillance-system-analytics:test -c "ruff check . && ruff format --check . && pytest -q -p no:cacheprovider"
+docker build --target test -t smart-surveillance-system-analytics:test services/analytics
+docker run --rm -u $(id -u):$(id -g) -e RUFF_CACHE_DIR=/tmp/ruff-cache -v $PWD/services/analytics:/work:ro -w /work --entrypoint sh smart-surveillance-system-analytics:test -c "ruff check . && ruff format --check . && pytest -q -p no:cacheprovider"
 
-docker run --rm -u $(id -u):$(id -g) -e HOME=/tmp -e COREPACK_HOME=/tmp/corepack -e PATH=/tmp/bin:/usr/local/bin:/usr/bin:/bin -v $PWD/frontend:/app -w /app node:24 sh -c "mkdir -p /tmp/bin && corepack enable --install-directory /tmp/bin && pnpm install --frozen-lockfile && pnpm lint && pnpm typecheck && pnpm build"
+docker run --rm -u $(id -u):$(id -g) -e HOME=/tmp -e COREPACK_HOME=/tmp/corepack -e PATH=/tmp/bin:/usr/local/bin:/usr/bin:/bin -v $PWD/apps/console:/app -w /app node:24 sh -c "mkdir -p /tmp/bin && corepack enable --install-directory /tmp/bin && pnpm install --frozen-lockfile && pnpm lint && pnpm typecheck && pnpm build"
 ```
 
-The TV app builds and tests with the Android Studio JDK and SDK, as tv/README.md describes:
+Run the connector agent's and the camera adapters' checks the same way, with -w /repo/services/connector or -w /repo/packages/camera-adapters in place of the API folder. Write the OpenAPI document after changing a route or schema, because the API tests compare it with the app:
 
 ```
-cd tv && ./gradlew testDebugUnitTest
+scripts/export-openapi.sh
 ```
 
-Create a migration from backend/ against a database already at head, with the stack's postgres or a temporary one on the same network:
+Run the development kit, the compose project smart-surveillance-dev with a simulated site, from the repository root; tools/devkit/README.md describes it:
+
+```
+scripts/devkit.sh init
+scripts/devkit.sh up
+scripts/devkit.sh seed
+scripts/devkit.sh logs -f backend
+```
+
+The TV app builds and tests with the Android Studio JDK and SDK, as apps/tv/README.md describes:
+
+```
+cd apps/tv && ./gradlew testDebugUnitTest
+```
+
+Create a migration from services/api/ against a database already at head, with the stack's postgres or a temporary one on the same network:
 
 ```
 alembic upgrade head
@@ -39,7 +54,7 @@ alembic revision --autogenerate -m "<message>"
 ### Repository
 
 - Keep the public repository free of the private data of the sites it watches: no real LAN addresses (examples and tests use 192.168.1.x), device ids, MACs, serials, Wi-Fi names, passwords, tokens, number plates, names, workspace paths, and no images, video or faces from the real cameras; tests use synthetic pictures or public-domain photos, because the repository is published and history cannot be taken back without a rewrite.
-- Keep .env and tv/cameras.local.properties out of git and never print their values, because they hold the camera and service passwords.
+- Keep .env and apps/tv/cameras.local.properties out of git and never print their values, because they hold the camera and service passwords.
 - Never bypass the local pre-push hook; when it refuses, remove the private value from the commits and push again, because the hook is the last check before data becomes public.
 - Use only models whose licence allows a public repository and keep every other model optional behind an explicit download flag, and never use Ultralytics YOLO weights or code, because their AGPL licence would bind the whole project.
 - Keep model weights and engines out of git; scripts/download-models.sh, download-face-models.sh and download-secondary-models.sh fetch them with pinned checksums and print each licence.
@@ -53,9 +68,18 @@ alembic revision --autogenerate -m "<message>"
 - Keep camera links in the health module and read camera fields there without changing the cameras module, because the health page must not touch the registry the wall and the TV depend on.
 - Delete person appearances and journeys with the event retention and keep line counts on their own longer retention, because Find this person must never offer a sighting whose event is gone, while counts are small and serve comparisons over months.
 
+### Platform
+
+- Resolve every route's site with get_site_access, or its organisation with resolve_organisation_access, and check the role there before anything else, because the request's session is limited to that site only after the access is resolved, and every query relies on that scope; read past it only with the unscoped execution option in jobs and platform admin code.
+- Check plan limits and features only through the billing entitlements, require_capacity and require_feature, and apply the same entitlements in the analytics configuration, because a feature a plan leaves out must be neither offered nor run.
+- Add audit records, never update or delete them outside the retention pruner, and record an action only after it succeeded, because the activity log is the organisation's evidence of who did what.
+- Keep camera passwords of connector cameras on the connector, and let connector discovery sweep only site LAN interfaces, never Docker, container, Kubernetes or VPN interfaces unless SSS_CONNECTOR_INTERFACES lists them, because a sweep of a VPN or bridge network probes networks that are not the site's.
+- Test Telegram alerts only against the fake Bot API in tools/devkit/telegram or a mock transport, never with a real bot token, because a second poller of a live bot takes its updates away from the service that owns it.
+- Show only the simulated site in screenshots, demos and seed data, because the repository is public.
+
 ### Streaming
 
-- Keep camera streams out of go2rtc.yaml and the file mounted read-only, because go2rtc writes stream URLs with camera passwords into its config when it can; only the TV exec streams, which carry no credentials, live there.
+- Keep camera streams out of deploy/go2rtc/go2rtc.yaml and the file mounted read-only, because go2rtc writes stream URLs with camera passwords into its config when it can; only the TV exec streams, which carry no credentials, live there.
 - Keep the player asking for H.264 only, because go2rtc's direct H.265 path from the V380 delivers no frames.
 - Keep rtsp.listen on ":8554", which includes loopback, because every ffmpeg transcode and TV exec source reads and publishes through go2rtc's RTSP server on 127.0.0.1, and go2rtc skips RTSP authentication only for loopback clients.
 - Publish go2rtc's RTSP port only on SSS_LAN_BIND and keep SSS_TV_RTSP_PASSWORD set, because clients arriving through the published port are the only ones go2rtc asks for credentials and the VPN must not reach the cameras.
@@ -65,14 +89,14 @@ alembic revision --autogenerate -m "<message>"
 
 ### Composed TV streams
 
-- Define the TV streams as exec sources in go2rtc.yaml that run go2rtc-tv.sh, because go2rtc 1.9.14 refuses exec sources and sources with spaces through its API.
+- Define the TV streams as exec sources in deploy/go2rtc/go2rtc.yaml that run deploy/go2rtc/go2rtc-tv.sh, because go2rtc 1.9.14 refuses exec sources and sources with spaces through its API.
 - Keep -flags low_delay on every TV ffmpeg input, the filter threads at 2 and bilinear scaling, because low_delay turns off frame-threaded decoding, which delays each picture by a frame per thread, and the default filter threads with bicubic scaling cost about three CPU cores on the wall instead of under one.
 - Compose the TV streams as overlays on a lavfi canvas, never with xstack, because xstack sends nothing until every input has delivered a frame, so one silent camera would hold the whole wall.
 - Keep the TV composer's input user agent free of the RTSP username, because go2rtc masks the username wherever it appears in its API output and the backend finds the composer's inputs by that user agent.
 
 ### Cameras
 
-- Build the V380 bridge from the pinned upstream pull request commit in v380-bridge/Dockerfile, because the released decoder stalls on short stream login replies and the camera resets the connection.
+- Build the V380 bridge from the pinned upstream pull request commit in services/v380-bridge/Dockerfile, because the released decoder stalls on short stream login replies and the camera resets the connection.
 - Never publish bridge ports and keep the bridges' API on the internal network, because their RTSP, ONVIF and siren API have no authentication.
 - Probe a bridged camera's health on its device address and port 8800, never on the bridge, because the bridge container answers even when the camera is gone.
 - Never open an event from a state a camera reports when a subscription starts, because its start time is unknown and every reconnect would repeat it.
@@ -95,7 +119,7 @@ alembic revision --autogenerate -m "<message>"
 
 ### Analytics rules
 
-- Evaluate zones and lines in analytics/app/rules, never in nvdsanalytics, because zone edits must apply without a pipeline restart and the rules must run on a Jetson.
+- Evaluate zones and lines in services/analytics/app/rules, never in nvdsanalytics, because zone edits must apply without a pipeline restart and the rules must run on a Jetson.
 - Count an object only after the detector itself found it 4 times within 2 s, keep the person threshold at 0.45 and ignore person boxes inside a vehicle above its bottom edge, because NvDCF carries a lost box for a few frames and seats seen through a windscreen are detected as people.
 - Let vehicles, and anything already in the picture when a view starts, count only after they move away from their rest point, because parked cars and standing false detections otherwise fire from box jitter.
 - Keep zones on a moving lens tied to the reference picture they were drawn on and suspend them while the view no longer matches it, because a zone is valid only where the lens pointed when it was drawn.
