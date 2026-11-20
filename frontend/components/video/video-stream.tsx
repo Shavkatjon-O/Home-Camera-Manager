@@ -29,6 +29,7 @@ export function VideoStream({
   lenses = 1,
   audio = false,
   retry = true,
+  overlay = null,
   className,
 }: {
   stream: string
@@ -38,6 +39,7 @@ export function VideoStream({
   lenses?: number
   audio?: boolean
   retry?: boolean
+  overlay?: React.ReactNode
   className?: string
 }) {
   const holderRef = React.useRef<HTMLDivElement>(null)
@@ -151,10 +153,15 @@ export function VideoStream({
   const cropped = lenses > 1 && lens !== null
   const lensIndex = lens ?? 0
   const aspect = frame ? frame.width / (frame.height / lenses) : DEFAULT_ASPECT
+  const fullAspect = frame ? frame.width / frame.height : DEFAULT_ASPECT
   const band = cropped ? (lensIndex / (lenses - 1)) * 100 : 0
+  const showOverlay = overlay !== null && frame !== null
 
   return (
-    <div className={cn("relative overflow-hidden bg-black", className)} style={cropped ? { containerType: "size" } : undefined}>
+    <div
+      className={cn("relative overflow-hidden bg-black", className)}
+      style={cropped || showOverlay ? { containerType: "size" } : undefined}
+    >
       {cropped ? (
         <div className="absolute inset-0 flex items-center justify-center">
           <div
@@ -180,6 +187,7 @@ export function VideoStream({
               className="absolute left-0 w-full [&_video]:object-fill"
               style={{ height: `${lenses * 100}%`, top: `${-lensIndex * 100}%` }}
             />
+            {showOverlay ? <div className="pointer-events-none absolute inset-0">{overlay}</div> : null}
           </div>
         </div>
       ) : (
@@ -192,6 +200,19 @@ export function VideoStream({
             />
           ) : null}
           <div ref={holderRef} className="absolute inset-0" />
+          {showOverlay ? (
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+              <div
+                className="relative"
+                style={{
+                  width: `min(100cqw, calc(100cqh * ${fullAspect}))`,
+                  height: `min(100cqh, calc(100cqw / ${fullAspect}))`,
+                }}
+              >
+                {overlay}
+              </div>
+            </div>
+          ) : null}
         </>
       )}
       {phase === "connecting" ? (

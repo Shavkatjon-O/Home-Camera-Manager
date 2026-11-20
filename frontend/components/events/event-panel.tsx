@@ -5,14 +5,16 @@ import Image from "next/image"
 import Link from "next/link"
 import { ArrowUpRightIcon, ImageOffIcon, XIcon } from "lucide-react"
 
-import { EventDuration, KindChip } from "@/components/events/event-parts"
+import { BoxLayer, FitBox, type DrawnBox } from "@/components/analytics/box-layer"
+import { AlertMark, EventDuration, KindChip, LabelChip } from "@/components/events/event-parts"
 import { IconButton } from "@/components/shell/icon-button"
 import { Button } from "@/components/ui/button"
 import { cameraHref } from "@/components/wall/wall-tile"
-import { eventImageUrl } from "@/lib/api"
-import { eventTitle, topicLabel } from "@/lib/events"
+import { DIRECTION_LABELS, PROFILE_LABELS } from "@/lib/analytics"
+import { eventClipUrl, eventImageUrl } from "@/lib/api"
+import { ORIGIN_LABELS, analyticsDetails, eventTitle, labelName, topicLabel } from "@/lib/events"
 import { formatMoment } from "@/lib/health"
-import type { CameraEvent } from "@/lib/types"
+import type { AnalyticsEventDetails, AnalyticsProfile, CameraEvent } from "@/lib/types"
 
 interface MessageDetail {
   topic?: string
@@ -48,8 +50,20 @@ function items(values: Record<string, string> | undefined): string {
     .join(", ")
 }
 
+function snapshotBoxes(details: AnalyticsEventDetails | null): DrawnBox[] {
+  if (!details) return []
+  return details.boxes.map((item, index) => ({
+    key: `${item.object}-${index}`,
+    box: item.box,
+    label: item.label,
+    caption: `${labelName(item.label)} ${item.object}`,
+  }))
+}
+
 function Snapshot({ event }: { event: CameraEvent }) {
   const [failed, setFailed] = React.useState(false)
+  const [aspect, setAspect] = React.useState<number | null>(null)
+  const boxes = snapshotBoxes(analyticsDetails(event))
   if (!event.has_snapshot || failed) {
     return (
       <div className="flex aspect-video items-center justify-center gap-2 rounded-md bg-surface-2 text-[12px] text-text-3">
@@ -61,12 +75,70 @@ function Snapshot({ event }: { event: CameraEvent }) {
   const url = eventImageUrl(event.uuid)
   return (
     <a href={url} target="_blank" rel="noreferrer" className="relative block aspect-video overflow-hidden rounded-md bg-black">
-      <Image src={url} alt={`Snapshot of ${eventTitle(event)}`} fill sizes="360px" className="object-contain" onError={() => setFailed(true)} />
+      <Image
+        src={url}
+        alt={`Snapshot of ${eventTitle(event)}`}
+        fill
+        sizes="360px"
+        className="object-contain"
+        onError={() => setFailed(true)}
+        onLoad={(loaded) => {
+          const image = loaded.currentTarget
+          if (image.naturalWidth > 0 && image.naturalHeight > 0) setAspect(image.naturalWidth / image.naturalHeight)
+        }}
+      />
+      {aspect !== null && boxes.length > 0 ? (
+        <FitBox aspect={aspect}>
+          <BoxLayer boxes={boxes} />
+        </FitBox>
+      ) : null}
     </a>
   )
 }
 
+function Clip({ event }: { event: CameraEvent }) {
+  const [failed, setFailed] = React.useState(false)
+  if (failed) {
+    return (
+      <div className="flex aspect-video items-center justify-center gap-2 rounded-md bg-surface-2 text-[12px] text-text-3">
+        <ImageOffIcon aria-hidden className="size-4" />
+        Clip unavailable
+      </div>
+    )
+  }
+  return (
+    <video
+      controls
+      playsInline
+      preload="metadata"
+      src={eventClipUrl(event.uuid)}
+      onError={() => setFailed(true)}
+      aria-label={`Clip of ${eventTitle(event)}`}
+      className="aspect-video w-full rounded-md bg-black"
+    />
+  )
+}
+
+function AnalyticsReadOuts({ event, details }: { event: CameraEvent; details: AnalyticsEventDetails }) {
+  const profile = details.profile ? (PROFILE_LABELS[details.profile as AnalyticsProfile] ?? details.profile) : null
+  const objects = details.count ?? details.objects.length
+  return (
+    <Section title="Analytics">
+      <ReadOut label="View" value={details.view_name ?? "-"} />
+      {details.zone_name ? <ReadOut label="Zone" value={details.zone_name} /> : null}
+      {details.line_name ? <ReadOut label="Line" value={details.line_name} /> : null}
+      {details.direction ? <ReadOut label="Direction" value={DIRECTION_LABELS[details.direction]} /> : null}
+      <ReadOut label="Label" value={event.label ? labelName(event.label) : "-"} />
+      <ReadOut label="Objects" value={objects} />
+      <ReadOut label="Alert" value={event.alert ? "Yes" : "No"} />
+      <ReadOut label="Source" value={ORIGIN_LABELS[event.source] ?? event.source} />
+      {profile ? <ReadOut label="Profile" value={profile} /> : null}
+    </Section>
+  )
+}
+
 export function EventPanel({ event, onClose }: { event: CameraEvent; onClose: () => void }) {
+  const details = analyticsDetails(event)
   const messages = (Array.isArray(event.details.messages) ? event.details.messages : []) as MessageDetail[]
   const topics = (Array.isArray(event.details.topics) ? event.details.topics : []) as string[]
   const offset = typeof event.details.camera_offset_seconds === "number" ? event.details.camera_offset_seconds : null
@@ -77,6 +149,8 @@ export function EventPanel({ event, onClose }: { event: CameraEvent; onClose: ()
           <h1 className="truncate text-[15px] font-medium text-foreground">{eventTitle(event)}</h1>
           <div className="flex items-center gap-2">
             <KindChip event={event} />
+            <LabelChip event={event} />
+            <AlertMark event={event} />
             <EventDuration event={event} />
           </div>
         </div>
@@ -87,6 +161,12 @@ export function EventPanel({ event, onClose }: { event: CameraEvent; onClose: ()
       <div className="px-4 pt-4">
         <Snapshot key={`${event.uuid}-${event.has_snapshot}`} event={event} />
       </div>
+      {event.has_clip ? (
+        <div className="px-4 pt-3">
+          <Clip key={`${event.uuid}-${event.has_clip}`} event={event} />
+        </div>
+      ) : null}
+      {details ? <AnalyticsReadOuts event={event} details={details} /> : null}
       <Section title="Times">
         <ReadOut label="Started" value={formatMoment(event.started_at)} />
         <ReadOut label="Ended" value={event.ongoing ? "Ongoing" : formatMoment(event.ended_at)} />

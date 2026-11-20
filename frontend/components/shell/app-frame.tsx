@@ -17,19 +17,23 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 
+import { ArmModeSelect } from "@/components/analytics/arm-mode"
 import { IconButton } from "@/components/shell/icon-button"
 import { Chip, StatusDot } from "@/components/shell/primitives"
 import { useSession } from "@/components/shell/session"
 import { LOGIN_PATH, api, errorMessage } from "@/lib/api"
-import { setAlertsMuted, useAlertsMuted } from "@/lib/events"
+import { setAlertsMuted, useAlertsMuted, useUnseenAlerts } from "@/lib/events"
 import { formatClock } from "@/lib/format"
 import { useClockSeconds } from "@/lib/stores"
 import { cn } from "@/lib/utils"
 
+const EVENTS_HREF = "/events/"
+const BADGE_MAX = 99
+
 const TABS = [
   { href: "/", label: "Wall", icon: LayoutGridIcon, match: (path: string) => path === "/" || path.startsWith("/camera/") },
   { href: "/cameras/", label: "Cameras", icon: ListIcon, match: (path: string) => path.startsWith("/cameras/") },
-  { href: "/events/", label: "Events", icon: ScanEyeIcon, match: (path: string) => path.startsWith("/events/") },
+  { href: EVENTS_HREF, label: "Events", icon: ScanEyeIcon, match: (path: string) => path.startsWith("/events/") },
   { href: "/discover/", label: "Discover", icon: RadarIcon, match: (path: string) => path.startsWith("/discover/") },
   { href: "/coverage/", label: "Coverage", icon: WifiIcon, match: (path: string) => path.startsWith("/coverage/") },
   { href: "/health/", label: "Health", icon: ActivityIcon, match: (path: string) => path.startsWith("/health/") },
@@ -43,6 +47,7 @@ function normalize(path: string | null): string {
 function NavTabs() {
   const pathname = normalize(usePathname())
   const navRef = React.useRef<HTMLElement>(null)
+  const unseen = useUnseenAlerts()
 
   React.useEffect(() => {
     const nav = navRef.current
@@ -70,11 +75,12 @@ function NavTabs() {
       {TABS.map((tab) => {
         const active = tab.match(pathname)
         const Icon = tab.icon
+        const badge = tab.href === EVENTS_HREF && !active && unseen > 0 ? unseen : 0
         return (
           <Link
             key={tab.href}
             href={tab.href}
-            aria-label={tab.label}
+            aria-label={badge ? `${tab.label}, ${badge} new ${badge === 1 ? "alert" : "alerts"}` : tab.label}
             aria-current={active ? "page" : undefined}
             className={cn(
               "relative flex shrink-0 items-center px-2 font-mono text-xs transition-colors sm:px-2.5",
@@ -85,6 +91,14 @@ function NavTabs() {
           >
             <Icon aria-hidden className="size-4 sm:hidden" />
             <span className="hidden sm:inline">{tab.label}</span>
+            {badge ? (
+              <span
+                aria-hidden
+                className="ml-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-status-err px-1 font-data text-[10px] leading-none text-white"
+              >
+                {badge > BADGE_MAX ? `${BADGE_MAX}+` : badge}
+              </span>
+            ) : null}
           </Link>
         )
       })}
@@ -152,10 +166,12 @@ function SignOutButton() {
 export function AppFrame({
   status,
   actions,
+  wideActions = false,
   children,
 }: {
   status?: React.ReactNode
   actions?: React.ReactNode
+  wideActions?: boolean
   children: React.ReactNode
 }) {
   return (
@@ -173,6 +189,7 @@ export function AppFrame({
         </div>
         <div className="flex items-center gap-1.5">
           {actions}
+          <ArmModeSelect className={wideActions ? "max-sm:hidden" : undefined} />
           <AlertsToggle />
           <SignOutButton />
         </div>

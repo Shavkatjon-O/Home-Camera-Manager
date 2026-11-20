@@ -10,11 +10,16 @@ import {
   MinimizeIcon,
   PencilIcon,
   RefreshCwIcon,
+  ScanSearchIcon,
   Volume2Icon,
   VolumeXIcon,
 } from "lucide-react"
 import { toast } from "sonner"
 
+import { AnalyticsSection } from "@/components/analytics/analytics-section"
+import { LiveObjects } from "@/components/analytics/live-objects"
+import { useAnalyticsViews } from "@/components/analytics/use-analytics-views"
+import { ZoneEditor } from "@/components/analytics/zone-editor"
 import { CameraDetails } from "@/components/camera/camera-details"
 import { CameraEvents } from "@/components/camera/camera-events"
 import {
@@ -37,6 +42,7 @@ import { useSession } from "@/components/shell/session"
 import { Button } from "@/components/ui/button"
 import { VideoPlaceholder } from "@/components/video/video-placeholder"
 import { VideoStream } from "@/components/video/video-stream"
+import { viewForLens } from "@/lib/analytics"
 import { ApiError, api, errorMessage, isAbort } from "@/lib/api"
 import { toggleFullscreen, useFullscreenElement } from "@/lib/stores"
 import type { Camera, CameraAudio } from "@/lib/types"
@@ -67,7 +73,10 @@ function CameraView({ id }: { id: string }) {
   const [player, setPlayer] = React.useState<HTMLDivElement | null>(null)
   const [audio, setAudio] = React.useState<CameraAudio | null>(null)
   const [sound, setSound] = React.useState(false)
+  const [showObjects, setShowObjects] = React.useState(false)
+  const [editingView, setEditingView] = React.useState<string | null>(null)
   const viewRef = React.useRef<HTMLDivElement>(null)
+  const analytics = useAnalyticsViews(id)
   const fullscreen = useFullscreenElement()
   const ptz = usePtz(id, speed)
   const keyboard = usePtzKeyboard(camera?.ptz_enabled ? ptz : null)
@@ -135,6 +144,16 @@ function CameraView({ id }: { id: string }) {
   const activeQuality: Quality = quality === "sub" && hasSub ? "sub" : "main"
   const stream = camera ? (activeQuality === "sub" ? camera.streams.sub : camera.streams.main) : null
   const isFullscreen = player !== null && fullscreen === player
+  const analyticsViews = analytics.views ?? []
+  const detecting = analyticsViews.some((view) => view.enabled)
+  const editingZones = editingView ? (analyticsViews.find((view) => view.uuid === editingView) ?? null) : null
+
+  const objectsFor = (lens: number | null): React.ReactNode => {
+    if (!showObjects || !detecting || !camera) return null
+    const view = viewForLens(analyticsViews, camera.lenses, lens)
+    if (!view || !view.enabled) return null
+    return <LiveObjects key={view.uuid} viewUuid={view.uuid} />
+  }
 
   if (!camera) {
     const notFound = error instanceof ApiError && error.status === 404
@@ -187,6 +206,20 @@ function CameraView({ id }: { id: string }) {
       ) : null}
       <IconButton
         label={
+          detecting
+            ? showObjects
+              ? "Hide detected objects"
+              : "Show detected objects"
+            : "Turn on analytics to show detected objects"
+        }
+        aria-pressed={showObjects && detecting}
+        disabled={!detecting || !camera.enabled}
+        onClick={() => setShowObjects((value) => !value)}
+      >
+        <ScanSearchIcon />
+      </IconButton>
+      <IconButton
+        label={
           audio?.supported ? (sound ? "Mute" : "Turn sound on") : (audio?.reason ?? "Sound is not available")
         }
         aria-pressed={sound}
@@ -218,6 +251,7 @@ function CameraView({ id }: { id: string }) {
         stream={stream}
         lens={lens}
         lenses={camera.lenses}
+        overlay={objectsFor(lens)}
         className="absolute inset-0"
       />
     )
@@ -231,6 +265,7 @@ function CameraView({ id }: { id: string }) {
             snapshot={false}
             lens={lens}
             lenses={camera.lenses}
+            overlay={objectsFor(lens)}
             className="min-h-0 min-w-0 flex-1"
           />
         ))}
@@ -238,12 +273,21 @@ function CameraView({ id }: { id: string }) {
     )
   } else if (stream) {
     const withSound = sound && Boolean(audio?.supported)
-    video = <VideoStream key={stream} stream={stream} audio={withSound} className="absolute inset-0" />
+    video = (
+      <VideoStream
+        key={stream}
+        stream={stream}
+        audio={withSound}
+        overlay={objectsFor(null)}
+        className="absolute inset-0"
+      />
+    )
   }
 
   return (
     <AppFrame
       actions={actions}
+      wideActions
       status={error ? <Chip className="text-danger">Refresh failed</Chip> : null}
     >
       <div
@@ -289,6 +333,12 @@ function CameraView({ id }: { id: string }) {
           <Section title="Events">
             <CameraEvents cameraUuid={camera.uuid} />
           </Section>
+          <AnalyticsSection
+            views={analytics.views}
+            error={analytics.error}
+            onChange={analytics.replace}
+            onEdit={setEditingView}
+          />
           <RecordingsSection cameraUuid={camera.uuid} />
           <VideoSection cameraUuid={camera.uuid} />
           <ImageSection cameraUuid={camera.uuid} />
@@ -299,6 +349,14 @@ function CameraView({ id }: { id: string }) {
           </Section>
         </aside>
       </div>
+      {editingZones ? (
+        <ZoneEditor
+          key={editingZones.uuid}
+          view={editingZones}
+          onClose={() => setEditingView(null)}
+          onSaved={analytics.replace}
+        />
+      ) : null}
       <CameraFormDialog
         open={editing}
         onOpenChange={setEditing}

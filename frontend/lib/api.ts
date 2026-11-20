@@ -1,4 +1,10 @@
 import type {
+  AnalyticsRules,
+  AnalyticsSettings,
+  AnalyticsStatus,
+  AnalyticsView,
+  AnalyticsViewList,
+  AnalyticsViewUpdate,
   Camera,
   CameraAudio,
   CameraDevice,
@@ -17,6 +23,8 @@ import type {
   CameraOrder,
   CameraUpdate,
   EncoderUpdate,
+  EventCountQuery,
+  EventCounts,
   EventQuery,
   FloorPlan,
   FloorPlanCreate,
@@ -27,6 +35,7 @@ import type {
   ImageSettings,
   InspectRequest,
   InspectResult,
+  LiveObjects,
   NetworkDevice,
   NetworkDeviceCreate,
   NetworkDeviceUpdate,
@@ -36,6 +45,7 @@ import type {
   ScanResult,
   TargetDetail,
   User,
+  ViewSnapshot,
 } from "@/lib/types"
 
 export class ApiError extends Error {
@@ -154,6 +164,10 @@ function cameraPath(uuid: string): string {
   return `/cameras/${encodeURIComponent(uuid)}`
 }
 
+function viewPath(uuid: string): string {
+  return `/analytics/views/${encodeURIComponent(uuid)}`
+}
+
 export const api = {
   login: (username: string, password: string) =>
     request<User>("/auth/login", {
@@ -254,6 +268,21 @@ export const api = {
   getEvent: (uuid: string, signal?: AbortSignal) =>
     request<CameraEvent>(`/events/${encodeURIComponent(uuid)}`, { signal }),
   eventSources: (signal?: AbortSignal) => request<CameraEventSourceList>("/events/sources", { signal }),
+  eventCounts: (params: EventCountQuery = {}, signal?: AbortSignal) =>
+    request<EventCounts>(`/events/counts${query({ ...params })}`, { signal }),
+
+  analyticsSettings: (signal?: AbortSignal) => request<AnalyticsSettings>("/analytics/settings", { signal }),
+  updateAnalyticsSettings: (data: AnalyticsSettings) =>
+    request<AnalyticsSettings>("/analytics/settings", { method: "PUT", body: data }),
+  analyticsViews: (cameraUuid?: string, signal?: AbortSignal) =>
+    request<AnalyticsViewList>(`/analytics/views${query({ camera_uuid: cameraUuid })}`, { signal }),
+  updateAnalyticsView: (uuid: string, data: AnalyticsViewUpdate) =>
+    request<AnalyticsView>(viewPath(uuid), { method: "PATCH", body: data }),
+  saveAnalyticsRules: (uuid: string, rules: AnalyticsRules) =>
+    request<AnalyticsView>(`${viewPath(uuid)}/rules`, { method: "PUT", body: rules }),
+  analyticsObjects: (uuid: string, signal?: AbortSignal) =>
+    request<LiveObjects>(`${viewPath(uuid)}/objects`, { signal }),
+  analyticsStatus: (signal?: AbortSignal) => request<AnalyticsStatus>("/analytics/status", { signal }),
 
   healthOverview: (range: HealthRange, signal?: AbortSignal) =>
     request<HealthOverview>(`/health/overview${query({ range })}`, { signal }),
@@ -277,4 +306,31 @@ export const EVENT_STREAM_URL = "/api/v1/events/stream"
 
 export function eventImageUrl(uuid: string, thumbnail = false): string {
   return `/api/v1/events/${encodeURIComponent(uuid)}/${thumbnail ? "thumbnail" : "snapshot"}`
+}
+
+export async function fetchViewSnapshot(uuid: string, signal?: AbortSignal): Promise<ViewSnapshot> {
+  let res: Response
+  try {
+    res = await fetch(`/api/v1${viewPath(uuid)}/snapshot?reference=true`, {
+      credentials: "same-origin",
+      cache: "no-store",
+      signal,
+    })
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") throw error
+    throw new ApiError(0, "network_error", "Cannot reach the server")
+  }
+  if (res.status === 401) {
+    redirectToLogin()
+    throw await parseError(res)
+  }
+  if (!res.ok) throw await parseError(res)
+  const reference = res.headers.get("X-Reference")
+  const blob = await res.blob()
+  if (blob.size === 0) throw new ApiError(res.status, "empty_snapshot", "The picture came back empty")
+  return { url: URL.createObjectURL(blob), reference: reference || null }
+}
+
+export function eventClipUrl(uuid: string): string {
+  return `/api/v1/events/${encodeURIComponent(uuid)}/clip`
 }
