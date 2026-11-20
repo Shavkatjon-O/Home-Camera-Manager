@@ -84,10 +84,12 @@ abstract class LoopFeed(spec: Spec, key: String) : Feed(spec, key) {
             if (!running) current.close()
             var unreachable = false
             var refused: String? = null
+            var retryAfter = 0L
             try {
                 current.run()
             } catch (error: V380Exception) {
                 unreachable = error.unreachable
+                retryAfter = error.retryAfterMs
                 if (error.refused) refused = error.message
                 if (running) stats.error = error.message
             } catch (error: RtspException) {
@@ -116,7 +118,7 @@ abstract class LoopFeed(spec: Spec, key: String) : Feed(spec, key) {
                 skip.clear()
                 continue
             }
-            val delay = retry.failure()
+            val delay = maxOf(retry.failure(), retryAfter)
             if (unreachable && !announced) {
                 announced = true
                 unreachable()

@@ -269,6 +269,7 @@ class ClientTest {
             assertTrue(error.refused)
             assertFalse(error.unreachable)
             assertEquals("Wrong password", error.message)
+            assertEquals(V380Client.REFUSED_LOGIN_RETRY_MS, error.retryAfterMs)
         }
         assertEquals("wrong", fake.passwords.single())
     }
@@ -282,6 +283,7 @@ class ClientTest {
             fail("expected a refusal")
         } catch (error: V380Exception) {
             assertTrue(error.refused)
+            assertEquals(0L, error.retryAfterMs)
         }
     }
 

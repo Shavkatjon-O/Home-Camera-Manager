@@ -178,7 +178,9 @@ class V380Client(private val config: Config, private val listener: Listener) {
                 flush()
             }
             val reply = Records.loginReply(readReply(socket, Records.LOGIN_REPLY_SIZE, "login"))
-            if (!reply.accepted) throw V380Exception(Records.refusal(reply.result), refused = true)
+            if (!reply.accepted) {
+                throw V380Exception(Records.refusal(reply.result), refused = true, retryAfterMs = REFUSED_LOGIN_RETRY_MS)
+            }
             return reply
         } finally {
             runCatching { socket.close() }
@@ -398,6 +400,9 @@ class V380Client(private val config: Config, private val listener: Listener) {
     companion object {
         /** Default TCP port of the cameras. */
         const val DEFAULT_PORT = 8800
+
+        /** Shortest wait before logging in again after the camera refused the credentials. */
+        const val REFUSED_LOGIN_RETRY_MS = 60_000L
 
         private const val RECEIVE_BUFFER = 128 * 1024
         private const val SEND_BUFFER = 64 * 1024

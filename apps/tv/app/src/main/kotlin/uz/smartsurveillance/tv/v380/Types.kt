@@ -25,12 +25,14 @@ data class VideoSize(val width: Int, val height: Int)
  * A V380 session failed.
  *
  * @property unreachable The camera did not accept a connection, so its address may have changed.
- * @property refused The camera refused the login or the stream; retry slowly.
+ * @property refused The camera refused the login or the stream.
+ * @property retryAfterMs Shortest wait before the next attempt; a refused login is retried only slowly.
  */
 class V380Exception(
     message: String,
     val unreachable: Boolean = false,
     val refused: Boolean = false,
+    val retryAfterMs: Long = 0,
     cause: Throwable? = null,
 ) : Exception(message, cause)
 
