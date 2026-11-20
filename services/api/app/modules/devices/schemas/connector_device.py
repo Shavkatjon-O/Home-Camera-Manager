@@ -227,6 +227,7 @@ class ConnectorCameraConfig(BaseModel):
         main_path: Main stream path.
         sub_path: Sub stream path, if any.
         enabled: Whether to stream it.
+        channel: Channel of the camera on its device, which PTZ addresses.
     """
 
     uuid: UUID
@@ -238,6 +239,7 @@ class ConnectorCameraConfig(BaseModel):
     main_path: str
     sub_path: str | None
     enabled: bool
+    channel: int = 1
 
 
 class ConnectorConfig(BaseModel):

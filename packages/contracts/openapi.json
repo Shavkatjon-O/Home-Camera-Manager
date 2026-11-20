@@ -24900,6 +24900,11 @@
           "enabled": {
             "type": "boolean",
             "title": "Enabled"
+          },
+          "channel": {
+            "type": "integer",
+            "title": "Channel",
+            "default": 1
           }
         },
         "type": "object",
@@ -24915,7 +24920,7 @@
           "enabled"
         ],
         "title": "ConnectorCameraConfig",
-        "description": "A camera the connector serves, without its credentials, which the connector keeps itself.\n\nAttributes:\n    uuid: Camera id; the connector's go2rtc streams are named by it.\n    name: Display name.\n    brand: Brand.\n    host: Address on the site's network.\n    rtsp_port: RTSP port.\n    onvif_port: ONVIF port, if any.\n    main_path: Main stream path.\n    sub_path: Sub stream path, if any.\n    enabled: Whether to stream it."
+        "description": "A camera the connector serves, without its credentials, which the connector keeps itself.\n\nAttributes:\n    uuid: Camera id; the connector's go2rtc streams are named by it.\n    name: Display name.\n    brand: Brand.\n    host: Address on the site's network.\n    rtsp_port: RTSP port.\n    onvif_port: ONVIF port, if any.\n    main_path: Main stream path.\n    sub_path: Sub stream path, if any.\n    enabled: Whether to stream it.\n    channel: Channel of the camera on its device, which PTZ addresses."
       },
       "ConnectorClaim": {
         "properties": {
