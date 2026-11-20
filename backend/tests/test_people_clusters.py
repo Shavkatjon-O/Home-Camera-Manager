@@ -8,8 +8,8 @@ import pytest
 from sqlalchemy.dialects import postgresql
 
 from app.core.exceptions import NotFound, Unprocessable
+from app.models import FaceSample, Person, UnknownCluster
 from app.modules.people.embeddings import EMBEDDING_SIZE, mean_embedding, to_bytes, to_vector
-from app.modules.people.models import FaceSample, Person, UnknownCluster
 from app.modules.people.schemas import ClusterName
 from app.modules.people.services import ClusterService, recompute_centroid
 

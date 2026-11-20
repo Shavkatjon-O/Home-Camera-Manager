@@ -8,10 +8,9 @@ from sqlalchemy import ColumnElement, and_, func, literal, or_, select, update
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import Camera, Event
+from app.models import Camera, Event, FaceSample, Person, UnknownCluster
 from app.modules.people.embeddings import mean_embedding
 from app.modules.people.enums import FACE_KINDS, FACE_UNKNOWN, PERSON_COLORS, SampleSource
-from app.modules.people.models import FaceSample, Person, UnknownCluster
 from app.modules.people.schemas import SampleRead, SightingRead
 
 __all__ = [

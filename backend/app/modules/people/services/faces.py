@@ -1,15 +1,16 @@
 """Service for the face results of the analytics service, and the faces shown with face events."""
 
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import Event
-from app.modules.people.enums import FACE_KINDS, FACE_KNOWN, FACE_SOURCE_TOPIC, FACE_UNKNOWN, FaceStatus, SampleSource
-from app.modules.people.models import FaceSample, Person, UnknownCluster
+from app.models import Camera, Event, FaceSample, Person, UnknownCluster
+from app.modules.events.enums import EventSource
+from app.modules.events.schemas import event_read
+from app.modules.people.enums import FACE_KINDS, FACE_KNOWN, FACE_UNKNOWN, FaceStatus, SampleSource
 from app.modules.people.schemas import FaceRead, FaceResult, FaceResultAck
 
 from .people import missing_person
@@ -77,20 +78,26 @@ def face_event_details(payload: FaceResult, person: Person | None, cluster: Unkn
     }
 
 
+FACE_LABEL = "person"
+
+
 class FaceResultService:
     """Store each face result as one face event with one face sample, keeping the unknown clusters up to date.
 
     Attributes:
         session: Database session the service works in.
+        publish: Announces a stored event on the event stream, if set.
     """
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession, publish: Callable[[str, dict], None] | None = None):
         """Bind the service to a session.
 
         Args:
             session: Database session the service works in.
+            publish: Announces a stored event on the event stream with its message type and data, if set.
         """
         self.session = session
+        self.publish = publish
 
     async def store(self, payload: FaceResult) -> FaceResultAck:
         """Create or update the face event and the face sample of a face result.
@@ -138,6 +145,7 @@ class FaceResultService:
         if previous_cluster_id is not None and (cluster is None or previous_cluster_id != cluster.id):
             await self.leave_cluster(previous_cluster_id)
         await self.session.commit()
+        await self.announce(event)
         return FaceResultAck(
             event=event.uuid,
             sample=sample.uuid,
@@ -219,16 +227,33 @@ class FaceResultService:
         kind = FACE_KNOWN if person is not None else FACE_UNKNOWN
         details = face_event_details(payload, person, cluster)
         if event is None:
-            event = Event(uuid=payload.id, source_topic=FACE_SOURCE_TOPIC)
+            event = Event(uuid=payload.id, source=EventSource.ANALYTICS.value, label=FACE_LABEL, alert=False)
             self.session.add(event)
         event.camera_uuid = payload.camera
         event.kind = kind
+        event.source_topic = f"analytics/{kind}"
+        event.view_uuid = parse_uuid(payload.view)
+        event.alert = bool(event.alert) or payload.alert
         event.started_at = started_at
         event.ended_at = seen_at
         event.snapshot_path = payload.crop
         event.thumbnail_path = payload.crop
         event.details = details
         return event
+
+    async def announce(self, event: Event) -> None:
+        """Announce a stored face event on the event stream with the face it shows.
+
+        Args:
+            event: The committed event row.
+        """
+        if self.publish is None:
+            return
+        await self.session.refresh(event)
+        camera_name = await self.session.scalar(select(Camera.name).where(Camera.uuid == event.camera_uuid))
+        faces = await face_summaries(self.session, [event])
+        read = event_read(event, camera_name, datetime.now(UTC), faces.get(event.uuid))
+        self.publish("event", read.model_dump(mode="json"))
 
     def store_sample(
         self,

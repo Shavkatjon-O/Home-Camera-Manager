@@ -145,6 +145,7 @@ def view_read(view: AnalyticsView, camera: Camera, zones: list[AnalyticsZone], l
         enabled=view.enabled,
         fps=view.fps,
         tamper=view.tamper,
+        faces=view.faces,
         moving=view.moving,
         zones=[
             ZoneRead(
@@ -269,6 +270,8 @@ class AnalyticsViewService(BaseModelService[AnalyticsView]):
             view.profile = changes["profile"].value
         if "tamper" in changes:
             view.tamper = changes["tamper"]
+        if "faces" in changes:
+            view.faces = changes["faces"]
         await self.session.commit()
         return await self.detail(uuid)
 

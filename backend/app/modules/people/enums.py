@@ -28,7 +28,6 @@ FACE_KNOWN = "face_known"
 FACE_UNKNOWN = "face_unknown"
 FACE_KINDS = (FACE_KNOWN, FACE_UNKNOWN)
 
-FACE_SOURCE_TOPIC = "analytics/faces"
 
 PERSON_COLORS = (
     "#4f8cff",

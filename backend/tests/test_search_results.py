@@ -4,7 +4,7 @@ from uuid import uuid4
 
 from sqlalchemy.dialects import postgresql
 
-from app.models import Event
+from app.models import AnalyticsLine, AnalyticsView, AnalyticsZone, Event
 from app.modules.events.schemas import event_read
 from app.modules.search.schemas import EventFilters
 from app.modules.search.services import EventSearchService, FacetService, result_fields
@@ -70,8 +70,8 @@ def test_known_kinds_keep_the_fields_of_the_events_list():
     event = event_row()
     fields = result_fields(event, "Door", NOW)
     expected = event_read(event, "Door", NOW).model_dump()
-    assert fields == {**expected, "kind": "motion"}
-    assert type(fields["kind"]) is str
+    del expected["face"]
+    assert fields == expected
 
 
 def test_face_kinds_get_the_same_fields():
@@ -81,7 +81,7 @@ def test_face_kinds_get_the_same_fields():
     assert fields["ongoing"] is True
     assert fields["duration_seconds"] == 30.0
     assert fields["has_snapshot"] is True
-    assert set(fields) == set(event_read(event_row(), None, NOW).model_dump())
+    assert set(fields) == set(event_read(event_row(), None, NOW).model_dump()) - {"face"}
 
 
 async def test_the_search_pages_newest_first_and_adds_the_face():
@@ -121,19 +121,24 @@ async def test_an_empty_search_reads_no_names():
     assert len(session.statements) == 2
 
 
-async def test_facets_list_kinds_labels_people_and_clusters():
-    alice, cluster = uuid4(), uuid4()
+async def test_facets_list_kinds_labels_views_people_and_clusters():
+    alice, cluster, camera = uuid4(), uuid4(), uuid4()
+    view = AnalyticsView(id=7, uuid=uuid4(), camera_uuid=camera, lens=2, name="PTZ 2 Lens 2")
+    zone = AnalyticsZone(id=1, uuid=uuid4(), view_id=7, name="Entrance")
+    line = AnalyticsLine(id=2, uuid=uuid4(), view_id=7, name="Door")
+    orphan = AnalyticsLine(id=3, uuid=uuid4(), view_id=99, name="Gone")
     session = FakeSession(
-        scalars=[["face_known", "motion"], ["car", "person"]],
+        scalars=[["face_known", "motion"], ["car", "person"], [view], [zone], [line, orphan]],
         execute=[[(alice, "Alice", "#4f8cff")], [(cluster, 3)]],
     )
     facets = await FacetService(session).facets()
     assert facets.kinds == ["face_known", "motion"]
     assert facets.labels == ["car", "person"]
-    assert (facets.views, facets.zones, facets.lines) == ([], [], [])
+    assert facets.views[0].model_dump() == {"id": str(view.uuid), "name": "PTZ 2 Lens 2", "camera_uuid": camera}
+    assert facets.zones[0].model_dump() == {"id": str(zone.uuid), "name": "Entrance", "view": str(view.uuid)}
+    assert [item.name for item in facets.lines] == ["Door"]
     assert facets.people[0].model_dump() == {"uuid": alice, "name": "Alice", "color": "#4f8cff"}
     assert facets.clusters[0].model_dump() == {"uuid": cluster, "label": "Unknown 3"}
-    labels = sql(session.statements[1])
-    assert "SELECT DISTINCT events.details ->> " in labels
-    assert "people.deleted_at IS NULL" in sql(session.statements[2])
-    assert "unknown_clusters.deleted_at IS NULL" in sql(session.statements[3])
+    assert "SELECT DISTINCT events.label" in sql(session.statements[1])
+    assert "people.deleted_at IS NULL" in sql(session.statements[5])
+    assert "unknown_clusters.deleted_at IS NULL" in sql(session.statements[6])

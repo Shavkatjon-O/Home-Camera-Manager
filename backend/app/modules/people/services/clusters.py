@@ -9,9 +9,9 @@ from app.auth.context import UserContext
 from app.core.base_service import BaseModelService
 from app.core.config import settings
 from app.core.exceptions import NotFound, Unprocessable
+from app.models import FaceSample, Person, UnknownCluster
 from app.modules.people.crops import CropStore
 from app.modules.people.enums import FACE_KNOWN
-from app.modules.people.models import FaceSample, Person, UnknownCluster
 from app.modules.people.schemas import ClusterList, ClusterName, ClusterRead, PersonRead
 
 from .people import missing_person, person_reads

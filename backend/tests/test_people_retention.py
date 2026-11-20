@@ -6,8 +6,8 @@ from uuid import uuid4
 import numpy as np
 from sqlalchemy.dialects import postgresql
 
+from app.models import UnknownCluster
 from app.modules.people.embeddings import EMBEDDING_SIZE, to_bytes
-from app.modules.people.models import UnknownCluster
 from app.modules.people.services import expired_samples, purge_expired_samples
 from app.modules.people.services import retention as retention_module
 

@@ -50,7 +50,11 @@ class SearchResult(BaseModel):
         camera_uuid: Camera of the event.
         camera_name: Name of the camera, if it still exists.
         kind: Kind of the event.
+        source: camera or analytics.
         source_topic: Topic the event came from.
+        label: Object label of an analytics event, if any.
+        alert: Whether the event raised an alert.
+        view_uuid: Analytics view of the event, if any.
         started_at: When the event started.
         ended_at: When the event ended, if it has.
         ongoing: Whether the event is still open.
@@ -58,6 +62,7 @@ class SearchResult(BaseModel):
         camera_time: The camera's own time of the event, if known.
         has_snapshot: Whether a snapshot is stored.
         has_thumbnail: Whether a thumbnail is stored.
+        has_clip: Whether a clip is stored.
         details: Further facts about the event.
         created_at: When the event was stored.
         updated_at: When the event last changed.
@@ -68,7 +73,11 @@ class SearchResult(BaseModel):
     camera_uuid: UUID
     camera_name: str | None
     kind: str
+    source: str = "camera"
     source_topic: str
+    label: str | None = None
+    alert: bool = False
+    view_uuid: UUID | None = None
     started_at: datetime
     ended_at: datetime | None
     ongoing: bool
@@ -76,6 +85,7 @@ class SearchResult(BaseModel):
     camera_time: datetime | None
     has_snapshot: bool
     has_thumbnail: bool
+    has_clip: bool = False
     details: dict
     created_at: datetime
     updated_at: datetime

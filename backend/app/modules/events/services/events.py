@@ -15,6 +15,7 @@ from app.core.exceptions import NotFound, Unprocessable
 from app.models import Camera, Event
 from app.modules.events.enums import EventKind, EventSource
 from app.modules.events.schemas import EventCounts, EventList, EventRead, EventSourceList, event_read
+from app.modules.people.services.faces import face_summaries
 
 __all__ = ["EventFilters", "EventService", "camera_names", "stream_hello"]
 
@@ -172,9 +173,10 @@ class EventService(BaseModelService[Event]):
             )
         )
         names = await camera_names(self.session) if rows else {}
+        faces = await face_summaries(self.session, rows)
         now = datetime.now(UTC)
         return EventList(
-            items=[event_read(row, names.get(row.camera_uuid), now) for row in rows],
+            items=[event_read(row, names.get(row.camera_uuid), now, faces.get(row.uuid)) for row in rows],
             total=total or 0,
             page=page,
             page_size=page_size,
@@ -214,7 +216,8 @@ class EventService(BaseModelService[Event]):
         """
         row = await self.get(uuid)
         names = await camera_names(self.session)
-        return event_read(row, names.get(row.camera_uuid), datetime.now(UTC))
+        faces = await face_summaries(self.session, [row])
+        return event_read(row, names.get(row.camera_uuid), datetime.now(UTC), faces.get(row.uuid))
 
     async def image(self, uuid: UUID, thumbnail: bool) -> Path:
         """Return the snapshot or thumbnail file of an event.

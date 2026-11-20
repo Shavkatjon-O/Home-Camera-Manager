@@ -8,7 +8,7 @@ from app.modules.analytics.schemas import LineInput, RulesUpdate, ZoneInput
 from app.modules.analytics.services.config import view_config
 
 
-def view(moving=False, tamper=None):
+def view(moving=False, tamper=None, faces=None):
     return AnalyticsView(
         uuid=uuid4(),
         camera_uuid=uuid4(),
@@ -18,6 +18,7 @@ def view(moving=False, tamper=None):
         enabled=True,
         fps=8.0,
         tamper=tamper,
+        faces=faces,
         moving=moving,
         tuning={},
     )
@@ -93,3 +94,9 @@ def test_rules_validation():
     )
     assert rules.zones[0].labels == ["person", "vehicle"]
     assert rules.lines[0].direction == "in"
+
+
+def test_faces_are_sent_only_when_the_view_overrides_its_profile():
+    assert "faces" not in view_config(view(), [], [])
+    assert view_config(view(faces=True), [], [])["faces"] is True
+    assert view_config(view(faces=False), [], [])["faces"] is False

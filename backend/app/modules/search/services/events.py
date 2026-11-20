@@ -6,11 +6,9 @@ from sqlalchemy import ColumnElement, func, select
 
 from app.core.base_service import BaseModelService
 from app.core.exceptions import Unprocessable
-from app.models import Event
-from app.modules.events.enums import EventKind
+from app.models import Event, FaceSample, Person, UnknownCluster
 from app.modules.events.schemas import event_read
 from app.modules.events.services.events import camera_names
-from app.modules.people.models import FaceSample, Person, UnknownCluster
 from app.modules.people.services import face_summaries
 from app.modules.search.schemas import EventFilters, ResultPage, SearchResult
 
@@ -18,14 +16,9 @@ from .analytics import analytics_filters
 
 __all__ = ["EventSearchService", "event_filters", "result_fields"]
 
-EVENT_KINDS = frozenset(kind.value for kind in EventKind)
-
 
 def result_fields(event: Event, camera_name: str | None, until: datetime) -> dict:
-    """Convert an event row to the fields of the events list, for any stored kind.
-
-    Kinds the events module knows go through its own conversion; face and other new kinds get the same fields
-    built here, with the kind kept as stored text.
+    """Convert an event row to the fields of a search result.
 
     Args:
         event: Event row.
@@ -33,30 +26,11 @@ def result_fields(event: Event, camera_name: str | None, until: datetime) -> dic
         until: Time an ongoing event counts its duration to.
 
     Returns:
-        The event fields of a search result.
+        The event fields as the events list returns them, without the face, which the search adds itself.
     """
-    if event.kind in EVENT_KINDS:
-        fields = event_read(event, camera_name, until).model_dump()
-        fields["kind"] = str(event.kind)
-        return fields
-    end = event.ended_at or until
-    return {
-        "uuid": event.uuid,
-        "camera_uuid": event.camera_uuid,
-        "camera_name": camera_name,
-        "kind": str(event.kind),
-        "source_topic": event.source_topic,
-        "started_at": event.started_at,
-        "ended_at": event.ended_at,
-        "ongoing": event.ended_at is None,
-        "duration_seconds": max(0.0, (end - event.started_at).total_seconds()),
-        "camera_time": event.camera_time,
-        "has_snapshot": bool(event.snapshot_path),
-        "has_thumbnail": bool(event.thumbnail_path),
-        "details": event.details or {},
-        "created_at": event.created_at,
-        "updated_at": event.updated_at,
-    }
+    fields = event_read(event, camera_name, until).model_dump()
+    fields.pop("face", None)
+    return fields
 
 
 def event_filters(filters: EventFilters) -> list[ColumnElement[bool]]:

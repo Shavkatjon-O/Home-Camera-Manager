@@ -88,6 +88,8 @@ def view_config(view: AnalyticsView, zones: list[AnalyticsZone], lines: list[Ana
         data["tamper"] = view.tamper
     elif view.moving:
         data["tamper"] = False
+    if view.faces is not None:
+        data["faces"] = view.faces
     if view.tuning:
         data["tuning"] = view.tuning
     return data

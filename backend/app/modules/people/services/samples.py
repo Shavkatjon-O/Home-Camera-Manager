@@ -10,10 +10,9 @@ from app.auth.context import UserContext
 from app.core.base_service import BaseModelService
 from app.core.config import settings
 from app.core.exceptions import NotFound
-from app.models import Event
+from app.models import Event, FaceSample, Person
 from app.modules.people.crops import CropStore
 from app.modules.people.enums import FACE_KINDS
-from app.modules.people.models import FaceSample, Person
 
 from .people import missing_person
 from .shared import BULK, strip_event_crops

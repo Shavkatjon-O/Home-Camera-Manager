@@ -6,9 +6,9 @@ import json
 from sqlalchemy import and_, case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models import FaceSample, Person, UnknownCluster
 from app.modules.people.embeddings import encode_embedding
 from app.modules.people.enums import SampleSource
-from app.modules.people.models import FaceSample, Person, UnknownCluster
 from app.modules.people.schemas import Gallery, GalleryCluster, GalleryPerson
 
 __all__ = ["GalleryService", "gallery_version"]

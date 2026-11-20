@@ -22,6 +22,7 @@ from app.health.targets import camera_address
 from app.models import Camera, Event
 from app.modules.events.enums import EventKind, SourceState
 from app.modules.events.schemas import EventRead, EventSourceRead, event_read
+from app.modules.people.services import purge_expired_samples
 from app.onvif.endpoints import device_endpoint, endpoint_key
 from app.streaming.names import MAIN, SUB, stream_name
 
@@ -172,6 +173,10 @@ class CameraEventsEngine:
                     await self.prune()
                 except Exception:
                     logger.exception("Pruning old events failed")
+                try:
+                    await self.prune_faces()
+                except Exception:
+                    logger.exception("Pruning old face samples failed")
             await asyncio.sleep(TICK_SECONDS)
 
     def sources(self) -> list[EventSourceRead]:
@@ -614,6 +619,11 @@ class CameraEventsEngine:
                 break
         if total:
             logger.info("Pruned %d events older than %d days", total, self.retention.days)
+
+    async def prune_faces(self) -> None:
+        """Delete face samples seen by the cameras before the retention, together with their crops."""
+        async with async_session_maker() as session:
+            await purge_expired_samples(session, datetime.now(UTC), self.retention.days)
 
 
 camera_events = CameraEventsEngine(

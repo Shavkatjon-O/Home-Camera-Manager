@@ -3,12 +3,11 @@
 from sqlalchemy import func, select
 
 from app.core.base_service import BaseModelService
-from app.models import Event
-from app.modules.people.models import Person, UnknownCluster
+from app.models import Event, Person, UnknownCluster
 from app.modules.people.services import cluster_label
 from app.modules.search.schemas import ClusterFacet, Facets, PersonFacet
 
-from .analytics import label_facets
+from .analytics import label_facets, rule_facets
 
 __all__ = ["FacetService"]
 
@@ -22,10 +21,9 @@ class FacetService(BaseModelService[Event]):
     async def facets(self) -> Facets:
         """Load the filter values.
 
-        Views, zones and lines stay empty until the analytics configuration provides them.
-
         Returns:
-            The kinds and labels that occur, the live people by name and the live clusters by number.
+            The kinds and labels that occur, the analytics views with their zones and lines, the live people by
+            name and the live clusters by number.
         """
         kinds = list(
             await self.session.scalars(
@@ -33,6 +31,7 @@ class FacetService(BaseModelService[Event]):
             )
         )
         labels = await label_facets(self.session)
+        views, zones, lines = await rule_facets(self.session)
         people = (
             await self.session.execute(
                 select(Person.uuid, Person.name, Person.color)
@@ -50,9 +49,9 @@ class FacetService(BaseModelService[Event]):
         return Facets(
             kinds=kinds,
             labels=labels,
-            views=[],
-            zones=[],
-            lines=[],
+            views=views,
+            zones=zones,
+            lines=lines,
             people=[PersonFacet(uuid=uuid, name=name, color=color) for uuid, name, color in people],
             clusters=[ClusterFacet(uuid=uuid, label=cluster_label(number)) for uuid, number in clusters],
         )

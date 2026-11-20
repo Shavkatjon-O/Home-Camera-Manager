@@ -8,8 +8,8 @@ from pydantic import ValidationError
 from sqlalchemy.dialects import postgresql
 
 from app.core.exceptions import NotFound, Unprocessable
+from app.models import FaceSample
 from app.modules.people.embeddings import EMBEDDING_SIZE, to_bytes
-from app.modules.people.models import FaceSample
 from app.modules.people.schemas import DetectedFace
 from app.modules.search.schemas import SimilarQuery
 from app.modules.search.services import SimilarService, rank_samples

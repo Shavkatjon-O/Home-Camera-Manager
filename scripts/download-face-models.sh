@@ -5,8 +5,8 @@ usage() {
   echo "usage: scripts/download-face-models.sh [--keep-archive]"
   echo
   echo "Downloads the InsightFace antelopev2 pack from the InsightFace model zoo release, checks the archive and"
-  echo "the two models the face stage uses against their pinned checksums, extracts them into HC_FACE_MODELS_DIR"
-  echo "(default analytics/models/face) and prints their licence."
+  echo "the two models the face stage uses against their pinned checksums, extracts them into"
+  echo "HC_ANALYTICS_FACE_MODELS_DIR (default analytics/models/face) and prints their licence."
   echo "--keep-archive keeps the downloaded zip next to the models."
 }
 
@@ -18,7 +18,7 @@ case "${1:-}" in
 esac
 
 root=$(cd "$(dirname "$0")/.." && pwd)
-models=${HC_FACE_MODELS_DIR:-$root/analytics/models/face}
+models=${HC_ANALYTICS_FACE_MODELS_DIR:-$root/analytics/models/face}
 mkdir -p "$models"
 models=$(cd "$models" && pwd)
 

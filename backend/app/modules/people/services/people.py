@@ -11,10 +11,10 @@ from app.auth.context import UserContext
 from app.core.base_service import BaseModelService
 from app.core.config import settings
 from app.core.exceptions import NotFound, Unavailable, Unprocessable
+from app.models import FaceSample, Person
 from app.modules.people.analytics import AnalyticsClient
 from app.modules.people.crops import CropStore, enrolled_crop_path
 from app.modules.people.enums import SampleSource
-from app.modules.people.models import FaceSample, Person
 from app.modules.people.photos import PhotoRejected, choose_face, decode_photo
 from app.modules.people.schemas import (
     DetectedFace,

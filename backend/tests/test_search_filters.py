@@ -59,16 +59,18 @@ def test_person_and_cluster_filter_through_the_face_samples():
     assert text.count("face_samples.deleted_at IS NULL") == 2
 
 
-def test_analytics_filters_read_the_event_details():
-    query = compiled(analytics_filters(["ptz2-lens2"], ["person", "car"], ["porch"], ["gate"], True))
+def test_analytics_filters_use_the_event_columns_and_details():
+    view = uuid4()
+    query = compiled(analytics_filters([str(view), "not-a-view"], ["person", "car"], ["porch"], ["gate"], True))
     text = text_of(query)
-    assert text.count("events.details ->> ") == 4
-    assert "events.details @> %(details_5)s" in text
+    assert "events.view_uuid IN " in text
+    assert "events.label IN " in text
+    assert text.count("events.details ->> ") == 2
+    assert "events.alert IS true" in text
     values = list(query.params.values())
-    for key in ("view", "label", "zone", "line"):
-        assert key in values
+    assert [view] in values
     assert ["person", "car"] in values
-    assert {"alert": True} in values
+    assert "zone" in values and "line" in values
 
 
 def test_unset_analytics_filters_add_nothing():
@@ -76,9 +78,9 @@ def test_unset_analytics_filters_add_nothing():
 
 
 def test_the_search_uses_the_analytics_filters():
-    text = text_of(compiled(event_filters(EventFilters(views=["v1"], alert=True))))
-    assert "events.details ->> " in text
-    assert "events.details @> " in text
+    text = text_of(compiled(event_filters(EventFilters(views=[str(uuid4())], alert=True))))
+    assert "events.view_uuid IN " in text
+    assert "events.alert IS true" in text
 
 
 def test_a_range_that_ends_before_it_starts_is_refused():

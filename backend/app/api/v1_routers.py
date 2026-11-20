@@ -9,6 +9,8 @@ from app.modules.discovery.routers import discovery_router
 from app.modules.events.routers import events_router
 from app.modules.floorplans.routers import floorplans_router
 from app.modules.health.routers import health_router
+from app.modules.people.routers import people_router
+from app.modules.search.routers import search_router
 from app.modules.tv.routers import tv_router
 from app.modules.users.routers import auth_router
 
@@ -21,4 +23,6 @@ v1_routers.include_router(discovery_router, prefix="/discovery", tags=["discover
 v1_routers.include_router(events_router, prefix="/events", tags=["events"])
 v1_routers.include_router(floorplans_router, prefix="/floorplans", tags=["floorplans"])
 v1_routers.include_router(health_router, prefix="/health", tags=["health"])
+v1_routers.include_router(people_router, prefix="/people", tags=["people"])
+v1_routers.include_router(search_router, prefix="/search", tags=["search"])
 v1_routers.include_router(tv_router, prefix="/tv", tags=["tv"])

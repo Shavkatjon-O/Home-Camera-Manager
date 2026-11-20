@@ -10,9 +10,8 @@ from pydantic import ValidationError
 from sqlalchemy.dialects import postgresql
 
 from app.core.exceptions import NotFound
-from app.models import Event
+from app.models import Event, FaceSample, Person, UnknownCluster
 from app.modules.people.embeddings import EMBEDDING_SIZE, mean_embedding, to_bytes
-from app.modules.people.models import FaceSample, Person, UnknownCluster
 from app.modules.people.schemas import FaceResult
 from app.modules.people.services import FaceResultService, face_summaries
 
@@ -22,6 +21,7 @@ SEEN = 1763600001.5
 FACE_ID = uuid4()
 CAMERA = uuid4()
 CROP = "faces/2026/11/20/face.jpg"
+VIEW = uuid4()
 
 DETAIL_KEYS = {
     "person_uuid",
@@ -81,6 +81,10 @@ class FakeSession:
 
     async def commit(self):
         self.commits += 1
+
+    async def refresh(self, item):
+        item.created_at = item.created_at or datetime.fromtimestamp(SEEN, UTC)
+        item.updated_at = item.updated_at or datetime.fromtimestamp(SEEN, UTC)
 
     async def scalar(self, statement):
         self.statements.append(statement)
@@ -159,7 +163,9 @@ async def test_a_known_face_creates_its_event_and_sample():
     sample = added(session, FaceSample)[0]
     assert event.uuid == FACE_ID
     assert event.kind == "face_known"
-    assert event.source_topic == "analytics/faces"
+    assert event.source_topic == "analytics/face_known"
+    assert event.source == "analytics"
+    assert event.label == "person"
     assert event.camera_uuid == CAMERA
     assert event.started_at == datetime.fromtimestamp(STARTED, UTC)
     assert event.ended_at == datetime.fromtimestamp(SEEN, UTC)
@@ -363,3 +369,24 @@ async def test_face_events_resolve_names_when_read():
     assert faces[unknown.uuid].sample_uuid is None
     assert faces[unknown.uuid].has_crop is True
     assert "people.deleted_at IS NULL" in sql(session.statements[0])
+
+
+async def test_a_stored_face_event_is_announced_with_its_face():
+    person = person_row()
+    sample_uuid = uuid4()
+    session = FakeSession(
+        scalar=[person, None, None, "Front door"],
+        execute=[[(person.uuid, person.name, person.color)], [(FACE_ID, sample_uuid, CROP)]],
+    )
+    published = []
+    await FaceResultService(session, lambda kind, data: published.append((kind, data))).store(
+        result(status="known", person=str(person.uuid), cluster_new=False, view=str(VIEW))
+    )
+    assert len(published) == 1
+    kind, data = published[0]
+    assert kind == "event"
+    assert data["kind"] == "face_known" and data["source"] == "analytics" and data["label"] == "person"
+    assert data["camera_name"] == "Front door"
+    assert data["view_uuid"] == str(VIEW)
+    assert data["face"]["person_name"] == person.name
+    assert data["face"]["sample_uuid"] == str(sample_uuid)

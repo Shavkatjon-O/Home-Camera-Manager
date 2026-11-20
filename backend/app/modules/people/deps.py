@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.context import UserContext
 from app.auth.dependencies import get_current_user
+from app.camera_events.engine import camera_events
 from app.core.config import settings
 from app.core.database import get_db
 from app.core.exceptions import Unauthorized
@@ -124,7 +125,7 @@ def get_sample_service(
 
 
 def get_face_result_service(session: AsyncSession = Depends(get_db)) -> FaceResultService:
-    """Build the face result service for the analytics service.
+    """Build the face result service for the analytics service, announcing its events on the event stream.
 
     Args:
         session: Database session for the request.
@@ -132,7 +133,7 @@ def get_face_result_service(session: AsyncSession = Depends(get_db)) -> FaceResu
     Returns:
         Face result service.
     """
-    return FaceResultService(session)
+    return FaceResultService(session, camera_events.broker.publish)
 
 
 def get_gallery_service(session: AsyncSession = Depends(get_db)) -> GalleryService:

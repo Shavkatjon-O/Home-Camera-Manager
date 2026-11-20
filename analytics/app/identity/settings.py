@@ -38,7 +38,8 @@ class IdentitySettings:
     and 92 percent of small grey faces against an enrolled photo, before averaging over a track improves them.
 
     Attributes:
-        models_dir: Folder holding the face detector and embedder ONNX files, mounted read-only.
+        models_dir: Mount point of the face model folder; HC_ANALYTICS_FACE_MODELS_DIR names the host folder compose
+            mounts there read-only.
         detector_size: Square input size of the face detector in pixels.
         embed_batch: Largest batch the embedder engine is built for.
         min_score: Lowest face detection score kept.
@@ -57,7 +58,7 @@ class IdentitySettings:
         track_gap: Seconds without a new face after which a track counts as gone.
     """
 
-    models_dir: Path = field(default_factory=lambda: Path(env("HC_ANALYTICS_FACE_MODELS_DIR", "/face-models")))
+    models_dir: Path = Path("/face-models")
     detector_size: int = 640
     embed_batch: int = 8
 

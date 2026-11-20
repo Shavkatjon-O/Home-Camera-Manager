@@ -8,11 +8,11 @@ import numpy as np
 import pytest
 
 from app.core.exceptions import BadGateway, Unavailable
+from app.models import FaceSample, Person
 from app.modules.people import photos
 from app.modules.people.analytics import AnalyticsClient
 from app.modules.people.crops import CropStore
 from app.modules.people.embeddings import EMBEDDING_SIZE, to_bytes
-from app.modules.people.models import FaceSample, Person
 from app.modules.people.photos import (
     NO_FACE,
     SMALL_FACE,
