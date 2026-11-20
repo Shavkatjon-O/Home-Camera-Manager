@@ -1,4 +1,4 @@
-"""Command line of the V380 client: stream for go2rtc, probe, discover and control."""
+"""Command line of the V380 client: stream for go2rtc, probe, discover, control and the relay."""
 
 import argparse
 import asyncio
@@ -17,6 +17,7 @@ from camera_adapters.v380.discovery import discover
 from camera_adapters.v380.errors import V380Error
 from camera_adapters.v380.pipe import AnnexBPipe
 from camera_adapters.v380.records import DEFAULT_PORT, Stream
+from camera_adapters.v380.relay import Relay, RelayConfig
 from camera_adapters.v380.streamer import Streamer
 
 __all__ = ["main", "parser", "password"]
@@ -91,6 +92,7 @@ def parser() -> argparse.ArgumentParser:
     control.add_argument("--control-dir", default=DEFAULT_DIRECTORY, help="directory of the control socket")
     control.add_argument("action", choices=("ptz", "light", "siren", "picture", "flip", "facts"))
     control.add_argument("value", nargs="?", help="move, mode or siren seconds")
+    commands.add_parser("relay", help="serve one camera over RTSP and HTTP, configured by SSS_V380_ variables")
     return root
 
 
@@ -219,6 +221,30 @@ async def control(args: argparse.Namespace) -> int:
     return 0 if answer.get("ok") else 1
 
 
+async def relay(args: argparse.Namespace) -> int:
+    """Run the relay of one camera until stopped.
+
+    Args:
+        args: Parsed arguments, unused; the relay reads its SSS_V380_ environment variables.
+
+    Returns:
+        The exit status.
+    """
+    try:
+        config = RelayConfig.from_env()
+    except ValueError as exc:
+        logger.error("%s", exc)
+        return 2
+    task = asyncio.create_task(Relay(config).run())
+    loop = asyncio.get_running_loop()
+    for number in (signal.SIGTERM, signal.SIGINT):
+        with contextlib.suppress(NotImplementedError):
+            loop.add_signal_handler(number, task.cancel)
+    with contextlib.suppress(asyncio.CancelledError):
+        await task
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     """Run a command.
 
@@ -234,5 +260,5 @@ def main(argv: list[str] | None = None) -> int:
         stream=sys.stderr,
         format="%(asctime)s %(levelname)s %(name)s %(message)s",
     )
-    commands = {"stream": stream, "probe": probe, "discover": search, "control": control}
+    commands = {"stream": stream, "probe": probe, "discover": search, "control": control, "relay": relay}
     return asyncio.run(commands[args.command](args))

@@ -47,6 +47,7 @@ class FrameType(IntEnum):
 VIDEO_TYPES = frozenset({FrameType.H264_KEY, FrameType.H264, FrameType.H265_KEY, FrameType.H265})
 AUDIO_TYPES = frozenset({FrameType.ADPCM, FrameType.AAC, FrameType.ALAW})
 KEY_TYPES = frozenset({FrameType.H264_KEY, FrameType.H265_KEY})
+SEEN_TYPES = VIDEO_TYPES | AUDIO_TYPES | {0x5B}
 
 
 @dataclass(frozen=True)
@@ -121,14 +122,16 @@ class FragmentReader:
     """Cuts the stream connection's bytes into fragments, resynchronising on invalid headers.
 
     On an invalid header the reader scans forward byte by byte for a marker that starts a valid header, and never
-    reads a payload for an invalid header. It gives up after 64 consecutive invalid headers that start with the
-    marker, or after a megabyte without a valid header.
+    reads a payload for an invalid header. While it searches, it also requires a frame type the cameras are known
+    to send, because marker bytes inside media can form a header that looks valid. It gives up after 64
+    consecutive invalid headers that start with the marker, or after a megabyte without a valid header.
 
     Attributes:
         buffer: Bytes received and not yet cut.
         invalid: Consecutive invalid headers seen.
         skipped: Bytes skipped since the last valid header.
         resyncs: Times the reader lost and searched for its place.
+        searching: Whether the reader is searching for its place.
     """
 
     def __init__(self):
@@ -137,6 +140,7 @@ class FragmentReader:
         self.invalid = 0
         self.skipped = 0
         self.resyncs = 0
+        self.searching = False
 
     def feed(self, data: bytes) -> list[Fragment]:
         """Add received bytes and return the fragments they complete.
@@ -154,7 +158,7 @@ class FragmentReader:
         fragments = []
         while len(self.buffer) >= FRAGMENT_HEADER_SIZE:
             header = parse_fragment_header(self.buffer)
-            if header is None:
+            if header is None or (self.searching and header.type not in SEEN_TYPES):
                 self.skip()
                 continue
             end = FRAGMENT_HEADER_SIZE + header.length
@@ -164,6 +168,7 @@ class FragmentReader:
             del self.buffer[:end]
             self.invalid = 0
             self.skipped = 0
+            self.searching = False
         return fragments
 
     def skip(self) -> None:
@@ -172,7 +177,8 @@ class FragmentReader:
         Raises:
             FramingLost: Too many invalid headers or skipped bytes.
         """
-        if self.invalid == 0 and self.skipped == 0:
+        if not self.searching:
+            self.searching = True
             self.resyncs += 1
         if self.buffer[0] == MARKER:
             self.invalid += 1

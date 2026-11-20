@@ -342,9 +342,7 @@ def test_discovery_finds_the_simulated_camera():
         loop = asyncio.get_running_loop()
         from simulator import Discovery
 
-        transport, _ = await loop.create_datagram_endpoint(
-            lambda: Discovery(simulator), local_addr=("127.0.0.1", 0)
-        )
+        transport, _ = await loop.create_datagram_endpoint(lambda: Discovery(simulator), local_addr=("127.0.0.1", 0))
         port = transport.get_extra_info("sockname")[1]
         try:
             return await discover(("127.0.0.1",), port=port, listen_port=0, rounds=2, round_seconds=0.2, limited=False)

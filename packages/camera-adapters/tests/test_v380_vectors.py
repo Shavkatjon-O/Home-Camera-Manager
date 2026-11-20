@@ -481,3 +481,12 @@ def test_the_fragment_reader_gives_up_after_64_invalid_headers():
     reader = framing.FragmentReader()
     with pytest.raises(FramingLost):
         reader.feed(bytes([0x7F, 0, 0, 0, 0]) * 70 + bytes(12))
+
+
+def test_marker_bytes_in_media_do_not_capture_the_search():
+    real = fragment(0x29, 1, 0, FRAME[:116])
+    stream = framing.fragment_header(real.header) + real.payload
+    reader = framing.FragmentReader()
+    out = reader.feed(bytes([0x00, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x28, 0x00, 0x03, 0x00]) + stream)
+    assert [item.header.type for item in out] == [0x29]
+    assert len(out[0].payload) == 116
