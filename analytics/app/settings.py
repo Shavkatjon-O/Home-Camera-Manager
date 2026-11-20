@@ -38,7 +38,7 @@ class Settings:
         workspace_mb: TensorRT builder workspace limit.
         mux_width: Stream muxer frame width.
         mux_height: Stream muxer frame height.
-        models_dir: Model layer mount.
+        models_dir: Mount point of the model folder; HC_ANALYTICS_MODELS_DIR names the host folder compose mounts there.
         engines_dir: Writable engine cache.
         events_dir: Folder for event snapshots and clips, shared with the backend.
         buffer_dir: Folder of the rolling recording segments.
@@ -64,7 +64,7 @@ class Settings:
     workspace_mb: int = field(default_factory=lambda: int(env("HC_ANALYTICS_WORKSPACE_MB", "1024")))
     mux_width: int = 1920
     mux_height: int = 1080
-    models_dir: Path = field(default_factory=lambda: Path(env("HC_ANALYTICS_MODELS_DIR", "/models")))
+    models_dir: Path = Path("/models")
     engines_dir: Path = field(default_factory=lambda: Path(env("HC_ANALYTICS_ENGINES_DIR", "/engines")))
     events_dir: Path = field(default_factory=lambda: Path(env("HC_ANALYTICS_EVENTS_DIR", "/data/events")))
     buffer_dir: Path = field(default_factory=lambda: Path(env("HC_ANALYTICS_BUFFER_DIR", "/buffer")))

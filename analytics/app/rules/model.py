@@ -12,6 +12,7 @@ from app.rules.schedule import Schedule
 VEHICLES = frozenset({"car", "truck", "bus", "motorcycle"})
 ANIMALS = frozenset({"dog", "cat"})
 GROUPS = {"vehicle": VEHICLES, "animal": ANIMALS}
+WHOLE_VIEW_AREA = 0.95
 
 
 class ArmMode(StrEnum):
@@ -122,12 +123,14 @@ class Detection:
         label: Canonical label such as person or car.
         confidence: Detector or tracker confidence.
         box: Position in normalized view coordinates.
+        detected: True when the detector found the object in this frame, False when only the tracker carried it.
     """
 
     track_id: int
     label: str
     confidence: float
     box: Box
+    detected: bool = True
 
 
 @dataclass(frozen=True)
@@ -215,6 +218,7 @@ class Zone:
         alert: When its events alert.
         enabled: False keeps the zone configured but silent.
         suspended: True while the view no longer matches the scene the zone was drawn on.
+        reference: Snapshot the zone was drawn on, relative to the events folder, for lenses that move.
     """
 
     id: str
@@ -228,6 +232,17 @@ class Zone:
     alert: AlertPolicy = field(default_factory=AlertPolicy)
     enabled: bool = True
     suspended: bool = False
+    reference: str | None = None
+
+    @property
+    def whole_view(self) -> bool:
+        """bool: True when the polygon covers nearly the whole picture, so it stays valid wherever a lens points."""
+        area = 0.0
+        points = self.polygon
+        for index, (x1, y1) in enumerate(points):
+            x2, y2 = points[(index + 1) % len(points)]
+            area += x1 * y2 - x2 * y1
+        return abs(area) / 2 >= WHOLE_VIEW_AREA
 
     @classmethod
     def from_dict(cls, data: dict) -> Zone:
@@ -251,6 +266,7 @@ class Zone:
             alert=AlertPolicy.from_dict(data.get("alert")),
             enabled=bool(data.get("enabled", True)),
             suspended=bool(data.get("suspended", False)),
+            reference=data.get("reference") or None,
         )
 
 
@@ -272,6 +288,7 @@ class Line:
         alert: When its events alert.
         enabled: False keeps the line configured but silent.
         suspended: True while the view no longer matches the scene the line was drawn on.
+        reference: Snapshot the line was drawn on, relative to the events folder, for lenses that move.
     """
 
     id: str
@@ -284,6 +301,7 @@ class Line:
     alert: AlertPolicy = field(default_factory=AlertPolicy)
     enabled: bool = True
     suspended: bool = False
+    reference: str | None = None
 
     @classmethod
     def from_dict(cls, data: dict) -> Line:
@@ -310,6 +328,7 @@ class Line:
             alert=AlertPolicy.from_dict(data.get("alert")),
             enabled=bool(data.get("enabled", True)),
             suspended=bool(data.get("suspended", False)),
+            reference=data.get("reference") or None,
         )
 
 
@@ -331,6 +350,10 @@ class Tuning:
         static_radius: Largest wander, in normalized units, that still counts as staying in place.
         warmup: Seconds after a view starts during which objects found are taken as already present.
         line_margin: Distance from a line an object must reach on each side before a crossing counts.
+        line_gap: Seconds after a crossing in which the same object crossing the same line again is taken as
+            jitter and ignored.
+        confirm_hits: Frames in which the detector itself must find an object before it counts.
+        confirm_window: Seconds those detector frames must fall within.
         min_confidence: Detections below this confidence are ignored.
     """
 
@@ -344,6 +367,9 @@ class Tuning:
     static_radius: float = 0.015
     warmup: float = 8.0
     line_margin: float = 0.008
+    line_gap: float = 3.0
+    confirm_hits: float = 4
+    confirm_window: float = 2.0
     min_confidence: float = 0.0
 
     @classmethod

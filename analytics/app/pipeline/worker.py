@@ -143,7 +143,8 @@ def build_pipeline(plan: PipelinePlan, infer_config: str, outbox: multiprocessin
                         (
                             int(item.object_id),
                             label,
-                            round(max(float(item.confidence), float(item.tracker_confidence)), 3),
+                            round(float(item.confidence), 3),
+                            round(float(item.tracker_confidence), 3),
                             round(left, 4),
                             round(top, 4),
                             round(left + rect.width * scale_x, 4),

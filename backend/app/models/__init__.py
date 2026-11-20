@@ -1,4 +1,10 @@
+"""Model registry: every table's model, imported in one place for Alembic and the import order."""
+
 from app.models.base import BaseModel
+from app.modules.analytics.models.lines import AnalyticsLine
+from app.modules.analytics.models.settings import AnalyticsSettings
+from app.modules.analytics.models.views import AnalyticsView
+from app.modules.analytics.models.zones import AnalyticsZone
 from app.modules.cameras.models.cameras import Camera
 from app.modules.events.models.events import Event
 from app.modules.floorplans.models.floorplans import FloorPlan
@@ -11,6 +17,10 @@ from app.modules.tv.models.pairings import TvPairing
 from app.modules.users.models.users import User
 
 __all__ = [
+    "AnalyticsLine",
+    "AnalyticsSettings",
+    "AnalyticsView",
+    "AnalyticsZone",
     "BaseModel",
     "Camera",
     "CameraLink",

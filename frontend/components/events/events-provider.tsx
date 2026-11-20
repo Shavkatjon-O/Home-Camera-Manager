@@ -1,11 +1,11 @@
 "use client"
 
 import * as React from "react"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { toast } from "sonner"
 
 import { EVENT_STREAM_URL, api } from "@/lib/api"
-import { eventTitle, useAlertsMuted } from "@/lib/events"
+import { addUnseenAlert, eventTitle, useAlertsMuted } from "@/lib/events"
 import { formatTime } from "@/lib/format"
 import type { CameraEvent, CameraEventSource, EventStreamHello } from "@/lib/types"
 
@@ -51,6 +51,7 @@ function parse<T>(message: MessageEvent): T | null {
 
 export function EventsProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter()
+  const pathname = usePathname()
   const muted = useAlertsMuted()
   const mutedRef = React.useRef(muted)
   const listeners = React.useRef(new Set<Listener>())
@@ -65,8 +66,11 @@ export function EventsProvider({ children }: { children: React.ReactNode }) {
   }, [muted])
 
   const announce = React.useEffectEvent((event: CameraEvent) => {
-    if (mutedRef.current) return
+    if (!event.alert) return
     if (Date.now() - Date.parse(event.created_at) > FRESH_MS) return
+    const watching = (pathname ?? "").startsWith("/events") && document.visibilityState === "visible"
+    if (!watching) addUnseenAlert(event.uuid)
+    if (mutedRef.current) return
     toast(eventTitle(event), {
       id: event.uuid,
       description: `Started ${formatTime(event.started_at)}`,

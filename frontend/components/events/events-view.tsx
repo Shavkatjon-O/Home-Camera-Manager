@@ -4,7 +4,8 @@ import * as React from "react"
 import { useSearchParams } from "next/navigation"
 import { ChevronLeftIcon, ChevronRightIcon, CircleAlertIcon, ScanEyeIcon, XIcon } from "lucide-react"
 
-import { EventDuration, EventThumb, KindChip } from "@/components/events/event-parts"
+import { EventCountRow } from "@/components/events/event-counts"
+import { AlertMark, EventDuration, EventThumb, KindChip, LabelChip } from "@/components/events/event-parts"
 import { EventPanel } from "@/components/events/event-panel"
 import { useEvents } from "@/components/events/events-provider"
 import { SourceChip } from "@/components/events/source-chip"
@@ -16,7 +17,15 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { api, errorMessage, isAbort } from "@/lib/api"
-import { EVENT_KINDS, KIND_LABELS, dayRange } from "@/lib/events"
+import {
+  EVENT_KINDS,
+  EVENT_LABELS,
+  KIND_LABELS,
+  clearUnseenAlerts,
+  dayRange,
+  eventPlace,
+  labelName,
+} from "@/lib/events"
 import { formatMoment } from "@/lib/health"
 import type { CameraEvent, EventKind, EventQuery, Page } from "@/lib/types"
 import { cn } from "@/lib/utils"
@@ -27,6 +36,7 @@ const ALL = "all"
 function matches(event: CameraEvent, query: EventQuery): boolean {
   if (query.camera_uuid && event.camera_uuid !== query.camera_uuid) return false
   if (query.kind && event.kind !== query.kind) return false
+  if (query.label && event.label !== query.label) return false
   const started = Date.parse(event.started_at)
   if (query.from && started < Date.parse(query.from)) return false
   if (query.to && started >= Date.parse(query.to)) return false
@@ -42,6 +52,7 @@ function EventRow({
   selected: boolean
   onSelect: (uuid: string) => void
 }) {
+  const place = eventPlace(event)
   return (
     <li>
       <button
@@ -58,8 +69,13 @@ function EventRow({
           <div className="flex min-w-0 items-center gap-2">
             <span className="truncate text-[13px] text-foreground">{event.camera_name ?? "Removed camera"}</span>
             <KindChip event={event} />
+            <LabelChip event={event} />
+            <AlertMark event={event} />
           </div>
-          <span className="font-data text-[12px] text-text-2">{formatMoment(event.started_at)}</span>
+          <div className="flex min-w-0 items-baseline gap-2">
+            <span className="shrink-0 font-data text-[12px] text-text-2">{formatMoment(event.started_at)}</span>
+            {place ? <span className="truncate text-[12px] text-text-3">{place}</span> : null}
+          </div>
         </div>
         <EventDuration event={event} />
       </button>
@@ -70,22 +86,26 @@ function EventRow({
 function Filters({
   camera,
   kind,
+  label,
   day,
   onCamera,
   onKind,
+  onLabel,
   onDay,
   onClear,
 }: {
   camera: string
   kind: string
+  label: string
   day: string
   onCamera: (value: string) => void
   onKind: (value: string) => void
+  onLabel: (value: string) => void
   onDay: (value: string) => void
   onClear: () => void
 }) {
   const { cameras } = useSession()
-  const filtered = camera !== ALL || kind !== ALL || day !== ""
+  const filtered = camera !== ALL || kind !== ALL || label !== ALL || day !== ""
   return (
     <div className="flex flex-wrap items-center gap-2">
       <Select value={camera} onValueChange={onCamera}>
@@ -102,7 +122,7 @@ function Filters({
         </SelectContent>
       </Select>
       <Select value={kind} onValueChange={onKind}>
-        <SelectTrigger aria-label="Kind" className="w-32">
+        <SelectTrigger aria-label="Kind" className="w-36">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -110,6 +130,19 @@ function Filters({
           {EVENT_KINDS.map((item) => (
             <SelectItem key={item} value={item}>
               {KIND_LABELS[item]}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Select value={label} onValueChange={onLabel}>
+        <SelectTrigger aria-label="Label" className="w-32">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value={ALL}>All labels</SelectItem>
+          {EVENT_LABELS.map((item) => (
+            <SelectItem key={item} value={item}>
+              {labelName(item)}
             </SelectItem>
           ))}
         </SelectContent>
@@ -136,6 +169,7 @@ function EventsView() {
   const { connected, version, sources, subscribe } = useEvents()
   const [camera, setCamera] = React.useState(params.get("camera") ?? ALL)
   const [kind, setKind] = React.useState(ALL)
+  const [label, setLabel] = React.useState(ALL)
   const [day, setDay] = React.useState("")
   const [page, setPage] = React.useState(1)
   const [reload, setReload] = React.useState(0)
@@ -149,10 +183,20 @@ function EventsView() {
     return {
       camera_uuid: camera === ALL ? undefined : camera,
       kind: kind === ALL ? undefined : (kind as EventKind),
+      label: label === ALL ? undefined : label,
       from: range?.from,
       to: range?.to,
     }
-  }, [camera, kind, day])
+  }, [camera, kind, label, day])
+
+  React.useEffect(() => {
+    clearUnseenAlerts()
+    const onVisible = () => {
+      if (document.visibilityState === "visible") clearUnseenAlerts()
+    }
+    document.addEventListener("visibilitychange", onVisible)
+    return () => document.removeEventListener("visibilitychange", onVisible)
+  }, [])
 
   React.useEffect(() => {
     const controller = new AbortController()
@@ -213,6 +257,7 @@ function EventsView() {
   const clear = () => {
     setCamera(ALL)
     setKind(ALL)
+    setLabel(ALL)
     setDay("")
     setPage(1)
   }
@@ -251,7 +296,7 @@ function EventsView() {
     list = (
       <EmptyState icon={<ScanEyeIcon />} title="No events">
         <span>
-          {query.camera_uuid || query.kind || query.from
+          {query.camera_uuid || query.kind || query.label || query.from
             ? "Nothing matches these filters."
             : "Events appear here as soon as a camera reports motion or a problem."}
         </span>
@@ -315,12 +360,15 @@ function EventsView() {
             <Filters
               camera={camera}
               kind={kind}
+              label={label}
               day={day}
               onCamera={changeFilter(setCamera)}
               onKind={changeFilter(setKind)}
+              onLabel={changeFilter(setLabel)}
               onDay={changeFilter(setDay)}
               onClear={clear}
             />
+            <EventCountRow query={query} />
             {sources.length > 0 ? (
               <div aria-label="Event sources" className="flex flex-wrap gap-1.5">
                 {sources.map((source) => (

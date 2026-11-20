@@ -1,3 +1,5 @@
+"""Application settings read from HC_ environment variables and the .env file."""
+
 from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.engine import URL
@@ -7,6 +9,37 @@ APP_VERSION = "0.1.0"
 
 
 class Settings(BaseSettings):
+    """Every setting of the backend.
+
+    Attributes:
+        lan_bind: Home network address the web app and the TV streams are published on.
+        db_host: Postgres host.
+        db_port: Postgres port.
+        db_name: Postgres database.
+        db_user: Postgres user.
+        db_password: Postgres password.
+        secret_key: Key that signs sessions and encrypts camera passwords.
+        admin_username: User created on first start.
+        admin_password: Password of that user on first start.
+        session_hours: Lifetime of a session.
+        go2rtc_url: go2rtc API address.
+        transcode_hardware: go2rtc hardware option added to every transcode, empty for none.
+        tv_rtsp_username: RTSP user of go2rtc for clients outside its container.
+        tv_rtsp_password: RTSP password of go2rtc.
+        discovery_subnet: Subnet scanned for cameras.
+        monitor_interval_seconds: Interval of the camera status monitor.
+        health_interval_seconds: Interval of the network health probes.
+        health_retention_days: Days health samples are kept.
+        events_dir: Folder of event snapshots and clips.
+        events_retention_days: Days events are kept.
+        replay_enabled: Whether SD card playback is offered.
+        device_onvif_port: ONVIF port of bridged V380 cameras.
+        device_username: Device login of bridged V380 cameras.
+        device_password: Device password of bridged V380 cameras.
+        analytics_url: Address of the analytics service's status endpoint.
+        analytics_token: Shared token of the analytics service and the internal analytics endpoints.
+    """
+
     model_config = SettingsConfigDict(env_prefix="HC_", env_file=".env", case_sensitive=False, extra="ignore")
 
     lan_bind: str = ""
@@ -44,8 +77,12 @@ class Settings(BaseSettings):
     device_username: str = Field(default="admin", validation_alias=AliasChoices("hc_device_username", "v380_username"))
     device_password: str = Field(default="", validation_alias=AliasChoices("hc_device_password", "v380_password"))
 
+    analytics_url: str = "http://analytics:8080"
+    analytics_token: str = ""
+
     @property
     def database_url(self) -> str:
+        """str: Async SQLAlchemy URL of the database, with the password."""
         url = URL.create(
             "postgresql+asyncpg",
             username=self.db_user,

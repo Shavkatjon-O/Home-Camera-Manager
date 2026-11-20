@@ -1,3 +1,5 @@
+"""Reading events, their pictures and clips, and the state of the camera event sources."""
+
 from datetime import UTC, datetime
 from pathlib import Path
 from uuid import UUID
@@ -11,18 +13,34 @@ from app.core.base_service import BaseModelService
 from app.core.database import async_session_maker
 from app.core.exceptions import NotFound, Unprocessable
 from app.models import Camera, Event
-from app.modules.events.enums import EventKind
-from app.modules.events.schemas import EventList, EventRead, EventSourceList, event_read
+from app.modules.events.enums import EventKind, EventSource
+from app.modules.events.schemas import EventCounts, EventList, EventRead, EventSourceList, event_read
 
-__all__ = ["EventService", "stream_hello"]
+__all__ = ["EventFilters", "EventService", "camera_names", "stream_hello"]
 
 
 async def camera_names(session: AsyncSession) -> dict[UUID, str]:
+    """Return every camera's name by id, including deleted cameras.
+
+    Args:
+        session: Database session.
+
+    Returns:
+        Camera id to name.
+    """
     rows = await session.execute(select(Camera.uuid, Camera.name))
     return {camera_uuid: name for camera_uuid, name in rows.all()}
 
 
 async def stream_hello(engine: CameraEventsEngine = camera_events) -> dict:
+    """Build the first message of the event stream: the sources and the open events.
+
+    Args:
+        engine: The camera events engine.
+
+    Returns:
+        The hello payload.
+    """
     async with async_session_maker() as session:
         rows = list(
             await session.scalars(
@@ -40,7 +58,78 @@ async def stream_hello(engine: CameraEventsEngine = camera_events) -> dict:
     }
 
 
+class EventFilters:
+    """Filters of the event list and counts.
+
+    Attributes:
+        camera_uuid: Only this camera.
+        kind: Only this kind.
+        label: Only this label.
+        source: Only this source.
+        start: Only events that started at or after this time.
+        end: Only events that started before this time.
+    """
+
+    def __init__(
+        self,
+        camera_uuid: UUID | None = None,
+        kind: EventKind | None = None,
+        label: str | None = None,
+        source: EventSource | None = None,
+        start: datetime | None = None,
+        end: datetime | None = None,
+    ):
+        """Collect the filters.
+
+        Args:
+            camera_uuid: Only this camera.
+            kind: Only this kind.
+            label: Only this label.
+            source: Only this source.
+            start: Only events that started at or after this time.
+            end: Only events that started before this time.
+
+        Raises:
+            Unprocessable: The end of the range is not after its start.
+        """
+        if start is not None and end is not None and end <= start:
+            raise Unprocessable("invalid_range", "The end of the range must come after its start")
+        self.camera_uuid = camera_uuid
+        self.kind = kind
+        self.label = label
+        self.source = source
+        self.start = start
+        self.end = end
+
+    def clauses(self) -> list:
+        """Return the SQL conditions of the filters.
+
+        Returns:
+            Conditions to combine with AND.
+        """
+        clauses = [Event.deleted_at.is_(None)]
+        if self.camera_uuid is not None:
+            clauses.append(Event.camera_uuid == self.camera_uuid)
+        if self.kind is not None:
+            clauses.append(Event.kind == self.kind.value)
+        if self.label:
+            clauses.append(Event.label == self.label)
+        if self.source is not None:
+            clauses.append(Event.source == self.source.value)
+        if self.start is not None:
+            clauses.append(Event.started_at >= self.start)
+        if self.end is not None:
+            clauses.append(Event.started_at < self.end)
+        return clauses
+
+
 class EventService(BaseModelService[Event]):
+    """Reads events for the API.
+
+    Attributes:
+        engine: The camera events engine, for the sources and the picture store.
+    """
+
     model = Event
     not_found_code = "event_not_found"
 
@@ -50,34 +139,33 @@ class EventService(BaseModelService[Event]):
         actor: UserContext | None = None,
         engine: CameraEventsEngine = camera_events,
     ):
+        """Bind the service to a session.
+
+        Args:
+            session: Database session.
+            actor: User making the request.
+            engine: The camera events engine.
+        """
         super().__init__(session, actor)
         self.engine = engine
 
-    async def list_page(
-        self,
-        page: int,
-        page_size: int,
-        camera_uuid: UUID | None = None,
-        kind: EventKind | None = None,
-        start: datetime | None = None,
-        end: datetime | None = None,
-    ) -> EventList:
-        if start is not None and end is not None and end <= start:
-            raise Unprocessable("invalid_range", "The end of the range must come after its start")
-        filters = [Event.deleted_at.is_(None)]
-        if camera_uuid is not None:
-            filters.append(Event.camera_uuid == camera_uuid)
-        if kind is not None:
-            filters.append(Event.kind == kind.value)
-        if start is not None:
-            filters.append(Event.started_at >= start)
-        if end is not None:
-            filters.append(Event.started_at < end)
-        total = await self.session.scalar(select(func.count()).select_from(Event).where(*filters))
+    async def list_page(self, page: int, page_size: int, filters: EventFilters) -> EventList:
+        """Return one page of events, newest first.
+
+        Args:
+            page: Page number from 1.
+            page_size: Events per page.
+            filters: The filters.
+
+        Returns:
+            The page.
+        """
+        clauses = filters.clauses()
+        total = await self.session.scalar(select(func.count()).select_from(Event).where(*clauses))
         rows = list(
             await self.session.scalars(
                 select(Event)
-                .where(*filters)
+                .where(*clauses)
                 .order_by(Event.started_at.desc(), Event.id.desc())
                 .offset((page - 1) * page_size)
                 .limit(page_size)
@@ -92,12 +180,55 @@ class EventService(BaseModelService[Event]):
             page_size=page_size,
         )
 
+    async def counts(self, filters: EventFilters) -> EventCounts:
+        """Count events per kind and label.
+
+        Args:
+            filters: The filters.
+
+        Returns:
+            The counts.
+        """
+        clauses = filters.clauses()
+        kinds = await self.session.execute(select(Event.kind, func.count()).where(*clauses).group_by(Event.kind))
+        labels = await self.session.execute(
+            select(Event.label, func.count()).where(*clauses, Event.label.is_not(None)).group_by(Event.label)
+        )
+        alerts = await self.session.scalar(select(func.count()).select_from(Event).where(*clauses, Event.alert))
+        kind_counts = {kind: count for kind, count in kinds.all()}
+        return EventCounts(
+            total=sum(kind_counts.values()),
+            kinds=kind_counts,
+            labels={label: count for label, count in labels.all()},
+            alerts=alerts or 0,
+        )
+
     async def detail(self, uuid: UUID) -> EventRead:
+        """Return one event.
+
+        Args:
+            uuid: Event id.
+
+        Returns:
+            The event.
+        """
         row = await self.get(uuid)
         names = await camera_names(self.session)
         return event_read(row, names.get(row.camera_uuid), datetime.now(UTC))
 
     async def image(self, uuid: UUID, thumbnail: bool) -> Path:
+        """Return the snapshot or thumbnail file of an event.
+
+        Args:
+            uuid: Event id.
+            thumbnail: True for the thumbnail.
+
+        Returns:
+            The file path.
+
+        Raises:
+            NotFound: The event has no such picture.
+        """
         row = await self.get(uuid)
         relative = row.thumbnail_path if thumbnail else row.snapshot_path
         path = self.engine.store.resolve(relative)
@@ -105,5 +236,28 @@ class EventService(BaseModelService[Event]):
             raise NotFound("snapshot_not_found", "This event has no snapshot")
         return path
 
+    async def clip(self, uuid: UUID) -> Path:
+        """Return the clip file of an event.
+
+        Args:
+            uuid: Event id.
+
+        Returns:
+            The file path.
+
+        Raises:
+            NotFound: The event has no clip.
+        """
+        row = await self.get(uuid)
+        path = self.engine.store.resolve(row.clip_path)
+        if path is None or not path.is_file():
+            raise NotFound("clip_not_found", "This event has no clip")
+        return path
+
     def sources(self) -> EventSourceList:
+        """Return the state of every camera's event subscription.
+
+        Returns:
+            The sources.
+        """
         return EventSourceList(items=self.engine.sources())

@@ -16,10 +16,12 @@ from dataclasses import dataclass, field
 from datetime import datetime, tzinfo
 
 from app.rules.geometry import point_in_polygon, segments_intersect, side_of_line
-from app.rules.model import VEHICLES, ArmMode, EventKind, Frame, Line, ViewRules, Zone, label_matches
+from app.rules.model import VEHICLES, ArmMode, Detection, EventKind, Frame, Line, ViewRules, Zone, label_matches
 from app.rules.tracks import Identity, TrackBook
 
 MAX_BOXES = 8
+OCCUPANT_SHARE = 0.9
+OCCUPANT_RISE = 0.15
 LINE_TOLERANCE = 0.05
 FIRED_MEMORY_SECONDS = 3600.0
 
@@ -144,6 +146,7 @@ class RulesEngine:
         inside: Zone id to identity id to the time the object entered.
         sides: Line id to identity id to the last side the object was clearly on.
         positions: Line id to identity id to the foot point where that side was last confirmed.
+        crossed: Last crossing time of each object on each line, to ignore jitter across a line.
         episodes: Open zone episodes by zone id, kind and label.
         closed_at: Last close time of each zone episode key, for the cooldown.
         fired: Instant rule key to the last time it fired for an object.
@@ -176,6 +179,7 @@ class RulesEngine:
         self.inside: dict[str, dict[int, float]] = {}
         self.sides: dict[str, dict[int, int]] = {}
         self.positions: dict[str, dict[int, tuple[float, float]]] = {}
+        self.crossed: dict[tuple[str, int], float] = {}
         self.episodes: dict[tuple[str, EventKind, str], Episode] = {}
         self.closed_at: dict[tuple[str, EventKind, str], float] = {}
         self.fired: dict[tuple, float] = {}
@@ -218,6 +222,33 @@ class RulesEngine:
         """
         return datetime.fromtimestamp(moment, self.timezone)
 
+    @staticmethod
+    def occupant(person: Detection, vehicles: list[Detection]) -> bool:
+        """Tell whether a person box lies inside a vehicle, above its bottom edge.
+
+        Such a box is someone sitting in the vehicle or a seat seen through its windscreen, never a person on foot
+        in the zone.
+
+        Args:
+            person: The person detection.
+            vehicles: Vehicle detections of the same frame.
+
+        Returns:
+            True when the person box is an occupant.
+        """
+        box = person.box
+        area = (box.right - box.left) * (box.bottom - box.top)
+        if area <= 0:
+            return False
+        for vehicle in vehicles:
+            other = vehicle.box
+            width = max(0.0, min(box.right, other.right) - max(box.left, other.left))
+            height = max(0.0, min(box.bottom, other.bottom) - max(box.top, other.top))
+            raised = box.bottom < other.bottom - OCCUPANT_RISE * (other.bottom - other.top)
+            if width * height >= OCCUPANT_SHARE * area and raised:
+                return True
+        return False
+
     def process(self, frame: Frame) -> list[Update]:
         """Apply every rule to one frame.
 
@@ -229,6 +260,10 @@ class RulesEngine:
         """
         now = frame.time
         self.last_time = now
+        vehicles = [item for item in frame.objects if item.label in VEHICLES]
+        if vehicles:
+            kept = tuple(item for item in frame.objects if item.label != "person" or not self.occupant(item, vehicles))
+            frame = Frame(frame.time, kept)
         seen = self.book.update(frame)
         identities = [identity for identity, _ in seen]
         updates: list[Update] = []
@@ -308,7 +343,8 @@ class RulesEngine:
         for identity in dwelled:
             kind = EventKind.VEHICLE if identity.label in VEHICLES else EventKind.INTRUSION
             updates += self.join_episode(zone, kind, identity.label, [identity], now, moment, active)
-            if zone.loiter_seconds and now - entered[identity.id] >= zone.loiter_seconds and active:
+            loiters = zone.loiter_seconds and identity.label not in VEHICLES
+            if loiters and now - entered[identity.id] >= zone.loiter_seconds and active:
                 updates += self.instant(
                     ("loiter", zone.id, identity.id),
                     EventKind.LOITERING,
@@ -397,7 +433,7 @@ class RulesEngine:
         positions = self.positions.setdefault(line.id, {})
         updates: list[Update] = []
         for identity in identities:
-            if not label_matches(line.labels, identity.label) or identity.static:
+            if not label_matches(line.labels, identity.label) or identity.static or not identity.confirmed:
                 continue
             offset = side_of_line(identity.foot, line.start, line.end)
             if abs(offset) < margin:
@@ -410,6 +446,10 @@ class RulesEngine:
             if previous is None or previous == side or last_point is None:
                 continue
             if not segments_intersect(last_point, identity.foot, line.start, line.end, LINE_TOLERANCE):
+                continue
+            crossed = self.crossed.get((line.id, identity.id))
+            self.crossed[(line.id, identity.id)] = now
+            if crossed is not None and now - crossed < self.rules.tuning.line_gap:
                 continue
             direction = "in" if side > 0 else "out"
             counts = self.line_counts.setdefault(line.id, {"in": Counter(), "out": Counter()})
@@ -429,6 +469,7 @@ class RulesEngine:
         for identity_id in [key for key in sides if key not in alive]:
             sides.pop(identity_id, None)
             positions.pop(identity_id, None)
+            self.crossed.pop((line.id, identity_id), None)
         return updates
 
     def instant(

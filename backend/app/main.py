@@ -1,3 +1,5 @@
+"""FastAPI application: lifespan, error handlers, health routes and router mounting."""
+
 import logging
 from contextlib import asynccontextmanager
 
@@ -16,6 +18,7 @@ from app.core.logging import setup_logging
 from app.core.security import require_secret_key
 from app.core.seed import seed_admin
 from app.health.prober import health_prober
+from app.modules.analytics.routers import analytics_internal_router
 from app.modules.tv.routers import tv_internal_router
 from app.streaming.supervisor import supervisor
 
@@ -25,6 +28,14 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(application: FastAPI):
+    """Start the background engines after the database checks and stop them on shutdown.
+
+    Args:
+        application: The application.
+
+    Yields:
+        Control while the application serves requests.
+    """
     require_secret_key()
     await verify_db_connection()
     await seed_admin()
@@ -43,16 +54,43 @@ app = FastAPI(title=APP_NAME, version=APP_VERSION, lifespan=lifespan)
 
 
 def error_body(code: str, message: str) -> dict:
+    """Build the error body every error response uses.
+
+    Args:
+        code: Machine readable error code.
+        message: Human readable message.
+
+    Returns:
+        The body.
+    """
     return {"detail": {"code": code, "message": message}}
 
 
 @app.exception_handler(ServiceError)
 async def service_error_handler(request: Request, exc: ServiceError) -> JSONResponse:
+    """Answer a service error with its status and code.
+
+    Args:
+        request: The request.
+        exc: The error.
+
+    Returns:
+        The error response.
+    """
     return JSONResponse(status_code=exc.status_code, content=error_body(exc.code, exc.message))
 
 
 @app.exception_handler(StarletteHTTPException)
 async def http_error_handler(request: Request, exc: StarletteHTTPException) -> JSONResponse:
+    """Answer an HTTP error in the common error shape.
+
+    Args:
+        request: The request.
+        exc: The error.
+
+    Returns:
+        The error response.
+    """
     code = {404: "not_found", 405: "method_not_allowed"}.get(exc.status_code, f"http_{exc.status_code}")
     message = exc.detail if isinstance(exc.detail, str) else "Request failed"
     return JSONResponse(status_code=exc.status_code, content=error_body(code, message), headers=exc.headers)
@@ -60,6 +98,15 @@ async def http_error_handler(request: Request, exc: StarletteHTTPException) -> J
 
 @app.exception_handler(RequestValidationError)
 async def validation_error_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
+    """Answer a validation error with every problem in one message.
+
+    Args:
+        request: The request.
+        exc: The error.
+
+    Returns:
+        The error response.
+    """
     parts = []
     for error in exc.errors():
         location = ".".join(str(part) for part in error.get("loc", ()) if part not in ("body", "query", "path"))
@@ -69,11 +116,28 @@ async def validation_error_handler(request: Request, exc: RequestValidationError
 
 @app.exception_handler(Exception)
 async def unexpected_error_handler(request: Request, exc: Exception) -> JSONResponse:
+    """Log an unexpected error and answer without its details.
+
+    Args:
+        request: The request.
+        exc: The error.
+
+    Returns:
+        The error response.
+    """
     logger.exception("Unhandled error on %s %s", request.method, request.url.path)
     return JSONResponse(status_code=500, content=error_body("internal_error", "Something went wrong"))
 
 
 async def health_status() -> dict:
+    """Check the database.
+
+    Returns:
+        The health body.
+
+    Raises:
+        Unavailable: The database does not answer.
+    """
     try:
         await verify_db_connection()
     except (SQLAlchemyError, OSError) as exc:
@@ -87,11 +151,21 @@ health_router = APIRouter()
 
 @health_router.get("/health", tags=["health"])
 async def health() -> dict:
+    """Report whether the backend and its database work.
+
+    Returns:
+        The health body.
+    """
     return await health_status()
 
 
 @app.get("/", tags=["health"])
 async def root() -> dict:
+    """Report the service name and version.
+
+    Returns:
+        Name and version.
+    """
     return {"service": APP_NAME, "version": APP_VERSION}
 
 
@@ -99,3 +173,4 @@ app.include_router(health_router)
 app.include_router(health_router, prefix="/api/v1")
 app.include_router(v1_routers, prefix="/api/v1")
 app.include_router(tv_internal_router, prefix="/internal/tv", include_in_schema=False)
+app.include_router(analytics_internal_router, prefix="/internal/analytics", include_in_schema=False)

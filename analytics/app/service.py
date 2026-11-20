@@ -17,18 +17,20 @@ import subprocess
 import threading
 import time
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
 import numpy as np
 
+from app.backend import BackendClient, BackendConfigSource, Outbox
 from app.config import ServiceConfig, ViewConfig, parse_config
 from app.detectors import detector
 from app.pipeline.plan import PipelinePlan, SourcePlan, ViewPlan
-from app.recorder import CameraRecorder, ClipMaker
+from app.recorder import CameraRecorder, ClipMaker, latest_frame
 from app.rules.engine import Event, RulesEngine, Update
-from app.rules.model import ArmMode, Box, Detection, EventKind, Frame
+from app.rules.model import ArmMode, Box, Detection, EventKind, Frame, ViewRules
+from app.scene import SceneMatcher
 from app.settings import Settings
 from app.sources import probe_size, redact, stream_uri
 from app.status import StatusServer
@@ -42,8 +44,13 @@ STALL_SECONDS = 20.0
 PIPELINE_STALL_SECONDS = 90.0
 RESTART_DELAYS = (5, 10, 30, 60, 120)
 SNAPSHOT_DELAY = 1.5
+SNAPSHOT_RETRIES = (3.0, 6.0, 12.0)
 RECENT_EVENTS = 200
 GPU_POLL_SECONDS = 10.0
+OBSERVATION_SECONDS = 5.0
+REFERENCE_PRUNE_SECONDS = 3600.0
+REFERENCE_KEEP_SECONDS = 86400.0
+MEDIA_EVENT_LIMIT = 500
 
 
 class FileConfigSource:
@@ -86,6 +93,7 @@ class ViewRuntime:
     Attributes:
         config: The view's configuration.
         engine: Its rules engine, None for views without rules.
+        suspended: Zones and lines suspended because the moving lens left the scene they were drawn on.
         tamper: Its tamper watch, None when off.
         frames: Frames analysed since the service started.
         stamps: Arrival times of recent frames, for the rate.
@@ -98,6 +106,7 @@ class ViewRuntime:
 
     config: ViewConfig
     engine: RulesEngine | None = None
+    suspended: frozenset[str] = frozenset()
     tamper: TamperWatch | None = None
     frames: int = 0
     stamps: collections.deque = field(default_factory=lambda: collections.deque(maxlen=300))
@@ -173,7 +182,18 @@ class Service:
         """
         self.settings = settings
         self.timezone = ZoneInfo(settings.timezone)
-        self.source = FileConfigSource(settings.config_file)
+        self.backend: BackendClient | None = None
+        self.outbox_backend: Outbox | None = None
+        if settings.backend_url:
+            self.backend = BackendClient(settings.backend_url, settings.backend_token)
+            self.outbox_backend = Outbox(self.backend)
+            self.source: FileConfigSource | BackendConfigSource = BackendConfigSource(self.backend)
+        else:
+            self.source = FileConfigSource(settings.config_file)
+        self.scenes = SceneMatcher(settings.events_dir)
+        self.media_events: collections.OrderedDict[str, dict] = collections.OrderedDict()
+        self.observed = 0.0
+        self.references_pruned = 0.0
         self.config: ServiceConfig | None = None
         self.views: dict[str, ViewRuntime] = {}
         self.recorders: dict[str, CameraRecorder] = {}
@@ -213,7 +233,11 @@ class Service:
 
     def run(self) -> None:
         """Run until stopped."""
-        StatusServer(self.settings.status_port, self.status, self.live_objects).start()
+        StatusServer(
+            self.settings.status_port, self.settings.backend_token, self.status, self.live_objects, self.view_snapshot
+        ).start()
+        if self.outbox_backend is not None:
+            self.outbox_backend.start()
         threading.Thread(target=self.media_loop, name="media", daemon=True).start()
         threading.Thread(target=self.read_loop, name="reader", daemon=True).start()
         polled = 0.0
@@ -226,6 +250,7 @@ class Service:
                 self.supervise(now)
                 self.tick(now)
                 self.maintain(now)
+                self.observe(now)
             except Exception:
                 logger.exception("Service loop step failed")
             self.stopping.wait(LOOP_SECONDS)
@@ -272,10 +297,11 @@ class Service:
                     runtime = self.views[view.id] = ViewRuntime(view)
                 runtime.config = view
                 if view.enabled and view.profile.rules:
+                    rules = self.effective_rules(view, runtime.suspended)
                     if runtime.engine is None:
-                        runtime.engine = RulesEngine(view.id, view.rules, now, self.timezone, self.arm_mode)
+                        runtime.engine = RulesEngine(view.id, rules, now, self.timezone, self.arm_mode)
                     else:
-                        self.handle(view, runtime.engine.configure(view.rules))
+                        self.handle(view, runtime.engine.configure(rules))
                 elif runtime.engine is not None:
                     self.handle(view, runtime.engine.configure(type(view.rules)()))
                     runtime.engine = None
@@ -293,6 +319,54 @@ class Service:
             sum(1 for view in config.views if view.detects),
             config.arm_mode.value,
         )
+
+    @staticmethod
+    def references(view: ViewConfig) -> set[str]:
+        """Return the reference snapshots of a view's zones and lines that can be suspended.
+
+        Args:
+            view: The view.
+
+        Returns:
+            Reference paths; whole-view zones never depend on one.
+        """
+        zones = {zone.reference for zone in view.rules.zones if zone.reference and not zone.whole_view}
+        return zones | {line.reference for line in view.rules.lines if line.reference}
+
+    def effective_rules(self, view: ViewConfig, suspended: frozenset[str]) -> ViewRules:
+        """Return a view's rules with the zones and lines whose scene is gone marked suspended.
+
+        Args:
+            view: The view.
+            suspended: Ids of the zones and lines to suspend.
+
+        Returns:
+            The rules to run.
+        """
+        if not suspended:
+            return view.rules
+        zones = tuple(replace(zone, suspended=True) if zone.id in suspended else zone for zone in view.rules.zones)
+        lines = tuple(replace(line, suspended=True) if line.id in suspended else line for line in view.rules.lines)
+        return replace(view.rules, zones=zones, lines=lines)
+
+    def rescan(self, runtime: ViewRuntime) -> None:
+        """Recompute which zones and lines of a view are suspended and apply a change.
+
+        Args:
+            runtime: The view.
+        """
+        view = runtime.config
+        suspended = set()
+        for item in (*view.rules.zones, *view.rules.lines):
+            whole = getattr(item, "whole_view", False)
+            if item.reference and not whole and not self.scenes.matched(view.id, item.reference):
+                suspended.add(item.id)
+        frozen = frozenset(suspended)
+        if frozen == runtime.suspended:
+            return
+        runtime.suspended = frozen
+        if runtime.engine is not None:
+            self.handle(view, runtime.engine.configure(self.effective_rules(view, frozen)))
 
     def close_view(self, view_id: str, now: float) -> None:
         """Close the open events of a view that goes away.
@@ -531,8 +605,8 @@ class Service:
                 if ntp:
                     runtime.latencies.append(max(0.0, (received - ntp / 1e9) * 1000))
                 detections = tuple(
-                    Detection(track, label, confidence, Box(left, top, right, bottom))
-                    for track, label, confidence, left, top, right, bottom in objects
+                    Detection(track, label, max(found, kept), Box(left, top, right, bottom), found > 0)
+                    for track, label, found, kept, left, top, right, bottom in objects
                     if label in profile.labels
                 )
                 runtime.objects = [
@@ -586,11 +660,21 @@ class Service:
             self.publish(event)
 
     def publish(self, event: dict) -> None:
-        """Log an event change and keep it for the status endpoint.
+        """Log an event change, keep it for the status endpoint and send it to the backend.
 
         Args:
             event: The event with its action.
         """
+        known = self.media_events.get(event["id"], {})
+        event = {
+            **event,
+            **{key: known[key] for key in ("snapshot_path", "thumbnail_path", "clip_path") if key in known},
+        }
+        self.media_events[event["id"]] = event
+        while len(self.media_events) > MEDIA_EVENT_LIMIT:
+            self.media_events.popitem(last=False)
+        if self.outbox_backend is not None:
+            self.outbox_backend.send("/internal/analytics/events", event)
         self.recent.append(event)
         logger.info(
             "Event %s %s %s %s%s%s objects=%s alert=%s",
@@ -619,41 +703,51 @@ class Service:
 
     def media_loop(self) -> None:
         """Cut snapshots when due and clips when their events end or reach the length cap."""
-        waiting: list[tuple[float, dict, ViewConfig]] = []
+        waiting: list[tuple[float, dict, ViewConfig, int]] = []
         while not self.stopping.is_set():
             try:
                 while True:
                     kind, due, event, view = self.media_jobs.get_nowait()
-                    waiting.append((due, event, view))
+                    waiting.append((due, event, view, 0))
             except queue.Empty:
                 pass
             now = time.time()
             for job in [job for job in waiting if job[0] <= now]:
                 waiting.remove(job)
-                self.cut_snapshot(job[1], job[2])
+                due, event, view, attempt = job
+                if not self.cut_snapshot(event, view) and attempt < len(SNAPSHOT_RETRIES):
+                    waiting.append((now + SNAPSHOT_RETRIES[attempt], event, view, attempt + 1))
             for event_id, pending in list(self.pending.items()):
                 if now >= pending.deadline:
                     del self.pending[event_id]
                     self.cut_clip(pending)
             self.stopping.wait(0.5)
 
-    def cut_snapshot(self, event: dict, view: ViewConfig) -> None:
+    def cut_snapshot(self, event: dict, view: ViewConfig) -> bool:
         """Write the snapshot of an event.
 
         Args:
             event: The event.
             view: Its view.
+
+        Returns:
+            True when the snapshot was written or cannot be written at all; False to try again later.
         """
         root, stem = self.media_paths(event)
         folder = self.settings.buffer_dir / view.camera
         target, thumbnail = root / f"{stem}.jpg", root / f"{stem}.thumb.jpg"
+        recorder = self.recorders.get(view.camera)
+        seen = recorder.seen if recorder else None
         try:
-            ok = self.clips.snapshot(folder, event["started_at"], view.lens, view.lenses, target, thumbnail)
+            ok = self.clips.snapshot(folder, event["started_at"], view.lens, view.lenses, target, thumbnail, seen)
         except (OSError, subprocess.SubprocessError) as exc:
             logger.warning("Snapshot of event %s failed: %s", event["id"], exc)
-            return
-        if ok:
-            logger.info("Snapshot of event %s written to %s.jpg", event["id"], stem)
+            return True
+        if not ok:
+            return False
+        logger.info("Snapshot of event %s written to %s.jpg", event["id"], stem)
+        self.attach_media(event["id"], snapshot_path=f"{stem}.jpg", thumbnail_path=f"{stem}.thumb.jpg")
+        return True
 
     def cut_clip(self, pending: PendingClip) -> None:
         """Write the clip of an event.
@@ -665,8 +759,10 @@ class Service:
         folder = self.settings.buffer_dir / pending.camera
         target = root / f"{stem}.mp4"
         started = time.monotonic()
+        recorder = self.recorders.get(pending.camera)
+        seen = recorder.seen if recorder else None
         try:
-            ok = self.clips.clip(folder, pending.start, pending.deadline, pending.lens, pending.lenses, target)
+            ok = self.clips.clip(folder, pending.start, pending.deadline, pending.lens, pending.lenses, target, seen)
         except (OSError, subprocess.SubprocessError) as exc:
             logger.warning("Clip of event %s failed: %s", pending.event["id"], exc)
             return
@@ -678,6 +774,21 @@ class Service:
                 self.clips.working,
                 time.monotonic() - started,
             )
+            self.attach_media(pending.event["id"], clip_path=f"{stem}.mp4")
+
+    def attach_media(self, event_id: str, **paths: str) -> None:
+        """Record media written for an event and send the event again with their paths.
+
+        Args:
+            event_id: The event.
+            **paths: Media paths relative to the events folder.
+        """
+        with self.lock:
+            event = self.media_events.get(event_id)
+            if event is None:
+                return
+            self.media_events[event_id] = {**event, **paths}
+            self.publish({**event, **paths, "action": "media"})
 
     def on_keyframe(self, camera: str, at: float, data: bytes) -> None:
         """Feed a keyframe thumbnail to the tamper watch of the camera's views.
@@ -695,9 +806,15 @@ class Service:
         with self.lock:
             for runtime in self.views.values():
                 view = runtime.config
-                if view.camera != camera or runtime.tamper is None:
+                if view.camera != camera or not view.enabled:
                     continue
-                started, ended = runtime.tamper.update(lens_band(image, view.lens, view.lenses))
+                band = lens_band(image, view.lens, view.lenses)
+                references = self.references(view)
+                if references and self.scenes.update(view.id, band, references):
+                    self.rescan(runtime)
+                if runtime.tamper is None:
+                    continue
+                started, ended = runtime.tamper.update(band)
                 updates = []
                 for condition in started:
                     event = Event(
@@ -731,6 +848,78 @@ class Service:
         if now - self.gpu_polled >= GPU_POLL_SECONDS:
             self.gpu_polled = now
             self.gpu = gpu_reading()
+        if now - self.references_pruned >= REFERENCE_PRUNE_SECONDS and self.config is not None:
+            self.references_pruned = now
+            self.prune_references(now)
+
+    def prune_references(self, now: float) -> None:
+        """Delete reference pictures no zone or line uses once they are a day old.
+
+        The editor keeps a picture every time it opens, and only the ones saved with zones stay in use.
+
+        Args:
+            now: Current time.
+        """
+        used = {
+            item.reference
+            for view in self.config.views
+            for item in (*view.rules.zones, *view.rules.lines)
+            if item.reference
+        }
+        root = self.settings.events_dir
+        for path in (root / "analytics" / "references").glob("*/*.jpg"):
+            relative = path.relative_to(root).as_posix()
+            try:
+                old = now - path.stat().st_mtime > REFERENCE_KEEP_SECONDS
+            except FileNotFoundError:
+                continue
+            if old and relative not in used:
+                path.unlink(missing_ok=True)
+
+    def observe(self, now: float) -> None:
+        """Send the per view counts and states to the backend every few seconds.
+
+        Args:
+            now: Current time.
+        """
+        if self.outbox_backend is None or now - self.observed < OBSERVATION_SECONDS:
+            return
+        self.observed = now
+        status = self.status()
+        views = []
+        for view in status["views"]:
+            rules = view.pop("rules") or {}
+            rules.pop("identities", None)
+            rules.pop("open", None)
+            views.append({**view, "counts": rules})
+        body = {"at": now, "pipeline": status["pipeline"], "gpu": status["gpu"], "views": views}
+        self.outbox_backend.send("/internal/analytics/observations", body, droppable=True)
+
+    def view_snapshot(self, view_id: str, reference: bool) -> tuple[bytes, str | None] | None:
+        """Cut a fresh picture of a view from its camera's newest segment.
+
+        Args:
+            view_id: The view.
+            reference: Also keep the picture as a reference snapshot for zones drawn on it.
+
+        Returns:
+            The JPEG and, when kept, its path relative to the events folder; None when no picture is available.
+        """
+        with self.lock:
+            runtime = self.views.get(view_id)
+            if runtime is None:
+                return None
+            view = runtime.config
+        data = latest_frame(self.settings.buffer_dir / view.camera, view.lens, view.lenses)
+        if data is None:
+            return None
+        relative = None
+        if reference:
+            relative = f"analytics/references/{view_id}/{int(time.time())}.jpg"
+            target = self.settings.events_dir / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(data)
+        return data, relative
 
     def live_objects(self, view_id: str) -> dict | None:
         """Return the tracked objects of a view's latest frame.
@@ -778,6 +967,8 @@ class Service:
                         "last_frame_at": runtime.last_frame_at,
                         "state": "disabled" if not view.enabled else ("stalled" if stalled else "live"),
                         "events": runtime.events,
+                        "suspended": sorted(runtime.suspended),
+                        "scene": self.scenes.report(view_id),
                         "rules": runtime.engine.snapshot() if runtime.engine else None,
                         "tamper": (
                             {"active": sorted(runtime.tamper.active), **runtime.tamper.last} if runtime.tamper else None
@@ -810,6 +1001,16 @@ class Service:
                 "recorders": recorders,
                 "clip_encoder": self.clips.working,
                 "pending_clips": len(self.pending),
+                "backend": (
+                    {
+                        "delivered": self.outbox_backend.delivered,
+                        "pending": self.outbox_backend.items.qsize(),
+                        "failures": self.outbox_backend.failures,
+                        "last_error": self.outbox_backend.last_error,
+                    }
+                    if self.outbox_backend
+                    else None
+                ),
                 "recent_events": list(self.recent)[-50:],
             }
 

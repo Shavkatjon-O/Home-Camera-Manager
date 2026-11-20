@@ -10,6 +10,7 @@ from app.rules.model import VEHICLES, Box, Detection, Frame, Tuning
 STATIC_MEMORY_SECONDS = 3600.0
 STATIC_MEMORY_IOU = 0.5
 HOME_SAMPLES = 5
+STATIC_SHARE = 0.2
 RESUME_GAP_SECONDS = 15.0
 MOVE_FRAMES = 3
 
@@ -36,8 +37,13 @@ class Identity:
             partly visible object never counts as movement.
         rest_point: Where the object has been staying since rest_since.
         rest_since: Time it arrived at the rest point.
-        static: True while the object has stayed in place long enough to count as part of the scene.
+        static: True while the object has stayed in place long enough to count as part of the scene. Leaving the
+            rest point ends it, and the object then has to move away from that point like a new one before it
+            counts again, so box jitter on a parked car never wakes it up.
         tracks: Every tracker id joined into this identity.
+        hits: Recent times the detector found the object, until it is confirmed.
+        confirmed: True once the detector found the object often enough; the tracker alone keeps a box for a few
+            seconds after a single detection, which would let a one-frame false detection pass the dwell.
     """
 
     id: int
@@ -57,6 +63,8 @@ class Identity:
     rest_since: float = 0.0
     static: bool = False
     tracks: set[int] = field(default_factory=set)
+    hits: list[float] = field(default_factory=list)
+    confirmed: bool = False
 
     @property
     def counts(self) -> bool:
@@ -65,7 +73,7 @@ class Identity:
         Static objects never count. Vehicles and objects present at start count only once they moved, so parked
         cars and anything standing in the picture when the service starts stay silent.
         """
-        if self.static:
+        if self.static or not self.confirmed:
             return False
         if self.label in VEHICLES or self.initial:
             return self.moved
@@ -223,6 +231,10 @@ class TrackBook:
             now: Frame time.
         """
         foot = detection.box.foot
+        if not identity.confirmed and detection.detected:
+            window = self.tuning.confirm_window
+            identity.hits = [hit for hit in identity.hits if now - hit <= window] + [now]
+            identity.confirmed = len(identity.hits) >= self.tuning.confirm_hits
         identity.last_seen = now
         identity.foot = foot
         identity.box = detection.box
@@ -234,17 +246,19 @@ class TrackBook:
                 ys = sorted(point[1] for point in identity.samples)
                 identity.home = (xs[len(xs) // 2], ys[len(ys) // 2])
                 identity.samples = []
-        elif not identity.moved:
-            height = detection.box.bottom - detection.box.top
+        height = detection.box.bottom - detection.box.top
+        if identity.home is not None and not identity.moved:
             limit = max(self.tuning.move_threshold, self.tuning.move_ratio * height)
             identity.away = identity.away + 1 if distance(identity.home, foot) >= limit else 0
             identity.moved = identity.away >= MOVE_FRAMES
-        if distance(identity.rest_point, foot) > self.tuning.static_radius:
-            identity.rest_point = foot
-            identity.rest_since = now
+        if distance(identity.rest_point, foot) > max(self.tuning.static_radius, STATIC_SHARE * height):
             if identity.static:
                 identity.static = False
-                identity.moved = True
+                identity.home = identity.rest_point
+                identity.moved = False
+                identity.away = 0
+            identity.rest_point = foot
+            identity.rest_since = now
         elif now - identity.rest_since >= self.tuning.static_seconds:
             identity.static = True
 

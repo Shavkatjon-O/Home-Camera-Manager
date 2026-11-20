@@ -338,7 +338,19 @@ export interface CameraLink {
   updated_at: string | null
 }
 
-export type EventKind = "motion" | "person" | "vehicle" | "tamper" | "storage" | "reboot"
+export type EventKind =
+  | "motion"
+  | "person"
+  | "vehicle"
+  | "tamper"
+  | "storage"
+  | "reboot"
+  | "intrusion"
+  | "line_crossing"
+  | "loitering"
+  | "crowd"
+
+export type EventOrigin = "camera" | "analytics"
 
 export type EventSourceState = "connecting" | "live" | "reconnecting" | "unsupported" | "disabled"
 
@@ -357,9 +369,43 @@ export interface CameraEvent {
   camera_time: string | null
   has_snapshot: boolean
   has_thumbnail: boolean
+  source: EventOrigin
+  label: string | null
+  alert: boolean
+  view_uuid: string | null
+  has_clip: boolean
   details: Record<string, unknown>
   created_at: string
   updated_at: string
+}
+
+export type Box = [number, number, number, number]
+
+export interface EventBox {
+  object: number
+  label: string
+  box: Box
+  at: number
+}
+
+export interface AnalyticsEventDetails {
+  view_name: string | null
+  profile: string | null
+  zone: string | null
+  zone_name: string | null
+  line: string | null
+  line_name: string | null
+  direction: "in" | "out" | null
+  objects: number[]
+  count: number | null
+  boxes: EventBox[]
+}
+
+export interface EventCounts {
+  total: number
+  kinds: Record<string, number>
+  labels: Record<string, number>
+  alerts: number
 }
 
 export interface CameraEventSource {
@@ -390,9 +436,13 @@ export interface EventQuery {
   page_size?: number
   camera_uuid?: string
   kind?: EventKind
+  label?: string
+  source?: EventOrigin
   from?: string
   to?: string
 }
+
+export type EventCountQuery = Omit<EventQuery, "page" | "page_size">
 
 export interface ValueRange {
   min: number
@@ -555,4 +605,149 @@ export interface CameraAudio {
   supported: boolean
   reason: string | null
   codec: string | null
+}
+
+export type ArmMode = "disarmed" | "home" | "away" | "schedule"
+
+export interface AnalyticsSettings {
+  arm_mode: ArmMode
+}
+
+export type AnalyticsProfile = "perimeter" | "vehicle" | "identity" | "tamper"
+
+export type LineDirection = "in" | "out" | "both"
+
+export type AlertMode = "off" | "always" | "schedule"
+
+export type ViewPoint = [number, number]
+
+export interface TimeWindow {
+  start: string
+  end: string
+  days: number[]
+}
+
+export interface AlertPolicy {
+  mode: AlertMode
+  schedule: TimeWindow[]
+  labels: string[]
+}
+
+export interface AnalyticsZone {
+  uuid: string
+  name: string
+  polygon: ViewPoint[]
+  whole_view: boolean
+  labels: string[]
+  min_dwell: number
+  loiter_seconds: number
+  crowd_count: number
+  schedule: TimeWindow[]
+  alert: AlertPolicy
+  enabled: boolean
+  reference: string | null
+  suspended: boolean
+}
+
+export interface AnalyticsLine {
+  uuid: string
+  name: string
+  points: [ViewPoint, ViewPoint]
+  labels: string[]
+  direction: LineDirection
+  schedule: TimeWindow[]
+  alert: AlertPolicy
+  enabled: boolean
+  reference: string | null
+  suspended: boolean
+}
+
+export type AnalyticsZoneInput = Omit<AnalyticsZone, "uuid" | "suspended"> & { uuid?: string }
+
+export type AnalyticsLineInput = Omit<AnalyticsLine, "uuid" | "suspended"> & { uuid?: string }
+
+export interface AnalyticsRules {
+  zones: AnalyticsZoneInput[]
+  lines: AnalyticsLineInput[]
+}
+
+export type ViewState = "live" | "stalled" | "disabled"
+
+export type LabelCounts = Record<string, number>
+
+export interface TamperStatus {
+  active: string[]
+  mean: number
+  std: number
+  edges: number
+  scene: number
+}
+
+export interface ViewStatus {
+  state: ViewState
+  fps: number
+  target_fps: number
+  latency: { p50_ms?: number; p95_ms?: number }
+  objects: number
+  events: number
+  occupancy: Record<string, LabelCounts>
+  entries: Record<string, LabelCounts>
+  crossings: Record<string, { in: LabelCounts; out: LabelCounts }>
+  tamper: TamperStatus | null
+  suspended: string[]
+  updated_at: string
+}
+
+export interface AnalyticsView {
+  uuid: string
+  camera_uuid: string
+  camera_name: string
+  lens: number
+  lenses: number
+  name: string
+  profile: AnalyticsProfile
+  enabled: boolean
+  fps: number
+  tamper: boolean | null
+  moving: boolean
+  zones: AnalyticsZone[]
+  lines: AnalyticsLine[]
+  status: ViewStatus | null
+}
+
+export interface AnalyticsViewList {
+  items: AnalyticsView[]
+}
+
+export type AnalyticsViewUpdate = Partial<Pick<AnalyticsView, "name" | "profile" | "enabled" | "fps" | "tamper" | "moving">>
+
+export interface LiveObject {
+  track: number
+  label: string
+  confidence: number
+  box: Box
+}
+
+export interface LiveObjects {
+  view: string
+  at: number | null
+  objects: LiveObject[]
+}
+
+export interface AnalyticsPipeline {
+  state: string
+  message: string
+  restarts: number
+}
+
+export interface AnalyticsStatus {
+  pipeline: AnalyticsPipeline | null
+  gpu: { memory_used_mb?: number; memory_total_mb?: number; utilization_percent?: number }
+  updated_at: string | null
+  views: Record<string, ViewStatus>
+}
+
+export interface ViewSnapshot {
+  url: string
+  reference: string | null
 }

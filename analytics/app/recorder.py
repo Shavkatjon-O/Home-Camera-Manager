@@ -32,6 +32,7 @@ THUMB_WIDTH = 160
 THUMB_HEIGHT = 90
 RESTART_DELAYS = (2, 5, 10, 30, 60)
 SEGMENT_STALL_SECONDS = 20
+WATCH_SECONDS = 0.2
 CLIP_TIMEOUT_SECONDS = 180
 CLIP_WIDTH = 1920
 SNAPSHOT_THUMB_WIDTH = 320
@@ -52,11 +53,12 @@ class Segment:
     end: float
 
 
-def list_segments(folder: Path) -> list[Segment]:
+def list_segments(folder: Path, seen: dict[str, float] | None = None) -> list[Segment]:
     """List a camera's buffered segments in time order.
 
     Args:
         folder: The camera's buffer folder.
+        seen: Times the recorder saw each segment file appear, more precise than the whole second in its name.
 
     Returns:
         The segments; the last one may still be growing.
@@ -64,9 +66,10 @@ def list_segments(folder: Path) -> list[Segment]:
     starts = []
     for path in folder.glob("*.ts"):
         try:
-            starts.append((int(path.stem), path))
+            named = int(path.stem)
         except ValueError:
             continue
+        starts.append(((seen or {}).get(path.name, float(named)), path))
     starts.sort()
     segments = []
     for number, (start, path) in enumerate(starts):
@@ -77,7 +80,7 @@ def list_segments(folder: Path) -> list[Segment]:
                 end = path.stat().st_mtime
             except FileNotFoundError:
                 continue
-        segments.append(Segment(path, float(start), max(end, float(start))))
+        segments.append(Segment(path, start, max(end, start)))
     return segments
 
 
@@ -124,6 +127,7 @@ class CameraRecorder:
         restarts: How often ffmpeg was restarted.
         last_keyframe: Time of the latest keyframe.
         started: Time the current ffmpeg process started.
+        seen: Time each segment file appeared, found by polling the folder five times a second.
     """
 
     def __init__(
@@ -155,6 +159,7 @@ class CameraRecorder:
         self.restarts = 0
         self.last_keyframe: float | None = None
         self.started: float | None = None
+        self.seen: dict[str, float] = {}
         self.process: subprocess.Popen | None = None
         self.stopping = threading.Event()
         self.thread: threading.Thread | None = None
@@ -222,6 +227,24 @@ class CameraRecorder:
         self.folder.mkdir(parents=True, exist_ok=True)
         self.thread = threading.Thread(target=self.loop, name=f"recorder-{self.camera[:8]}", daemon=True)
         self.thread.start()
+        threading.Thread(target=self.watch, name=f"segments-{self.camera[:8]}", daemon=True).start()
+
+    def watch(self) -> None:
+        """Note when each segment file appears.
+
+        Segment names carry only the whole second, which would place an event's snapshot up to a second off.
+        """
+        while not self.stopping.is_set():
+            now = time.time()
+            try:
+                names = {path.name for path in self.folder.glob("*.ts")}
+            except OSError:
+                names = set()
+            for name in names - self.seen.keys():
+                self.seen[name] = now
+            for name in self.seen.keys() - names:
+                del self.seen[name]
+            self.stopping.wait(WATCH_SECONDS)
 
     def stop(self) -> None:
         """Stop recording and wait for ffmpeg to exit."""
@@ -291,7 +314,7 @@ class CameraRecorder:
             return
         if time.time() - self.started < SEGMENT_STALL_SECONDS:
             return
-        newest = max((segment.end for segment in list_segments(self.folder)), default=0.0)
+        newest = max((segment.end for segment in list_segments(self.folder, self.seen)), default=0.0)
         if time.time() - newest > SEGMENT_STALL_SECONDS:
             self.errors.append(f"{time.strftime('%H:%M:%S')} segments stopped growing, restarting ffmpeg")
             process.terminate()
@@ -305,7 +328,7 @@ class CameraRecorder:
         cutoff = time.time() - self.keep_seconds
         if needed_from is not None:
             cutoff = min(cutoff, needed_from - SEGMENT_SECONDS * 2)
-        for segment in list_segments(self.folder)[:-1]:
+        for segment in list_segments(self.folder, self.seen)[:-1]:
             if segment.end < cutoff:
                 segment.path.unlink(missing_ok=True)
 
@@ -364,7 +387,14 @@ class ClipMaker:
         return name
 
     def snapshot(
-        self, folder: Path, at: float, lens: int, lenses: int, target: Path, thumbnail: Path | None = None
+        self,
+        folder: Path,
+        at: float,
+        lens: int,
+        lenses: int,
+        target: Path,
+        thumbnail: Path | None = None,
+        seen: dict[str, float] | None = None,
     ) -> bool:
         """Write a JPEG of the frame at a time.
 
@@ -375,13 +405,20 @@ class ClipMaker:
             lenses: Bands in the frame.
             target: JPEG to write.
             thumbnail: Optional smaller JPEG to write as well.
+            seen: Times the segment files appeared.
 
         Returns:
-            True when the snapshot was written.
+            True when the snapshot was written; False when the buffer does not reach the time yet.
+
+        Raises:
+            FileNotFoundError: The buffer no longer holds the time.
         """
-        segments = covering(list_segments(folder), at - 0.01, at + 0.01)
-        if not segments:
+        listed = list_segments(folder, seen)
+        if not listed or listed[-1].end < at + 0.5:
             return False
+        segments = covering(listed, at - 0.01, at + 0.01)
+        if not segments:
+            raise FileNotFoundError("No buffered video covers the time of the snapshot")
         segment = segments[0]
         filters = crop_filter(lens, lenses)
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -394,7 +431,16 @@ class ClipMaker:
         result = subprocess.run(command, capture_output=True, timeout=60, check=False)
         return result.returncode == 0 and target.is_file()
 
-    def clip(self, folder: Path, start: float, end: float, lens: int, lenses: int, target: Path) -> bool:
+    def clip(
+        self,
+        folder: Path,
+        start: float,
+        end: float,
+        lens: int,
+        lenses: int,
+        target: Path,
+        seen: dict[str, float] | None = None,
+    ) -> bool:
         """Write an MP4 clip of a time range.
 
         Args:
@@ -404,11 +450,12 @@ class ClipMaker:
             lens: Lens band, 0 for the whole frame.
             lenses: Bands in the frame.
             target: MP4 to write.
+            seen: Times the segment files appeared.
 
         Returns:
             True when the clip was written.
         """
-        segments = covering(list_segments(folder), start, end)
+        segments = covering(list_segments(folder, seen), start, end)
         if not segments:
             logger.warning("No buffered video covers the clip %s", target.name)
             return False
@@ -460,3 +507,29 @@ class ClipMaker:
         finally:
             os.unlink(listing)
             temporary.unlink(missing_ok=True)
+
+
+def latest_frame(folder: Path, lens: int, lenses: int) -> bytes | None:
+    """Return a JPEG of the newest keyframe in a camera's buffer, cropped to a lens.
+
+    Args:
+        folder: Camera buffer folder.
+        lens: Lens band, 0 for the whole frame.
+        lenses: Bands in the frame.
+
+    Returns:
+        The JPEG bytes, or None when the buffer has no usable segment.
+    """
+    segments = list_segments(folder)
+    for segment in reversed(segments[-3:]):
+        filters = crop_filter(lens, lenses) + [f"scale='min({CLIP_WIDTH},iw)':-2"]
+        command = ["ffmpeg", "-nostdin", "-hide_banner", "-loglevel", "error", "-i", str(segment.path)]
+        command += ["-frames:v", "1", "-vf", ",".join(filters), "-q:v", "3", "-f", "image2pipe", "-c:v", "mjpeg"]
+        command += ["pipe:1"]
+        try:
+            result = subprocess.run(command, capture_output=True, timeout=30, check=False)
+        except (OSError, subprocess.SubprocessError):
+            continue
+        if result.returncode == 0 and result.stdout.startswith(b"\xff\xd8"):
+            return result.stdout
+    return None

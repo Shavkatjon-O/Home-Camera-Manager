@@ -36,6 +36,7 @@ STORAGE_REPEAT = timedelta(hours=24)
 MESSAGE_HISTORY = 20
 
 SNAPSHOT_KINDS = {EventKind.MOTION, EventKind.PERSON, EventKind.VEHICLE, EventKind.TAMPER}
+QUIET_KINDS = {EventKind.MOTION.value}
 
 
 def source_read(status: SourceStatus) -> EventSourceRead:
@@ -390,6 +391,7 @@ class CameraEventsEngine:
         Returns:
             The stored event in its API form.
         """
+        row.alert = row.kind not in QUIET_KINDS
         async with self.lock:
             async with async_session_maker() as session:
                 session.add(row)
@@ -588,7 +590,7 @@ class CameraEventsEngine:
         self.broker.publish("event", read.model_dump(mode="json"))
 
     async def prune(self) -> None:
-        """Delete events older than the retention in batches, together with their snapshot files."""
+        """Delete events older than the retention in batches, together with their snapshot and clip files."""
         cutoff = datetime.now(UTC) - self.retention
         total = 0
         while True:
@@ -596,7 +598,7 @@ class CameraEventsEngine:
                 async with async_session_maker() as session:
                     rows = (
                         await session.execute(
-                            select(Event.id, Event.snapshot_path, Event.thumbnail_path)
+                            select(Event.id, Event.snapshot_path, Event.thumbnail_path, Event.clip_path)
                             .where(Event.started_at < cutoff)
                             .limit(PRUNE_BATCH)
                         )
@@ -605,7 +607,8 @@ class CameraEventsEngine:
                         break
                     await session.execute(delete(Event).where(Event.id.in_([row.id for row in rows])))
                     await session.commit()
-            await self.store.remove([path for row in rows for path in (row.snapshot_path, row.thumbnail_path) if path])
+            files = [path for row in rows for path in (row.snapshot_path, row.thumbnail_path, row.clip_path) if path]
+            await self.store.remove(files)
             total += len(rows)
             if len(rows) < PRUNE_BATCH:
                 break

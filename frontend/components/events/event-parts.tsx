@@ -2,11 +2,11 @@
 
 import * as React from "react"
 import Image from "next/image"
-import { ImageOffIcon } from "lucide-react"
+import { BellRingIcon, ImageOffIcon } from "lucide-react"
 
 import { Chip } from "@/components/shell/primitives"
 import { eventImageUrl } from "@/lib/api"
-import { KIND_LABELS } from "@/lib/events"
+import { KIND_LABELS, labelName } from "@/lib/events"
 import { formatSpan } from "@/lib/health"
 import type { CameraEvent } from "@/lib/types"
 import { cn } from "@/lib/utils"
@@ -23,6 +23,24 @@ export function KindChip({ event, className }: { event: Pick<CameraEvent, "kind"
       {KIND_LABELS[event.kind]}
     </Chip>
   )
+}
+
+export function LabelChip({
+  event,
+  className,
+}: {
+  event: Pick<CameraEvent, "kind" | "label">
+  className?: string
+}) {
+  if (!event.label) return null
+  const name = labelName(event.label)
+  if (name === KIND_LABELS[event.kind]) return null
+  return <Chip className={cn("h-5 px-1.5 text-[10px]", className)}>{name}</Chip>
+}
+
+export function AlertMark({ event, className }: { event: Pick<CameraEvent, "alert">; className?: string }) {
+  if (!event.alert) return null
+  return <BellRingIcon role="img" aria-label="Alert" className={cn("size-3.5 shrink-0 text-status-err", className)} />
 }
 
 export function EventDuration({ event }: { event: CameraEvent }) {
