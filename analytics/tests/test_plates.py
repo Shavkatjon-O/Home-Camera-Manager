@@ -148,8 +148,8 @@ def test_reader_reads_a_plate():
     assert read.plate.display == "01 A 123 BC"
     assert read.confidence == pytest.approx(0.95)
     left, top, right, bottom = read.box
-    assert left < 250 < 390 < right
-    assert top < 300 < 330 < bottom
+    assert left < 250 < 360 < right
+    assert top <= 300 < 330 <= bottom
 
 
 def test_reader_refuses_infrared_and_reports_missing_plates():
@@ -273,3 +273,16 @@ def test_reader_with_the_text_finder():
     read = reader.read(colour_picture())
     assert read.status == READ
     assert read.plate.text == "01A123BC"
+
+
+def test_parse_keeps_the_body_when_the_region_box_is_misread():
+    plate = parse("EDA848HBE")
+    assert plate.text == "A848HB"
+    assert plate.display == "?? A 848 HB"
+    assert plate.format == "private"
+    assert plate.score == pytest.approx(0.75)
+    assert parse("MOA848HB").display == "?? A 848 HB"
+    whole = parse("10A848HBE")
+    assert whole.text == "10A848HB"
+    assert whole.score == pytest.approx(0.95)
+    assert parse("01A123BCUZ").score == pytest.approx(1.0)

@@ -30,6 +30,8 @@ UNREADABLE = "unreadable"
 
 STATUS_ORDER = (READ, UNREADABLE, TOO_SMALL, NO_PLATE, INFRARED)
 
+CROP_VARIANTS = ((0.1, 0.14), (0.1, 0.0), (-0.15, 0.0), (0.0, 0.08), (0.2, 0.0), (-0.15, 0.14))
+
 TEXT_FINDER = "text"
 LPD_FINDER = "lpdnet"
 
@@ -116,6 +118,34 @@ class PlateRead:
     box: tuple[float, float, float, float] | None = None
 
 
+def variants(box: PlateBox, settings: PlateSettings, width: int, height: int) -> list[tuple[int, int, int, int]]:
+    """Return the crops a plate box is read from: taller and shorter, with and without the flag on the right.
+
+    A box from the DB text detector reaches above and below the characters while one from LPDNet can clip them, and
+    the flag at the right end reads as a stray letter, so each box is read a few ways and the best fit wins.
+
+    Args:
+        box: Plate box in picture pixels.
+        settings: Reading settings.
+        width: Picture width.
+        height: Picture height.
+
+    Returns:
+        Left, top, right and bottom of each crop, clipped to the picture, without duplicates.
+    """
+    box_width, box_height = box.right - box.left, box.bottom - box.top
+    result = []
+    for grow_y, trim_right in CROP_VARIANTS:
+        left = max(0, int(box.left - settings.widen_x * box_width))
+        right = min(width, int(np.ceil(box.right + settings.widen_x * box_width - trim_right * box_width)))
+        top = max(0, int(box.top - grow_y * box_height))
+        bottom = min(height, int(np.ceil(box.bottom + grow_y * box_height)))
+        crop = (left, top, right, bottom)
+        if right - left >= 4 and bottom - top >= 4 and crop not in result:
+            result.append(crop)
+    return result
+
+
 def widen(box: PlateBox, settings: PlateSettings, width: int, height: int) -> tuple[int, int, int, int]:
     """Widen a plate box and clip it to the picture.
 
@@ -189,19 +219,25 @@ class PlateReader:
             return PlateRead(NO_PLATE)
         height, width = picture.shape[:2]
         lines, spans = [], []
+        _, line_height, line_width = PLATE_READER.input_shape
         for box in boxes:
             if box.bottom - box.top < self.settings.min_height:
                 continue
-            left, top, right, bottom = widen(box, self.settings, width, height)
-            if right - left < 4 or bottom - top < 4:
-                continue
-            _, line_height, line_width = PLATE_READER.input_shape
-            lines.append(text_line(picture[top:bottom, left:right], line_height, line_width))
-            spans.append((float(left), float(top), float(right), float(bottom)))
+            for left, top, right, bottom in variants(box, self.settings, width, height):
+                lines.append(text_line(picture[top:bottom, left:right], line_height, line_width))
+                spans.append((float(left), float(top), float(right), float(bottom)))
         if not lines:
             return PlateRead(TOO_SMALL)
-        outputs = self.recogniser.run({self.recogniser.inputs[0]: np.stack(lines)})
-        scores = outputs[self.recogniser.outputs[0]]
+        size = max(1, self.recogniser.max_batch)
+        batch = np.stack(lines)
+        scores = np.concatenate(
+            [
+                self.recogniser.run({self.recogniser.inputs[0]: batch[start : start + size]})[
+                    self.recogniser.outputs[0]
+                ]
+                for start in range(0, len(batch), size)
+            ]
+        )
         best = PlateRead(UNREADABLE)
         for index, span in enumerate(spans):
             decoded = greedy(scores[index], self.characters)

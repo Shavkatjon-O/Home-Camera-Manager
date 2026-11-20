@@ -3,8 +3,11 @@
 Uzbek plates carry a two-digit region code and then either a letter, three digits and two letters for private cars,
 or three digits and three letters for organisations, followed by the flag and UZ. The recogniser confuses letters
 and digits that look alike, so a read is fitted to each format, swapping look-alikes only where the format needs the
-other kind, and the format that needs the fewest swaps wins. Reads that fit no format are kept with a lower score,
-so plates from elsewhere still reach the search.
+other kind, and the format that needs the fewest swaps wins; stray characters before or after, such as the flag,
+cost a little. The two region digits sit in their own framed box, which the recogniser often misreads when the
+plate is small, so a read whose body fits but whose region does not is kept as a partial plate such as ?? A 123 BC,
+still found by searching the body. Reads that fit no format are kept with a lower score, so plates from elsewhere
+still reach the search.
 """
 
 from __future__ import annotations
@@ -34,12 +37,23 @@ GROUPS = {
     "private": (2, 1, 3, 2),
     "organisation": (2, 3, 3),
 }
+BODIES = {
+    "private": "LDDDLL",
+    "organisation": "DDDLLL",
+}
+BODY_GROUPS = {
+    "private": (1, 3, 2),
+    "organisation": (3, 3),
+}
 
 MIN_LENGTH = 4
 MAX_LENGTH = 10
 SWAP_PENALTY = 0.1
+STRAY_PENALTY = 0.05
+PARTIAL_SCORE = 0.75
 UNFORMATTED_SCORE = 0.5
 COUNTRY_MARK = "UZ"
+UNKNOWN_REGION = "??"
 
 
 @dataclass(frozen=True)
@@ -117,8 +131,21 @@ def grouped(text: str, sizes: tuple[int, ...]) -> str:
     return " ".join(parts)
 
 
+def windows(text: str, length: int) -> list[tuple[int, str]]:
+    """List every run of a length inside a text.
+
+    Args:
+        text: The text.
+        length: Run length.
+
+    Returns:
+        Start and run, from the left.
+    """
+    return [(start, text[start : start + length]) for start in range(0, len(text) - length + 1)]
+
+
 def parse(raw: str) -> PlateText | None:
-    """Clean a read and fit it to the best plate format.
+    """Clean a read and fit it to the best plate format, whole or without its region.
 
     Args:
         raw: Text as the recogniser read it.
@@ -127,17 +154,31 @@ def parse(raw: str) -> PlateText | None:
         The plate text, or None when the read is too short or too long to be a plate.
     """
     text = clean(raw)
-    candidates = [text]
-    if text.endswith(COUNTRY_MARK):
-        candidates.append(text[: -len(COUNTRY_MARK)])
     best: PlateText | None = None
-    for candidate in candidates:
-        for name, template in FORMATS.items():
-            fitted = fit(candidate, template)
+    for name, template in FORMATS.items():
+        for _, part in windows(text, len(template)):
+            fitted = fit(part, template)
             if fitted is None:
                 continue
             value, swaps = fitted
-            plate = PlateText(value, grouped(value, GROUPS[name]), name, swaps, max(0.0, 1.0 - SWAP_PENALTY * swaps))
+            stray = len(text) - len(template)
+            if text.endswith(COUNTRY_MARK) and stray >= len(COUNTRY_MARK):
+                stray -= len(COUNTRY_MARK)
+            score = max(0.0, 1.0 - SWAP_PENALTY * swaps - STRAY_PENALTY * stray)
+            plate = PlateText(value, grouped(value, GROUPS[name]), name, swaps, round(score, 3))
+            if best is None or plate.score > best.score:
+                best = plate
+    if best is not None:
+        return best
+    for name, template in BODIES.items():
+        for _, part in windows(text, len(template)):
+            fitted = fit(part, template)
+            if fitted is None:
+                continue
+            value, swaps = fitted
+            score = max(0.0, PARTIAL_SCORE - SWAP_PENALTY * swaps)
+            display = f"{UNKNOWN_REGION} {grouped(value, BODY_GROUPS[name])}"
+            plate = PlateText(value, display, name, swaps, round(score, 3))
             if best is None or plate.score > best.score:
                 best = plate
     if best is not None:
