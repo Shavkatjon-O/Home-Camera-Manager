@@ -41,6 +41,7 @@ class TrackFaces:
         event: Face event id, chosen when the track is first decided.
         match: The decision, once made.
         decided_with: Embedded faces the decision used.
+        deferred: Embedded faces when the track was last too poor to start a cluster.
         published: True once an event went out for the track.
     """
 
@@ -52,6 +53,7 @@ class TrackFaces:
     event: str = field(default_factory=lambda: str(uuid.uuid4()))
     match: Match | None = None
     decided_with: int = 0
+    deferred: int = 0
     published: bool = False
 
     def add(self, candidate: Candidate, keep: int) -> bool:

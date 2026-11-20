@@ -43,6 +43,8 @@ class IdentitySettings:
         embed_batch: Largest batch the embedder engine is built for.
         min_score: Lowest face detection score kept.
         min_face: Smallest face height in view pixels, at the muxer resolution, worth embedding.
+        min_quality: Lowest quality of a face the pipeline sends.
+        cluster_quality: Lowest mean quality of a track that may start a new unknown cluster.
         known_threshold: Lowest similarity to a person's samples that names the person.
         ir_extra: Added to the known threshold for grey night-vision faces.
         margin: How far the best person must lead the second best to be named.
@@ -61,6 +63,8 @@ class IdentitySettings:
 
     min_score: float = field(default_factory=lambda: env_float("HC_FACES_MIN_SCORE", 0.6))
     min_face: float = field(default_factory=lambda: env_float("HC_FACES_MIN_SIZE", 36.0))
+    min_quality: float = field(default_factory=lambda: env_float("HC_FACES_MIN_QUALITY", 0.15))
+    cluster_quality: float = field(default_factory=lambda: env_float("HC_FACES_CLUSTER_QUALITY", 0.35))
 
     known_threshold: float = field(default_factory=lambda: env_float("HC_FACES_KNOWN_THRESHOLD", 0.45))
     ir_extra: float = field(default_factory=lambda: env_float("HC_FACES_IR_EXTRA", 0.05))

@@ -418,7 +418,7 @@ def collector(pads: set[int], settings: IdentitySettings, outbox: multiprocessin
                     left, top, region_width, region_height = region_around(face, pixels.shape[1], pixels.shape[0])
                     region = frames.read_region(pixels, left, top, region_width, region_height, cuda)
                     candidate = candidate_from(face, region, (left, top), (width, height), pad, track, at, settings)
-                    if candidate.quality <= 0.0:
+                    if candidate.quality < settings.min_quality:
                         continue
                     gate.sent_face(pad, track, candidate.quality, at)
                     candidates.append(candidate)

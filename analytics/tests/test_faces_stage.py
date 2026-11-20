@@ -86,7 +86,7 @@ def test_unknown_track_gets_a_cluster_and_alerts_when_away(tmp_path):
 def test_unknown_track_is_named_when_its_later_faces_match(tmp_path):
     vectors = {1: with_similarity(ALICE, 0.2, 3), 2: with_similarity(ALICE, 0.95, 4)}
     face_stage, published, _ = stage(tmp_path, vectors)
-    feed(face_stage, [candidate(5, 100.0, marker=1, quality=0.3)])
+    feed(face_stage, [candidate(5, 100.0, marker=1, quality=0.4)])
     face_stage.step(103.5)
     assert published[0]["status"] == "unknown"
     feed(face_stage, [candidate(5, 104.0, marker=2, quality=0.9), candidate(5, 104.2, marker=2, quality=0.95)])
@@ -196,3 +196,33 @@ def test_answer_maps_failures_to_status_codes():
     models.load = broken
     status, body = enroll.answer(photo_bytes(), models, settings())
     assert status == 503
+
+
+def test_poor_tracks_never_start_a_cluster_but_better_faces_do(tmp_path):
+    face_stage, published, _ = stage(tmp_path, {1: unit(40)})
+    feed(
+        face_stage,
+        [candidate(5, 100.0, quality=0.2), candidate(5, 100.1, quality=0.2), candidate(5, 100.2, quality=0.2)],
+    )
+    face_stage.step(100.3)
+    assert published == [] and face_stage.gallery.clusters == {}
+    assert face_stage.counters["deferred"] == 1
+    face_stage.step(100.5)
+    assert face_stage.counters["deferred"] == 1
+    feed(face_stage, [candidate(5, 101.0, quality=0.9)])
+    face_stage.step(101.1)
+    assert len(published) == 1 and published[0]["cluster_new"]
+
+
+def test_poor_tracks_still_join_an_existing_cluster(tmp_path):
+    stranger = unit(40)
+    face_stage, published, _ = stage(tmp_path, {1: with_similarity(stranger, 0.7, 41)})
+    face_stage.set_gallery(
+        gallery_payload(people=[("a", "Alice", [ALICE])], clusters=[("c1", 2, stranger, 3)], version="v2")
+    )
+    feed(
+        face_stage,
+        [candidate(5, 100.0, quality=0.2), candidate(5, 100.1, quality=0.2), candidate(5, 100.2, quality=0.2)],
+    )
+    face_stage.step(100.3)
+    assert published[0]["cluster"] == "c1" and not published[0]["cluster_new"]

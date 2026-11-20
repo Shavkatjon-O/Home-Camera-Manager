@@ -251,7 +251,7 @@ class FaceStage:
             True when it should be decided now.
         """
         embedded = len(track.embedded())
-        if embedded == 0:
+        if embedded == 0 or embedded <= track.deferred:
             return False
         waited = now - track.first_at >= self.settings.decide_seconds
         return embedded >= self.settings.decide_faces or waited or gone
@@ -323,6 +323,12 @@ class FaceStage:
         embedding = track.embedding()
         with self.lock:
             match = self.matcher.match(self.gallery, embedding, track.grey(), now)
+            if match.cluster_new and track.quality() < self.settings.cluster_quality:
+                # Dark or blurred faces would start clusters of nobody in particular; wait for better ones.
+                del self.gallery.clusters[match.cluster]
+                track.deferred = len(track.embedded())
+                self.counters["deferred"] += 1
+                return
         track.match = match
         track.decided_with = len(track.embedded())
         self.counters["known" if match.known else "unknown"] += 1
