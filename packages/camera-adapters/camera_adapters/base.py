@@ -359,6 +359,18 @@ class Adapter(ABC):
             AdapterError: The streams cannot be found.
         """
 
+    def go2rtc_source(self, target: Target, stream: str = "main") -> str | None:
+        """Build the go2rtc source of a camera that serves no RTSP stream of its own.
+
+        Args:
+            target: How to reach the device.
+            stream: main or sub.
+
+        Returns:
+            The source, or None for a camera go2rtc reads over RTSP at its stream paths.
+        """
+        return None
+
     async def snapshot(self, target: Target, channel: int = 1) -> bytes | None:
         """Return a still picture of a channel when the device serves one.
 

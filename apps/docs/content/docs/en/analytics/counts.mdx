@@ -1,0 +1,11 @@
+---
+title: Counts and occupancy
+description: Crossings in and out per line by minute, hour and day, and the occupancy of areas.
+icon: ChartColumn
+---
+
+Every counted line crossing goes into a minute bucket per line, direction and label. The API sums the buckets into hours and days for the Counts page in the console and the counts screen of the mobile app, and into the occupancy of [areas](./zones-and-lines.mdx#areas).
+
+Minute rows keep resets and the hourly and daily charts exact, and cost one small row per line, minute, direction and label, so counts keep their own retention, SSS_COUNTS_RETENTION_DAYS, 400 days by default: a day can be compared with the same day a year before.
+
+A line across a shared lane or a doorway counts everyone who uses it, so place counting lines where only the people of interest cross.

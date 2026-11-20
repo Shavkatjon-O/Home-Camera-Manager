@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Camera adapters of Smart Surveillance System, shared by the connector and the API"
 requires-python = ">=3.13,<3.14"
 dependencies = [
+    "cryptography>=45",
     "httpx>=0.28",
     "pyyaml>=6.0",
 ]

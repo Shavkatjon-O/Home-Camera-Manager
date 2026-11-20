@@ -1,79 +1,66 @@
 package uz.smartsurveillance.tv.stream
 
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
-import uz.smartsurveillance.tv.v380.Client
-import uz.smartsurveillance.tv.v380.ClientListener
-import uz.smartsurveillance.tv.v380.MediaFrame
-import uz.smartsurveillance.tv.v380.Ptz
+import uz.smartsurveillance.tv.v380.Codec
 import uz.smartsurveillance.tv.v380.PtzMove
-import uz.smartsurveillance.tv.v380.Session
-import uz.smartsurveillance.tv.v380.VideoSize
+import uz.smartsurveillance.tv.v380.SessionFacts
+import uz.smartsurveillance.tv.v380.StreamKind
+import uz.smartsurveillance.tv.v380.V380Client
 
+/**
+ * A feed that reaches a V380 camera directly over its LAN protocol.
+ *
+ * The high quality spec asks for the main stream and the low one for the sub stream. Sound is asked for only when
+ * the spec wants audio, and PTZ records go over the same session as the video.
+ *
+ * @param onUnreachable Called when the camera did not accept a connection, so its address can be searched for.
+ */
 class V380Feed(spec: Spec, key: String, private val onUnreachable: (V380Feed) -> Unit) : LoopFeed(spec, key) {
     @Volatile
-    private var client: Client? = null
+    private var client: V380Client? = null
 
-    @Volatile
-    private var moving = false
-
-    private val commands = Executors.newSingleThreadExecutor()
-
-    override val ptz: Boolean get() = true
+    override val ptz: Boolean get() = camera.ptz
 
     override fun connect(attempt: Attempt): Source {
-        val next = Client(
-            camera.host,
-            camera.port,
-            camera.deviceId,
-            camera.user,
-            camera.password,
-            hd = attempt.high,
-            audio = spec.audio,
-            listener = object : ClientListener {
-                override fun onSession(session: Session) {
-                    val quality = if (attempt.high) "HD" else "SD"
-                    val crypto = if (session.encrypted) ", encrypted" else ""
-                    attempt.session(
-                        "$quality ${session.width}x${session.height}, protocol ${session.version}/${session.communication}$crypto",
-                        VideoSize(session.width.toInt(), session.height.toInt()),
-                    )
-                }
+        val main = attempt.high
+        val stream = if (main) StreamKind.Main else StreamKind.Sub
+        val session = V380Client(
+            V380Client.Config(
+                host = camera.host,
+                port = camera.port,
+                deviceId = camera.deviceId,
+                user = camera.user.ifEmpty { "admin" },
+                password = camera.password,
+                stream = stream,
+                sound = spec.audio,
+            ),
+            object : V380Client.Listener {
+                override fun onSession(facts: SessionFacts) = attempt.session(
+                    "${if (main) "main" else "sub"} stream, device version ${facts.deviceVersion}, " +
+                        "communication version ${facts.communicationVersion}",
+                    facts.reportedSize,
+                )
 
                 override fun onBytes(count: Int) = attempt.bytes(count)
 
-                override fun onVideo(frame: MediaFrame) = attempt.video(frame.payload, frame.key)
+                override fun onVideo(codec: Codec, data: ByteArray, key: Boolean) = attempt.video(data, key)
 
-                override fun onAudio(frame: MediaFrame) = attempt.audio { it.push(frame.type, frame.payload) }
+                override fun onAudio(type: Int, payload: ByteArray) = attempt.audio { it.push(type, payload) }
             },
         )
-        client = next
+        client = session
         return object : Source {
-            override fun run() = next.run()
+            override fun run() = session.run()
 
             override fun close() {
-                if (client === next) client = null
-                next.close()
+                session.close()
+                if (client === session) client = null
             }
         }
     }
 
-    override fun stopping() {
-        val session = client
-        if (moving && session != null) runCatching { commands.execute { session.send(Ptz.packet(PtzMove.Stop)) } }
-        commands.shutdown()
-        runCatching { commands.awaitTermination(COMMAND_WAIT_MS, TimeUnit.MILLISECONDS) }
+    override fun move(move: PtzMove) {
+        client?.move(move)
     }
 
     override fun unreachable() = onUnreachable(this)
-
-    override fun move(move: PtzMove) {
-        val session = client ?: return
-        moving = move != PtzMove.Stop
-        runCatching { commands.execute { log("ptz $move sent ${session.send(Ptz.packet(move))}") } }
-    }
-
-    private companion object {
-        const val COMMAND_WAIT_MS = 500L
-    }
 }

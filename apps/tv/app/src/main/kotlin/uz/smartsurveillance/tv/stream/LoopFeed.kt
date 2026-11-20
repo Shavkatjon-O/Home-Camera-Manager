@@ -84,10 +84,12 @@ abstract class LoopFeed(spec: Spec, key: String) : Feed(spec, key) {
             if (!running) current.close()
             var unreachable = false
             var refused: String? = null
+            var retryAfter = 0L
             try {
                 current.run()
             } catch (error: V380Exception) {
                 unreachable = error.unreachable
+                retryAfter = error.retryAfterMs
                 if (error.refused) refused = error.message
                 if (running) stats.error = error.message
             } catch (error: RtspException) {
@@ -116,7 +118,7 @@ abstract class LoopFeed(spec: Spec, key: String) : Feed(spec, key) {
                 skip.clear()
                 continue
             }
-            val delay = retry.failure()
+            val delay = maxOf(retry.failure(), retryAfter)
             if (unreachable && !announced) {
                 announced = true
                 unreachable()
@@ -176,7 +178,8 @@ abstract class LoopFeed(spec: Spec, key: String) : Feed(spec, key) {
                 if (!key) return
                 val type = AnnexB.codecOf(data) ?: return
                 val sets = AnnexB.parameterSets(data, type) ?: return
-                val size = (if (type == Codec.Hevc) Sps.hevcSize(sets[1].bytes) else null) ?: fallback ?: return
+                val size = (if (type == Codec.Hevc) Sps.hevcSize(sets[1].bytes) else Sps.avcSize(sets[0].bytes))
+                    ?: fallback ?: return
                 if (high && !Codecs.hardwareFits(type.mime, size.width, size.height)) {
                     tooLarge = true
                     stats.error = "${size.width}x${size.height} is larger than the decoder allows, using the smaller stream"

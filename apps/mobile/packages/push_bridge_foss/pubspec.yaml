@@ -1,0 +1,12 @@
+name: push_bridge
+description: Push bridge of the foss flavor, without any Firebase SDK.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ^3.13.3
+  flutter: ">=3.47.4"
+
+dependencies:
+  flutter:
+    sdk: flutter

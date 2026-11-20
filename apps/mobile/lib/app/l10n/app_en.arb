@@ -1,0 +1,1615 @@
+{
+  "@@locale": "en",
+  "appName": "Smart Surveillance",
+  "commonRetry": "Try again",
+  "commonCancel": "Cancel",
+  "commonSave": "Save",
+  "commonSaved": "Saved",
+  "commonDone": "Done",
+  "commonNext": "Next",
+  "commonBack": "Back",
+  "commonContinue": "Continue",
+  "commonClose": "Close",
+  "commonDelete": "Delete",
+  "commonRemove": "Remove",
+  "commonEdit": "Edit",
+  "commonApply": "Apply",
+  "commonClear": "Clear",
+  "commonReset": "Reset",
+  "commonSkip": "Skip for now",
+  "commonAll": "All",
+  "commonNone": "None",
+  "commonOn": "On",
+  "commonOff": "Off",
+  "commonBeta": "Beta",
+  "commonDemo": "Demo data",
+  "commonLoading": "Loading",
+  "commonSeeAll": "See all",
+  "commonOnline": "Online",
+  "commonOffline": "Offline",
+  "commonUnknown": "Unknown",
+  "commonToday": "Today",
+  "commonYesterday": "Yesterday",
+  "commonJustNow": "just now",
+  "commonMinutesAgo": "{count} min ago",
+  "@commonMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "commonHoursAgo": "{count} h ago",
+  "@commonHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "commonDaysAgo": "{count} d ago",
+  "@commonDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "commonSeconds": "{count} s",
+  "@commonSeconds": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "commonMinutesSeconds": "{minutes} min {seconds} s",
+  "@commonMinutesSeconds": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      },
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "commonPercent": "{value}%",
+  "@commonPercent": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "commonPermissionNeeded": "Your role does not allow this.",
+  "errorNetwork": "Cannot reach the server. Check the connection and the server address.",
+  "errorUnauthorised": "The email or password is wrong.",
+  "errorForbidden": "Your role does not allow this.",
+  "errorNotFound": "It is no longer there.",
+  "errorConflict": "That already exists.",
+  "errorInvalid": "Check the highlighted fields.",
+  "errorExpired": "This code has expired. Ask for a new one.",
+  "errorServer": "The server had a problem. Try again in a moment.",
+  "errorUnknown": "Something went wrong.",
+  "errorTitle": "Could not load this",
+  "fieldEmail": "Email",
+  "fieldPassword": "Password",
+  "fieldName": "Your name",
+  "fieldNewPassword": "New password",
+  "fieldCode": "Code from the email",
+  "validationEmail": "Enter a valid email address",
+  "validationPassword": "Use at least 8 characters",
+  "validationRequired": "Required",
+  "validationCode": "Paste the link or the code from the email",
+  "welcomeTitle": "Every camera on your site, in your pocket",
+  "welcomeBody": "Watch live video, get alerts that matter, and count who comes and goes at home, in a store, an office or a warehouse.",
+  "welcomeCreate": "Create account",
+  "welcomeSignIn": "I have an account",
+  "welcomeFeatureLive": "Live video from every camera",
+  "welcomeFeatureAlerts": "Alerts for people, vehicles and tampering",
+  "welcomeFeatureCounts": "Counts and occupancy by the hour",
+  "signInTitle": "Sign in",
+  "signInSubtitle": "Welcome back.",
+  "signInAction": "Sign in",
+  "signInForgot": "Forgot password?",
+  "signInNoAccount": "New here? Create an account",
+  "serverTitle": "Server",
+  "serverHint": "Address of your Smart Surveillance server",
+  "serverField": "Server address",
+  "serverDemo": "Demo mode shows sample data and needs no server.",
+  "signUpTitle": "Create account",
+  "signUpSubtitle": "One account for every site you watch.",
+  "signUpAction": "Create account",
+  "signUpTerms": "By creating an account you agree that video from your cameras is processed on the server you connect to.",
+  "signUpHaveAccount": "Already have an account? Sign in",
+  "passwordWeak": "Weak",
+  "passwordFair": "Fair",
+  "passwordStrong": "Strong",
+  "verifyTitle": "Check your email",
+  "verifyBody": "We sent a confirmation link to {email}. Open it on this phone, or paste the link or the code from the email here.",
+  "@verifyBody": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "verifyAction": "Confirm email",
+  "verifyResend": "Send the email again",
+  "verifyResent": "A new code is on its way.",
+  "verifyWrongEmail": "Use another email",
+  "forgotTitle": "Reset password",
+  "forgotBody": "Enter your email and we will send a code to set a new password.",
+  "forgotAction": "Send code",
+  "resetTitle": "Set a new password",
+  "resetBody": "Paste the link or the code we sent to {email} and choose a new password.",
+  "@resetBody": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "resetAction": "Save password",
+  "resetDone": "Password changed. Sign in with the new one.",
+  "inviteTitle": "You are invited",
+  "inviteBody": "{inviter} invited you to {organisation} as {role}.",
+  "@inviteBody": {
+    "placeholders": {
+      "inviter": {
+        "type": "String"
+      },
+      "organisation": {
+        "type": "String"
+      },
+      "role": {
+        "type": "String"
+      }
+    }
+  },
+  "inviteSites": "Sites: {sites}",
+  "@inviteSites": {
+    "placeholders": {
+      "sites": {
+        "type": "String"
+      }
+    }
+  },
+  "inviteAllSites": "Every site of the organisation",
+  "inviteExpires": "This invitation expires {date}.",
+  "@inviteExpires": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "inviteAccept": "Accept invitation",
+  "inviteSignInFirst": "Sign in or create an account first, then open the link again.",
+  "inviteAccepted": "You joined {organisation}.",
+  "@inviteAccepted": {
+    "placeholders": {
+      "organisation": {
+        "type": "String"
+      }
+    }
+  },
+  "onboardingStep": "Step {step} of {total}",
+  "@onboardingStep": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingSiteTitle": "Set up your first site",
+  "onboardingSiteBody": "A site is one place with cameras: your home, a store, an office or a warehouse. You can add more sites later.",
+  "fieldOrganisation": "Organisation name",
+  "fieldOrganisationHint": "Your family or company",
+  "fieldSiteName": "Site name",
+  "fieldSiteNameHint": "For example Home or Main street store",
+  "fieldSiteKind": "Kind of site",
+  "fieldTimezone": "Time zone",
+  "onboardingConnectorTitle": "Pair a connector",
+  "onboardingConnectorBody": "The connector is a small program that runs on any always-on computer at the site, such as a mini PC or a Raspberry Pi. It finds the cameras and connects them securely to the server.",
+  "onboardingConnectorStep1": "Install Docker on a computer that stays on at the site.",
+  "onboardingConnectorStep2": "Start the connector with the command from the server documentation.",
+  "onboardingConnectorStep3": "The connector shows a QR code and an 8 character code. Scan it or type it here.",
+  "onboardingScan": "Scan QR code",
+  "onboardingTypeCode": "Type the code",
+  "fieldConnectorCode": "Connector code",
+  "fieldConnectorName": "Connector name",
+  "onboardingPair": "Pair connector",
+  "onboardingPaired": "{name} is paired with {site}.",
+  "@onboardingPaired": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "site": {
+        "type": "String"
+      }
+    }
+  },
+  "scanTitle": "Scan the connector code",
+  "scanHint": "Point the camera at the QR code on the connector screen.",
+  "scanNoPermission": "Allow camera access to scan, or type the code instead.",
+  "scanAllow": "Allow camera",
+  "onboardingCamerasTitle": "Cameras on the network",
+  "onboardingCamerasBody": "The connector looked for cameras on its network. Choose one to add it.",
+  "onboardingSearching": "Looking for cameras",
+  "onboardingRescan": "Search again",
+  "onboardingNoCameras": "No cameras found yet",
+  "onboardingNoCamerasBody": "Make sure the cameras are powered and on the same network as the connector, then search again.",
+  "onboardingAdded": "Added",
+  "onboardingAddCamera": "Add",
+  "onboardingFinish": "Finish setup",
+  "onboardingCameraTitle": "Add camera",
+  "onboardingCameraBody": "Enter the login the camera uses for its video. It stays on the connector, encrypted, and never reaches the server.",
+  "fieldCameraUser": "Camera username",
+  "fieldCameraPassword": "Camera password",
+  "fieldCameraName": "Camera name",
+  "fieldCameraNameHint": "For example Front door",
+  "fieldLenses": "Pictures in one stream",
+  "lensesOne": "One picture",
+  "lensesTwo": "Two stacked lenses",
+  "onboardingTest": "Test the stream",
+  "onboardingTesting": "Connecting to the camera",
+  "onboardingTestOk": "Stream works: {codec}, {width} by {height}",
+  "@onboardingTestOk": {
+    "placeholders": {
+      "codec": {
+        "type": "String"
+      },
+      "width": {
+        "type": "int"
+      },
+      "height": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingTestFailed": "The camera refused the login. Check the username and password.",
+  "onboardingSaveCamera": "Save camera",
+  "onboardingAnalyticsTitle": "What should this camera watch for?",
+  "onboardingAnalyticsBody": "Pick a starting point for {camera}. You can draw zones and lines and change every option later.",
+  "@onboardingAnalyticsBody": {
+    "placeholders": {
+      "camera": {
+        "type": "String"
+      }
+    }
+  },
+  "presetPerimeter": "Perimeter",
+  "presetPerimeterBody": "Alerts when people or vehicles enter the picture at night or when you are away.",
+  "presetEntrance": "Entrance",
+  "presetEntranceBody": "Counts who goes in and out through a door or gate.",
+  "presetCounting": "Counting",
+  "presetCountingBody": "Counts people and occupancy without alerts, for stores and offices.",
+  "presetTamper": "Tamper only",
+  "presetTamperBody": "Only tells you when the camera is covered, blurred, moved or too dark.",
+  "onboardingNotificationsTitle": "Get alerts on this phone",
+  "onboardingNotificationsBody": "Allow notifications so the app can tell you about alerts while it is closed. Notifications carry no pictures; the app fetches them securely when you open one.",
+  "onboardingNotificationsAllow": "Allow notifications",
+  "onboardingDoneTitle": "Your site is ready",
+  "onboardingDoneBody": "The cameras are live. Alerts follow the arm mode, which you can change on the Home tab.",
+  "onboardingOpenHome": "Open Home",
+  "navHome": "Home",
+  "navLive": "Live",
+  "navEvents": "Events",
+  "navSearch": "Search",
+  "navMore": "More",
+  "siteKindHome": "Home",
+  "siteKindStore": "Store",
+  "siteKindOffice": "Office",
+  "siteKindWarehouse": "Warehouse",
+  "siteKindOther": "Other",
+  "siteSwitcherTitle": "Sites",
+  "siteSwitcherAdd": "Add a site",
+  "siteCameras": "{count, plural, =0{No cameras} =1{1 camera} other{{count} cameras}}",
+  "@siteCameras": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "armDisarmed": "Disarmed",
+  "armHome": "Home",
+  "armAway": "Away",
+  "armSchedule": "Schedule",
+  "armDisarmedBody": "No alerts. Events are still recorded.",
+  "armHomeBody": "Alerts only from zones and lines that alert while you are home.",
+  "armAwayBody": "Every zone and line alerts.",
+  "armScheduleBody": "Each zone and line alerts on its own schedule.",
+  "armTitle": "Arm mode",
+  "armChanged": "Arm mode is now {mode}",
+  "@armChanged": {
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "homeAlertsToday": "Alerts today",
+  "homeUnacknowledged": "{count} to review",
+  "@homeUnacknowledged": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeAllReviewed": "All reviewed",
+  "homeEventsToday": "Events today",
+  "homeCamerasOnline": "Cameras online",
+  "homeCamerasValue": "{online} of {total}",
+  "@homeCamerasValue": {
+    "placeholders": {
+      "online": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "homeOccupancy": "Inside now",
+  "homeRecent": "Recent events",
+  "homeAttention": "Needs attention",
+  "homeAllGood": "All cameras and connectors are online",
+  "homeCameraOffline": "{camera} is offline",
+  "@homeCameraOffline": {
+    "placeholders": {
+      "camera": {
+        "type": "String"
+      }
+    }
+  },
+  "homeConnectorOffline": "{connector} is offline, last seen {when}",
+  "@homeConnectorOffline": {
+    "placeholders": {
+      "connector": {
+        "type": "String"
+      },
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "homeConnectorOnline": "{connector} online, version {version}",
+  "@homeConnectorOnline": {
+    "placeholders": {
+      "connector": {
+        "type": "String"
+      },
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "homeCountsToday": "Visitors today",
+  "homeCountsIn": "In",
+  "homeCountsOut": "Out",
+  "homeNoSite": "No site yet",
+  "homeNoSiteBody": "Set up a site and pair its connector to start watching.",
+  "homeSetUp": "Set up a site",
+  "homeNoEvents": "Quiet so far today",
+  "liveTitle": "Live",
+  "liveLayoutAuto": "Automatic",
+  "liveLayoutOne": "One column",
+  "liveLayoutTwo": "Two by two",
+  "liveLayoutThree": "Three by three",
+  "liveLayout": "Layout",
+  "liveNoCameras": "No cameras yet",
+  "liveNoCamerasBody": "Add cameras from a paired connector to see them here.",
+  "liveAddCamera": "Add camera",
+  "liveConnecting": "Connecting",
+  "liveFailed": "Video unavailable",
+  "liveCameraOffline": "Camera offline",
+  "liveBadge": "Live",
+  "liveLens": "Lens {lens}",
+  "@liveLens": {
+    "placeholders": {
+      "lens": {
+        "type": "int"
+      }
+    }
+  },
+  "cameraMain": "Main",
+  "cameraSub": "Sub",
+  "cameraQuality": "Stream",
+  "cameraSound": "Sound",
+  "cameraBoxes": "Show detections",
+  "cameraFullscreen": "Full screen",
+  "cameraSnapshot": "Snapshot",
+  "cameraSnapshotSaved": "Snapshot saved",
+  "cameraPtz": "Pan and tilt",
+  "cameraSpeed": "Speed",
+  "cameraZoomIn": "Zoom in",
+  "cameraZoomOut": "Zoom out",
+  "cameraHome": "Home position",
+  "cameraPresets": "Presets",
+  "cameraNoPresets": "No presets yet",
+  "cameraSavePreset": "Save position",
+  "cameraPresetName": "Preset name",
+  "cameraLight": "Light",
+  "cameraSiren": "Siren",
+  "cameraSirenConfirm": "Sound the siren for 10 seconds?",
+  "cameraSirenOn": "Siren sounding",
+  "cameraRecent": "Recent on this camera",
+  "cameraSettings": "Camera settings",
+  "cameraAnalytics": "Analytics",
+  "ptzUp": "Tilt up",
+  "ptzDown": "Tilt down",
+  "ptzLeft": "Pan left",
+  "ptzRight": "Pan right",
+  "eventsTitle": "Events",
+  "eventsAlertsOnly": "Alerts only",
+  "eventsFilters": "Filters",
+  "eventsFilterCount": "{count, plural, =1{1 filter} other{{count} filters}}",
+  "@eventsFilterCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "eventsNew": "{count, plural, =1{1 new event} other{{count} new events}}",
+  "@eventsNew": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "eventsEmpty": "No events",
+  "eventsEmptyBody": "Nothing matched. Try another day or fewer filters.",
+  "eventsEmptyToday": "Nothing happened yet. Events appear here as the cameras see them.",
+  "eventsAckAll": "Mark all reviewed",
+  "eventsAckAllDone": "{count, plural, =0{Nothing to review} =1{1 alert reviewed} other{{count} alerts reviewed}}",
+  "@eventsAckAllDone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "eventsTotal": "{count, plural, =0{No events} =1{1 event} other{{count} events}}",
+  "@eventsTotal": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "eventsLoadMore": "Load more",
+  "filterDay": "Day",
+  "filterAnyDay": "Any day",
+  "filterCameras": "Cameras",
+  "filterViews": "Views",
+  "filterKinds": "Kinds",
+  "filterLabels": "Objects",
+  "filterZones": "Zones",
+  "filterLines": "Lines",
+  "filterPerson": "Person",
+  "filterPlate": "Plate",
+  "filterTime": "Time",
+  "filterShow": "Show results",
+  "eventAlert": "Alert",
+  "eventReviewed": "Reviewed",
+  "eventOngoing": "Ongoing",
+  "eventAcknowledge": "Mark reviewed",
+  "eventAcknowledged": "Marked reviewed",
+  "eventShareClip": "Share clip",
+  "eventClip": "Clip",
+  "eventNoClip": "This event has no clip.",
+  "eventSnapshot": "Snapshot",
+  "eventDetails": "Details",
+  "eventCamera": "Camera",
+  "eventView": "View",
+  "eventZone": "Zone",
+  "eventLine": "Line",
+  "eventDirection": "Direction",
+  "eventDirectionIn": "In",
+  "eventDirectionOut": "Out",
+  "eventObjects": "Objects",
+  "eventDuration": "Duration",
+  "eventStarted": "Started",
+  "eventSource": "Source",
+  "eventSourceCamera": "Camera",
+  "eventSourceAnalytics": "Analytics",
+  "eventFace": "Face",
+  "eventConfidence": "{value}% match",
+  "@eventConfidence": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "eventPlate": "Number plate",
+  "eventPlateReads": "{count, plural, =1{1 read} other{{count} reads}}",
+  "@eventPlateReads": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "plateInfrared": "Not read at night: infrared light glares on the plate.",
+  "plateNone": "No plate was found on the vehicle.",
+  "plateSmall": "The plate was too small to read.",
+  "plateUnreadable": "The plate could not be read.",
+  "platePending": "Reading the plate.",
+  "eventJourney": "Journey",
+  "eventFindPerson": "Find this person",
+  "eventWhoIsThis": "Who is this?",
+  "eventDemoClip": "Demo clip",
+  "kindMotion": "Motion",
+  "kindPerson": "Person",
+  "kindVehicle": "Vehicle",
+  "kindIntrusion": "Intrusion",
+  "kindLineCrossing": "Line crossing",
+  "kindLoitering": "Loitering",
+  "kindCrowd": "Crowd",
+  "kindFaceKnown": "Known face",
+  "kindFaceUnknown": "Unknown face",
+  "kindTamper": "Tamper",
+  "kindStorage": "Storage",
+  "kindReboot": "Restart",
+  "kindAnimal": "Animal",
+  "kindObjectLeft": "Object left",
+  "kindObjectTaken": "Object taken",
+  "kindFall": "Fall",
+  "titleMotion": "Motion on {camera}",
+  "@titleMotion": {
+    "placeholders": {
+      "camera": {
+        "type": "String"
+      }
+    }
+  },
+  "titlePerson": "Person on {camera}",
+  "@titlePerson": {
+    "placeholders": {
+      "camera": {
+        "type": "String"
+      }
+    }
+  },
+  "titleVehicle": "{label} on {camera}",
+  "@titleVehicle": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "camera": {
+        "type": "String"
+      }
+    }
+  },
+  "titleIntrusion": "{label} entered {zone}",
+  "@titleIntrusion": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "zone": {
+        "type": "String"
+      }
+    }
+  },
+  "titleLineCrossing": "{label} crossed {line}",
+  "@titleLineCrossing": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "line": {
+        "type": "String"
+      }
+    }
+  },
+  "titleLoitering": "{label} lingering in {zone}",
+  "@titleLoitering": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "zone": {
+        "type": "String"
+      }
+    }
+  },
+  "titleCrowd": "Crowd in {zone}",
+  "@titleCrowd": {
+    "placeholders": {
+      "zone": {
+        "type": "String"
+      }
+    }
+  },
+  "titleFaceKnown": "{name} seen",
+  "@titleFaceKnown": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "titleFaceUnknown": "{label} seen",
+  "@titleFaceUnknown": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "titleTamper": "{camera} view {how}",
+  "@titleTamper": {
+    "placeholders": {
+      "camera": {
+        "type": "String"
+      },
+      "how": {
+        "type": "String"
+      }
+    }
+  },
+  "titleAnimal": "{label} on {camera}",
+  "@titleAnimal": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "camera": {
+        "type": "String"
+      }
+    }
+  },
+  "titleObjectLeft": "{label} left in {zone}",
+  "@titleObjectLeft": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "zone": {
+        "type": "String"
+      }
+    }
+  },
+  "titleObjectTaken": "{label} taken from {zone}",
+  "@titleObjectTaken": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "zone": {
+        "type": "String"
+      }
+    }
+  },
+  "titleFall": "Possible fall on {camera}",
+  "@titleFall": {
+    "placeholders": {
+      "camera": {
+        "type": "String"
+      }
+    }
+  },
+  "titleStorage": "{camera} storage problem",
+  "@titleStorage": {
+    "placeholders": {
+      "camera": {
+        "type": "String"
+      }
+    }
+  },
+  "titleReboot": "{camera} restarted",
+  "@titleReboot": {
+    "placeholders": {
+      "camera": {
+        "type": "String"
+      }
+    }
+  },
+  "tamperCovered": "covered",
+  "tamperBlurred": "blurred",
+  "tamperDark": "too dark",
+  "tamperMoved": "moved",
+  "tamperDisturbed": "disturbed",
+  "labelPerson": "Person",
+  "labelCar": "Car",
+  "labelTruck": "Truck",
+  "labelBus": "Bus",
+  "labelMotorcycle": "Motorcycle",
+  "labelBicycle": "Bicycle",
+  "labelDog": "Dog",
+  "labelCat": "Cat",
+  "labelBird": "Bird",
+  "labelBackpack": "Backpack",
+  "labelHandbag": "Handbag",
+  "labelSuitcase": "Suitcase",
+  "labelVehicle": "Vehicle",
+  "labelAnimal": "Animal",
+  "labelSomething": "Something",
+  "labelObject": "Object",
+  "searchTitle": "Search",
+  "searchEvents": "Events",
+  "searchPeople": "People",
+  "searchFaces": "Faces",
+  "searchPlates": "Plates",
+  "searchFrom": "From",
+  "searchUntil": "Until",
+  "searchLast24h": "Last 24 hours",
+  "searchLast7d": "Last 7 days",
+  "searchLast30d": "Last 30 days",
+  "searchRun": "Search",
+  "searchResults": "{count, plural, =0{No results} =1{1 result} other{{count} results}}",
+  "@searchResults": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "searchHint": "Build a query from time, cameras, kinds and objects.",
+  "searchFacesTitle": "Find a face",
+  "searchFacesBody": "Pick a photo with one face, or tap a face the cameras saw, to find where it appeared.",
+  "searchFacesPhoto": "Choose a photo",
+  "searchFacesCamera": "Take a photo",
+  "searchFacesResults": "Similar faces",
+  "searchPlatesTitle": "Find a vehicle by plate",
+  "searchPlatesHint": "Plate text, for example 01 A 123 BC",
+  "searchPlatesBody": "Plates are read by day on views where plate reading is on.",
+  "facesOffTitle": "Face recognition is off",
+  "facesOffBody": "An owner or admin can turn it on for the organisation in More, Faces.",
+  "facesTurnOn": "Open face settings",
+  "peopleKnown": "Known people",
+  "peopleUnknown": "Unknown faces",
+  "peopleAdd": "Add person",
+  "peopleEmpty": "No people yet",
+  "peopleEmptyBody": "Add the people you know, or name the unknown faces the cameras gather.",
+  "peopleSeen": "{count, plural, =1{Seen once} other{Seen {count} times}}",
+  "@peopleSeen": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "peopleLastSeen": "Last seen {when}",
+  "@peopleLastSeen": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "peopleNeverSeen": "Not seen yet",
+  "peopleSamples": "Faces",
+  "peopleSightings": "Sightings",
+  "peopleNoSightings": "No sightings yet",
+  "peopleAddPhotos": "Add photos",
+  "peoplePhotosAdded": "{count, plural, =0{No photos added} =1{1 photo added} other{{count} photos added}}",
+  "@peoplePhotosAdded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "peoplePhotosRejected": "{count, plural, =1{1 photo had no single clear face} other{{count} photos had no single clear face}}",
+  "@peoplePhotosRejected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "peopleMerge": "Merge into another person",
+  "peopleMergeTitle": "Merge {name} into",
+  "@peopleMergeTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "peopleDelete": "Delete person",
+  "peopleDeleteBody": "This deletes {name} with every face sample and crop. Past events keep their snapshots.",
+  "@peopleDeleteBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "peopleNotes": "Notes",
+  "peopleName": "Name",
+  "clusterWhoTitle": "Who is this?",
+  "clusterWhoBody": "Name a new person or pick someone you know. Their past events are relabelled.",
+  "clusterNewPerson": "New person",
+  "clusterExisting": "Someone you know",
+  "clusterNamed": "Named as {name}",
+  "@clusterNamed": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "clusterDelete": "Forget these faces",
+  "clusterDeleteBody": "This deletes the unknown face samples. Past events keep their snapshots.",
+  "findPersonTitle": "Find this person",
+  "findPersonBody": "Sightings on other cameras that look like the same person, by clothing and build. Day and night pictures do not match each other.",
+  "findPersonEmpty": "No similar sightings found",
+  "findPersonMatch": "{value}% similar",
+  "@findPersonMatch": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "moreTitle": "More",
+  "moreSite": "This site",
+  "moreOrganisation": "Organisation",
+  "moreYou": "You",
+  "moreCounts": "Counts and occupancy",
+  "moreSiteSettings": "Site settings",
+  "moreCameras": "Cameras",
+  "moreAnalytics": "Analytics",
+  "moreConnectors": "Connectors",
+  "moreHealth": "Health",
+  "moreMembers": "Members",
+  "moreFaces": "Faces",
+  "moreNotifications": "Notifications",
+  "moreAccount": "Account",
+  "moreAppearance": "Language and theme",
+  "moreAbout": "About",
+  "moreSignOut": "Sign out",
+  "moreSignOutConfirm": "Sign out of this phone?",
+  "countsTitle": "Counts",
+  "countsHourly": "By hour",
+  "countsDaily": "By day",
+  "countsIn": "In",
+  "countsOut": "Out",
+  "countsTotalIn": "{count} in",
+  "@countsTotalIn": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "countsTotalOut": "{count} out",
+  "@countsTotalOut": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "countsNoLines": "No counting lines",
+  "countsNoLinesBody": "Draw a line on a view in Analytics to count people and vehicles crossing it.",
+  "countsAreas": "Areas",
+  "countsOccupancy": "{count} inside",
+  "@countsOccupancy": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "countsCapacity": "of {count}",
+  "@countsCapacity": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "countsSince": "Entered {entered}, left {exited} since {time}",
+  "@countsSince": {
+    "placeholders": {
+      "entered": {
+        "type": "int"
+      },
+      "exited": {
+        "type": "int"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "countsReset": "Set occupancy",
+  "countsResetTitle": "How many are inside now?",
+  "countsResetDone": "Occupancy set to {count}",
+  "@countsResetDone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "countsDailyReset": "Resets every day at {time}",
+  "@countsDailyReset": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "countsPeak": "Busiest hour {hour}",
+  "@countsPeak": {
+    "placeholders": {
+      "hour": {
+        "type": "String"
+      }
+    }
+  },
+  "siteSettingsTitle": "Site settings",
+  "siteRetention": "Keep events for",
+  "siteRetentionDays": "{count, plural, =1{1 day} other{{count} days}}",
+  "@siteRetentionDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "siteArmHelp": "The arm mode decides which events alert. In Schedule mode every zone and line follows its own alert hours, which you set in Analytics.",
+  "camerasTitle": "Cameras",
+  "camerasReorder": "Drag to change the order of the live grid.",
+  "camerasAdd": "Add camera",
+  "camerasDelete": "Delete camera",
+  "camerasDeleteBody": "This removes {camera} with its views, zones and lines. Its past events stay until they expire.",
+  "@camerasDeleteBody": {
+    "placeholders": {
+      "camera": {
+        "type": "String"
+      }
+    }
+  },
+  "camerasEnabled": "Enabled",
+  "camerasNoConnector": "Pair a connector first",
+  "camerasNoConnectorBody": "Cameras are found and added through the connector at the site.",
+  "settingsDevice": "Device",
+  "settingsManufacturer": "Manufacturer",
+  "settingsModel": "Model",
+  "settingsFirmware": "Firmware",
+  "settingsVideo": "Video",
+  "settingsImage": "Image",
+  "settingsBrightness": "Brightness",
+  "settingsContrast": "Contrast",
+  "settingsSaturation": "Saturation",
+  "settingsSharpness": "Sharpness",
+  "settingsIrCut": "Night mode filter",
+  "settingsMotion": "Camera motion detection",
+  "settingsSensitivity": "Sensitivity",
+  "settingsClock": "Clock",
+  "settingsClockOffset": "{value} s from the server",
+  "@settingsClockOffset": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsSyncClock": "Sync clock",
+  "settingsClockSynced": "Clock synced",
+  "settingsReboot": "Restart camera",
+  "settingsRebootBody": "The camera drops its video for about a minute.",
+  "settingsRebooting": "Restarting the camera",
+  "settingsUnsupported": "This camera does not offer this setting.",
+  "analyticsTitle": "Analytics",
+  "analyticsViewsBody": "Each lens is a view. Choose what it watches and draw its zones and lines.",
+  "analyticsZonesLines": "{zones, plural, =0{No zones} =1{1 zone} other{{zones} zones}}, {lines, plural, =0{no lines} =1{1 line} other{{lines} lines}}",
+  "@analyticsZonesLines": {
+    "placeholders": {
+      "zones": {
+        "type": "int"
+      },
+      "lines": {
+        "type": "int"
+      }
+    }
+  },
+  "analyticsDisabled": "Analytics off",
+  "analyticsFps": "{value} fps",
+  "@analyticsFps": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "analyticsSuspended": "Lens turned away from its zones",
+  "analyticsEnabled": "Analyse this view",
+  "analyticsProfile": "Profile",
+  "profilePerimeter": "Perimeter",
+  "profileVehicle": "Vehicles",
+  "profileIdentity": "Identity",
+  "profileTamper": "Tamper only",
+  "analyticsStream": "Analysed stream",
+  "analyticsStreamSub": "Sub stream, for detection and counting",
+  "analyticsStreamMain": "Main stream, for faces and plates",
+  "analyticsFeatures": "Features",
+  "featureTamper": "Tamper watch",
+  "featureTamperBody": "Covered, blurred, moved and too dark",
+  "featureFaces": "Faces",
+  "featureFacesBody": "Name known people, gather unknown faces",
+  "featureFacesLocked": "Turn on faces for the organisation first",
+  "featureAppearance": "Journeys",
+  "featureAppearanceBody": "Link a person across cameras by appearance",
+  "featureFalls": "Falls",
+  "featureFallsBody": "Alert when someone falls and stays down",
+  "featurePlates": "Number plates",
+  "featurePlatesBody": "Read plates on vehicle events by day",
+  "featureFollow": "Auto follow",
+  "featureFollowBody": "Turn the lens to keep a person in view, then return",
+  "featureMoving": "Moving lens",
+  "featureMovingBody": "Zones keep the picture they were drawn on",
+  "analyticsRules": "Zones and lines",
+  "analyticsEdit": "Draw zones and lines",
+  "analyticsNoRules": "No zones or lines yet",
+  "analyticsWholeView": "Whole view",
+  "editorTitle": "Zones and lines",
+  "editorZone": "Zone",
+  "editorLine": "Line",
+  "editorAddZone": "New zone",
+  "editorAddLine": "New line",
+  "editorHintZone": "Tap the picture to place corners. Drag a corner to move it.",
+  "editorHintLine": "Tap two points for the line. The arrow shows the inward side.",
+  "editorUndo": "Undo point",
+  "editorFlip": "Flip direction",
+  "editorDelete": "Delete shape",
+  "editorDiscard": "Discard changes?",
+  "editorDiscardBody": "Your zones and lines are not saved yet.",
+  "editorKeepEditing": "Keep editing",
+  "editorSaved": "Zones and lines saved. They apply within a few seconds.",
+  "editorNameZone": "Zone name",
+  "editorNameLine": "Line name",
+  "editorObjects": "Watch for",
+  "editorDwell": "Minimum time inside",
+  "editorLoiter": "Loitering after",
+  "editorCrowd": "Crowd from",
+  "editorCrowdPeople": "{count, plural, =0{Off} =1{1 person} other{{count} people}}",
+  "@editorCrowdPeople": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "editorLeft": "Object left after",
+  "editorTaken": "Object taken after",
+  "editorAlerts": "Alerts",
+  "editorAlertOff": "Never",
+  "editorAlertAlways": "Always",
+  "editorAlertSchedule": "On a schedule",
+  "editorAlertHours": "Alert between {start} and {end}",
+  "@editorAlertHours": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "editorAnimals": "Animals",
+  "editorAnimalsInclude": "Alert",
+  "editorAnimalsRecord": "Record only",
+  "editorAnimalsExclude": "Ignore",
+  "editorDirection": "Count direction",
+  "editorDirectionIn": "Inward",
+  "editorDirectionOut": "Outward",
+  "editorDirectionBoth": "Both ways",
+  "editorDurationOff": "Off",
+  "editorEnabled": "Active",
+  "editorTooFewPoints": "A zone needs at least 3 corners.",
+  "connectorsTitle": "Connectors",
+  "connectorsPair": "Pair a connector",
+  "connectorsEmpty": "No connector yet",
+  "connectorsEmptyBody": "A connector at the site finds the cameras and links them to the server.",
+  "connectorsVersion": "Version {version}",
+  "@connectorsVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "connectorsSeen": "Seen {when}",
+  "@connectorsSeen": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "connectorsRemove": "Remove connector",
+  "connectorsRemoveBody": "Its cameras stop until another connector is paired with this site.",
+  "connectorsMode": "Direct connection",
+  "connectorsFind": "Find cameras",
+  "membersTitle": "Members",
+  "membersInvite": "Invite",
+  "membersInvited": "Invited",
+  "membersYou": "You",
+  "membersAllSites": "All sites",
+  "membersSomeSites": "{count, plural, =1{1 site} other{{count} sites}}",
+  "@membersSomeSites": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "membersPending": "Pending invitations",
+  "membersExpires": "Expires {date}",
+  "@membersExpires": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "membersRevoke": "Revoke invitation",
+  "membersRemove": "Remove from organisation",
+  "membersRemoveBody": "{name} loses access to every site of the organisation at once.",
+  "@membersRemoveBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "membersRole": "Role",
+  "membersSites": "Sites",
+  "membersInviteTitle": "Invite a member",
+  "membersInviteBody": "They get an email with a link that works once, for 7 days.",
+  "membersInviteSent": "Invitation sent to {email}",
+  "@membersInviteSent": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "roleOwner": "Owner",
+  "roleAdmin": "Admin",
+  "roleOperator": "Operator",
+  "roleViewer": "Viewer",
+  "roleOwnerBody": "Everything, including deleting the organisation",
+  "roleAdminBody": "Cameras, analytics, people and members",
+  "roleOperatorBody": "Watch, control cameras and arm or disarm",
+  "roleViewerBody": "Watch live video and events",
+  "facesTitle": "Face recognition",
+  "facesBody": "Faces are matched on the server of this organisation. Turn this on only where people who are filmed have been told and agree, as the law of your country requires.",
+  "facesConsentTitle": "Turn on face recognition?",
+  "facesConsentBody": "Face recognition stores face pictures and face measurements of everyone the cameras see on views where faces are on. Face measurements are biometric data. You confirm that the people who are filmed have been informed, that you have a lawful reason to process their faces, and that the data is kept only as long as needed. You can turn this off at any time; known people and their faces then stay until you delete them.",
+  "facesConsentConfirm": "I understand, turn on",
+  "facesEnabled": "Face recognition on",
+  "facesDisabled": "Face recognition off",
+  "facesOwnerOnly": "Only an owner or admin can change this.",
+  "notificationsTitle": "Notifications",
+  "notificationsSite": "Alerts for {site}",
+  "@notificationsSite": {
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationsAlertsOnly": "Only alerts",
+  "notificationsAlertsOnlyBody": "Off sends every event, which can be many.",
+  "notificationsKinds": "Kinds",
+  "notificationsQuiet": "Quiet hours",
+  "notificationsQuietBody": "Silent between {from} and {until}",
+  "@notificationsQuietBody": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "until": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationsQuietOff": "No quiet hours",
+  "notificationsPermissionOff": "Notifications are blocked for this app.",
+  "notificationsOpenSettings": "Open settings",
+  "notificationsChannel": "Delivery",
+  "notificationsChannelFcm": "Push through Firebase Cloud Messaging",
+  "notificationsChannelNone": "While the app is open. This build has no push service.",
+  "healthTitle": "Health",
+  "healthUptime": "{value}% up",
+  "@healthUptime": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "healthLatency": "{value} ms",
+  "@healthLatency": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "healthOutages": "Outages",
+  "healthNoOutages": "No outages in the last 24 hours",
+  "healthOngoing": "Ongoing for {duration}",
+  "@healthOngoing": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "healthLasted": "Lasted {duration}",
+  "@healthLasted": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "healthCause": "Caused by {name}",
+  "@healthCause": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "healthLast24h": "Last 24 hours",
+  "healthUp": "Up",
+  "healthDegraded": "Degraded",
+  "healthDown": "Down",
+  "accountTitle": "Account",
+  "accountProfile": "Profile",
+  "accountSessions": "Signed in devices",
+  "accountThisDevice": "This device",
+  "accountLastUsed": "Last used {when}",
+  "@accountLastUsed": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "accountRevoke": "Sign out this device",
+  "accountRevoked": "Signed out {device}",
+  "@accountRevoked": {
+    "placeholders": {
+      "device": {
+        "type": "String"
+      }
+    }
+  },
+  "accountAppLock": "App lock",
+  "accountAppLockBody": "Ask for fingerprint, face or screen lock when the app opens",
+  "accountAppLockUnavailable": "This phone has no screen lock set up.",
+  "accountDelete": "Delete account",
+  "accountDeleteTitle": "Delete your account",
+  "accountDeleteBody": "This deletes your account and signs you out everywhere. Organisations you own must be handed to another owner or deleted first. This cannot be undone.",
+  "accountDeleteConfirm": "Delete my account",
+  "accountDeletePassword": "Enter your password to confirm",
+  "accountDeleted": "Your account is deleted.",
+  "appearanceTitle": "Language and theme",
+  "appearanceLanguage": "Language",
+  "appearanceSystem": "Phone setting",
+  "appearanceTheme": "Theme",
+  "themeSystem": "Phone setting",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "aboutTitle": "About",
+  "aboutVersion": "Version {version}",
+  "@aboutVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "aboutBuild": "{flavor} build",
+  "@aboutBuild": {
+    "placeholders": {
+      "flavor": {
+        "type": "String"
+      }
+    }
+  },
+  "aboutServer": "Server",
+  "aboutLicences": "Open source licences",
+  "aboutPrivacy": "Video, snapshots and faces stay on the server you connect to. Notifications carry only ids; the app fetches the picture itself.",
+  "lockTitle": "Smart Surveillance is locked",
+  "lockUnlock": "Unlock",
+  "lockReason": "Unlock to watch your cameras",
+  "notificationAlertTitle": "Alert at {site}",
+  "@notificationAlertTitle": {
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationChannelName": "Alerts",
+  "notificationChannelBody": "Alerts from your cameras",
+  "commonHoursMinutes": "{hours} h {minutes} min",
+  "@commonHoursMinutes": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "commonShowPassword": "Show password",
+  "commonHidePassword": "Hide password",
+  "countsInside": "inside",
+  "editorAddPoints": "Add corners",
+  "connectorsVersionLabel": "Version",
+  "connectorsLastSeen": "Last seen",
+  "connectorsConnection": "Connection",
+  "connectorsTunnel": "Secure tunnel",
+  "fieldCodeHelp": "Paste the link from the email, or the code in it",
+  "verifyDone": "Email confirmed. Sign in to continue.",
+  "resetLinkBody": "Choose a new password for your account.",
+  "pairingAddTitle": "How do you want to add it?",
+  "pairingAddBody": "Pick the way that suits the camera. The best one for this site comes first.",
+  "pairingRecommended": "Recommended",
+  "pairingPermissionDenied": "This needs a permission the phone did not give. Allow it in the phone settings, or choose another way.",
+  "pairingDemoCode": "Use the demo code",
+  "pairingWaiting": "Waiting for the connector to confirm",
+  "pairingCamerasAdded": "{count, plural, =1{Camera added} other{{count} cameras added}}",
+  "@pairingCamerasAdded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "validationConnectorCode": "Enter the 8 character code, like ABCD-1234",
+  "methodConnectorDiscovery": "Cameras on the network",
+  "methodConnectorDiscoveryBody": "Pick one of the cameras the connector found",
+  "methodLabelQr": "Scan the camera's label",
+  "methodLabelQrBody": "Point at the QR code on the sticker of the camera",
+  "methodManualHost": "Enter its address",
+  "methodManualHostBody": "Type the camera's IP address and the app identifies it",
+  "methodNvrImport": "Import from a recorder",
+  "methodNvrImportBody": "Add channels of an NVR or DVR at once",
+  "methodRtspUrl": "Paste an RTSP link",
+  "methodRtspUrlBody": "For cameras that give a stream address",
+  "methodConnectorQr": "Scan the connector's QR code",
+  "methodConnectorQrBody": "The connector shows it on its screen or web page",
+  "methodConnectorMdns": "Find it on this Wi-Fi",
+  "methodConnectorMdnsBody": "Look for connectors on the network this phone is on",
+  "methodConnectorCode": "Type the code",
+  "methodConnectorCodeBody": "The 8 character code the connector shows",
+  "mdnsTitle": "Connectors on this Wi-Fi",
+  "mdnsSearching": "Looking for connectors on this network",
+  "mdnsNone": "No connector found yet. Make sure this phone and the connector are on the same Wi-Fi.",
+  "labelTitle": "Scan the label",
+  "labelHint": "Point the camera at the QR code on the camera's sticker.",
+  "labelUnknown": "This label is not one we know. Add the camera another way.",
+  "manualTitle": "Camera address",
+  "manualBody": "The connector asks the camera what it is. Its login comes on the next step.",
+  "manualHost": "IP address or host name",
+  "manualPort": "ONVIF port, if not the usual one",
+  "manualIdentify": "Identify camera",
+  "manualIdentifying": "Asking the camera",
+  "manualNotFound": "No camera answered at that address. Check it and try again.",
+  "rtspTitle": "RTSP link",
+  "rtspBody": "Paste the stream link from the camera's manual or app. A login in the link is kept on the connector.",
+  "rtspField": "Stream link",
+  "rtspInvalid": "That is not an RTSP link.",
+  "nvrPick": "Choose the recorder",
+  "nvrNone": "No recorders found",
+  "nvrTitle": "Import channels",
+  "nvrLogin": "Recorder login",
+  "nvrLoad": "Show channels",
+  "nvrChannels": "Channels",
+  "nvrAdd": "{count, plural, =0{Choose channels} =1{Add 1 camera} other{Add {count} cameras}}",
+  "@nvrAdd": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "nvrOffline": "No signal",
+  "onboardingTestPassed": "Stream works",
+  "presetZoneName": "Whole view",
+  "presetLineName": "Entrance",
+  "morePlan": "Plan and usage",
+  "moreActivity": "Activity",
+  "planTitle": "Plan and usage",
+  "planInternal": "Internal plan with no limits",
+  "planUnlimited": "No limit",
+  "planLimits": "Limits",
+  "planUsage": "This month",
+  "planFeatures": "Features",
+  "planIncluded": "Included",
+  "planNotIncluded": "Not in your plan",
+  "planUnavailable": "Not in your plan. An owner can change the plan.",
+  "planSites": "Sites",
+  "planCameras": "Cameras",
+  "planMembers": "Members",
+  "planEventRetention": "Events kept",
+  "planClipRetention": "Clips kept",
+  "planCameraHours": "Camera hours online",
+  "planAnalyticsHours": "Analysed view hours",
+  "planEvents": "Events",
+  "planClipStorage": "Clip storage",
+  "planNotifications": "Notifications sent",
+  "planOf": "{used} of {limit}",
+  "@planOf": {
+    "placeholders": {
+      "used": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
+  "planSince": "since {date}",
+  "@planSince": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "planGigabytes": "{value} GB",
+  "@planGigabytes": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "featureObjects": "Objects left and taken",
+  "featureJourneys": "Journeys",
+  "featureAppearanceSearch": "Find this person",
+  "featureTelegram": "Telegram alerts",
+  "telegramTitle": "Telegram",
+  "telegramBody": "Send alerts with the snapshot to a Telegram chat or group.",
+  "telegramLink": "Link a chat",
+  "telegramLinkBody": "Telegram opens the bot. Press Start in a private chat, or add the bot to a group, and the chat appears here.",
+  "telegramOpened": "Finish in Telegram, then come back here.",
+  "telegramChats": "Linked chats",
+  "telegramNone": "No chat linked yet",
+  "telegramGroup": "Group",
+  "telegramPrivate": "Private chat",
+  "telegramLinked": "Linked {when}",
+  "@telegramLinked": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "telegramUnlink": "Unlink",
+  "telegramUnlinkBody": "Alerts stop going to {chat}.",
+  "@telegramUnlinkBody": {
+    "placeholders": {
+      "chat": {
+        "type": "String"
+      }
+    }
+  },
+  "telegramTest": "Send a test",
+  "telegramTestSent": "{count, plural, =0{No chat to send to} =1{Test sent to 1 chat} other{Test sent to {count} chats}}",
+  "@telegramTestSent": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "telegramCannotOpen": "Telegram could not be opened on this phone.",
+  "activityTitle": "Activity",
+  "activityEmpty": "No activity yet",
+  "activityAll": "All",
+  "auditSignIn": "Sign ins",
+  "auditMembers": "Members",
+  "auditCameras": "Cameras",
+  "auditRules": "Rules",
+  "auditArm": "Arm mode",
+  "auditViews": "Viewing",
+  "auditExports": "Exports",
+  "auditFaces": "Faces",
+  "auditAdmin": "Platform",
+  "actionAuthSignIn": "Signed in",
+  "actionMemberInvite": "Invited a member",
+  "actionMemberRole": "Changed a role",
+  "actionMemberRemove": "Removed a member",
+  "actionCameraAdd": "Added a camera",
+  "actionCameraUpdate": "Changed a camera",
+  "actionCameraDelete": "Deleted a camera",
+  "actionRulesUpdate": "Changed zones and lines",
+  "actionArmChange": "Changed the arm mode",
+  "actionLiveView": "Watched live",
+  "actionClipView": "Watched a clip",
+  "actionClipExport": "Shared a clip",
+  "actionFaceEnrol": "Added face photos",
+  "actionFaceDelete": "Deleted faces",
+  "actionOrgPlan": "Changed the plan",
+  "capabilityNone": "This camera has no controls to show.",
+  "eventsAlertCount": "{count, plural, =1{1 alert} other{{count} alerts}}",
+  "@eventsAlertCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "discoveredImport": "Import",
+  "@discoveredImport": {
+    "description": "Action on a discovered recorder that opens its channel import."
+  },
+  "errorTooMany": "Too many attempts. Wait a minute and try again.",
+  "onboardingCameraBodyDirect": "Enter the login the camera uses for its video. The server keeps it encrypted and uses it only to reach the camera.",
+  "@onboardingCameraBodyDirect": {
+    "description": "Subtitle of the camera login step on a site the server reaches without a connector."
+  },
+  "actionSignOut": "Signed out",
+  "actionAccountDelete": "Deleted the account",
+  "actionPasswordChange": "Changed the password",
+  "actionOrganisationCreate": "Created the organisation",
+  "actionOrganisationUpdate": "Changed the organisation",
+  "actionOrganisationDelete": "Deleted the organisation",
+  "actionOwnershipTransfer": "Handed over ownership",
+  "actionSiteCreate": "Added a site",
+  "actionSiteUpdate": "Changed a site",
+  "actionSiteDelete": "Deleted a site",
+  "actionInvitationRevoke": "Withdrew an invitation",
+  "actionInvitationAccept": "Joined the organisation",
+  "actionDevicePair": "Paired a device",
+  "actionConnectorClaim": "Paired a connector",
+  "actionConnectorUpdate": "Changed a connector",
+  "actionConnectorRevoke": "Removed a connector",
+  "actionCameraControl": "Controlled a camera",
+  "actionAlertChannelLink": "Linked a Telegram chat",
+  "actionAlertChannelRemove": "Unlinked a Telegram chat",
+  "actionFacesConsent": "Turned on face recognition",
+  "actionAdminSuspend": "Suspended the organisation",
+  "actionAdminRestore": "Restored the organisation",
+  "telegramLinkPrivate": "A private chat",
+  "telegramLinkPrivateBody": "Alerts go to your own chat with the bot",
+  "telegramLinkGroup": "A group",
+  "telegramLinkGroupBody": "Add the bot to a group and everyone in it gets the alerts",
+  "telegramBlocked": "The bot is blocked in this chat. Unblock it in Telegram or link the chat again.",
+  "errorPlanFeature": "Your plan does not include this. The organisation's owner can change the plan.",
+  "errorPlanLimit": "This goes beyond what your plan allows. Remove something or ask the owner to change the plan.",
+  "errorSuspended": "This organisation is suspended. Contact the service to restore it.",
+  "planSuspended": "This organisation is suspended. Cameras, alerts and changes are paused until the service restores it.",
+  "siteRetentionPlanLimit": "Your plan keeps events for up to {days} days.",
+  "@siteRetentionPlanLimit": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "siteRetentionPlan": "Use the plan's limit",
+  "@siteRetentionPlan": {
+    "description": "Retention choice that clears the site own value so it follows the plan."
+  }
+}

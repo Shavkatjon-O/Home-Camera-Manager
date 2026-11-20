@@ -1,51 +1,99 @@
 package uz.smartsurveillance.tv.v380
 
-import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 
 class SpsTest {
-    @Test
-    fun readsTheSizesTheCamerasSend() {
-        val sd = "42010101400000030090000003000003005aa0050200b459e96e44a5735010202e10000003001000000300e5457fde103e805dd7c20104"
-        val hd = "420101014000000300900000030000030096a0012020028859e96e44a5735010202e10000003001000000300e5457fde103e805dd7c20104"
-        val ptz2 = "420101014000000300900000030000030096a003c080087167a5b91295cd404080b8400000030040000003039403ff784000b71a0000895457c20104"
-        assertEquals(VideoSize(640, 720), Sps.hevcSize(hexBytes(sd)))
-        assertEquals(VideoSize(2304, 2592), Sps.hevcSize(hexBytes(hd)))
-        assertEquals(VideoSize(1920, 2160), Sps.hevcSize(hexBytes(ptz2)))
-    }
+    private class Case(val size: VideoSize, val bits: IntRange, val sps: String, val rewritten: String)
 
-    @Test
-    fun removesEmulationPrevention() {
-        assertArrayEquals(byteArrayOf(0, 0, 1, 0, 0, 2), Sps.unescape(byteArrayOf(0, 0, 3, 1, 0, 0, 3, 2)))
-        assertNull(Sps.hevcSize(byteArrayOf(0x42, 0x01)))
-    }
-}
-
-class LowLatencyTest {
-    private val cameras = listOf(
-        "42010101400000030090000003000003005aa0050200b459e96e44a5735010202e10000003001000000300e5457fde103e805dd7c20104",
-        "420101014000000300900000030000030096a0012020028859e96e44a5735010202e10000003001000000300e5457fde103e805dd7c20104",
-        "420101014000000300900000030000030096a003c080087167a5b91295cd404080b8400000030040000003039403ff784000b71a0000895457c20104",
+    private val cases = listOf(
+        Case(
+            VideoSize(640, 720),
+            174..176,
+            "42010101400000030090000003000003005aa0050200b459e96e44a5735010202e10000003001000000300e5457fde103e805dd7c20104",
+            "42010101400000030090000003000003005aa0050200b459ebb91295cd404080b8400000030040000003039515ff7840fa01775f080410",
+        ),
+        Case(
+            VideoSize(2304, 2592),
+            182..184,
+            "420101014000000300900000030000030096a0012020028859e96e44a5735010202e10000003001000000300e5457fde103e805dd7c20104",
+            "420101014000000300900000030000030096a0012020028859ebb91295cd404080b8400000030040000003039515ff7840fa01775f080410",
+        ),
+        Case(
+            VideoSize(1920, 2160),
+            180..182,
+            "420101014000000300900000030000030096a003c080087167a5b91295cd404080b8400000030040000003039403ff784000b71a0000895457c20104",
+            "420101014000000300900000030000030096a003c080087167aee44a5735010202e10000030001000003000e500ffde10002dc68000225515f080410",
+        ),
     )
 
     @Test
-    fun clearsTheReorderDelayAndKeepsTheRest() {
-        for (hex in cameras) {
-            val sps = hexBytes(hex)
-            assertEquals(listOf(1), Sps.hevcReorder(sps))
-            val patched = Sps.hevcLowLatency(sps)!!
-            assertEquals(listOf(0), Sps.hevcReorder(patched))
-            assertEquals(Sps.hevcSize(sps), Sps.hevcSize(patched))
-            assertNull(Sps.hevcLowLatency(patched))
-            val unescaped = Sps.unescape(patched)
-            assertArrayEquals(patched, Sps.escape(unescaped))
+    fun sizesAndReorderFieldsFollowTheVectors() {
+        for (case in cases) {
+            val fields = Sps.hevc(unhex(case.sps))!!
+            assertEquals(case.size, fields.size)
+            assertEquals(case.size, Sps.hevcSize(unhex(case.sps)))
+            assertEquals(listOf(case.bits), fields.reorder)
+            assertEquals(listOf(1L), fields.reorderValues)
         }
     }
 
     @Test
-    fun escapesStartCodeLookalikes() {
-        assertArrayEquals(byteArrayOf(0, 0, 3, 1, 0, 0, 3, 0), Sps.escape(byteArrayOf(0, 0, 1, 0, 0, 0)))
+    fun theRewriteDeclaresNoReordering() {
+        for (case in cases) {
+            val rewritten = Sps.hevcLowLatency(unhex(case.sps))!!
+            assertEquals(case.rewritten, rewritten.hex())
+            assertEquals(unhex(case.sps).size, rewritten.size)
+            assertEquals(case.size, Sps.hevcSize(rewritten))
+            assertEquals(listOf(0L), Sps.hevc(rewritten)!!.reorderValues)
+            assertNull(Sps.hevcLowLatency(rewritten))
+        }
+    }
+
+    @Test
+    fun emulationPreventionWorksBothWays() {
+        assertEquals("0000030100000300", Sps.insertEmulation(unhex("000001000000")).hex())
+        assertEquals("000001000002", Sps.removeEmulation(unhex("0000030100000302")).hex())
+    }
+
+    @Test
+    fun brokenSpsGivesNoSize() {
+        assertNull(Sps.hevcSize(unhex("4201")))
+        assertNull(Sps.hevcLowLatency(unhex("4201")))
+    }
+
+    @Test
+    fun avcSizeComesFromItsSps() {
+        val sps = BitWriter().apply {
+            bits(0x67, 8)
+            bits(66, 8)
+            bits(0, 8)
+            bits(31, 8)
+            ue(0)
+            ue(0)
+            ue(0)
+            ue(0)
+            ue(1)
+            bit(0)
+            ue(39)
+            ue(29)
+            bit(1)
+            bit(1)
+            bit(1)
+            ue(0)
+            ue(0)
+            ue(0)
+            ue(4)
+            bit(1)
+        }.bytes()
+        assertEquals(VideoSize(640, 472), Sps.avcSize(sps))
+    }
+
+    private fun BitWriter.ue(value: Int) {
+        val code = value + 1
+        val length = 32 - Integer.numberOfLeadingZeros(code)
+        repeat(length - 1) { bit(0) }
+        bits(code.toLong(), length)
     }
 }

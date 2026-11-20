@@ -5,10 +5,12 @@ on:
     branches: [main]
     paths:
       - "tools/devkit/**"
+      - "packages/camera-adapters/**"
       - ".github/workflows/devkit.yml"
   pull_request:
     paths:
       - "tools/devkit/**"
+      - "packages/camera-adapters/**"
       - ".github/workflows/devkit.yml"
 
 permissions:
@@ -35,3 +37,17 @@ jobs:
       - name: Test
         working-directory: tools/devkit/camera
         run: pytest -q
+
+  v380:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.13"
+      - name: Install the adapters
+        run: uv sync --frozen --package camera-adapters
+      - name: Test the V380 client against the simulator
+        working-directory: tools/devkit/v380
+        run: uv run --frozen --package camera-adapters pytest -q

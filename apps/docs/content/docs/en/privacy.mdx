@@ -1,0 +1,35 @@
+---
+title: Privacy
+description: What the system stores, where it stays, how long it is kept and how it is deleted.
+icon: Lock
+---
+
+## What stays where
+
+- A self-hosted site keeps everything on its own computer: video, snapshots, clips, faces, appearance vectors and plate reads live in its Postgres and events volumes and are never sent anywhere. No cloud service is used.
+- Enrolment photos go from the console to the API and on to the local analytics engine, which answers with the face's position, quality and embedding.
+- Camera passwords are stored encrypted with a key derived from SSS_SECRET_KEY and are never returned by the API. A camera added through a connector keeps its password on the connector.
+- Push notifications carry ids only; the app fetches the snapshot with its own token, so no picture passes through a push service.
+- Pairing telemetry records methods, adapters, steps, outcomes and durations, and nothing personal.
+
+## Faces
+
+Face recognition is off for every new organisation. Turning it on needs an admin or owner to accept the consent text, and the organisation records who accepted which version and when. The gallery of known people and unknown clusters belongs to one organisation and never crosses organisations.
+
+## Retention
+
+| Data | Kept |
+|---|---|
+| Events with their snapshots, clips and camera face samples | SSS_EVENTS_RETENTION_DAYS, 30 days by default |
+| Appearances and journeys | with their events |
+| Line counts | SSS_COUNTS_RETENTION_DAYS, 400 days by default |
+| Health samples | SSS_HEALTH_RETENTION_DAYS, 14 days by default |
+| Enrolled photos and a person's embeddings | until the person is deleted, which wipes them |
+
+## Accounts
+
+Anyone can create an account unless SSS_REGISTRATION_ENABLED is false. Accounts sign in with email and password; access tokens last 15 minutes, refresh tokens are stored only as hashes and rotate on every use, and a reused refresh token revokes the whole session. Sessions are listed and revocable, and an account can be deleted from the app or over the API.
+
+## Access
+
+Every page, API call and video connection needs a session or a token, and every request is checked against the member's role and site scope. The web entry point checks the session before it proxies video and snapshots, and answers 404 for every other go2rtc path and for the internal routes.

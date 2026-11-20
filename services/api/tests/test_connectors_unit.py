@@ -5,6 +5,7 @@ import httpx
 import pytest
 from pydantic import ValidationError
 
+from app.core.config import settings
 from app.core.exceptions import BadGateway, Conflict
 from app.core.security import encrypt_secret
 from app.models import Connector, ConnectorPairing
@@ -21,6 +22,11 @@ from app.modules.devices.services.connector_pairing import (
 )
 
 NOW = datetime(2026, 11, 20, 12, 0, tzinfo=UTC)
+
+
+@pytest.fixture(autouse=True)
+def secret(monkeypatch):
+    monkeypatch.setattr(settings, "secret_key", "test-secret")
 
 
 @pytest.mark.parametrize(

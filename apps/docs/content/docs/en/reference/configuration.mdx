@@ -1,0 +1,9 @@
+---
+title: Configuration
+description: Every environment variable, generated from .env.example and the settings the services read.
+icon: SlidersHorizontal
+---
+
+Every service reads its settings from the environment. compose passes the repository's .env file to the API and the analytics engine, and interpolates the rest into the services that need them. .env mirrors .env.example group by group; copy the example and change what your site needs.
+
+<include>../../../../generated/configuration.md</include>

@@ -1,0 +1,28 @@
+---
+title: Camera compatibility
+description: The camera adapters, what each can do, and every camera and recorder family in the model catalog.
+icon: Cctv
+---
+
+A camera is reached through an adapter, a Python package in packages/camera-adapters that identifies the device, finds its streams and carries out its controls. The registry picks the adapter of a device from its fingerprint: the ONVIF manufacturer and model, the ports it opens, its web server banner, the vendor prefix of its hardware address and the V380 probe, matched against the model catalog. Among adapters that fit equally well, the higher priority wins.
+
+The tables on this page are generated from the adapters and the catalog when the site is built.
+
+## Adapters
+
+What an adapter can do is the most a camera reached through it can do. Each camera also stores a capability manifest of what it really has, read when it is identified, and the apps show only those controls: an EZVIZ camera goes through an adapter with PTZ control, yet a model without a motor shows no PTZ pad.
+
+<include>../../../../generated/cameras/adapters.md</include>
+
+## Model catalog
+
+<include>../../../../generated/cameras/catalog.md</include>
+
+## Camera notes
+
+- EZVIZ cameras serve RTSP and ONVIF only with Local Service Settings switched on in the EZVIZ app; the login is admin with the camera's image encryption password.
+- V380 cameras stop answering RTSP once a device password is set, and some models have no RTSP at all, so each V380 camera gets a bridge that speaks the V380 protocol on port 8800 and serves RTSP and ONVIF with PTZ, light and siren. The bridges have no authentication and stay on the internal network. The V380 support is being reimplemented from the project's own protocol specification. <Status kind="planned" />
+- A camera with several lenses stacked in one picture is registered with its number of lenses, and every view, the wall and the analytics treat each band as its own lens.
+- The cameras' own ONVIF events carry no person or vehicle labels; the labels come from the [analytics](../analytics/index.mdx).
+
+To add a vendor or a whole new kind of camera, see [adding a camera adapter](../contributing/camera-adapter.mdx).

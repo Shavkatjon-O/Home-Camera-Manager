@@ -1,0 +1,41 @@
+---
+title: Zones, lines and rules
+description: Zones with dwell, loitering and crowd rules, directed lines, areas, and zones on a moving lens.
+icon: Shapes
+---
+
+Zones and lines are drawn on a fresh picture of a view, in the console on the camera page or in the mobile app, and stored in normalised coordinates. The engine picks up every change within 5 s without restarting.
+
+## Zones
+
+A zone is a polygon with:
+
+- a class filter: people, vehicles and animals;
+- a minimum dwell, how long an object must stay inside before it counts;
+- an optional loitering time, after which a person inside raises loitering;
+- an optional crowd count, the number of objects inside at once that raises crowding;
+- a schedule and an alert policy, which [arm modes](./arm-modes.mdx) explain.
+
+An object is inside when its foot point, the bottom centre of its box, is inside. An intrusion opens when an object has stayed inside for the dwell and closes once nothing qualifying has been inside for the close delay. Each zone keeps one event per label, and vehicles open vehicle events. A zone may cover the whole view.
+
+## Lines
+
+A line counts crossings in both directions. Crossing from the negative to the positive side is in; for a line drawn from left to right that means moving down the picture. An object must clear the line by a margin on both sides and its path must cut the drawn segment. Crossings are counted by the minute for [counts](./counts.mdx), and a line can alert like a zone.
+
+## Areas
+
+An area is bounded by lines: crossings in add to its occupancy and crossings out take from it. An area resets once a day at its reset time and can be set by hand.
+
+## What does not count
+
+Several rules keep scenery from raising events:
+
+- An object counts only after the detector itself found it 4 times within 2 s, because the tracker carries a lost box for a few frames.
+- Vehicles, and anything already in the picture when a view starts, count only after they move away from where they were first seen; an object at rest for minutes becomes part of the scene and must move away like a new one. Parked cars and standing false detections stay silent.
+- A person box inside a vehicle, above its bottom edge, is ignored, because seats seen through a windscreen look like people.
+- The same object crossing the same line again within 3 s is ignored, and vehicles never loiter.
+- A track the tracker loses and finds again near the same place within a few seconds stays the same object.
+
+## Zones on a moving lens
+
+A zone drawn on a lens that turns, such as the moving lens of a PTZ camera, keeps the picture it was drawn on as its reference. While the view no longer matches that picture, its zones and lines are suspended and the camera page says so; whole-view zones keep working.
