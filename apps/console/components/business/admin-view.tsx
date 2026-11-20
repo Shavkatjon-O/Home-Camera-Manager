@@ -6,6 +6,7 @@ import { AdminConnectors } from "@/components/business/admin-connectors"
 import { AdminOrganisations } from "@/components/business/admin-organisations"
 import { AuditTable } from "@/components/business/audit-table"
 import { PageFrame } from "@/components/shell/page-frame"
+import { RoleGate } from "@/components/shell/role-gate"
 import { Segmented } from "@/components/shell/segmented"
 import { api } from "@/lib/api"
 import type { AuditQuery } from "@/lib/types"
@@ -30,6 +31,14 @@ function loadAudit(params: AuditQuery, signal: AbortSignal) {
  * @returns The page inside the application frame.
  */
 export function AdminView() {
+  return (
+    <RoleGate platformAdmin>
+      <AdminSections />
+    </RoleGate>
+  )
+}
+
+function AdminSections() {
   const [section, setSection] = React.useState<Section>("organisations")
   return (
     <PageFrame actions={<Segmented<Section> label="Section" value={section} options={SECTIONS} onChange={setSection} />}>
