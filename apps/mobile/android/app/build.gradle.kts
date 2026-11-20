@@ -18,7 +18,7 @@ if (keyFile.exists()) {
 
 android {
     namespace = "uz.smartsurveillance.app"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
