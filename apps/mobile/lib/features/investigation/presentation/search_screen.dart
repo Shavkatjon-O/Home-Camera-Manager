@@ -241,6 +241,8 @@ class _FaceSearchState extends ConsumerState<FaceSearch> with AutomaticKeepAlive
     final l10n = context.l10n;
     final p = context.palette;
     final demo = ref.read(backendProvider).demo;
+    // Tighter padding keeps both labels on one line on narrow phones.
+    final compact = ButtonStyle(padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: Gaps.md)));
     return ListView(
       padding: const EdgeInsets.only(bottom: Gaps.xxl),
       children: [
@@ -271,6 +273,7 @@ class _FaceSearchState extends ConsumerState<FaceSearch> with AutomaticKeepAlive
                     Expanded(
                       child: FilledButton.icon(
                         onPressed: () => pick(ImageSource.gallery),
+                        style: compact,
                         icon: const Icon(Icons.photo_library_outlined, size: 18),
                         label: Text(l10n.searchFacesPhoto),
                       ),
@@ -279,6 +282,7 @@ class _FaceSearchState extends ConsumerState<FaceSearch> with AutomaticKeepAlive
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: () => pick(ImageSource.camera),
+                        style: compact,
                         icon: const Icon(Icons.photo_camera_outlined, size: 18),
                         label: Text(l10n.searchFacesCamera),
                       ),

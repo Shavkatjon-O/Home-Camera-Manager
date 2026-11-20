@@ -749,7 +749,7 @@
   "planClipStorage": "Хранилище клипов",
   "planNotifications": "Отправлено уведомлений",
   "planOf": "{used} из {limit}",
-  "planSince": "С {date}",
+  "planSince": "с {date}",
   "planGigabytes": "{value} ГБ",
   "featureObjects": "Оставленные и забранные предметы",
   "featureJourneys": "Маршруты",
@@ -798,5 +798,6 @@
   "actionFaceDelete": "Удалил лица",
   "actionOrgPlan": "Сменил тариф",
   "capabilityNone": "У этой камеры нет элементов управления.",
-  "eventsAlertCount": "{count, plural, one{{count} тревога} few{{count} тревоги} many{{count} тревог} other{{count} тревоги}}"
+  "eventsAlertCount": "{count, plural, one{{count} тревога} few{{count} тревоги} many{{count} тревог} other{{count} тревоги}}",
+  "discoveredImport": "Импорт"
 }

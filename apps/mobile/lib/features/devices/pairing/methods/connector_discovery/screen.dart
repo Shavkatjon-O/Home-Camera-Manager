@@ -129,7 +129,7 @@ class _DiscoveredCamerasScreenState extends ConsumerState<DiscoveredCamerasScree
                         if (camera.cameraId != null)
                           Tag(l10n.onboardingAdded, tone: TagTone.ok, icon: Icons.check_rounded)
                         else
-                          Text(camera.nvr ? l10n.methodNvrImport : l10n.onboardingAddCamera, style: context.text.labelLarge),
+                          Text(camera.nvr ? l10n.discoveredImport : l10n.onboardingAddCamera, style: context.text.labelLarge),
                       ],
                     ),
                   ),

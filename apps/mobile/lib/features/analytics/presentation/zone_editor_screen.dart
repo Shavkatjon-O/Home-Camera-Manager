@@ -37,6 +37,9 @@ class RulesPainter extends CustomPainter {
   final List<List<Offset>>? zonePoints;
   final List<List<Offset>>? linePoints;
 
+  final List<Rect> placed = [];
+  Size area = Size.zero;
+
   Offset px(Offset point, Size size) => Offset(point.dx * size.width, point.dy * size.height);
 
   void label(Canvas canvas, String text, Offset at, Color color) {
@@ -47,7 +50,15 @@ class RulesPainter extends CustomPainter {
       ),
       textDirection: TextDirection.ltr,
     )..layout();
-    final box = Rect.fromCenter(center: at, width: painter.width + 10, height: painter.height + 4);
+    final start = Rect.fromCenter(center: at, width: painter.width + 10, height: painter.height + 4);
+    var box = start;
+    // Move a label that would cover another one to the nearest free row inside the picture.
+    for (final shift in const [1, -1, 2, -2]) {
+      if (!placed.any(box.overlaps)) break;
+      final moved = start.translate(0, shift * (start.height + 2));
+      if (moved.top >= 0 && moved.bottom <= area.height) box = moved;
+    }
+    placed.add(box);
     canvas.drawRRect(RRect.fromRectAndRadius(box, const Radius.circular(4)), Paint()..color = color.withValues(alpha: 0.85));
     painter.paint(canvas, box.topLeft + const Offset(5, 2));
   }
@@ -62,6 +73,8 @@ class RulesPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    placed.clear();
+    area = size;
     final stroke = thin ? 1.5 : 2.2;
     for (var i = 0; i < zones.length; i++) {
       final zone = zones[i];

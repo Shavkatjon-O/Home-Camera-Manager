@@ -4591,7 +4591,7 @@ abstract class AppLocalizations {
   /// No description provided for @planSince.
   ///
   /// In en, this message translates to:
-  /// **'Since {date}'**
+  /// **'since {date}'**
   String planSince(String date);
 
   /// No description provided for @planGigabytes.
@@ -4887,6 +4887,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 alert} other{{count} alerts}}'**
   String eventsAlertCount(int count);
+
+  /// Action on a discovered recorder that opens its channel import.
+  ///
+  /// In en, this message translates to:
+  /// **'Import'**
+  String get discoveredImport;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

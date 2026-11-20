@@ -1468,7 +1468,7 @@
       }
     }
   },
-  "planSince": "Since {date}",
+  "planSince": "since {date}",
   "@planSince": {
     "placeholders": {
       "date": {
@@ -1559,5 +1559,9 @@
         "type": "int"
       }
     }
+  },
+  "discoveredImport": "Import",
+  "@discoveredImport": {
+    "description": "Action on a discovered recorder that opens its channel import."
   }
 }

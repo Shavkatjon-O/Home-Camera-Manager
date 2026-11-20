@@ -2592,7 +2592,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String planSince(String date) {
-    return 'Since $date';
+    return 'since $date';
   }
 
   @override
@@ -2765,4 +2765,7 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get discoveredImport => 'Import';
 }
