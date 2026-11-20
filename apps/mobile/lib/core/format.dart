@@ -1,8 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
-
-import '../l10n/l10n.dart';
-
+import 'package:smart_surveillance/app/l10n/l10n.dart';
 class Formats {
   Formats(this.context, this.now);
 

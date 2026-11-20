@@ -8,7 +8,7 @@ analyzer:
     - "**/*.g.dart"
     - "**/*.freezed.dart"
     - lib/data/api/generated/**
-    - lib/l10n/generated/**
+    - lib/app/l10n/generated/**
     - packages/**
     - build/**
     - android/**

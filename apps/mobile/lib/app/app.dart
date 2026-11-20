@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../core/theme/theme.dart';
-import '../features/shell/app_lock.dart';
-import '../l10n/l10n.dart';
-import 'providers.dart';
-import 'router.dart';
-
+import 'package:smart_surveillance/app/l10n/l10n.dart';
+import 'package:smart_surveillance/app/router.dart';
+import 'package:smart_surveillance/app/settings/appearance.dart';
+import 'package:smart_surveillance/app/theme/theme.dart';
+import 'package:smart_surveillance/features/identity/presentation/app_lock.dart';
 class SurveillanceApp extends ConsumerWidget {
   const SurveillanceApp({super.key});
 

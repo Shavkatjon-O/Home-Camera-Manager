@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import 'app/app.dart';
-import 'app/providers.dart';
-import 'core/config.dart';
-import 'core/preferences.dart';
-import 'data/backend_factory.dart';
-
+import 'package:smart_surveillance/app/app.dart';
+import 'package:smart_surveillance/app/backend.dart';
+import 'package:smart_surveillance/app/backend_factory.dart';
+import 'package:smart_surveillance/core/config.dart';
+import 'package:smart_surveillance/core/providers.dart';
+import 'package:smart_surveillance/core/storage/preferences.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final config = AppConfig.fromEnvironment();

@@ -1,13 +1,11 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import 'providers.dart';
-import 'routes.dart';
+import 'package:smart_surveillance/app/routes.dart';
+import 'package:smart_surveillance/features/identity/presentation/session.dart';
+import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
 
 part 'router.g.dart';
-
 const authPaths = ['/welcome', '/sign-in', '/sign-up', '/forgot', '/reset'];
 
 @Riverpod(keepAlive: true)

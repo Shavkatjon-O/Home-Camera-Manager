@@ -1,0 +1,35 @@
+import 'package:smart_surveillance/app/backend.dart';
+import 'package:smart_surveillance/app/demo/fake_backend.dart';
+import 'package:smart_surveillance/app/demo/fake_store.dart';
+import 'package:smart_surveillance/core/config.dart';
+import 'package:smart_surveillance/core/network/failure.dart';
+import 'package:smart_surveillance/core/storage/preferences.dart';
+import 'package:smart_surveillance/data/api/api_backend.dart';
+import 'package:smart_surveillance/features/alerting/data/fake_notification_repository.dart';
+import 'package:smart_surveillance/features/alerting/domain/notification_repository.dart';
+import 'package:smart_surveillance/features/analytics/data/fake_analytics_repository.dart';
+import 'package:smart_surveillance/features/analytics/domain/analytics_repository.dart';
+import 'package:smart_surveillance/features/billing/data/fake_business_repository.dart';
+import 'package:smart_surveillance/features/billing/domain/business_repository.dart';
+import 'package:smart_surveillance/features/devices/data/fake_device_repository.dart';
+import 'package:smart_surveillance/features/devices/data/fake_pairing_repository.dart';
+import 'package:smart_surveillance/features/devices/domain/device_repository.dart';
+import 'package:smart_surveillance/features/devices/domain/pairing_repository.dart';
+import 'package:smart_surveillance/features/events/data/fake_event_repository.dart';
+import 'package:smart_surveillance/features/events/domain/event_repository.dart';
+import 'package:smart_surveillance/features/identity/data/fake_auth_repository.dart';
+import 'package:smart_surveillance/features/identity/domain/auth_repository.dart';
+import 'package:smart_surveillance/features/investigation/data/fake_people_repository.dart';
+import 'package:smart_surveillance/features/investigation/data/fake_search_repository.dart';
+import 'package:smart_surveillance/features/investigation/domain/people_repository.dart';
+import 'package:smart_surveillance/features/investigation/domain/search_repository.dart';
+import 'package:smart_surveillance/features/media/data/fake_live_repository.dart';
+import 'package:smart_surveillance/features/media/domain/media_repository.dart';
+import 'package:smart_surveillance/features/operations/data/fake_health_repository.dart';
+import 'package:smart_surveillance/features/operations/domain/health_repository.dart';
+import 'package:smart_surveillance/features/tenancy/data/fake_tenancy_repository.dart';
+import 'package:smart_surveillance/features/tenancy/domain/tenancy_repository.dart';
+Future<Backend> createBackend(AppConfig config, Preferences preferences) async {
+  if (config.mode == BackendMode.fake) return fakeBackend(FakeStore());
+  return ApiBackend.create(baseUrl: preferences.serverUrl ?? config.apiUrl);
+}

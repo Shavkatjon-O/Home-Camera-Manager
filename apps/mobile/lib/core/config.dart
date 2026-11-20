@@ -1,5 +1,4 @@
 import 'package:flutter/services.dart';
-
 enum BackendMode { fake, api }
 
 class AppConfig {
