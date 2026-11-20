@@ -1,4 +1,12 @@
 #!/bin/sh
+#
+# Runs one composed TV stream as a go2rtc exec source: fetches the ffmpeg arguments of the stream from the API,
+# starts ffmpeg with them writing to go2rtc, reports inputs that fail to open back to the API and ends ffmpeg when
+# the API's arguments change so that go2rtc restarts the stream.
+# Arguments:
+#   $1: name of the stream, such as tv_wall or tv_tile_0
+#   $2: go2rtc output URL that ffmpeg publishes to
+
 set -eu
 url="http://backend:8000/internal/tv/streams/$1"
 args=$(curl -fsS --max-time 10 "$url")

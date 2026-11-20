@@ -1,3 +1,8 @@
+// Custom bounding box parser of the RF-DETR detector for the DeepStream nvinfer plugin.
+//
+// RF-DETR outputs one box and one set of class logits for each of a fixed number of queries. The parser turns every
+// query whose best class passes its pre-cluster threshold into a detection in network input pixels.
+
 #include <algorithm>
 #include <cmath>
 #include <cstring>
@@ -7,6 +12,14 @@
 
 namespace {
 
+// Looks up an output layer of the network by name.
+//
+// Args:
+//   layers: Output layers of the network.
+//   name: Name of the wanted layer.
+//
+// Returns:
+//   The layer, or nullptr when no layer has that name.
 const NvDsInferLayerInfo *find_layer(const std::vector<NvDsInferLayerInfo> &layers, const char *name) {
   for (const auto &layer : layers) {
     if (layer.layerName != nullptr && std::strcmp(layer.layerName, name) == 0) {
@@ -16,12 +29,34 @@ const NvDsInferLayerInfo *find_layer(const std::vector<NvDsInferLayerInfo> &laye
   return nullptr;
 }
 
+// Maps a logit to a probability, clamping the input so that exp cannot overflow.
+//
+// Args:
+//   value: Raw logit.
+//
+// Returns:
+//   The logistic function of the value, between 0 and 1.
 float sigmoid(float value) {
   return 1.0f / (1.0f + std::exp(-std::clamp(value, -88.0f, 88.0f)));
 }
 
 }
 
+// Parses the RF-DETR output layers into detections.
+//
+// Reads the "dets" layer, with one center-based box (cx, cy, w, h normalised to 0..1) per query, and the "labels"
+// layer, with one logit per class and query. For each query it takes the class with the highest sigmoid score that
+// passes that class's pre-cluster threshold, converts the box to clamped corner pixels of the network input and drops
+// boxes smaller than one pixel.
+//
+// Args:
+//   outputLayersInfo: Output layers of the network, which must hold float "dets" and "labels".
+//   networkInfo: Width and height of the network input.
+//   detectionParams: Number of configured classes and the pre-cluster threshold of each class.
+//   objectList: Receives the detections.
+//
+// Returns:
+//   true when the layers were found and parsed, false when a layer is missing or not float.
 extern "C" bool NvDsInferParseRfDetr(std::vector<NvDsInferLayerInfo> const &outputLayersInfo,
                                      NvDsInferNetworkInfo const &networkInfo,
                                      NvDsInferParseDetectionParams const &detectionParams,
@@ -76,4 +111,5 @@ extern "C" bool NvDsInferParseRfDetr(std::vector<NvDsInferLayerInfo> const &outp
   return true;
 }
 
+// Verifies at compile time that the parser matches the signature nvinfer expects.
 CHECK_CUSTOM_PARSE_FUNC_PROTOTYPE(NvDsInferParseRfDetr);

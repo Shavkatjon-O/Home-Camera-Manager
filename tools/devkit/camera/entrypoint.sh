@@ -1,4 +1,13 @@
 #!/bin/sh
+#
+# Starts the simulated camera: writes the go2rtc configuration for the main and optional sub stream from the
+# CAMERA_ environment variables, starts the ONVIF and discovery responder in the background and runs go2rtc.
+# Globals:
+#   CAMERA_MAIN: video file of the main stream
+#   CAMERA_SUB: video file of the sub stream, none when empty
+#   CAMERA_USERNAME: login for RTSP, default admin
+#   CAMERA_PASSWORD: password for RTSP, no authentication when empty
+
 set -eu
 
 mkdir -p /config

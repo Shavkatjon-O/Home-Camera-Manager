@@ -1,6 +1,18 @@
 #!/bin/sh
+#
+# Downloads the InsightFace antelopev2 pack, checks the archive and the two models the face stage uses against
+# their pinned checksums, extracts them into SSS_ANALYTICS_FACE_MODELS_DIR and prints their licence.
+# Arguments:
+#   --keep-archive: keep the downloaded zip next to the models
+#   -h, --help: print the usage
+# Globals:
+#   SSS_ANALYTICS_FACE_MODELS_DIR: target folder, default services/analytics/models/face
+
 set -eu
 
+# Prints the usage text.
+# Outputs:
+#   Writes the usage to stdout.
 usage() {
   echo "usage: scripts/download-face-models.sh [--keep-archive]"
   echo
@@ -29,10 +41,21 @@ detector_sum=5838f7fe053675b1c7a08b633df49e7af5495cee0493c7dcf6697200b85b5b91
 embedder=glintr100.onnx
 embedder_sum=4ab1d6435d639628a6f3e5008dd4f929edf4c4124b1a7169e1048f9fef534cdf
 
+# Prints the SHA-256 checksum of a file.
+# Arguments:
+#   $1: path of the file
+# Outputs:
+#   Writes the checksum to stdout.
 checksum() {
   sha256sum "$1" | cut -d' ' -f1
 }
 
+# Tests whether a file exists with the expected checksum.
+# Arguments:
+#   $1: path of the file
+#   $2: expected SHA-256 checksum
+# Returns:
+#   0 when the file matches, non-zero otherwise.
 verified() {
   [ -f "$1" ] && [ "$(checksum "$1")" = "$2" ]
 }

@@ -1,6 +1,18 @@
 #!/bin/sh
+#
+# Downloads the analytics detector models into SSS_ANALYTICS_MODELS_DIR, checks every file against its pinned
+# checksum, exports the ONNX model and prints each licence.
+# Arguments:
+#   --all: also fetch the candidate detectors the default was chosen from
+#   -h, --help: print the usage
+# Globals:
+#   SSS_ANALYTICS_MODELS_DIR: target folder, default services/analytics/models
+
 set -eu
 
+# Prints the usage text.
+# Outputs:
+#   Writes the usage to stdout.
 usage() {
   echo "usage: scripts/download-models.sh [--all]"
   echo
@@ -26,10 +38,24 @@ onnx_version=1.23.2
 export_image=pytorch/pytorch:2.8.0-cuda12.8-cudnn9-runtime
 ngc=https://api.ngc.nvidia.com/v2/models/nvidia/tao
 
+# Prints the SHA-256 checksum of a file.
+# Arguments:
+#   $1: path of the file
+# Outputs:
+#   Writes the checksum to stdout.
 checksum() {
   sha256sum "$1" | cut -d' ' -f1
 }
 
+# Downloads a file unless a copy with the pinned checksum exists, and verifies it.
+# Arguments:
+#   $1: URL to download
+#   $2: target path, whose folder is created
+#   $3: expected SHA-256 checksum
+# Outputs:
+#   Writes "ok" or "fetching" lines to stdout and a mismatch message to stderr.
+# Returns:
+#   Exits with status 1 on a checksum mismatch, after removing the partial download.
 fetch() {
   url=$1 target=$2 sum=$3
   mkdir -p "$(dirname "$target")"
@@ -49,6 +75,17 @@ fetch() {
   echo "ok       $target"
 }
 
+# Exports an RF-DETR checkpoint to ONNX in a throwaway container, unless the file exists.
+# Globals:
+#   models, rfdetr_version, onnx_version, export_image: target folder and pinned export tooling
+# Arguments:
+#   $1: variant name
+#   $2: input height
+#   $3: input width
+#   $4: weights file name inside the variant folder
+#   $5: SHA-256 of the reference export
+# Outputs:
+#   Writes the progress and whether the export matches the reference checksum to stdout.
 export_rfdetr() {
   variant=$1 height=$2 width=$3 weights=$4 sum=$5
   folder=$models/rf-detr/v1
@@ -117,6 +154,18 @@ PY
   fi
 }
 
+# Fetches the weights of an RF-DETR variant and exports them to ONNX.
+# Globals:
+#   models: target folder
+# Arguments:
+#   $1: variant name
+#   $2: weights URL
+#   $3: SHA-256 of the weights
+#   $4: input height
+#   $5: input width
+#   $6: SHA-256 of the reference ONNX export
+# Outputs:
+#   Writes the progress to stdout.
 rfdetr() {
   variant=$1 url=$2 weights_sum=$3 height=$4 width=$5 onnx_sum=$6
   fetch "$url" "$models/rf-detr/v1/rf-detr-$variant.pth" "$weights_sum"
