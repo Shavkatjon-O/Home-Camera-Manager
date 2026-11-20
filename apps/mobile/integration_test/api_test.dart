@@ -21,6 +21,10 @@ void main() {
   const screenshots = bool.fromEnvironment('SCREENSHOTS');
   const api = String.fromEnvironment('SSS_API_URL', defaultValue: 'http://10.0.2.2:18700');
   const mailpit = String.fromEnvironment('SSS_MAILPIT_URL', defaultValue: 'http://10.0.2.2:18725');
+  const telegramBot = String.fromEnvironment(
+    'SSS_TELEGRAM_FAKE_URL',
+    defaultValue: 'http://10.0.2.2:18781',
+  );
   const password = String.fromEnvironment('SSS_TEST_PASSWORD');
   const domain = String.fromEnvironment('SSS_TEST_DOMAIN', defaultValue: 'example.com');
   const cameraHost = String.fromEnvironment('SSS_TEST_CAMERA_HOST');
@@ -42,6 +46,22 @@ void main() {
       final request = await client.getUrl(Uri.parse(url));
       final response = await request.close();
       return jsonDecode(await response.transform(utf8.decoder).join());
+    } finally {
+      client.close();
+    }
+  }
+
+  Future<int> postJson(String url, Map<String, Object?> body) async {
+    final client = HttpClient();
+    try {
+      final request = await client.postUrl(Uri.parse(url));
+      final bytes = utf8.encode(jsonEncode(body));
+      request.headers.contentType = ContentType.json;
+      request.contentLength = bytes.length;
+      request.add(bytes);
+      final response = await request.close();
+      await response.drain<void>();
+      return response.statusCode;
     } finally {
       client.close();
     }
@@ -160,6 +180,63 @@ void main() {
     await open(tester, container, '/more/health');
     await settle(tester, const Duration(seconds: 3));
     await shot(tester, 'r18-health');
+
+    await open(tester, container, '/more/plan');
+    await settle(tester, const Duration(seconds: 3));
+    expect(find.text('Internal'), findsWidgets);
+    await shot(tester, 'r25-plan');
+    await open(tester, container, '/more/activity');
+    await settle(tester, const Duration(seconds: 3));
+    await shot(tester, 'r26-activity');
+
+    final business = container.read(backendProvider).business;
+    final organisation = (await container.read(currentSiteProvider.future))!.organisation.id;
+    final linked = {for (final chat in (await business.telegramChats(organisation)).items) chat.id};
+    final link = await business.linkTelegram(organisation);
+    final token = Uri.parse(link.url).queryParameters['start']!;
+    final chatId = 1000 + DateTime.now().millisecondsSinceEpoch % 100000;
+    expect(
+      await postJson('$telegramBot/fake/start', {
+        'chat_id': chatId,
+        'token': token,
+        'chat_type': 'private',
+      }),
+      lessThan(300),
+    );
+    await open(tester, container, '/more/notifications');
+    await settle(tester, const Duration(seconds: 3));
+    await tester.scrollUntilVisible(find.text('Send a test'), 300);
+    await settle(tester);
+    await shot(tester, 'r27-telegram');
+    await tester.tap(find.text('Send a test'));
+    await settle(tester, const Duration(seconds: 2));
+    await shot(tester, 'r28-telegram-test');
+    final chats = await business.telegramChats(organisation);
+    final added = chats.items.where((chat) => !linked.contains(chat.id)).toList();
+    expect(added, isNotEmpty);
+    for (final chat in added) {
+      await business.unlinkTelegram(organisation, chat.id);
+    }
+
+    await open(tester, container, '/more/site');
+    await settle(tester, const Duration(seconds: 2));
+    final tenancy = container.read(backendProvider).tenancy;
+    final current = (await container.read(currentSiteProvider.future))!.site;
+    await tester.scrollUntilVisible(
+      find.text('14 days'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.text('14 days'));
+    await settle(tester);
+    await shot(tester, 'r29-retention');
+    await tester.tap(find.text('Save'));
+    await settle(tester, const Duration(seconds: 2));
+    final saved = await tenancy.sites(current.organisationId);
+    expect(saved.firstWhere((s) => s.id == current.id).retentionDays, 14);
+    await tenancy.updateSite(
+      saved.firstWhere((s) => s.id == current.id).copyWith(retentionDays: current.retentionDays),
+    );
 
     if (cameraHost.isNotEmpty) {
       final sites = await container.read(allSitesProvider.future);
