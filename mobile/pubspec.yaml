@@ -1,0 +1,93 @@
+name: smart_surveillance
+description: Smart Surveillance mobile app for sites watched by Smart Surveillance System.
+publish_to: none
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.13.3
+  flutter: ">=3.47.4"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  flutter_riverpod: ^3.5.0
+  riverpod_annotation: ^4.0.8
+  go_router: ^18.1.4
+
+  dio: ^5.11.1
+  retrofit: ^4.10.0
+  json_annotation: ^4.12.0
+  freezed_annotation: ^3.1.0
+  eventflux: ^3.0.2
+
+  flutter_webrtc: ^1.6.3
+  video_player: ^2.14.1
+  cached_network_image: ^4.0.7
+  fl_chart: ^1.3.1
+  flutter_zxing: ^3.1.1
+
+  flutter_secure_storage: ^11.2.0
+  shared_preferences: ^2.5.6
+  local_auth: ^3.0.2
+  permission_handler: ^13.0.2
+  flutter_local_notifications: ^23.0.3
+  push_bridge:
+    path: packages/push_bridge_foss
+
+  intl: ^0.20.2
+  package_info_plus: ^10.2.2
+  path_provider: ^2.1.6
+  share_plus: ^13.3.1
+  image_picker: ^1.2.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+  build_runner: ^2.17.1
+  riverpod_generator: ^4.0.10
+  go_router_builder: ^4.5.3
+  freezed: ^4.0.3
+  json_serializable: ^6.15.2
+  retrofit_generator: ^10.3.3
+  swagger_parser: ^2.3.0
+
+  alchemist: ^0.15.0
+  mocktail: ^1.0.5
+  patrol: ^4.11.0
+
+flutter:
+  uses-material-design: true
+  generate: true
+  fonts:
+    - family: Geist
+      fonts:
+        - asset: assets/fonts/Geist-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Geist-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Geist-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Geist-Bold.ttf
+          weight: 700
+    - family: GeistMono
+      fonts:
+        - asset: assets/fonts/GeistMono-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/GeistMono-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/GeistMono-SemiBold.ttf
+          weight: 600
+  assets:
+    - assets/licenses/
+
+patrol:
+  app_name: Smart Surveillance
+  android:
+    package_name: uz.smartsurveillance.app
