@@ -7,6 +7,7 @@ from urllib.parse import quote
 from uuid import UUID
 
 from camera_adapters.base import AdapterError, ControlCapability, Identity, Target
+from camera_adapters.classifier import V380_PORT
 from camera_adapters.fingerprint import collect
 from camera_adapters.registry import Registry, default_registry
 from camera_adapters.rtsp.describe import describe
@@ -126,10 +127,50 @@ class CameraManager:
             if not camera.enabled:
                 continue
             main, sub = stream_names(camera.uuid)
-            streams[main] = [rtsp_source(camera, camera.main_path)]
+            streams[main] = [self.source(camera, "main", camera.main_path)]
             if camera.sub_path:
-                streams[sub] = [rtsp_source(camera, camera.sub_path)]
+                streams[sub] = [self.source(camera, "sub", camera.sub_path)]
         return streams
+
+    def source(self, camera: CameraEntry, stream: str, path: str) -> str:
+        """Choose the go2rtc source of a camera stream.
+
+        Args:
+            camera: The camera.
+            stream: main or sub.
+            path: Its RTSP path.
+
+        Returns:
+            The adapter's own source for a camera that speaks no RTSP, such as a V380 camera with its device id,
+            otherwise the RTSP address.
+        """
+        adapter = self.registry.adapters.get(camera.brand)
+        if adapter is not None:
+            try:
+                own = adapter.go2rtc_source(self.camera_target(camera), stream)
+            except AdapterError:
+                own = None
+            if own:
+                return own
+        return rtsp_source(camera, path)
+
+    def camera_target(self, camera: CameraEntry) -> Target:
+        """Build the adapter target of a stored camera.
+
+        Args:
+            camera: The camera.
+
+        Returns:
+            The target with its credentials.
+        """
+        return Target(
+            host=camera.host,
+            port=camera.onvif_port,
+            rtsp_port=camera.rtsp_port,
+            username=camera.credentials.username,
+            password=camera.credentials.password,
+            device_id=camera.credentials.device_id,
+        )
 
     async def sync(self) -> None:
         """Bring go2rtc in line with the cameras, logging a failure."""
@@ -231,7 +272,8 @@ class CameraManager:
             Returns:
                 Its status.
             """
-            online = await port_open(camera.host, camera.rtsp_port, PROBE_TIMEOUT_SECONDS)
+            port = V380_PORT if camera.brand == "v380" and camera.credentials.device_id else camera.rtsp_port
+            online = await port_open(camera.host, port, PROBE_TIMEOUT_SECONDS)
             return {"uuid": camera.uuid, "online": online, "error": None if online else "The camera does not answer"}
 
         return list(await asyncio.gather(*(one(camera) for camera in self.cameras.values() if camera.enabled)))
@@ -292,14 +334,16 @@ class CameraManager:
             adapter = self.registry.get(brand) if brand in self.registry.adapters else self.registry.get("onvif")
             ptz = None
             vendor = model = None
-            if not target.main_path:
+            native = brand == "v380" and bool(target.device_id)
+            if not target.main_path or native:
                 identity = await adapter.identify(target)
                 first = identity.channels[0]
                 target = replace(target, main_path=first.main_path, sub_path=target.sub_path or first.sub_path)
                 target = replace(target, rtsp_port=target.rtsp_port or identity.rtsp_port)
                 ptz, vendor, model = first.ptz, identity.vendor, identity.model
-            url = f"rtsp://{target.host}:{target.rtsp_port or 554}{target.main_path}"
-            await describe(url, target.username, target.password)
+            if not native:
+                url = f"rtsp://{target.host}:{target.rtsp_port or 554}{target.main_path}"
+                await describe(url, target.username, target.password)
         except AdapterError as exc:
             return {"ok": False, "error": exc.message}
         return {
@@ -330,12 +374,4 @@ class CameraManager:
         adapter = self.registry.adapters.get(camera.brand) or self.registry.get("onvif")
         if not isinstance(adapter, ControlCapability):
             raise AdapterError("unsupported", "The camera cannot be moved")
-        target = Target(
-            host=camera.host,
-            port=camera.onvif_port,
-            rtsp_port=camera.rtsp_port,
-            username=camera.credentials.username,
-            password=camera.credentials.password,
-            device_id=camera.credentials.device_id,
-        )
-        return adapter, target, camera.channel
+        return adapter, self.camera_target(camera), camera.channel

@@ -81,3 +81,20 @@ async def test_reconcile_follows_central_and_keeps_local_credentials(tmp_path):
 def test_go2rtc_runs_without_webrtc_and_with_the_central_login():
     text = go2rtc_config("127.0.0.1:1984", 8554, "central", "secret")
     assert '"webrtc": {"listen": ""}' in text and '"username": "central"' in text and '"listen": ":8554"' in text
+
+
+async def test_a_v380_camera_with_its_device_id_streams_through_the_client(tmp_path, monkeypatch):
+    monkeypatch.setenv("SSS_V380_CONTROL_DIR", str(tmp_path / "v380"))
+    recorder = Recorder()
+    cameras = manager(tmp_path, recorder)
+    v380 = config(brand="v380", rtsp_port=8554, password="cam secret", device_id="12345678")
+    await cameras.put(UUID_ONE, v380)
+    main, sub = stream_names(UUID_ONE)
+    sources = cameras.desired()
+    assert sources[main][0].startswith("exec:") and "--stream main" in sources[main][0]
+    assert sources[sub][0].startswith("exec:") and "--stream sub" in sources[sub][0]
+    assert "cam secret" not in sources[main][0]
+    assert (tmp_path / "v380" / "12345678.password").read_text() == "cam secret"
+    await cameras.put(UUID_TWO, config(brand="v380", host="v380-relay", rtsp_port=8554))
+    relay_main, _ = stream_names(UUID_TWO)
+    assert cameras.desired()[relay_main] == ["rtsp://admin:p%40ss%3Aword@v380-relay:8554/main"]
