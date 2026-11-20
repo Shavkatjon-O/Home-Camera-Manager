@@ -69,7 +69,8 @@ class PlateSettings:
         widen_x: Share of the plate width added on each side before reading.
         widen_y: Share of the plate height added above and below before reading.
         min_confidence: Lowest character score of a read that is kept.
-        grey_spread: Largest mean channel spread of a picture taken as infrared.
+        grey_spread: Largest mean channel spread of a picture taken as infrared; infrared pictures measure about 0
+            and dull daylight crops of dark cars on concrete still about 9.
     """
 
     detect_threshold: float = 0.3
@@ -79,7 +80,7 @@ class PlateSettings:
     widen_x: float = 0.06
     widen_y: float = 0.2
     min_confidence: float = 0.5
-    grey_spread: float = 6.0
+    grey_spread: float = 2.0
 
     @classmethod
     def from_dict(cls, data: dict | None) -> PlateSettings:
