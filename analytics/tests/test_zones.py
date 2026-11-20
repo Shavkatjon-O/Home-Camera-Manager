@@ -14,7 +14,7 @@ def test_intrusion_opens_after_dwell_and_closes_after_delay():
     updates = run(rules, walk(1, "person", (0.1, 0.5), (0.9, 0.6), 4))
     assert actions(updates) == [("open", "intrusion")]
     opened = updates[0].event
-    assert opened.started_at == START + 1.0
+    assert opened.started_at == START + 1.6
     assert opened.label == "person"
     assert opened.zone_name == "Yard"
     assert opened.boxes[0]["object"] == 1
@@ -128,7 +128,7 @@ def test_loitering_fires_once_per_stay():
     updates = run(rules, frames)
     loitering = [update for update in updates if update.event.kind == EventKind.LOITERING]
     assert [update.action for update in loitering] == ["instant"]
-    assert loitering[0].event.started_at == START + 5
+    assert loitering[0].event.started_at == START + 5.6
 
 
 def test_lost_track_rejoins_and_keeps_its_dwell():
@@ -173,3 +173,29 @@ def test_vehicles_never_loiter():
     frames += [(3.2 + step / 5, [detection(8, "car", 0.4, 0.7)]) for step in range(40)]
     kinds = {update.event.kind.value for update in run(rules, frames)}
     assert kinds == {"vehicle"}
+
+
+def test_a_box_the_detector_found_once_never_counts():
+    from app.rules.model import Detection
+
+    rules = engine(zone())
+    frames = [(0.0, [detection(1, "person", 0.5, 0.6)])]
+    for step in range(1, 30):
+        carried = detection(1, "person", 0.5, 0.6)
+        frames.append((step / 5, [Detection(1, "person", 0.3, carried.box, detected=False)]))
+    assert run(rules, frames) == []
+
+
+def test_a_person_box_inside_a_parked_car_is_ignored():
+    from app.rules.model import Box, Detection
+
+    rules = engine(zone())
+    car = Detection(9, "car", 0.9, Box(0.3, 0.3, 0.6, 0.6))
+    frames = [
+        (step / 5, [car, Detection(4, "person", 0.6, Box(0.4 + step / 2000, 0.35, 0.45 + step / 2000, 0.45))])
+        for step in range(40)
+    ]
+    assert run(rules, frames) == []
+    walker = walk(5, "person", (0.2, 0.8), (0.7, 0.8), 3, offset=10)
+    updates = run(rules, [(at, [car, *objects]) for at, objects in walker])
+    assert [update.action for update in updates] == ["open"]

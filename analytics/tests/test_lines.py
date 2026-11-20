@@ -37,8 +37,8 @@ def test_passing_beside_the_segment_does_not_count():
 
 def test_crossing_back_and_forth_is_debounced_per_object():
     rules = engine(lines())
-    frames = walk(1, "person", (0.5, 0.3), (0.5, 0.7), 2) + walk(1, "person", (0.5, 0.7), (0.5, 0.3), 2, offset=2.2)
-    frames += walk(1, "person", (0.5, 0.3), (0.5, 0.7), 2, offset=4.4)
+    frames = walk(1, "person", (0.5, 0.3), (0.5, 0.7), 2) + walk(1, "person", (0.5, 0.7), (0.5, 0.3), 2, offset=4)
+    frames += walk(1, "person", (0.5, 0.3), (0.5, 0.7), 2, offset=8)
     updates = run(rules, frames)
     assert [update.event.direction for update in updates] == ["in", "out"]
     assert rules.line_counts["gate"]["in"]["person"] == 2
@@ -58,3 +58,11 @@ def test_line_validates_direction():
     except ValueError:
         return
     raise AssertionError("expected a ValueError")
+
+
+def test_jitter_back_across_a_line_within_the_gap_is_ignored():
+    rules = engine(lines())
+    frames = walk(1, "person", (0.5, 0.3), (0.5, 0.7), 2) + walk(1, "person", (0.5, 0.7), (0.5, 0.3), 1, offset=2.2)
+    updates = run(rules, frames)
+    assert [update.event.direction for update in updates] == ["in"]
+    assert rules.line_counts["gate"]["out"]["person"] == 0

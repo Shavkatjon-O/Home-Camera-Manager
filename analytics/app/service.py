@@ -605,8 +605,8 @@ class Service:
                 if ntp:
                     runtime.latencies.append(max(0.0, (received - ntp / 1e9) * 1000))
                 detections = tuple(
-                    Detection(track, label, confidence, Box(left, top, right, bottom))
-                    for track, label, confidence, left, top, right, bottom in objects
+                    Detection(track, label, max(found, kept), Box(left, top, right, bottom), found > 0)
+                    for track, label, found, kept, left, top, right, bottom in objects
                     if label in profile.labels
                 )
                 runtime.objects = [
