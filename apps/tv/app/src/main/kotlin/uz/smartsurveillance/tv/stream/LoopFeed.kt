@@ -176,7 +176,8 @@ abstract class LoopFeed(spec: Spec, key: String) : Feed(spec, key) {
                 if (!key) return
                 val type = AnnexB.codecOf(data) ?: return
                 val sets = AnnexB.parameterSets(data, type) ?: return
-                val size = (if (type == Codec.Hevc) Sps.hevcSize(sets[1].bytes) else null) ?: fallback ?: return
+                val size = (if (type == Codec.Hevc) Sps.hevcSize(sets[1].bytes) else Sps.avcSize(sets[0].bytes))
+                    ?: fallback ?: return
                 if (high && !Codecs.hardwareFits(type.mime, size.width, size.height)) {
                     tooLarge = true
                     stats.error = "${size.width}x${size.height} is larger than the decoder allows, using the smaller stream"
