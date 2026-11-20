@@ -70,35 +70,31 @@ TargetHealth _$TargetHealthFromJson(Map<String, dynamic> json) {
     buckets: (json['buckets'] as List<dynamic>)
         .map((e) => HealthBucket.fromJson(e as Map<String, dynamic>))
         .toList(),
-    additionalProperties:
-        TargetHealth._extras(json, 'additionalProperties') == null
+    additionalProperties: TargetHealth._extras(json, 'additionalProperties') == null
         ? const {}
-        : TargetHealth._readExtras(
-            TargetHealth._extras(json, 'additionalProperties'),
-          ),
+        : TargetHealth._readExtras(TargetHealth._extras(json, 'additionalProperties')),
   );
 }
 
-Map<String, dynamic> _$TargetHealthToJson(TargetHealth instance) =>
-    <String, dynamic>{
-      'uuid': instance.uuid,
-      'kind': ?TargetHealth._write_kind(instance.kind),
-      'device_kind': TargetHealth._write_deviceKind(instance.deviceKind),
-      'name': instance.name,
-      'host': instance.host,
-      'port': ?TargetHealth._write_port(instance.port),
-      'parent_uuid': instance.parentUuid,
-      'parent_name': instance.parentName,
-      'link': TargetHealth._write_link(instance.link),
-      'notes': instance.notes,
-      'enabled': instance.enabled,
-      'status': ?TargetHealth._write_status(instance.status),
-      'last_sample_at': TargetHealth._write_lastSampleAt(instance.lastSampleAt),
-      'last_error': instance.lastError,
-      'samples': ?TargetHealth._write_samples(instance.samples),
-      'uptime_percent': instance.uptimePercent,
-      'latency': instance.latency.toJson(),
-      'outage_count': ?TargetHealth._write_outageCount(instance.outageCount),
-      'last_outage': instance.lastOutage?.toJson(),
-      'buckets': instance.buckets.map((e) => e.toJson()).toList(),
-    };
+Map<String, dynamic> _$TargetHealthToJson(TargetHealth instance) => <String, dynamic>{
+  'uuid': instance.uuid,
+  'kind': ?TargetHealth._write_kind(instance.kind),
+  'device_kind': TargetHealth._write_deviceKind(instance.deviceKind),
+  'name': instance.name,
+  'host': instance.host,
+  'port': ?TargetHealth._write_port(instance.port),
+  'parent_uuid': instance.parentUuid,
+  'parent_name': instance.parentName,
+  'link': TargetHealth._write_link(instance.link),
+  'notes': instance.notes,
+  'enabled': instance.enabled,
+  'status': ?TargetHealth._write_status(instance.status),
+  'last_sample_at': TargetHealth._write_lastSampleAt(instance.lastSampleAt),
+  'last_error': instance.lastError,
+  'samples': ?TargetHealth._write_samples(instance.samples),
+  'uptime_percent': instance.uptimePercent,
+  'latency': instance.latency.toJson(),
+  'outage_count': ?TargetHealth._write_outageCount(instance.outageCount),
+  'last_outage': instance.lastOutage?.toJson(),
+  'buckets': instance.buckets.map((e) => e.toJson()).toList(),
+};

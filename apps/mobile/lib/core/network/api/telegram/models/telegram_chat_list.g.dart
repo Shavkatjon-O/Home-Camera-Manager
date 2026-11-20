@@ -17,17 +17,13 @@ TelegramChatList _$TelegramChatListFromJson(Map<String, dynamic> json) {
         .map((e) => TelegramChatRead.fromJson(e as Map<String, dynamic>))
         .toList(),
     available: json['available'] as bool,
-    additionalProperties:
-        TelegramChatList._extras(json, 'additionalProperties') == null
+    additionalProperties: TelegramChatList._extras(json, 'additionalProperties') == null
         ? const {}
-        : TelegramChatList._readExtras(
-            TelegramChatList._extras(json, 'additionalProperties'),
-          ),
+        : TelegramChatList._readExtras(TelegramChatList._extras(json, 'additionalProperties')),
   );
 }
 
-Map<String, dynamic> _$TelegramChatListToJson(TelegramChatList instance) =>
-    <String, dynamic>{
-      'items': instance.items.map((e) => e.toJson()).toList(),
-      'available': instance.available,
-    };
+Map<String, dynamic> _$TelegramChatListToJson(TelegramChatList instance) => <String, dynamic>{
+  'items': instance.items.map((e) => e.toJson()).toList(),
+  'available': instance.available,
+};

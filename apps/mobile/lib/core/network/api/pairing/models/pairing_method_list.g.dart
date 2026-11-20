@@ -16,22 +16,16 @@ PairingMethodList _$PairingMethodListFromJson(Map<String, dynamic> json) {
     items: (json['items'] as List<dynamic>)
         .map((e) => PairingMethod.fromJson(e as Map<String, dynamic>))
         .toList(),
-    connectors: (json['connectors'] as List<dynamic>)
-        .map((e) => e as String)
-        .toList(),
+    connectors: (json['connectors'] as List<dynamic>).map((e) => e as String).toList(),
     direct: json['direct'] as bool,
-    additionalProperties:
-        PairingMethodList._extras(json, 'additionalProperties') == null
+    additionalProperties: PairingMethodList._extras(json, 'additionalProperties') == null
         ? const {}
-        : PairingMethodList._readExtras(
-            PairingMethodList._extras(json, 'additionalProperties'),
-          ),
+        : PairingMethodList._readExtras(PairingMethodList._extras(json, 'additionalProperties')),
   );
 }
 
-Map<String, dynamic> _$PairingMethodListToJson(PairingMethodList instance) =>
-    <String, dynamic>{
-      'items': instance.items.map((e) => e.toJson()).toList(),
-      'connectors': instance.connectors,
-      'direct': instance.direct,
-    };
+Map<String, dynamic> _$PairingMethodListToJson(PairingMethodList instance) => <String, dynamic>{
+  'items': instance.items.map((e) => e.toJson()).toList(),
+  'connectors': instance.connectors,
+  'direct': instance.direct,
+};

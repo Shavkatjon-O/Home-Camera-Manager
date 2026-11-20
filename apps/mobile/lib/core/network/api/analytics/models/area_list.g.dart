@@ -7,11 +7,7 @@ part of 'area_list.dart';
 // **************************************************************************
 
 AreaList _$AreaListFromJson(Map<String, dynamic> json) {
-  $checkKeys(
-    json,
-    requiredKeys: const ['items'],
-    disallowNullValues: const ['items'],
-  );
+  $checkKeys(json, requiredKeys: const ['items'], disallowNullValues: const ['items']);
   return AreaList(
     items: (json['items'] as List<dynamic>)
         .map((e) => AreaRead.fromJson(e as Map<String, dynamic>))

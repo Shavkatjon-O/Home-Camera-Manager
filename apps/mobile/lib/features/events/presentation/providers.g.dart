@@ -16,24 +16,17 @@ final todayCountsProvider = TodayCountsFamily._();
 /// Loads the event totals for today at [siteId].
 
 final class TodayCountsProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<EventCounts>,
-          EventCounts,
-          FutureOr<EventCounts>
-        >
+    extends $FunctionalProvider<AsyncValue<EventCounts>, EventCounts, FutureOr<EventCounts>>
     with $FutureModifier<EventCounts>, $FutureProvider<EventCounts> {
   /// Loads the event totals for today at [siteId].
-  TodayCountsProvider._({
-    required TodayCountsFamily super.from,
-    required String super.argument,
-  }) : super(
-         retry: null,
-         name: r'todayCountsProvider',
-         isAutoDispose: true,
-         dependencies: null,
-         $allTransitiveDependencies: null,
-       );
+  TodayCountsProvider._({required TodayCountsFamily super.from, required String super.argument})
+    : super(
+        retry: null,
+        name: r'todayCountsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$todayCountsHash();
@@ -47,9 +40,8 @@ final class TodayCountsProvider
 
   @$internal
   @override
-  $FutureProviderElement<EventCounts> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
+  $FutureProviderElement<EventCounts> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
 
   @override
   FutureOr<EventCounts> create(Ref ref) {
@@ -85,8 +77,7 @@ final class TodayCountsFamily extends $Family
 
   /// Loads the event totals for today at [siteId].
 
-  TodayCountsProvider call(String siteId) =>
-      TodayCountsProvider._(argument: siteId, from: this);
+  TodayCountsProvider call(String siteId) => TodayCountsProvider._(argument: siteId, from: this);
 
   @override
   String toString() => r'todayCountsProvider';
@@ -106,20 +97,16 @@ final class RecentEventsProvider
           List<CameraEvent>,
           FutureOr<List<CameraEvent>>
         >
-    with
-        $FutureModifier<List<CameraEvent>>,
-        $FutureProvider<List<CameraEvent>> {
+    with $FutureModifier<List<CameraEvent>>, $FutureProvider<List<CameraEvent>> {
   /// Loads the latest events at [siteId] for the home screen.
-  RecentEventsProvider._({
-    required RecentEventsFamily super.from,
-    required String super.argument,
-  }) : super(
-         retry: null,
-         name: r'recentEventsProvider',
-         isAutoDispose: true,
-         dependencies: null,
-         $allTransitiveDependencies: null,
-       );
+  RecentEventsProvider._({required RecentEventsFamily super.from, required String super.argument})
+    : super(
+        retry: null,
+        name: r'recentEventsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$recentEventsHash();
@@ -133,9 +120,8 @@ final class RecentEventsProvider
 
   @$internal
   @override
-  $FutureProviderElement<List<CameraEvent>> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
+  $FutureProviderElement<List<CameraEvent>> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
 
   @override
   FutureOr<List<CameraEvent>> create(Ref ref) {
@@ -171,8 +157,7 @@ final class RecentEventsFamily extends $Family
 
   /// Loads the latest events at [siteId] for the home screen.
 
-  RecentEventsProvider call(String siteId) =>
-      RecentEventsProvider._(argument: siteId, from: this);
+  RecentEventsProvider call(String siteId) => RecentEventsProvider._(argument: siteId, from: this);
 
   @override
   String toString() => r'recentEventsProvider';
@@ -186,24 +171,17 @@ final liveUpdatesProvider = LiveUpdatesFamily._();
 /// Streams live updates for [siteId] as they arrive.
 
 final class LiveUpdatesProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<LiveUpdate>,
-          LiveUpdate,
-          Stream<LiveUpdate>
-        >
+    extends $FunctionalProvider<AsyncValue<LiveUpdate>, LiveUpdate, Stream<LiveUpdate>>
     with $FutureModifier<LiveUpdate>, $StreamProvider<LiveUpdate> {
   /// Streams live updates for [siteId] as they arrive.
-  LiveUpdatesProvider._({
-    required LiveUpdatesFamily super.from,
-    required String super.argument,
-  }) : super(
-         retry: null,
-         name: r'liveUpdatesProvider',
-         isAutoDispose: true,
-         dependencies: null,
-         $allTransitiveDependencies: null,
-       );
+  LiveUpdatesProvider._({required LiveUpdatesFamily super.from, required String super.argument})
+    : super(
+        retry: null,
+        name: r'liveUpdatesProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$liveUpdatesHash();
@@ -254,8 +232,7 @@ final class LiveUpdatesFamily extends $Family
 
   /// Streams live updates for [siteId] as they arrive.
 
-  LiveUpdatesProvider call(String siteId) =>
-      LiveUpdatesProvider._(argument: siteId, from: this);
+  LiveUpdatesProvider call(String siteId) => LiveUpdatesProvider._(argument: siteId, from: this);
 
   @override
   String toString() => r'liveUpdatesProvider';

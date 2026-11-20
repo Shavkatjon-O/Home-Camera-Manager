@@ -100,7 +100,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get commonYesterday => 'Вчера';
 
   @override
-  String get commonJustNow => 'Только что';
+  String get commonJustNow => 'только что';
 
   @override
   String commonMinutesAgo(int count) {
@@ -2928,7 +2928,10 @@ class AppLocalizationsRu extends AppLocalizations {
       'Организация приостановлена. Камеры, тревоги и изменения на паузе, пока сервис её не восстановит.';
 
   @override
-  String siteRetentionPlan(int days) {
+  String siteRetentionPlanLimit(int days) {
     return 'Ваш тариф хранит события до $days дней.';
   }
+
+  @override
+  String get siteRetentionPlan => 'По лимиту тарифа';
 }

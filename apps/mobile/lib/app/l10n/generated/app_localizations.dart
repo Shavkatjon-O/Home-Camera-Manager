@@ -277,7 +277,7 @@ abstract class AppLocalizations {
   /// No description provided for @commonJustNow.
   ///
   /// In en, this message translates to:
-  /// **'Just now'**
+  /// **'just now'**
   String get commonJustNow;
 
   /// No description provided for @commonMinutesAgo.
@@ -5092,11 +5092,17 @@ abstract class AppLocalizations {
   /// **'This organisation is suspended. Cameras, alerts and changes are paused until the service restores it.'**
   String get planSuspended;
 
-  /// No description provided for @siteRetentionPlan.
+  /// No description provided for @siteRetentionPlanLimit.
   ///
   /// In en, this message translates to:
   /// **'Your plan keeps events for up to {days} days.'**
-  String siteRetentionPlan(int days);
+  String siteRetentionPlanLimit(int days);
+
+  /// Retention choice that clears the site own value so it follows the plan.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the plan\'s limit'**
+  String get siteRetentionPlan;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

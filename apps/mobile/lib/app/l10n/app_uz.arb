@@ -30,7 +30,7 @@
   "commonUnknown": "Nomaʼlum",
   "commonToday": "Bugun",
   "commonYesterday": "Kecha",
-  "commonJustNow": "Hozirgina",
+  "commonJustNow": "hozirgina",
   "commonMinutesAgo": "{count} daqiqa oldin",
   "commonHoursAgo": "{count} soat oldin",
   "commonDaysAgo": "{count} kun oldin",
@@ -833,5 +833,6 @@
   "errorPlanLimit": "Bu tarifingiz chegarasidan oshadi. Biror narsani olib tashlang yoki egadan tarifni oʻzgartirishni soʻrang.",
   "errorSuspended": "Tashkilot toʻxtatilgan. Uni tiklash uchun xizmatga murojaat qiling.",
   "planSuspended": "Tashkilot toʻxtatilgan. Xizmat uni tiklamaguncha kameralar, signallar va oʻzgarishlar toʻxtab turadi.",
-  "siteRetentionPlan": "Tarifingiz voqealarni {days} kungacha saqlaydi."
+  "siteRetentionPlanLimit": "Tarifingiz voqealarni {days} kungacha saqlaydi.",
+  "siteRetentionPlan": "Tarif chegarasi boʻyicha"
 }

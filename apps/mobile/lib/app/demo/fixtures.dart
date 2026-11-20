@@ -125,6 +125,7 @@ class Fixtures {
         timezone: 'Asia/Tashkent',
         armMode: ArmMode.home,
         retentionDays: 14,
+        ownRetentionDays: 14,
       ),
       Site(
         id: 'site-bakery',

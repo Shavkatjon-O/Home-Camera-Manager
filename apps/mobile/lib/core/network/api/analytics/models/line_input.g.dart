@@ -24,14 +24,10 @@ LineInput _$LineInputFromJson(Map<String, dynamic> json) {
     uuid: json['uuid'] as String?,
     name: json['name'] as String,
     points: LineInput._read_points(json['points']),
-    labels: (json['labels'] as List<dynamic>?)
-        ?.map((e) => e as String)
-        .toList(),
+    labels: (json['labels'] as List<dynamic>?)?.map((e) => e as String).toList(),
     direction: LineInput._presentValue(json, 'direction') == null
         ? LineDirection.both
-        : LineInput._read_direction(
-            LineInput._presentValue(json, 'direction') as Object,
-          ),
+        : LineInput._read_direction(LineInput._presentValue(json, 'direction') as Object),
     schedule: (json['schedule'] as List<dynamic>?)
         ?.map((e) => Window.fromJson(e as Map<String, dynamic>))
         .toList(),
@@ -40,21 +36,14 @@ LineInput _$LineInputFromJson(Map<String, dynamic> json) {
         : AlertPolicy.fromJson(json['alert'] as Map<String, dynamic>),
     enabled: LineInput._presentValue(json, 'enabled') == null
         ? true
-        : LineInput._read_enabled(
-            LineInput._presentValue(json, 'enabled') as Object,
-          ),
+        : LineInput._read_enabled(LineInput._presentValue(json, 'enabled') as Object),
     reference: json['reference'] as String?,
     animals: LineInput._presentValue(json, 'animals') == null
         ? AnimalMode.record
-        : LineInput._read_animals(
-            LineInput._presentValue(json, 'animals') as Object,
-          ),
-    additionalProperties:
-        LineInput._extras(json, 'additionalProperties') == null
+        : LineInput._read_animals(LineInput._presentValue(json, 'animals') as Object),
+    additionalProperties: LineInput._extras(json, 'additionalProperties') == null
         ? const {}
-        : LineInput._readExtras(
-            LineInput._extras(json, 'additionalProperties'),
-          ),
+        : LineInput._readExtras(LineInput._extras(json, 'additionalProperties')),
   );
 }
 

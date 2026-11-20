@@ -49,9 +49,7 @@ SiteRead _$SiteReadFromJson(Map<String, dynamic> json) {
     role: SiteRead._read_role(json['role']),
     cameraCount: SiteRead._read_cameraCount(json['camera_count']),
     connectorCount: SiteRead._read_connectorCount(json['connector_count']),
-    eventRetentionDays: SiteRead._read_eventRetentionDays(
-      json['event_retention_days'],
-    ),
+    eventRetentionDays: SiteRead._read_eventRetentionDays(json['event_retention_days']),
     effectiveEventRetentionDays: SiteRead._read_effectiveEventRetentionDays(
       json['effective_event_retention_days'],
     ),
@@ -74,13 +72,10 @@ Map<String, dynamic> _$SiteReadToJson(SiteRead instance) => <String, dynamic>{
   'role': ?SiteRead._write_role(instance.role),
   'camera_count': ?SiteRead._write_cameraCount(instance.cameraCount),
   'connector_count': ?SiteRead._write_connectorCount(instance.connectorCount),
-  'event_retention_days': ?SiteRead._write_eventRetentionDays(
-    instance.eventRetentionDays,
+  'event_retention_days': ?SiteRead._write_eventRetentionDays(instance.eventRetentionDays),
+  'effective_event_retention_days': ?SiteRead._write_effectiveEventRetentionDays(
+    instance.effectiveEventRetentionDays,
   ),
-  'effective_event_retention_days':
-      ?SiteRead._write_effectiveEventRetentionDays(
-        instance.effectiveEventRetentionDays,
-      ),
   'created_at': ?SiteRead._write_createdAt(instance.createdAt),
   'updated_at': ?SiteRead._write_updatedAt(instance.updatedAt),
 };

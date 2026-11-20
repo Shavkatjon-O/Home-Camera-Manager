@@ -22,20 +22,16 @@ final class ViewsProvider
           List<AnalyticsView>,
           FutureOr<List<AnalyticsView>>
         >
-    with
-        $FutureModifier<List<AnalyticsView>>,
-        $FutureProvider<List<AnalyticsView>> {
+    with $FutureModifier<List<AnalyticsView>>, $FutureProvider<List<AnalyticsView>> {
   /// Loads the analytics views of the site [siteId].
-  ViewsProvider._({
-    required ViewsFamily super.from,
-    required String super.argument,
-  }) : super(
-         retry: null,
-         name: r'viewsProvider',
-         isAutoDispose: true,
-         dependencies: null,
-         $allTransitiveDependencies: null,
-       );
+  ViewsProvider._({required ViewsFamily super.from, required String super.argument})
+    : super(
+        retry: null,
+        name: r'viewsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$viewsHash();
@@ -49,9 +45,8 @@ final class ViewsProvider
 
   @$internal
   @override
-  $FutureProviderElement<List<AnalyticsView>> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
+  $FutureProviderElement<List<AnalyticsView>> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
 
   @override
   FutureOr<List<AnalyticsView>> create(Ref ref) {
@@ -87,8 +82,7 @@ final class ViewsFamily extends $Family
 
   /// Loads the analytics views of the site [siteId].
 
-  ViewsProvider call(String siteId) =>
-      ViewsProvider._(argument: siteId, from: this);
+  ViewsProvider call(String siteId) => ViewsProvider._(argument: siteId, from: this);
 
   @override
   String toString() => r'viewsProvider';

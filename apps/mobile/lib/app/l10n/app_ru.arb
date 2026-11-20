@@ -30,7 +30,7 @@
   "commonUnknown": "Неизвестно",
   "commonToday": "Сегодня",
   "commonYesterday": "Вчера",
-  "commonJustNow": "Только что",
+  "commonJustNow": "только что",
   "commonMinutesAgo": "{count} мин назад",
   "commonHoursAgo": "{count} ч назад",
   "commonDaysAgo": "{count, plural, one{{count} день назад} few{{count} дня назад} many{{count} дней назад} other{{count} дня назад}}",
@@ -833,5 +833,6 @@
   "errorPlanLimit": "Это выходит за пределы тарифа. Удалите что-нибудь или попросите владельца сменить тариф.",
   "errorSuspended": "Организация приостановлена. Обратитесь в сервис, чтобы её восстановить.",
   "planSuspended": "Организация приостановлена. Камеры, тревоги и изменения на паузе, пока сервис её не восстановит.",
-  "siteRetentionPlan": "Ваш тариф хранит события до {days} дней."
+  "siteRetentionPlanLimit": "Ваш тариф хранит события до {days} дней.",
+  "siteRetentionPlan": "По лимиту тарифа"
 }

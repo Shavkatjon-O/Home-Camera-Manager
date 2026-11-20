@@ -41,25 +41,21 @@ AppearanceMatch _$AppearanceMatchFromJson(Map<String, dynamic> json) {
     similarity: json['similarity'] as num,
     journeyUuid: json['journey_uuid'] as String?,
     eventUuid: json['event_uuid'] as String?,
-    additionalProperties:
-        AppearanceMatch._extras(json, 'additionalProperties') == null
+    additionalProperties: AppearanceMatch._extras(json, 'additionalProperties') == null
         ? const {}
-        : AppearanceMatch._readExtras(
-            AppearanceMatch._extras(json, 'additionalProperties'),
-          ),
+        : AppearanceMatch._readExtras(AppearanceMatch._extras(json, 'additionalProperties')),
   );
 }
 
-Map<String, dynamic> _$AppearanceMatchToJson(AppearanceMatch instance) =>
-    <String, dynamic>{
-      'uuid': instance.uuid,
-      'view_uuid': instance.viewUuid,
-      'view_name': instance.viewName,
-      'camera_uuid': instance.cameraUuid,
-      'camera_name': instance.cameraName,
-      'started_at': ?AppearanceMatch._write_startedAt(instance.startedAt),
-      'ended_at': ?AppearanceMatch._write_endedAt(instance.endedAt),
-      'similarity': instance.similarity,
-      'journey_uuid': instance.journeyUuid,
-      'event_uuid': instance.eventUuid,
-    };
+Map<String, dynamic> _$AppearanceMatchToJson(AppearanceMatch instance) => <String, dynamic>{
+  'uuid': instance.uuid,
+  'view_uuid': instance.viewUuid,
+  'view_name': instance.viewName,
+  'camera_uuid': instance.cameraUuid,
+  'camera_name': instance.cameraName,
+  'started_at': ?AppearanceMatch._write_startedAt(instance.startedAt),
+  'ended_at': ?AppearanceMatch._write_endedAt(instance.endedAt),
+  'similarity': instance.similarity,
+  'journey_uuid': instance.journeyUuid,
+  'event_uuid': instance.eventUuid,
+};

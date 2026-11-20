@@ -103,18 +103,25 @@ class _SiteSettingsScreenState extends ConsumerState<SiteSettingsScreen> {
             spacing: 8,
             runSpacing: 8,
             children: [
+              ChoiceChip(
+                label: Text(l10n.siteRetentionPlan),
+                selected: site.ownRetentionDays == null,
+                onSelected: (_) => setState(() => draft = site.copyWith(ownRetentionDays: null)),
+              ),
               for (final days in retention)
-                if (limit == null || days <= limit || days == site.retentionDays)
+                if (limit == null || days <= limit || days == site.ownRetentionDays)
                   ChoiceChip(
                     label: Text(l10n.siteRetentionDays(days)),
-                    selected: site.retentionDays == days,
-                    onSelected: (_) => setState(() => draft = site.copyWith(retentionDays: days)),
+                    selected: site.ownRetentionDays == days,
+                    onSelected: (_) => setState(
+                      () => draft = site.copyWith(retentionDays: days, ownRetentionDays: days),
+                    ),
                   ),
             ],
           ),
           if (limit != null) ...[
             const SizedBox(height: Gaps.sm),
-            Text(l10n.siteRetentionPlan(limit), style: context.text.bodySmall),
+            Text(l10n.siteRetentionPlanLimit(limit), style: context.text.bodySmall),
           ],
           const SizedBox(height: Gaps.xl),
           Panel(

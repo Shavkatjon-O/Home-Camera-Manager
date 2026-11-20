@@ -20,26 +20,18 @@ PairingParameter _$PairingParameterFromJson(Map<String, dynamic> json) {
     default2: !json.containsKey('default')
         ? null
         : PairingParameter._read_default2(json['default']),
-    prefill: !json.containsKey('prefill')
-        ? null
-        : PairingParameter._read_prefill(json['prefill']),
-    additionalProperties:
-        PairingParameter._extras(json, 'additionalProperties') == null
+    prefill: !json.containsKey('prefill') ? null : PairingParameter._read_prefill(json['prefill']),
+    additionalProperties: PairingParameter._extras(json, 'additionalProperties') == null
         ? const {}
-        : PairingParameter._readExtras(
-            PairingParameter._extras(json, 'additionalProperties'),
-          ),
+        : PairingParameter._readExtras(PairingParameter._extras(json, 'additionalProperties')),
   );
 }
 
-Map<String, dynamic> _$PairingParameterToJson(PairingParameter instance) =>
-    <String, dynamic>{
-      'name': instance.name,
-      'type': instance.type,
-      'required': instance.required2,
-      'description': instance.description,
-      if (instance.default2 case final $value?)
-        'default': PairingParameter._write_default2($value),
-      if (instance.prefill case final $value?)
-        'prefill': PairingParameter._write_prefill($value),
-    };
+Map<String, dynamic> _$PairingParameterToJson(PairingParameter instance) => <String, dynamic>{
+  'name': instance.name,
+  'type': instance.type,
+  'required': instance.required2,
+  'description': instance.description,
+  if (instance.default2 case final $value?) 'default': PairingParameter._write_default2($value),
+  if (instance.prefill case final $value?) 'prefill': PairingParameter._write_prefill($value),
+};

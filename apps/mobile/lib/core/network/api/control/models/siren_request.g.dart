@@ -11,19 +11,13 @@ SirenRequest _$SirenRequestFromJson(Map<String, dynamic> json) {
   return SirenRequest(
     seconds: SirenRequest._presentValue(json, 'seconds') == null
         ? 0
-        : SirenRequest._read_seconds(
-            SirenRequest._presentValue(json, 'seconds') as Object,
-          ),
-    additionalProperties:
-        SirenRequest._extras(json, 'additionalProperties') == null
+        : SirenRequest._read_seconds(SirenRequest._presentValue(json, 'seconds') as Object),
+    additionalProperties: SirenRequest._extras(json, 'additionalProperties') == null
         ? const {}
-        : SirenRequest._readExtras(
-            SirenRequest._extras(json, 'additionalProperties'),
-          ),
+        : SirenRequest._readExtras(SirenRequest._extras(json, 'additionalProperties')),
   );
 }
 
-Map<String, dynamic> _$SirenRequestToJson(SirenRequest instance) =>
-    <String, dynamic>{
-      'seconds': ?SirenRequest._write_seconds(instance.seconds),
-    };
+Map<String, dynamic> _$SirenRequestToJson(SirenRequest instance) => <String, dynamic>{
+  'seconds': ?SirenRequest._write_seconds(instance.seconds),
+};

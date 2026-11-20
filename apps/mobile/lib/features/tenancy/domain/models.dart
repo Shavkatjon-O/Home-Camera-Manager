@@ -56,6 +56,9 @@ abstract class Organisation with _$Organisation {
 @freezed
 abstract class Site with _$Site {
   /// Creates the site [id] named [name] of the organisation [organisationId].
+  ///
+  /// [retentionDays] is how long events are kept; [ownRetentionDays] is the
+  /// site's own choice, or null when the site follows the plan's limit.
   const factory Site({
     required String id,
     required String organisationId,
@@ -64,6 +67,7 @@ abstract class Site with _$Site {
     required String timezone,
     @Default(ArmMode.schedule) ArmMode armMode,
     @Default(30) int retentionDays,
+    int? ownRetentionDays,
   }) = _Site;
 }
 

@@ -26,21 +26,17 @@ OutageBrief _$OutageBriefFromJson(Map<String, dynamic> json) {
     durationSeconds: json['duration_seconds'] as num,
     upstreamUuid: json['upstream_uuid'] as String?,
     upstreamName: json['upstream_name'] as String?,
-    additionalProperties:
-        OutageBrief._extras(json, 'additionalProperties') == null
+    additionalProperties: OutageBrief._extras(json, 'additionalProperties') == null
         ? const {}
-        : OutageBrief._readExtras(
-            OutageBrief._extras(json, 'additionalProperties'),
-          ),
+        : OutageBrief._readExtras(OutageBrief._extras(json, 'additionalProperties')),
   );
 }
 
-Map<String, dynamic> _$OutageBriefToJson(OutageBrief instance) =>
-    <String, dynamic>{
-      'uuid': instance.uuid,
-      'started_at': ?OutageBrief._write_startedAt(instance.startedAt),
-      'ended_at': OutageBrief._write_endedAt(instance.endedAt),
-      'duration_seconds': instance.durationSeconds,
-      'upstream_uuid': instance.upstreamUuid,
-      'upstream_name': instance.upstreamName,
-    };
+Map<String, dynamic> _$OutageBriefToJson(OutageBrief instance) => <String, dynamic>{
+  'uuid': instance.uuid,
+  'started_at': ?OutageBrief._write_startedAt(instance.startedAt),
+  'ended_at': OutageBrief._write_endedAt(instance.endedAt),
+  'duration_seconds': instance.durationSeconds,
+  'upstream_uuid': instance.upstreamUuid,
+  'upstream_name': instance.upstreamName,
+};

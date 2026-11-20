@@ -447,7 +447,7 @@ class SimilarFaceTile extends ConsumerWidget {
             overflow: TextOverflow.ellipsis,
             style: context.text.labelMedium?.copyWith(color: p.text),
           ),
-          Text(format.ago(face.seenAt), style: context.text.labelSmall),
+          Text(format.agoStart(face.seenAt), style: context.text.labelSmall),
         ],
       ),
     );

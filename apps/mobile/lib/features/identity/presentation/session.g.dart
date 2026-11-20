@@ -14,8 +14,7 @@ part of 'session.dart';
 final sessionProvider = SessionProvider._();
 
 /// Holds the authentication state and the actions that change it.
-final class SessionProvider
-    extends $AsyncNotifierProvider<Session, SessionState> {
+final class SessionProvider extends $AsyncNotifierProvider<Session, SessionState> {
   /// Holds the authentication state and the actions that change it.
   SessionProvider._()
     : super(

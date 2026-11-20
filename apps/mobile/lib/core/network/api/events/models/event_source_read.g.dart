@@ -44,28 +44,22 @@ EventSourceRead _$EventSourceReadFromJson(Map<String, dynamic> json) {
     connectedAt: EventSourceRead._read_connectedAt(json['connected_at']),
     lastMessageAt: EventSourceRead._read_lastMessageAt(json['last_message_at']),
     error: json['error'] as String?,
-    additionalProperties:
-        EventSourceRead._extras(json, 'additionalProperties') == null
+    additionalProperties: EventSourceRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : EventSourceRead._readExtras(
-            EventSourceRead._extras(json, 'additionalProperties'),
-          ),
+        : EventSourceRead._readExtras(EventSourceRead._extras(json, 'additionalProperties')),
   );
 }
 
-Map<String, dynamic> _$EventSourceReadToJson(EventSourceRead instance) =>
-    <String, dynamic>{
-      'camera_uuid': instance.cameraUuid,
-      'camera_name': instance.cameraName,
-      'state': ?EventSourceRead._write_state(instance.state),
-      'mode': ?EventSourceRead._write_mode(instance.mode),
-      'endpoint': instance.endpoint,
-      'topics': instance.topics,
-      'kinds': ?EventSourceRead._write_kinds(instance.kinds),
-      'conditions': instance.conditions,
-      'connected_at': EventSourceRead._write_connectedAt(instance.connectedAt),
-      'last_message_at': EventSourceRead._write_lastMessageAt(
-        instance.lastMessageAt,
-      ),
-      'error': instance.error,
-    };
+Map<String, dynamic> _$EventSourceReadToJson(EventSourceRead instance) => <String, dynamic>{
+  'camera_uuid': instance.cameraUuid,
+  'camera_name': instance.cameraName,
+  'state': ?EventSourceRead._write_state(instance.state),
+  'mode': ?EventSourceRead._write_mode(instance.mode),
+  'endpoint': instance.endpoint,
+  'topics': instance.topics,
+  'kinds': ?EventSourceRead._write_kinds(instance.kinds),
+  'conditions': instance.conditions,
+  'connected_at': EventSourceRead._write_connectedAt(instance.connectedAt),
+  'last_message_at': EventSourceRead._write_lastMessageAt(instance.lastMessageAt),
+  'error': instance.error,
+};

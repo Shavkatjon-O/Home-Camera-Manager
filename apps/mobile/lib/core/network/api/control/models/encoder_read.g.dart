@@ -28,9 +28,7 @@ EncoderRead _$EncoderReadFromJson(Map<String, dynamic> json) {
   return EncoderRead(
     token: json['token'] as String,
     name: json['name'] as String,
-    profiles: (json['profiles'] as List<dynamic>)
-        .map((e) => e as String)
-        .toList(),
+    profiles: (json['profiles'] as List<dynamic>).map((e) => e as String).toList(),
     encoding: json['encoding'] as String?,
     width: EncoderRead._read_width(json['width']),
     height: EncoderRead._read_height(json['height']),
@@ -42,27 +40,23 @@ EncoderRead _$EncoderReadFromJson(Map<String, dynamic> json) {
     options: (json['options'] as List<dynamic>)
         .map((e) => EncoderOptionsRead.fromJson(e as Map<String, dynamic>))
         .toList(),
-    additionalProperties:
-        EncoderRead._extras(json, 'additionalProperties') == null
+    additionalProperties: EncoderRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : EncoderRead._readExtras(
-            EncoderRead._extras(json, 'additionalProperties'),
-          ),
+        : EncoderRead._readExtras(EncoderRead._extras(json, 'additionalProperties')),
   );
 }
 
-Map<String, dynamic> _$EncoderReadToJson(EncoderRead instance) =>
-    <String, dynamic>{
-      'token': instance.token,
-      'name': instance.name,
-      'profiles': instance.profiles,
-      'encoding': instance.encoding,
-      'width': EncoderRead._write_width(instance.width),
-      'height': EncoderRead._write_height(instance.height),
-      'fps': instance.fps,
-      'bitrate': EncoderRead._write_bitrate(instance.bitrate),
-      'gop': EncoderRead._write_gop(instance.gop),
-      'quality': instance.quality,
-      'profile': instance.profile,
-      'options': instance.options.map((e) => e.toJson()).toList(),
-    };
+Map<String, dynamic> _$EncoderReadToJson(EncoderRead instance) => <String, dynamic>{
+  'token': instance.token,
+  'name': instance.name,
+  'profiles': instance.profiles,
+  'encoding': instance.encoding,
+  'width': EncoderRead._write_width(instance.width),
+  'height': EncoderRead._write_height(instance.height),
+  'fps': instance.fps,
+  'bitrate': EncoderRead._write_bitrate(instance.bitrate),
+  'gop': EncoderRead._write_gop(instance.gop),
+  'quality': instance.quality,
+  'profile': instance.profile,
+  'options': instance.options.map((e) => e.toJson()).toList(),
+};

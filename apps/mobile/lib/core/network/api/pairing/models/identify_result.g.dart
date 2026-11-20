@@ -19,13 +19,7 @@ IdentifyResult _$IdentifyResultFromJson(Map<String, dynamic> json) {
       'capabilities',
       'attempt',
     ],
-    disallowNullValues: const [
-      'adapter',
-      'kind',
-      'channels',
-      'capabilities',
-      'attempt',
-    ],
+    disallowNullValues: const ['adapter', 'kind', 'channels', 'capabilities', 'attempt'],
   );
   return IdentifyResult(
     adapter: json['adapter'] as String,
@@ -36,27 +30,21 @@ IdentifyResult _$IdentifyResultFromJson(Map<String, dynamic> json) {
     channels: (json['channels'] as List<dynamic>)
         .map((e) => ChannelRead.fromJson(e as Map<String, dynamic>))
         .toList(),
-    capabilities: CapabilitiesRead.fromJson(
-      json['capabilities'] as Map<String, dynamic>,
-    ),
+    capabilities: CapabilitiesRead.fromJson(json['capabilities'] as Map<String, dynamic>),
     attempt: json['attempt'] as String,
-    additionalProperties:
-        IdentifyResult._extras(json, 'additionalProperties') == null
+    additionalProperties: IdentifyResult._extras(json, 'additionalProperties') == null
         ? const {}
-        : IdentifyResult._readExtras(
-            IdentifyResult._extras(json, 'additionalProperties'),
-          ),
+        : IdentifyResult._readExtras(IdentifyResult._extras(json, 'additionalProperties')),
   );
 }
 
-Map<String, dynamic> _$IdentifyResultToJson(IdentifyResult instance) =>
-    <String, dynamic>{
-      'adapter': instance.adapter,
-      'kind': instance.kind,
-      'vendor': instance.vendor,
-      'model': instance.model,
-      'rtsp_port': IdentifyResult._write_rtspPort(instance.rtspPort),
-      'channels': instance.channels.map((e) => e.toJson()).toList(),
-      'capabilities': instance.capabilities.toJson(),
-      'attempt': instance.attempt,
-    };
+Map<String, dynamic> _$IdentifyResultToJson(IdentifyResult instance) => <String, dynamic>{
+  'adapter': instance.adapter,
+  'kind': instance.kind,
+  'vendor': instance.vendor,
+  'model': instance.model,
+  'rtsp_port': IdentifyResult._write_rtspPort(instance.rtspPort),
+  'channels': instance.channels.map((e) => e.toJson()).toList(),
+  'capabilities': instance.capabilities.toJson(),
+  'attempt': instance.attempt,
+};

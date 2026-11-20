@@ -37,23 +37,19 @@ PairingAttemptRead _$PairingAttemptReadFromJson(Map<String, dynamic> json) {
     errorCode: json['error_code'] as String?,
     durationMs: PairingAttemptRead._read_durationMs(json['duration_ms']),
     createdAt: PairingAttemptRead._read_createdAt(json['created_at']),
-    additionalProperties:
-        PairingAttemptRead._extras(json, 'additionalProperties') == null
+    additionalProperties: PairingAttemptRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : PairingAttemptRead._readExtras(
-            PairingAttemptRead._extras(json, 'additionalProperties'),
-          ),
+        : PairingAttemptRead._readExtras(PairingAttemptRead._extras(json, 'additionalProperties')),
   );
 }
 
-Map<String, dynamic> _$PairingAttemptReadToJson(PairingAttemptRead instance) =>
-    <String, dynamic>{
-      'uuid': instance.uuid,
-      'method': ?PairingAttemptRead._write_method(instance.method),
-      'adapter': instance.adapter,
-      'last_step': instance.lastStep,
-      'outcome': ?PairingAttemptRead._write_outcome(instance.outcome),
-      'error_code': instance.errorCode,
-      'duration_ms': ?PairingAttemptRead._write_durationMs(instance.durationMs),
-      'created_at': ?PairingAttemptRead._write_createdAt(instance.createdAt),
-    };
+Map<String, dynamic> _$PairingAttemptReadToJson(PairingAttemptRead instance) => <String, dynamic>{
+  'uuid': instance.uuid,
+  'method': ?PairingAttemptRead._write_method(instance.method),
+  'adapter': instance.adapter,
+  'last_step': instance.lastStep,
+  'outcome': ?PairingAttemptRead._write_outcome(instance.outcome),
+  'error_code': instance.errorCode,
+  'duration_ms': ?PairingAttemptRead._write_durationMs(instance.durationMs),
+  'created_at': ?PairingAttemptRead._write_createdAt(instance.createdAt),
+};

@@ -23,12 +23,9 @@ ImageRead _$ImageReadFromJson(Map<String, dynamic> json) {
     options: json['options'] == null
         ? null
         : ImageOptionsRead.fromJson(json['options'] as Map<String, dynamic>),
-    additionalProperties:
-        ImageRead._extras(json, 'additionalProperties') == null
+    additionalProperties: ImageRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : ImageRead._readExtras(
-            ImageRead._extras(json, 'additionalProperties'),
-          ),
+        : ImageRead._readExtras(ImageRead._extras(json, 'additionalProperties')),
   );
 }
 

@@ -19,19 +19,15 @@ NetworkDeviceList _$NetworkDeviceListFromJson(Map<String, dynamic> json) {
     total: NetworkDeviceList._read_total(json['total']),
     page: NetworkDeviceList._read_page(json['page']),
     pageSize: NetworkDeviceList._read_pageSize(json['page_size']),
-    additionalProperties:
-        NetworkDeviceList._extras(json, 'additionalProperties') == null
+    additionalProperties: NetworkDeviceList._extras(json, 'additionalProperties') == null
         ? const {}
-        : NetworkDeviceList._readExtras(
-            NetworkDeviceList._extras(json, 'additionalProperties'),
-          ),
+        : NetworkDeviceList._readExtras(NetworkDeviceList._extras(json, 'additionalProperties')),
   );
 }
 
-Map<String, dynamic> _$NetworkDeviceListToJson(NetworkDeviceList instance) =>
-    <String, dynamic>{
-      'items': instance.items.map((e) => e.toJson()).toList(),
-      'total': ?NetworkDeviceList._write_total(instance.total),
-      'page': ?NetworkDeviceList._write_page(instance.page),
-      'page_size': ?NetworkDeviceList._write_pageSize(instance.pageSize),
-    };
+Map<String, dynamic> _$NetworkDeviceListToJson(NetworkDeviceList instance) => <String, dynamic>{
+  'items': instance.items.map((e) => e.toJson()).toList(),
+  'total': ?NetworkDeviceList._write_total(instance.total),
+  'page': ?NetworkDeviceList._write_page(instance.page),
+  'page_size': ?NetworkDeviceList._write_pageSize(instance.pageSize),
+};

@@ -14,8 +14,7 @@ part of 'event_feed.dart';
 final eventFilterStateProvider = EventFilterStateFamily._();
 
 /// Holds the event filter chosen for a site.
-final class EventFilterStateProvider
-    extends $NotifierProvider<EventFilterState, EventFilter> {
+final class EventFilterStateProvider extends $NotifierProvider<EventFilterState, EventFilter> {
   /// Holds the event filter chosen for a site.
   EventFilterStateProvider._({
     required EventFilterStateFamily super.from,
@@ -66,14 +65,7 @@ String _$eventFilterStateHash() => r'a9e0f6e2b7aa2a09cb658f128da632620d72d8fe';
 /// Holds the event filter chosen for a site.
 
 final class EventFilterStateFamily extends $Family
-    with
-        $ClassFamilyOverride<
-          EventFilterState,
-          EventFilter,
-          EventFilter,
-          EventFilter,
-          String
-        > {
+    with $ClassFamilyOverride<EventFilterState, EventFilter, EventFilter, EventFilter, String> {
   EventFilterStateFamily._()
     : super(
         retry: null,
@@ -121,19 +113,16 @@ abstract class _$EventFilterState extends $Notifier<EventFilter> {
 final eventFeedProvider = EventFeedFamily._();
 
 /// Loads and updates the paged list of events at a site for the current filter.
-final class EventFeedProvider
-    extends $AsyncNotifierProvider<EventFeed, FeedState> {
+final class EventFeedProvider extends $AsyncNotifierProvider<EventFeed, FeedState> {
   /// Loads and updates the paged list of events at a site for the current filter.
-  EventFeedProvider._({
-    required EventFeedFamily super.from,
-    required String super.argument,
-  }) : super(
-         retry: null,
-         name: r'eventFeedProvider',
-         isAutoDispose: true,
-         dependencies: null,
-         $allTransitiveDependencies: null,
-       );
+  EventFeedProvider._({required EventFeedFamily super.from, required String super.argument})
+    : super(
+        retry: null,
+        name: r'eventFeedProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$eventFeedHash();
@@ -184,8 +173,7 @@ final class EventFeedFamily extends $Family
 
   /// Loads and updates the paged list of events at a site for the current filter.
 
-  EventFeedProvider call(String siteId) =>
-      EventFeedProvider._(argument: siteId, from: this);
+  EventFeedProvider call(String siteId) => EventFeedProvider._(argument: siteId, from: this);
 
   @override
   String toString() => r'eventFeedProvider';

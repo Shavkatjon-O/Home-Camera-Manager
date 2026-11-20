@@ -36,6 +36,7 @@ class ApiTenancyRepository implements TenancyRepository {
     timezone: site.timezone,
     armMode: armMode,
     retentionDays: site.effectiveEventRetentionDays ?? site.eventRetentionDays ?? 30,
+    ownRetentionDays: site.eventRetentionDays,
   );
 
   /// Reads the arm mode of [siteId], or schedule when the analytics settings cannot be read.
@@ -101,7 +102,8 @@ class ApiTenancyRepository implements TenancyRepository {
           name: site.name,
           kind: api.SiteKind.fromJson(site.kind.name),
           timezone: site.timezone,
-          eventRetentionDays: site.retentionDays,
+          // Zero clears the site's own choice so it follows the plan again.
+          eventRetentionDays: site.ownRetentionDays ?? 0,
         ),
       ),
     );

@@ -130,6 +130,7 @@ void main() {
         }),
       );
       expect(site.retentionDays, 14);
+      expect(site.ownRetentionDays, isNull);
     });
   });
 }

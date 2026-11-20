@@ -100,7 +100,7 @@ class AppLocalizationsUz extends AppLocalizations {
   String get commonYesterday => 'Kecha';
 
   @override
-  String get commonJustNow => 'Hozirgina';
+  String get commonJustNow => 'hozirgina';
 
   @override
   String commonMinutesAgo(int count) {
@@ -2851,7 +2851,10 @@ class AppLocalizationsUz extends AppLocalizations {
       'Tashkilot toʻxtatilgan. Xizmat uni tiklamaguncha kameralar, signallar va oʻzgarishlar toʻxtab turadi.';
 
   @override
-  String siteRetentionPlan(int days) {
+  String siteRetentionPlanLimit(int days) {
     return 'Tarifingiz voqealarni $days kungacha saqlaydi.';
   }
+
+  @override
+  String get siteRetentionPlan => 'Tarif chegarasi boʻyicha';
 }

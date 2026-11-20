@@ -100,7 +100,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonYesterday => 'Yesterday';
 
   @override
-  String get commonJustNow => 'Just now';
+  String get commonJustNow => 'just now';
 
   @override
   String commonMinutesAgo(int count) {
@@ -2873,7 +2873,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'This organisation is suspended. Cameras, alerts and changes are paused until the service restores it.';
 
   @override
-  String siteRetentionPlan(int days) {
+  String siteRetentionPlanLimit(int days) {
     return 'Your plan keeps events for up to $days days.';
   }
+
+  @override
+  String get siteRetentionPlan => 'Use the plan\'s limit';
 }

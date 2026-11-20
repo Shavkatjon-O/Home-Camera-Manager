@@ -233,10 +233,13 @@ void main() {
     await tester.tap(find.text('Save'));
     await settle(tester, const Duration(seconds: 2));
     final saved = await tenancy.sites(current.organisationId);
-    expect(saved.firstWhere((s) => s.id == current.id).retentionDays, 14);
-    await tenancy.updateSite(
-      saved.firstWhere((s) => s.id == current.id).copyWith(retentionDays: current.retentionDays),
-    );
+    expect(saved.firstWhere((s) => s.id == current.id).ownRetentionDays, 14);
+    await tester.tap(find.text("Use the plan's limit"));
+    await settle(tester);
+    await tester.tap(find.text('Save'));
+    await settle(tester, const Duration(seconds: 2));
+    final reset = await tenancy.sites(current.organisationId);
+    expect(reset.firstWhere((s) => s.id == current.id).ownRetentionDays, isNull);
 
     if (cameraHost.isNotEmpty) {
       final sites = await container.read(allSitesProvider.future);

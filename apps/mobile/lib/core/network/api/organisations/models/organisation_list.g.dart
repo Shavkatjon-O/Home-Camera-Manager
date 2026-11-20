@@ -7,23 +7,17 @@ part of 'organisation_list.dart';
 // **************************************************************************
 
 OrganisationList _$OrganisationListFromJson(Map<String, dynamic> json) {
-  $checkKeys(
-    json,
-    requiredKeys: const ['items'],
-    disallowNullValues: const ['items'],
-  );
+  $checkKeys(json, requiredKeys: const ['items'], disallowNullValues: const ['items']);
   return OrganisationList(
     items: (json['items'] as List<dynamic>)
         .map((e) => OrganisationRead.fromJson(e as Map<String, dynamic>))
         .toList(),
-    additionalProperties:
-        OrganisationList._extras(json, 'additionalProperties') == null
+    additionalProperties: OrganisationList._extras(json, 'additionalProperties') == null
         ? const {}
-        : OrganisationList._readExtras(
-            OrganisationList._extras(json, 'additionalProperties'),
-          ),
+        : OrganisationList._readExtras(OrganisationList._extras(json, 'additionalProperties')),
   );
 }
 
-Map<String, dynamic> _$OrganisationListToJson(OrganisationList instance) =>
-    <String, dynamic>{'items': instance.items.map((e) => e.toJson()).toList()};
+Map<String, dynamic> _$OrganisationListToJson(OrganisationList instance) => <String, dynamic>{
+  'items': instance.items.map((e) => e.toJson()).toList(),
+};

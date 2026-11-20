@@ -149,7 +149,7 @@ class ConnectorsScreen extends ConsumerWidget {
                             if (connector.lastSeenAt != null)
                               ReadOut(
                                 label: l10n.connectorsLastSeen,
-                                value: format.ago(connector.lastSeenAt!),
+                                value: format.agoStart(connector.lastSeenAt!),
                               ),
                           ],
                         ),

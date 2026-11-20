@@ -16,18 +16,14 @@ AccountRegister _$AccountRegisterFromJson(Map<String, dynamic> json) {
     email: json['email'] as String,
     password: json['password'] as String,
     name: json['name'] as String?,
-    additionalProperties:
-        AccountRegister._extras(json, 'additionalProperties') == null
+    additionalProperties: AccountRegister._extras(json, 'additionalProperties') == null
         ? const {}
-        : AccountRegister._readExtras(
-            AccountRegister._extras(json, 'additionalProperties'),
-          ),
+        : AccountRegister._readExtras(AccountRegister._extras(json, 'additionalProperties')),
   );
 }
 
-Map<String, dynamic> _$AccountRegisterToJson(AccountRegister instance) =>
-    <String, dynamic>{
-      'email': instance.email,
-      'password': instance.password,
-      'name': ?instance.name,
-    };
+Map<String, dynamic> _$AccountRegisterToJson(AccountRegister instance) => <String, dynamic>{
+  'email': instance.email,
+  'password': instance.password,
+  'name': ?instance.name,
+};

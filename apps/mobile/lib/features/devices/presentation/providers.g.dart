@@ -16,24 +16,17 @@ final camerasProvider = CamerasFamily._();
 /// Loads the cameras of the site [siteId].
 
 final class CamerasProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<List<Camera>>,
-          List<Camera>,
-          FutureOr<List<Camera>>
-        >
+    extends $FunctionalProvider<AsyncValue<List<Camera>>, List<Camera>, FutureOr<List<Camera>>>
     with $FutureModifier<List<Camera>>, $FutureProvider<List<Camera>> {
   /// Loads the cameras of the site [siteId].
-  CamerasProvider._({
-    required CamerasFamily super.from,
-    required String super.argument,
-  }) : super(
-         retry: null,
-         name: r'camerasProvider',
-         isAutoDispose: true,
-         dependencies: null,
-         $allTransitiveDependencies: null,
-       );
+  CamerasProvider._({required CamerasFamily super.from, required String super.argument})
+    : super(
+        retry: null,
+        name: r'camerasProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$camerasHash();
@@ -47,9 +40,8 @@ final class CamerasProvider
 
   @$internal
   @override
-  $FutureProviderElement<List<Camera>> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
+  $FutureProviderElement<List<Camera>> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
 
   @override
   FutureOr<List<Camera>> create(Ref ref) {
@@ -85,8 +77,7 @@ final class CamerasFamily extends $Family
 
   /// Loads the cameras of the site [siteId].
 
-  CamerasProvider call(String siteId) =>
-      CamerasProvider._(argument: siteId, from: this);
+  CamerasProvider call(String siteId) => CamerasProvider._(argument: siteId, from: this);
 
   @override
   String toString() => r'camerasProvider';
@@ -108,16 +99,14 @@ final class TilesProvider
         >
     with $FutureModifier<List<CameraTile>>, $FutureProvider<List<CameraTile>> {
   /// Builds one tile per lens of every enabled camera of [siteId], with its saved view.
-  TilesProvider._({
-    required TilesFamily super.from,
-    required String super.argument,
-  }) : super(
-         retry: null,
-         name: r'tilesProvider',
-         isAutoDispose: true,
-         dependencies: null,
-         $allTransitiveDependencies: null,
-       );
+  TilesProvider._({required TilesFamily super.from, required String super.argument})
+    : super(
+        retry: null,
+        name: r'tilesProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$tilesHash();
@@ -131,9 +120,8 @@ final class TilesProvider
 
   @$internal
   @override
-  $FutureProviderElement<List<CameraTile>> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
+  $FutureProviderElement<List<CameraTile>> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
 
   @override
   FutureOr<List<CameraTile>> create(Ref ref) {
@@ -169,8 +157,7 @@ final class TilesFamily extends $Family
 
   /// Builds one tile per lens of every enabled camera of [siteId], with its saved view.
 
-  TilesProvider call(String siteId) =>
-      TilesProvider._(argument: siteId, from: this);
+  TilesProvider call(String siteId) => TilesProvider._(argument: siteId, from: this);
 
   @override
   String toString() => r'tilesProvider';
@@ -185,23 +172,17 @@ final connectorsProvider = ConnectorsFamily._();
 
 final class ConnectorsProvider
     extends
-        $FunctionalProvider<
-          AsyncValue<List<Connector>>,
-          List<Connector>,
-          FutureOr<List<Connector>>
-        >
+        $FunctionalProvider<AsyncValue<List<Connector>>, List<Connector>, FutureOr<List<Connector>>>
     with $FutureModifier<List<Connector>>, $FutureProvider<List<Connector>> {
   /// Loads the connectors of the site [siteId].
-  ConnectorsProvider._({
-    required ConnectorsFamily super.from,
-    required String super.argument,
-  }) : super(
-         retry: null,
-         name: r'connectorsProvider',
-         isAutoDispose: true,
-         dependencies: null,
-         $allTransitiveDependencies: null,
-       );
+  ConnectorsProvider._({required ConnectorsFamily super.from, required String super.argument})
+    : super(
+        retry: null,
+        name: r'connectorsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$connectorsHash();
@@ -215,9 +196,8 @@ final class ConnectorsProvider
 
   @$internal
   @override
-  $FutureProviderElement<List<Connector>> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
+  $FutureProviderElement<List<Connector>> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
 
   @override
   FutureOr<List<Connector>> create(Ref ref) {
@@ -253,8 +233,7 @@ final class ConnectorsFamily extends $Family
 
   /// Loads the connectors of the site [siteId].
 
-  ConnectorsProvider call(String siteId) =>
-      ConnectorsProvider._(argument: siteId, from: this);
+  ConnectorsProvider call(String siteId) => ConnectorsProvider._(argument: siteId, from: this);
 
   @override
   String toString() => r'connectorsProvider';

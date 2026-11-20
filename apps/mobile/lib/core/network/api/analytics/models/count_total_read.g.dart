@@ -17,19 +17,15 @@ CountTotalRead _$CountTotalReadFromJson(Map<String, dynamic> json) {
     in2: CountTotalRead._read_in2(json['in']),
     out: CountTotalRead._read_out(json['out']),
     labels: CountTotalRead._read_labels(json['labels']),
-    additionalProperties:
-        CountTotalRead._extras(json, 'additionalProperties') == null
+    additionalProperties: CountTotalRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : CountTotalRead._readExtras(
-            CountTotalRead._extras(json, 'additionalProperties'),
-          ),
+        : CountTotalRead._readExtras(CountTotalRead._extras(json, 'additionalProperties')),
   );
 }
 
-Map<String, dynamic> _$CountTotalReadToJson(CountTotalRead instance) =>
-    <String, dynamic>{
-      'line_uuid': instance.lineUuid,
-      'in': ?CountTotalRead._write_in2(instance.in2),
-      'out': ?CountTotalRead._write_out(instance.out),
-      'labels': ?CountTotalRead._write_labels(instance.labels),
-    };
+Map<String, dynamic> _$CountTotalReadToJson(CountTotalRead instance) => <String, dynamic>{
+  'line_uuid': instance.lineUuid,
+  'in': ?CountTotalRead._write_in2(instance.in2),
+  'out': ?CountTotalRead._write_out(instance.out),
+  'labels': ?CountTotalRead._write_labels(instance.labels),
+};

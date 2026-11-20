@@ -63,6 +63,12 @@ class Formats {
     return l10n.commonDaysAgo(delta.inDays);
   }
 
+  /// Returns how long ago [at] was, written to start a line, as in Just now.
+  String agoStart(DateTime at) {
+    final text = ago(at);
+    return text.isEmpty ? text : text[0].toUpperCase() + text.substring(1);
+  }
+
   /// Returns [value] as seconds, minutes and seconds, or hours and minutes, depending on its size.
   String duration(Duration value) {
     final seconds = value.inSeconds;

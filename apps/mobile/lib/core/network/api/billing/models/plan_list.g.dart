@@ -7,11 +7,7 @@ part of 'plan_list.dart';
 // **************************************************************************
 
 PlanList _$PlanListFromJson(Map<String, dynamic> json) {
-  $checkKeys(
-    json,
-    requiredKeys: const ['items'],
-    disallowNullValues: const ['items'],
-  );
+  $checkKeys(json, requiredKeys: const ['items'], disallowNullValues: const ['items']);
   return PlanList(
     items: (json['items'] as List<dynamic>)
         .map((e) => PlanRead.fromJson(e as Map<String, dynamic>))

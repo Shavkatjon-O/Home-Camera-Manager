@@ -7,11 +7,7 @@ part of 'site_list.dart';
 // **************************************************************************
 
 SiteList _$SiteListFromJson(Map<String, dynamic> json) {
-  $checkKeys(
-    json,
-    requiredKeys: const ['items'],
-    disallowNullValues: const ['items'],
-  );
+  $checkKeys(json, requiredKeys: const ['items'], disallowNullValues: const ['items']);
   return SiteList(
     items: (json['items'] as List<dynamic>)
         .map((e) => SiteRead.fromJson(e as Map<String, dynamic>))

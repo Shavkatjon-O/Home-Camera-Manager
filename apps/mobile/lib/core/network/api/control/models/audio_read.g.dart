@@ -17,12 +17,9 @@ AudioRead _$AudioReadFromJson(Map<String, dynamic> json) {
     supported: json['supported'] as bool,
     reason: json['reason'] as String?,
     codec: json['codec'] as String?,
-    additionalProperties:
-        AudioRead._extras(json, 'additionalProperties') == null
+    additionalProperties: AudioRead._extras(json, 'additionalProperties') == null
         ? const {}
-        : AudioRead._readExtras(
-            AudioRead._extras(json, 'additionalProperties'),
-          ),
+        : AudioRead._readExtras(AudioRead._extras(json, 'additionalProperties')),
   );
 }
 

@@ -230,7 +230,7 @@ class EventCard extends ConsumerWidget {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      '${format.ago(event.startedAt)}, ${event.cameraName}',
+                      '${format.agoStart(event.startedAt)}, ${event.cameraName}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: context.text.bodySmall,

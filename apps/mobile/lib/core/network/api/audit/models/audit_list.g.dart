@@ -19,12 +19,9 @@ AuditList _$AuditListFromJson(Map<String, dynamic> json) {
     total: AuditList._read_total(json['total']),
     page: AuditList._read_page(json['page']),
     pageSize: AuditList._read_pageSize(json['page_size']),
-    additionalProperties:
-        AuditList._extras(json, 'additionalProperties') == null
+    additionalProperties: AuditList._extras(json, 'additionalProperties') == null
         ? const {}
-        : AuditList._readExtras(
-            AuditList._extras(json, 'additionalProperties'),
-          ),
+        : AuditList._readExtras(AuditList._extras(json, 'additionalProperties')),
   );
 }
 

@@ -60,7 +60,8 @@ void main() {
 
   testWidgets('describes how long ago something happened', (tester) async {
     final f = await formats(tester);
-    expect(f.ago(now.subtract(const Duration(seconds: 30))), 'Just now');
+    expect(f.ago(now.subtract(const Duration(seconds: 30))), 'just now');
+    expect(f.agoStart(now.subtract(const Duration(seconds: 30))), 'Just now');
     expect(f.ago(now.subtract(const Duration(seconds: 50))), '1 min ago');
     expect(f.ago(now.subtract(const Duration(minutes: 12))), '12 min ago');
     expect(f.ago(now.subtract(const Duration(hours: 5))), '5 h ago');

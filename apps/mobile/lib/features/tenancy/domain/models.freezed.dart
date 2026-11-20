@@ -299,7 +299,7 @@ as List<String>?,
 /// @nodoc
 mixin _$Site {
 
- String get id; String get organisationId; String get name; SiteKind get kind; String get timezone; ArmMode get armMode; int get retentionDays;
+ String get id; String get organisationId; String get name; SiteKind get kind; String get timezone; ArmMode get armMode; int get retentionDays; int? get ownRetentionDays;
 /// Create a copy of Site
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -311,20 +311,20 @@ $SiteCopyWith<Site> get copyWith => _$SiteCopyWithImpl<Site>(this as Site, _$ide
 @override
 bool operator ==(Object other) {
   final _this = this as Site;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Site&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.organisationId, _this.organisationId) || other.organisationId == _this.organisationId)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.kind, _this.kind) || other.kind == _this.kind)&&(identical(other.timezone, _this.timezone) || other.timezone == _this.timezone)&&(identical(other.armMode, _this.armMode) || other.armMode == _this.armMode)&&(identical(other.retentionDays, _this.retentionDays) || other.retentionDays == _this.retentionDays));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Site&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.organisationId, _this.organisationId) || other.organisationId == _this.organisationId)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.kind, _this.kind) || other.kind == _this.kind)&&(identical(other.timezone, _this.timezone) || other.timezone == _this.timezone)&&(identical(other.armMode, _this.armMode) || other.armMode == _this.armMode)&&(identical(other.retentionDays, _this.retentionDays) || other.retentionDays == _this.retentionDays)&&(identical(other.ownRetentionDays, _this.ownRetentionDays) || other.ownRetentionDays == _this.ownRetentionDays));
 }
 
 
 @override
 int get hashCode {
   final _this = this as Site;
-  return Object.hash(runtimeType,_this.id,_this.organisationId,_this.name,_this.kind,_this.timezone,_this.armMode,_this.retentionDays);
+  return Object.hash(runtimeType,_this.id,_this.organisationId,_this.name,_this.kind,_this.timezone,_this.armMode,_this.retentionDays,_this.ownRetentionDays);
 }
 
 @override
 String toString() {
   final _this = this as Site;
-  return 'Site(id: ${_this.id}, organisationId: ${_this.organisationId}, name: ${_this.name}, kind: ${_this.kind}, timezone: ${_this.timezone}, armMode: ${_this.armMode}, retentionDays: ${_this.retentionDays})';
+  return 'Site(id: ${_this.id}, organisationId: ${_this.organisationId}, name: ${_this.name}, kind: ${_this.kind}, timezone: ${_this.timezone}, armMode: ${_this.armMode}, retentionDays: ${_this.retentionDays}, ownRetentionDays: ${_this.ownRetentionDays})';
 }
 
 
@@ -335,7 +335,7 @@ abstract mixin class $SiteCopyWith<$Res>  {
   factory $SiteCopyWith(Site value, $Res Function(Site) _then) = _$SiteCopyWithImpl;
 @useResult
 $Res call({
- String id, String organisationId, String name, SiteKind kind, String timezone, ArmMode armMode, int retentionDays
+ String id, String organisationId, String name, SiteKind kind, String timezone, ArmMode armMode, int retentionDays, int? ownRetentionDays
 });
 
 
@@ -352,7 +352,7 @@ class _$SiteCopyWithImpl<$Res>
 
 /// Create a copy of Site
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? organisationId = null,Object? name = null,Object? kind = null,Object? timezone = null,Object? armMode = null,Object? retentionDays = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? organisationId = null,Object? name = null,Object? kind = null,Object? timezone = null,Object? armMode = null,Object? retentionDays = null,Object? ownRetentionDays = freezed,}) {
   return _then(Site(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,organisationId: null == organisationId ? _self.organisationId : organisationId // ignore: cast_nullable_to_non_nullable
@@ -361,7 +361,8 @@ as String,kind: null == kind ? _self.kind : kind // ignore: cast_nullable_to_non
 as SiteKind,timezone: null == timezone ? _self.timezone : timezone // ignore: cast_nullable_to_non_nullable
 as String,armMode: null == armMode ? _self.armMode : armMode // ignore: cast_nullable_to_non_nullable
 as ArmMode,retentionDays: null == retentionDays ? _self.retentionDays : retentionDays // ignore: cast_nullable_to_non_nullable
-as int,
+as int,ownRetentionDays: freezed == ownRetentionDays ? _self.ownRetentionDays : ownRetentionDays // ignore: cast_nullable_to_non_nullable
+as int?,
   ));
 }
 
@@ -446,10 +447,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String organisationId,  String name,  SiteKind kind,  String timezone,  ArmMode armMode,  int retentionDays)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String organisationId,  String name,  SiteKind kind,  String timezone,  ArmMode armMode,  int retentionDays,  int? ownRetentionDays)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Site() when $default != null:
-return $default(_that.id,_that.organisationId,_that.name,_that.kind,_that.timezone,_that.armMode,_that.retentionDays);case _:
+return $default(_that.id,_that.organisationId,_that.name,_that.kind,_that.timezone,_that.armMode,_that.retentionDays,_that.ownRetentionDays);case _:
   return orElse();
 
 }
@@ -467,10 +468,10 @@ return $default(_that.id,_that.organisationId,_that.name,_that.kind,_that.timezo
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String organisationId,  String name,  SiteKind kind,  String timezone,  ArmMode armMode,  int retentionDays)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String organisationId,  String name,  SiteKind kind,  String timezone,  ArmMode armMode,  int retentionDays,  int? ownRetentionDays)  $default,) {final _that = this;
 switch (_that) {
 case _Site():
-return $default(_that.id,_that.organisationId,_that.name,_that.kind,_that.timezone,_that.armMode,_that.retentionDays);case _:
+return $default(_that.id,_that.organisationId,_that.name,_that.kind,_that.timezone,_that.armMode,_that.retentionDays,_that.ownRetentionDays);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -487,10 +488,10 @@ return $default(_that.id,_that.organisationId,_that.name,_that.kind,_that.timezo
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String organisationId,  String name,  SiteKind kind,  String timezone,  ArmMode armMode,  int retentionDays)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String organisationId,  String name,  SiteKind kind,  String timezone,  ArmMode armMode,  int retentionDays,  int? ownRetentionDays)?  $default,) {final _that = this;
 switch (_that) {
 case _Site() when $default != null:
-return $default(_that.id,_that.organisationId,_that.name,_that.kind,_that.timezone,_that.armMode,_that.retentionDays);case _:
+return $default(_that.id,_that.organisationId,_that.name,_that.kind,_that.timezone,_that.armMode,_that.retentionDays,_that.ownRetentionDays);case _:
   return null;
 
 }
@@ -502,7 +503,7 @@ return $default(_that.id,_that.organisationId,_that.name,_that.kind,_that.timezo
 
 
 class _Site implements Site {
-  const _Site({required this.id, required this.organisationId, required this.name, required this.kind, required this.timezone, this.armMode = ArmMode.schedule, this.retentionDays = 30});
+  const _Site({required this.id, required this.organisationId, required this.name, required this.kind, required this.timezone, this.armMode = ArmMode.schedule, this.retentionDays = 30, this.ownRetentionDays});
   
 
 @override final  String id;
@@ -512,6 +513,7 @@ class _Site implements Site {
 @override final  String timezone;
 @override@JsonKey() final  ArmMode armMode;
 @override@JsonKey() final  int retentionDays;
+@override final  int? ownRetentionDays;
 
 /// Create a copy of Site
 /// with the given fields replaced by the non-null parameter values.
@@ -523,18 +525,18 @@ _$SiteCopyWith<_Site> get copyWith => __$SiteCopyWithImpl<_Site>(this, _$identit
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Site&&(identical(other.id, id) || other.id == id)&&(identical(other.organisationId, organisationId) || other.organisationId == organisationId)&&(identical(other.name, name) || other.name == name)&&(identical(other.kind, kind) || other.kind == kind)&&(identical(other.timezone, timezone) || other.timezone == timezone)&&(identical(other.armMode, armMode) || other.armMode == armMode)&&(identical(other.retentionDays, retentionDays) || other.retentionDays == retentionDays));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Site&&(identical(other.id, id) || other.id == id)&&(identical(other.organisationId, organisationId) || other.organisationId == organisationId)&&(identical(other.name, name) || other.name == name)&&(identical(other.kind, kind) || other.kind == kind)&&(identical(other.timezone, timezone) || other.timezone == timezone)&&(identical(other.armMode, armMode) || other.armMode == armMode)&&(identical(other.retentionDays, retentionDays) || other.retentionDays == retentionDays)&&(identical(other.ownRetentionDays, ownRetentionDays) || other.ownRetentionDays == ownRetentionDays));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,organisationId,name,kind,timezone,armMode,retentionDays);
+    return Object.hash(runtimeType,id,organisationId,name,kind,timezone,armMode,retentionDays,ownRetentionDays);
 }
 
 @override
 String toString() {
-    return 'Site(id: $id, organisationId: $organisationId, name: $name, kind: $kind, timezone: $timezone, armMode: $armMode, retentionDays: $retentionDays)';
+    return 'Site(id: $id, organisationId: $organisationId, name: $name, kind: $kind, timezone: $timezone, armMode: $armMode, retentionDays: $retentionDays, ownRetentionDays: $ownRetentionDays)';
 }
 
 
@@ -545,7 +547,7 @@ abstract mixin class _$SiteCopyWith<$Res> implements $SiteCopyWith<$Res> {
   factory _$SiteCopyWith(_Site value, $Res Function(_Site) _then) = __$SiteCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String organisationId, String name, SiteKind kind, String timezone, ArmMode armMode, int retentionDays
+ String id, String organisationId, String name, SiteKind kind, String timezone, ArmMode armMode, int retentionDays, int? ownRetentionDays
 });
 
 
@@ -562,7 +564,7 @@ class __$SiteCopyWithImpl<$Res>
 
 /// Create a copy of Site
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? organisationId = null,Object? name = null,Object? kind = null,Object? timezone = null,Object? armMode = null,Object? retentionDays = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? organisationId = null,Object? name = null,Object? kind = null,Object? timezone = null,Object? armMode = null,Object? retentionDays = null,Object? ownRetentionDays = freezed,}) {
   return _then(_Site(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,organisationId: null == organisationId ? _self.organisationId : organisationId // ignore: cast_nullable_to_non_nullable
@@ -571,7 +573,8 @@ as String,kind: null == kind ? _self.kind : kind // ignore: cast_nullable_to_non
 as SiteKind,timezone: null == timezone ? _self.timezone : timezone // ignore: cast_nullable_to_non_nullable
 as String,armMode: null == armMode ? _self.armMode : armMode // ignore: cast_nullable_to_non_nullable
 as ArmMode,retentionDays: null == retentionDays ? _self.retentionDays : retentionDays // ignore: cast_nullable_to_non_nullable
-as int,
+as int,ownRetentionDays: freezed == ownRetentionDays ? _self.ownRetentionDays : ownRetentionDays // ignore: cast_nullable_to_non_nullable
+as int?,
   ));
 }
 

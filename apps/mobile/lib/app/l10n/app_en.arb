@@ -30,7 +30,7 @@
   "commonUnknown": "Unknown",
   "commonToday": "Today",
   "commonYesterday": "Yesterday",
-  "commonJustNow": "Just now",
+  "commonJustNow": "just now",
   "commonMinutesAgo": "{count} min ago",
   "@commonMinutesAgo": {
     "placeholders": {
@@ -1600,12 +1600,16 @@
   "errorPlanLimit": "This goes beyond what your plan allows. Remove something or ask the owner to change the plan.",
   "errorSuspended": "This organisation is suspended. Contact the service to restore it.",
   "planSuspended": "This organisation is suspended. Cameras, alerts and changes are paused until the service restores it.",
-  "siteRetentionPlan": "Your plan keeps events for up to {days} days.",
-  "@siteRetentionPlan": {
+  "siteRetentionPlanLimit": "Your plan keeps events for up to {days} days.",
+  "@siteRetentionPlanLimit": {
     "placeholders": {
       "days": {
         "type": "int"
       }
     }
+  },
+  "siteRetentionPlan": "Use the plan's limit",
+  "@siteRetentionPlan": {
+    "description": "Retention choice that clears the site own value so it follows the plan."
   }
 }

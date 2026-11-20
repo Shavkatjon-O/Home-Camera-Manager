@@ -15,17 +15,13 @@ PushTestResult _$PushTestResultFromJson(Map<String, dynamic> json) {
   return PushTestResult(
     sent: PushTestResult._read_sent(json['sent']),
     failed: PushTestResult._read_failed(json['failed']),
-    additionalProperties:
-        PushTestResult._extras(json, 'additionalProperties') == null
+    additionalProperties: PushTestResult._extras(json, 'additionalProperties') == null
         ? const {}
-        : PushTestResult._readExtras(
-            PushTestResult._extras(json, 'additionalProperties'),
-          ),
+        : PushTestResult._readExtras(PushTestResult._extras(json, 'additionalProperties')),
   );
 }
 
-Map<String, dynamic> _$PushTestResultToJson(PushTestResult instance) =>
-    <String, dynamic>{
-      'sent': ?PushTestResult._write_sent(instance.sent),
-      'failed': ?PushTestResult._write_failed(instance.failed),
-    };
+Map<String, dynamic> _$PushTestResultToJson(PushTestResult instance) => <String, dynamic>{
+  'sent': ?PushTestResult._write_sent(instance.sent),
+  'failed': ?PushTestResult._write_failed(instance.failed),
+};

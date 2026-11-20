@@ -6,9 +6,7 @@ part of 'maintenance_capabilities.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-MaintenanceCapabilities _$MaintenanceCapabilitiesFromJson(
-  Map<String, dynamic> json,
-) {
+MaintenanceCapabilities _$MaintenanceCapabilitiesFromJson(Map<String, dynamic> json) {
   $checkKeys(json, disallowNullValues: const ['time', 'reboot']);
   return MaintenanceCapabilities(
     time: MaintenanceCapabilities._presentValue(json, 'time') == null
@@ -21,8 +19,7 @@ MaintenanceCapabilities _$MaintenanceCapabilitiesFromJson(
         : MaintenanceCapabilities._read_reboot(
             MaintenanceCapabilities._presentValue(json, 'reboot') as Object,
           ),
-    additionalProperties:
-        MaintenanceCapabilities._extras(json, 'additionalProperties') == null
+    additionalProperties: MaintenanceCapabilities._extras(json, 'additionalProperties') == null
         ? const {}
         : MaintenanceCapabilities._readExtras(
             MaintenanceCapabilities._extras(json, 'additionalProperties'),
@@ -30,9 +27,8 @@ MaintenanceCapabilities _$MaintenanceCapabilitiesFromJson(
   );
 }
 
-Map<String, dynamic> _$MaintenanceCapabilitiesToJson(
-  MaintenanceCapabilities instance,
-) => <String, dynamic>{
-  'time': ?MaintenanceCapabilities._write_time(instance.time),
-  'reboot': ?MaintenanceCapabilities._write_reboot(instance.reboot),
-};
+Map<String, dynamic> _$MaintenanceCapabilitiesToJson(MaintenanceCapabilities instance) =>
+    <String, dynamic>{
+      'time': ?MaintenanceCapabilities._write_time(instance.time),
+      'reboot': ?MaintenanceCapabilities._write_reboot(instance.reboot),
+    };
