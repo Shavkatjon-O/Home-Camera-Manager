@@ -106,9 +106,10 @@ any other event.
   with the hips dropping, then lying still for 8 s.
 - Number plates, beta (app/plates): read on vehicle events from full-resolution pictures of the recording buffer,
   because the 1080p muxer frame shrinks Camera B's plates by a third. PaddleOCR's DB text detector finds plate-shaped
-  text lines, the PP-OCRv4 English recogniser reads them, the text is fitted to the Uzbek formats (01 A 123 BC and
-  01 123 ABC) with look-alike letters and digits swapped only where the format needs the other kind, and the reads
-  of an event vote. Grey infrared pictures are not read.
+  text lines, each line is read as upright crops and levelled into a straight band of characters, because a plate
+  seen from above leans and an upright box takes in the grille, the PP-OCRv4 English recogniser reads them, the text
+  is fitted to the Uzbek formats (01 A 123 BC and 01 123 ABC) with look-alike letters and digits swapped only where
+  the format needs the other kind, and the reads of an event vote. Grey infrared pictures are not read.
 - Journeys, beta (app/reid): OSNet-AIN x1.0 embeds person boxes about once a second in the pipeline process. Raw
   cosine similarity is about 0.5 between any two people on these cameras, so tracks are compared after taking away
   the running mean of all tracks; then unrelated tracks score near 0 and the same person in the same light 0.2 to

@@ -4,7 +4,19 @@ import pytest
 from app.plates.ctc import greedy, load_characters
 from app.plates.detect import BOX_NORM, STRIDE, LpdFinder, PlateBox, decode
 from app.plates.frames import box_filter, parse_ppm
-from app.plates.reader import INFRARED, NO_PLATE, READ, PlateRead, PlateReader, PlateSettings, PlateVotes
+from app.plates.reader import (
+    CROP_VARIANTS,
+    INFRARED,
+    LINE_PADS,
+    LINE_TRIMS,
+    NO_PLATE,
+    READ,
+    PlateRead,
+    PlateReader,
+    PlateSettings,
+    PlateVotes,
+)
+from app.plates.straighten import straighten
 from app.plates.text import parse
 from app.plates.textboxes import TextFinder, plate_likeness, text_boxes, text_input
 from app.plates.watch import PlateJob, PlateWatch
@@ -286,3 +298,43 @@ def test_parse_keeps_the_body_when_the_region_box_is_misread():
     assert whole.text == "10A123BC"
     assert whole.score == pytest.approx(0.95)
     assert parse("01A123BCUZ").score == pytest.approx(1.0)
+
+
+def leaning_plate(angle, width=160, height=90, band=(36, 54)):
+    picture = np.full((height, width, 3), 200, np.uint8)
+    picture[::6] = 40
+    slope = np.tan(np.radians(angle))
+    for column in range(10, width - 10):
+        if (column // 4) % 2:
+            continue
+        lift = int(round((column - width / 2) * slope))
+        picture[band[0] - lift : band[1] - lift, column] = 20
+    return picture
+
+
+def test_straighten_levels_a_leaning_plate_and_cuts_out_the_grille():
+    flat, angle = straighten(leaning_plate(0), pad=0.0)
+    assert angle == 0.0
+    assert 16 <= flat.shape[0] <= 22
+    level, angle = straighten(leaning_plate(8), pad=0.0)
+    assert -10 <= angle <= -6
+    assert 16 <= level.shape[0] <= 24
+    padded, _ = straighten(leaning_plate(8), pad=0.35)
+    assert padded.shape[0] > level.shape[0]
+    tiny, angle = straighten(np.zeros((3, 40, 3), np.uint8))
+    assert tiny.shape == (3, 40, 3) and angle == 0.0
+
+
+def test_reader_also_reads_the_levelled_band():
+    calls = []
+
+    def run(batch):
+        calls.append(len(batch))
+        return {"softmax": np.stack([scores_for("01A123BC")] * len(batch))}
+
+    reader = PlateReader(
+        detector_with((250, 300, 390, 330)), Runner(["x"], ["softmax"], run), CHARACTERS, PlateSettings()
+    )
+    assert reader.read(colour_picture()).status == READ
+    assert sum(calls) == len(CROP_VARIANTS) + len(LINE_PADS) * len(LINE_TRIMS)
+    assert max(calls) <= 8

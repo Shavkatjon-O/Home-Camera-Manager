@@ -3,8 +3,8 @@
 The vehicle picture is a full-resolution crop around the vehicle box. A grey picture is infrared night vision, which
 glares on the plate, so it is not read. Otherwise a plate finder looks at the whole crop: by default PaddleOCR's DB
 text detector, which finds plate-shaped lines of text, or NVIDIA's LPDNet where its licence suits. The best boxes are
-widened a little and cut from the full-resolution crop, and the text recogniser reads each one; the read that fits a
-plate format best wins.
+widened a little and cut from the full-resolution crop, both as upright boxes and levelled into a straight band of
+characters, and the text recogniser reads each one; the read that fits a plate format best wins.
 """
 
 from __future__ import annotations
@@ -17,6 +17,7 @@ import numpy as np
 
 from app.plates.ctc import greedy
 from app.plates.detect import PlateBox
+from app.plates.straighten import straighten
 from app.plates.text import PlateText, parse
 from app.stages.crops import is_grey, text_line
 from app.stages.models import PLATE_READER
@@ -31,6 +32,9 @@ UNREADABLE = "unreadable"
 STATUS_ORDER = (READ, UNREADABLE, TOO_SMALL, NO_PLATE, INFRARED)
 
 CROP_VARIANTS = ((0.1, 0.14), (0.1, 0.0), (-0.15, 0.0), (0.0, 0.08), (0.2, 0.0), (-0.15, 0.14))
+LINE_SURROUND = 0.3
+LINE_PADS = (0.2, 0.35)
+LINE_TRIMS = (0.0, 0.1, 0.18)
 
 TEXT_FINDER = "text"
 LPD_FINDER = "lpdnet"
@@ -147,6 +151,33 @@ def variants(box: PlateBox, settings: PlateSettings, width: int, height: int) ->
     return result
 
 
+def levelled(picture: np.ndarray, box: PlateBox, settings: PlateSettings) -> list[np.ndarray]:
+    """Return a plate box's crop levelled into a band of characters, with and without the flag on the right.
+
+    Args:
+        picture: Height by width by 3 RGB pixels of the vehicle.
+        box: Plate box in picture pixels.
+        settings: Reading settings.
+
+    Returns:
+        Height by width by 3 bands, at least 4 pixels each way.
+    """
+    height, width = picture.shape[:2]
+    box_width, box_height = box.right - box.left, box.bottom - box.top
+    left = max(0, int(box.left - settings.widen_x * box_width))
+    right = min(width, int(np.ceil(box.right + settings.widen_x * box_width)))
+    top = max(0, int(box.top - LINE_SURROUND * box_height))
+    bottom = min(height, int(np.ceil(box.bottom + LINE_SURROUND * box_height)))
+    result = []
+    for pad in LINE_PADS:
+        line, _ = straighten(picture[top:bottom, left:right], pad)
+        for trim in LINE_TRIMS:
+            part = line[:, : int(round(line.shape[1] * (1 - trim)))]
+            if part.shape[0] >= 4 and part.shape[1] >= 4:
+                result.append(part)
+    return result
+
+
 def widen(box: PlateBox, settings: PlateSettings, width: int, height: int) -> tuple[int, int, int, int]:
     """Widen a plate box and clip it to the picture.
 
@@ -227,6 +258,10 @@ class PlateReader:
             for left, top, right, bottom in variants(box, self.settings, width, height):
                 lines.append(text_line(picture[top:bottom, left:right], line_height, line_width))
                 spans.append((float(left), float(top), float(right), float(bottom)))
+            span = (box.left, box.top, box.right, box.bottom)
+            for part in levelled(picture, box, self.settings):
+                lines.append(text_line(part, line_height, line_width))
+                spans.append(span)
         if not lines:
             return PlateRead(TOO_SMALL)
         size = max(1, self.recogniser.max_batch)
