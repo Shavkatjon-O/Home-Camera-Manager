@@ -4,6 +4,7 @@ from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth.context import UserContext
 from app.core.database import get_db
 from app.modules.devices.services import (
     CameraControlService,
@@ -12,8 +13,10 @@ from app.modules.devices.services import (
     ConnectorService,
     DiscoveryService,
     PairingService,
+    StreamAccessService,
     authenticate_connector,
 )
+from app.modules.identity.deps import get_current_user
 from app.modules.tenancy.deps import get_site_access
 from app.modules.tenancy.services.access import SiteAccess
 
@@ -126,3 +129,18 @@ def get_discovery_service(
         Discovery service bound to the session and the user.
     """
     return DiscoveryService(session, access.user)
+
+
+def get_stream_access_service(
+    session: AsyncSession = Depends(get_db), actor: UserContext = Depends(get_current_user)
+) -> StreamAccessService:
+    """Build the video access check for a signed-in request.
+
+    Args:
+        session: Request-scoped database session.
+        actor: Signed-in user.
+
+    Returns:
+        The service.
+    """
+    return StreamAccessService(session, actor)

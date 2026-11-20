@@ -2,4 +2,5 @@
 
 from .config import *
 from .ingest import *
+from .status import *
 from .views import *

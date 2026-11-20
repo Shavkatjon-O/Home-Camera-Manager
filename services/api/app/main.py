@@ -18,10 +18,10 @@ from app.core.database import async_engine, verify_db_connection
 from app.core.exceptions import ServiceError, Unavailable
 from app.core.logging import setup_logging
 from app.core.security import require_secret_key
-from app.core.seed import seed_admin
 from app.health.prober import health_prober
 from app.modules.alerting.services import PushDispatcher
 from app.modules.analytics.routers import analytics_internal_router
+from app.modules.identity.services.seed import seed_admin
 from app.modules.investigation.routers import people_internal_router
 from app.modules.tenancy.services.bootstrap import run_bootstrap
 from app.modules.tv.routers import tv_internal_router

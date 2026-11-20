@@ -18,7 +18,7 @@ from app.modules.events.schemas import EventCounts, EventList, EventRead, EventS
 from app.modules.investigation.services.faces import face_summaries
 from app.modules.tenancy.services.scope import Scope, install_scope
 
-__all__ = ["EventFilters", "EventService", "camera_names", "stream_hello"]
+__all__ = ["EventFilters", "EventService", "camera_names", "site_cameras", "stream_hello"]
 
 
 async def camera_names(session: AsyncSession) -> dict[UUID, str]:
@@ -61,6 +61,20 @@ async def stream_hello(scope: Scope | None = None, engine: CameraEventsEngine = 
         "sources": [source.model_dump(mode="json") for source in engine.sources() if source.camera_uuid in names],
         "open": [event_read(row, names.get(row.camera_uuid), now).model_dump(mode="json") for row in rows],
     }
+
+
+async def site_cameras(scope: Scope) -> set[str]:
+    """Load the ids of every camera of a scope's site, including removed ones, for a live event stream.
+
+    Args:
+        scope: The listener's row scope.
+
+    Returns:
+        Camera ids as text.
+    """
+    async with async_session_maker() as session:
+        install_scope(session, scope)
+        return {str(uuid) for uuid in await session.scalars(select(Camera.uuid))}
 
 
 class EventFilters:

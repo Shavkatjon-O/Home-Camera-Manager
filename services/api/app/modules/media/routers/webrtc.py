@@ -5,7 +5,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends
 
 from app.auth.context import UserContext
-from app.auth.dependencies import get_current_user
+from app.modules.identity.deps import get_current_user
 from app.modules.media.deps import get_live_service
 from app.modules.media.schemas import IceServerList, WebrtcAnswer, WebrtcOffer
 from app.modules.media.services import LiveService, ice_servers

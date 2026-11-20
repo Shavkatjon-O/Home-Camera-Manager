@@ -8,7 +8,7 @@ from app.modules.analytics.enums import ArmMode, ViewStream
 from app.modules.analytics.services.views import rules_of, sync_views, view_stream
 from app.streaming.names import MAIN, SUB, stream_name
 
-__all__ = ["service_config", "view_config"]
+__all__ = ["AnalyticsConfigService", "service_config", "view_config"]
 
 
 def zone_config(zone: AnalyticsZone) -> dict:
@@ -209,3 +209,27 @@ async def service_config(session: AsyncSession) -> dict:
         "arm_mode": modes.get(first_site, ArmMode.DISARMED.value) if first_site is not None else ArmMode.DISARMED.value,
         "cameras": entries,
     }
+
+
+class AnalyticsConfigService:
+    """Builds the configuration the analytics service polls.
+
+    Attributes:
+        session: Database session without a site scope.
+    """
+
+    def __init__(self, session: AsyncSession):
+        """Bind the service to a session.
+
+        Args:
+            session: Database session without a site scope.
+        """
+        self.session = session
+
+    async def build(self) -> dict:
+        """Build the configuration, creating the views of new cameras on the way.
+
+        Returns:
+            The arm mode and every enabled camera with its views, zones and lines.
+        """
+        return await service_config(self.session)

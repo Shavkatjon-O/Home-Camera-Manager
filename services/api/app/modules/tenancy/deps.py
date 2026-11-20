@@ -6,8 +6,8 @@ from fastapi import Depends, Header, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.context import UserContext
-from app.auth.dependencies import get_current_user, get_stream_user
 from app.core.database import async_session_maker, get_db
+from app.modules.identity.deps import get_current_user, get_stream_user
 from app.modules.tenancy.enums import Role
 from app.modules.tenancy.services import InvitationService, MemberService, OrganisationService, SiteService
 from app.modules.tenancy.services.access import SiteAccess, check_role, resolve_site_access

@@ -8,7 +8,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.core.database import get_db
 from app.core.exceptions import Unauthorized, Unavailable
-from app.modules.analytics.services import AnalyticsIngestService, AnalyticsViewService
+from app.modules.analytics.services import (
+    AnalyticsConfigService,
+    AnalyticsIngestService,
+    AnalyticsStatusService,
+    AnalyticsViewService,
+)
 from app.modules.analytics.services.follow import FollowPtzService
 from app.modules.tenancy.deps import get_site_access
 from app.modules.tenancy.services.access import SiteAccess
@@ -76,3 +81,35 @@ def get_follow_service(
         The service.
     """
     return FollowPtzService(session)
+
+
+def get_config_service(
+    session: AsyncSession = Depends(get_db),
+    authorized: None = Depends(require_analytics_token),
+) -> AnalyticsConfigService:
+    """Build the configuration service for a poll of the analytics service.
+
+    Args:
+        session: Request-scoped database session.
+        authorized: Result of the token check.
+
+    Returns:
+        The service.
+    """
+    return AnalyticsConfigService(session)
+
+
+def get_status_service(
+    session: AsyncSession = Depends(get_db),
+    access: SiteAccess = Depends(get_site_access),
+) -> AnalyticsStatusService:
+    """Build the status service for a member of the request's site.
+
+    Args:
+        session: Request-scoped database session, limited to the site by the access.
+        access: Access of the signed-in member to the request's site.
+
+    Returns:
+        The service.
+    """
+    return AnalyticsStatusService(session)

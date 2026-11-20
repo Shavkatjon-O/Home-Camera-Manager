@@ -7,3 +7,4 @@ from .connectors import *
 from .control import *
 from .defaults import *
 from .discovery import *
+from .streams import *

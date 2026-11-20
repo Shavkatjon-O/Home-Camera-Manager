@@ -4,9 +4,9 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.context import UserContext
-from app.auth.dependencies import get_current_user
 from app.core.database import get_db
 from app.modules.alerting.services import AnalyticsSettingsService, PushTargetService
+from app.modules.identity.deps import get_current_user
 from app.modules.tenancy.deps import get_site_access
 from app.modules.tenancy.services.access import SiteAccess
 

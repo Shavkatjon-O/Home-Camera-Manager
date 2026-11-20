@@ -4,8 +4,8 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.modules.analytics.deps import require_analytics_token
 from app.modules.insights.services.counts import AreaService, CountService
-from app.modules.investigation.deps import require_analytics_token
 from app.modules.tenancy.deps import get_site_access
 from app.modules.tenancy.services.access import SiteAccess
 

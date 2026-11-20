@@ -7,18 +7,14 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import FileResponse, StreamingResponse
-from sqlalchemy import select
 
 from app.camera_events.engine import camera_events
-from app.core.database import async_session_maker
-from app.models import Camera
 from app.modules.events.deps import get_event_service
 from app.modules.events.enums import EventKind, EventSource
 from app.modules.events.schemas import EventCounts, EventList, EventRead, EventSourceList
-from app.modules.events.services import EventFilters, EventService, stream_hello
+from app.modules.events.services import EventFilters, EventService, site_cameras, stream_hello
 from app.modules.tenancy.deps import get_stream_site_access, require_operator, site_scope
 from app.modules.tenancy.services.access import SiteAccess
-from app.modules.tenancy.services.scope import Scope, install_scope
 
 router = APIRouter()
 
@@ -126,20 +122,6 @@ async def list_event_sources(service: EventService = Depends(get_event_service))
         The sources.
     """
     return await service.sources()
-
-
-async def site_cameras(scope: Scope) -> set[str]:
-    """Load the ids of every camera of a scope's site, including removed ones.
-
-    Args:
-        scope: The listener's row scope.
-
-    Returns:
-        Camera ids as text.
-    """
-    async with async_session_maker() as session:
-        install_scope(session, scope)
-        return {str(uuid) for uuid in await session.scalars(select(Camera.uuid))}
 
 
 def message_camera(message: dict) -> str | None:

@@ -14,12 +14,14 @@ dependencies = [
     "pydantic>=2.11",
     "pydantic-settings>=2.10",
     "pyjwt>=2.10",
+    "pyyaml>=6.0",
     "sqlalchemy[asyncio]>=2.0.41",
     "uvicorn[standard]>=0.35",
 ]
 
 [dependency-groups]
 dev = [
+    "import-linter>=2.3",
     "pytest>=8.4",
     "pytest-asyncio>=1.1",
     "ruff>=0.12",
@@ -52,3 +54,103 @@ testpaths = ["tests"]
 pythonpath = [".", "../../packages/camera-adapters"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
+
+[tool.importlinter]
+root_packages = ["app", "camera_adapters"]
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "core and auth import no domain"
+type = "forbidden"
+source_modules = ["app.core", "app.auth"]
+forbidden_modules = ["app.modules", "app.api", "app.main"]
+
+[[tool.importlinter.contracts]]
+name = "packages import nothing from services or apps"
+type = "forbidden"
+source_modules = ["camera_adapters"]
+forbidden_modules = ["app"]
+
+[[tool.importlinter.contracts]]
+name = "routers leave the database to services"
+type = "forbidden"
+source_modules = ["app.modules.alerting.routers", "app.modules.analytics.routers", "app.modules.devices.routers", "app.modules.events.routers", "app.modules.identity.routers", "app.modules.insights.routers", "app.modules.investigation.routers", "app.modules.media.routers", "app.modules.operations.routers", "app.modules.tenancy.routers", "app.modules.tv.routers"]
+forbidden_modules = ["sqlalchemy", "app.core.database"]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "alerting reaches other domains only through their services, schemas and deps"
+type = "forbidden"
+source_modules = ["app.modules.alerting"]
+forbidden_modules = ["app.modules.analytics.models", "app.modules.devices.models", "app.modules.events.models", "app.modules.identity.models", "app.modules.insights.models", "app.modules.investigation.models", "app.modules.operations.models", "app.modules.tenancy.models", "app.modules.tv.models", "app.modules.analytics.routers", "app.modules.devices.routers", "app.modules.events.routers", "app.modules.identity.routers", "app.modules.insights.routers", "app.modules.investigation.routers", "app.modules.media.routers", "app.modules.operations.routers", "app.modules.tenancy.routers", "app.modules.tv.routers"]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "analytics reaches other domains only through their services, schemas and deps"
+type = "forbidden"
+source_modules = ["app.modules.analytics"]
+forbidden_modules = ["app.modules.alerting.models", "app.modules.devices.models", "app.modules.events.models", "app.modules.identity.models", "app.modules.insights.models", "app.modules.investigation.models", "app.modules.operations.models", "app.modules.tenancy.models", "app.modules.tv.models", "app.modules.alerting.routers", "app.modules.devices.routers", "app.modules.events.routers", "app.modules.identity.routers", "app.modules.insights.routers", "app.modules.investigation.routers", "app.modules.media.routers", "app.modules.operations.routers", "app.modules.tenancy.routers", "app.modules.tv.routers"]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "devices reaches other domains only through their services, schemas and deps"
+type = "forbidden"
+source_modules = ["app.modules.devices"]
+forbidden_modules = ["app.modules.alerting.models", "app.modules.analytics.models", "app.modules.events.models", "app.modules.identity.models", "app.modules.insights.models", "app.modules.investigation.models", "app.modules.operations.models", "app.modules.tenancy.models", "app.modules.tv.models", "app.modules.alerting.routers", "app.modules.analytics.routers", "app.modules.events.routers", "app.modules.identity.routers", "app.modules.insights.routers", "app.modules.investigation.routers", "app.modules.media.routers", "app.modules.operations.routers", "app.modules.tenancy.routers", "app.modules.tv.routers"]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "events reaches other domains only through their services, schemas and deps"
+type = "forbidden"
+source_modules = ["app.modules.events"]
+forbidden_modules = ["app.modules.alerting.models", "app.modules.analytics.models", "app.modules.devices.models", "app.modules.identity.models", "app.modules.insights.models", "app.modules.investigation.models", "app.modules.operations.models", "app.modules.tenancy.models", "app.modules.tv.models", "app.modules.alerting.routers", "app.modules.analytics.routers", "app.modules.devices.routers", "app.modules.identity.routers", "app.modules.insights.routers", "app.modules.investigation.routers", "app.modules.media.routers", "app.modules.operations.routers", "app.modules.tenancy.routers", "app.modules.tv.routers"]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "identity reaches other domains only through their services, schemas and deps"
+type = "forbidden"
+source_modules = ["app.modules.identity"]
+forbidden_modules = ["app.modules.alerting.models", "app.modules.analytics.models", "app.modules.devices.models", "app.modules.events.models", "app.modules.insights.models", "app.modules.investigation.models", "app.modules.operations.models", "app.modules.tenancy.models", "app.modules.tv.models", "app.modules.alerting.routers", "app.modules.analytics.routers", "app.modules.devices.routers", "app.modules.events.routers", "app.modules.insights.routers", "app.modules.investigation.routers", "app.modules.media.routers", "app.modules.operations.routers", "app.modules.tenancy.routers", "app.modules.tv.routers"]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "insights reaches other domains only through their services, schemas and deps"
+type = "forbidden"
+source_modules = ["app.modules.insights"]
+forbidden_modules = ["app.modules.alerting.models", "app.modules.analytics.models", "app.modules.devices.models", "app.modules.events.models", "app.modules.identity.models", "app.modules.investigation.models", "app.modules.operations.models", "app.modules.tenancy.models", "app.modules.tv.models", "app.modules.alerting.routers", "app.modules.analytics.routers", "app.modules.devices.routers", "app.modules.events.routers", "app.modules.identity.routers", "app.modules.investigation.routers", "app.modules.media.routers", "app.modules.operations.routers", "app.modules.tenancy.routers", "app.modules.tv.routers"]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "investigation reaches other domains only through their services, schemas and deps"
+type = "forbidden"
+source_modules = ["app.modules.investigation"]
+forbidden_modules = ["app.modules.alerting.models", "app.modules.analytics.models", "app.modules.devices.models", "app.modules.events.models", "app.modules.identity.models", "app.modules.insights.models", "app.modules.operations.models", "app.modules.tenancy.models", "app.modules.tv.models", "app.modules.alerting.routers", "app.modules.analytics.routers", "app.modules.devices.routers", "app.modules.events.routers", "app.modules.identity.routers", "app.modules.insights.routers", "app.modules.media.routers", "app.modules.operations.routers", "app.modules.tenancy.routers", "app.modules.tv.routers"]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "media reaches other domains only through their services, schemas and deps"
+type = "forbidden"
+source_modules = ["app.modules.media"]
+forbidden_modules = ["app.modules.alerting.models", "app.modules.analytics.models", "app.modules.devices.models", "app.modules.events.models", "app.modules.identity.models", "app.modules.insights.models", "app.modules.investigation.models", "app.modules.operations.models", "app.modules.tenancy.models", "app.modules.tv.models", "app.modules.alerting.routers", "app.modules.analytics.routers", "app.modules.devices.routers", "app.modules.events.routers", "app.modules.identity.routers", "app.modules.insights.routers", "app.modules.investigation.routers", "app.modules.operations.routers", "app.modules.tenancy.routers", "app.modules.tv.routers"]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "operations reaches other domains only through their services, schemas and deps"
+type = "forbidden"
+source_modules = ["app.modules.operations"]
+forbidden_modules = ["app.modules.alerting.models", "app.modules.analytics.models", "app.modules.devices.models", "app.modules.events.models", "app.modules.identity.models", "app.modules.insights.models", "app.modules.investigation.models", "app.modules.tenancy.models", "app.modules.tv.models", "app.modules.alerting.routers", "app.modules.analytics.routers", "app.modules.devices.routers", "app.modules.events.routers", "app.modules.identity.routers", "app.modules.insights.routers", "app.modules.investigation.routers", "app.modules.media.routers", "app.modules.tenancy.routers", "app.modules.tv.routers"]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "tenancy reaches other domains only through their services, schemas and deps"
+type = "forbidden"
+source_modules = ["app.modules.tenancy"]
+forbidden_modules = ["app.modules.alerting.models", "app.modules.analytics.models", "app.modules.devices.models", "app.modules.events.models", "app.modules.identity.models", "app.modules.insights.models", "app.modules.investigation.models", "app.modules.operations.models", "app.modules.tv.models", "app.modules.alerting.routers", "app.modules.analytics.routers", "app.modules.devices.routers", "app.modules.events.routers", "app.modules.identity.routers", "app.modules.insights.routers", "app.modules.investigation.routers", "app.modules.media.routers", "app.modules.operations.routers", "app.modules.tv.routers"]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "tv reaches other domains only through their services, schemas and deps"
+type = "forbidden"
+source_modules = ["app.modules.tv"]
+forbidden_modules = ["app.modules.alerting.models", "app.modules.analytics.models", "app.modules.devices.models", "app.modules.events.models", "app.modules.identity.models", "app.modules.insights.models", "app.modules.investigation.models", "app.modules.operations.models", "app.modules.tenancy.models", "app.modules.alerting.routers", "app.modules.analytics.routers", "app.modules.devices.routers", "app.modules.events.routers", "app.modules.identity.routers", "app.modules.insights.routers", "app.modules.investigation.routers", "app.modules.media.routers", "app.modules.operations.routers", "app.modules.tenancy.routers"]
+allow_indirect_imports = true

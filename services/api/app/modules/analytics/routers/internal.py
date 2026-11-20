@@ -1,28 +1,25 @@
 """Internal routes the analytics service calls with the shared token; nginx never proxies them."""
 
 from fastapi import APIRouter, Depends, Response, status
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
-from app.modules.analytics.deps import get_ingest_service
+from app.modules.analytics.deps import get_config_service, get_ingest_service
 from app.modules.analytics.schemas import AnalyticsEventIn, ObservationReport
-from app.modules.analytics.services import AnalyticsIngestService, service_config
-from app.modules.investigation.deps import require_analytics_token
+from app.modules.analytics.services import AnalyticsConfigService, AnalyticsIngestService
 
 router = APIRouter()
 
 
-@router.get("/config", dependencies=[Depends(require_analytics_token)])
-async def read_config(session: AsyncSession = Depends(get_db)) -> dict:
+@router.get("/config")
+async def read_config(service: AnalyticsConfigService = Depends(get_config_service)) -> dict:
     """Return the configuration the analytics service runs on.
 
     Args:
-        session: Request-scoped database session.
+        service: Configuration service.
 
     Returns:
         The arm mode and every enabled camera with its views, zones and lines.
     """
-    return await service_config(session)
+    return await service.build()
 
 
 @router.post("/events", status_code=status.HTTP_204_NO_CONTENT)

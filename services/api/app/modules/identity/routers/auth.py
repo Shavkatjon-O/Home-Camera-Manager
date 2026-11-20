@@ -1,19 +1,13 @@
 """Sign-in, accounts, app tokens and device sessions."""
 
-from urllib.parse import parse_qs, urlsplit
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request, Response, status
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.context import UserContext
-from app.auth.dependencies import get_current_user
-from app.core.database import get_db
-from app.core.exceptions import Forbidden
 from app.core.security import clear_session_cookie, create_session_token, set_session_cookie
 from app.core.tokens import jwks
-from app.models import Camera
+from app.modules.devices.deps import get_stream_access_service
+from app.modules.devices.services.streams import StreamAccessService
 from app.modules.identity.deps import (
     get_account_service,
     get_public_account_service,
@@ -41,8 +35,6 @@ from app.modules.identity.schemas import (
     VerifyEmail,
 )
 from app.modules.identity.services import AccountService, TokenService, UserService
-from app.modules.tenancy.services.access import accessible_sites
-from app.streaming.names import is_managed
 
 router = APIRouter()
 
@@ -339,51 +331,16 @@ async def get_jwks() -> JwkSet:
     return JwkSet.model_validate(jwks())
 
 
-async def check_stream_access(request: Request, actor: UserContext, session: AsyncSession) -> None:
-    """Refuse a proxied video request for a camera stream of a site the user may not reach.
-
-    nginx passes the original address of the video request; its src parameter names the go2rtc stream, whose
-    name starts with the camera id.
-
-    Args:
-        request: The verification subrequest.
-        actor: Signed-in user.
-        session: Database session.
-
-    Raises:
-        Forbidden: The stream belongs to a camera the user may not reach.
-    """
-    original = request.headers.get(ORIGINAL_URI)
-    if not original:
-        return
-    names = parse_qs(urlsplit(original).query).get("src", [])
-    for name in names:
-        if not is_managed(name):
-            continue
-        camera_uuid = UUID(name.split("_", 1)[0])
-        site_ids = [site.id for site, _, _ in await accessible_sites(session, actor.id)]
-        allowed = await session.scalar(
-            select(Camera.id).where(Camera.uuid == camera_uuid, Camera.site_id.in_(site_ids)).limit(1)
-        )
-        if allowed is None:
-            raise Forbidden("camera_forbidden", "The camera is not at a site you may reach")
-
-
 @router.api_route("/verify", methods=["GET", "HEAD"], status_code=status.HTTP_204_NO_CONTENT, include_in_schema=False)
-async def verify(
-    request: Request,
-    actor: UserContext = Depends(get_current_user),
-    session: AsyncSession = Depends(get_db),
-) -> Response:
+async def verify(request: Request, streams: StreamAccessService = Depends(get_stream_access_service)) -> Response:
     """Answer nginx's subrequest with an empty success when the request may watch the camera it asks for.
 
     Args:
         request: The subrequest.
-        actor: Signed-in user making the request.
-        session: Database session.
+        streams: Video access check of the signed-in user; its dependency rejects requests without a session.
 
     Returns:
-        Empty response; the dependency rejects requests without a session.
+        Empty response.
     """
-    await check_stream_access(request, actor, session)
+    await streams.check(request.headers.get(ORIGINAL_URI))
     return no_content()
