@@ -10,7 +10,7 @@
     "build": "pnpm generate && next build",
     "lint": "eslint --max-warnings=0",
     "typecheck": "fumadocs-mdx && next typegen && tsc --noEmit",
-    "check:links": "linkinator out --recurse --skip '^https?://' --verbosity error"
+    "check:links": "linkinator $(cd out && find . -name '*.html' | sed 's|^\\./||') --server-root out --check-fragments --skip '^https?://(?!localhost|127\\.0\\.0\\.1)' --skip '127\\.0\\.0\\.1:8750' --verbosity error"
   },
   "dependencies": {
     "clsx": "2.1.1",
