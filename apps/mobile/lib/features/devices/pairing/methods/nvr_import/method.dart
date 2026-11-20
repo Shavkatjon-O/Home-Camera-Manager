@@ -19,7 +19,8 @@ class NvrImportMethod extends PairingMethod {
   IconData get icon => Icons.dns_outlined;
 
   @override
-  bool supported(PairingContext context) => context.hasConnector;
+  bool supported(PairingContext context) =>
+      context.hasConnector || (context.direct && context.discovered?.nvr == true);
 
   @override
   String title(AppLocalizations l10n) => l10n.methodNvrImport;

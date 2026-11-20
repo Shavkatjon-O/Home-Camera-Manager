@@ -19,7 +19,7 @@ class ManualHostMethod extends PairingMethod {
   IconData get icon => Icons.edit_location_alt_outlined;
 
   @override
-  bool supported(PairingContext context) => context.hasConnector;
+  bool supported(PairingContext context) => context.reachesCameras;
 
   @override
   String title(AppLocalizations l10n) => l10n.methodManualHost;

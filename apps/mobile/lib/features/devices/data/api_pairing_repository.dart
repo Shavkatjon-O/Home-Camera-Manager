@@ -44,19 +44,15 @@ class ApiPairingRepository implements PairingRepository {
   };
 
   @override
-  Future<List<PairingCatalogEntry>> catalog(
-    String siteId, {
-    String? label,
-    String? discoveredId,
-  }) async {
+  Future<PairingCatalog> catalog(String siteId, {String? label, String? discoveredId}) async {
     final list = await guarded(
       () =>
           client.pairing.listPairingMethods(xSite: siteId, label: label, discovered: discoveredId),
     );
-    return [
+    return PairingCatalog(direct: list.direct, [
       for (final (index, method) in list.items.indexed)
         PairingCatalogEntry(id: method.id.toJson(), rank: index, recommended: method.recommended),
-    ];
+    ]);
   }
 
   @override
@@ -150,7 +146,7 @@ class ApiPairingRepository implements PairingRepository {
 
   @override
   Future<DiscoveredCamera> identifyHost({
-    required String connectorId,
+    String? connectorId,
     required String host,
     int? port,
     String? username,
@@ -180,7 +176,7 @@ class ApiPairingRepository implements PairingRepository {
 
   @override
   Future<List<NvrChannel>> nvrChannels({
-    required String connectorId,
+    String? connectorId,
     required DiscoveredCamera nvr,
     String? username,
     String? password,
@@ -205,7 +201,7 @@ class ApiPairingRepository implements PairingRepository {
   @override
   Future<List<Camera>> addChannels({
     required String siteId,
-    required String connectorId,
+    String? connectorId,
     required DiscoveredCamera nvr,
     required List<NvrChannel> channels,
     String? username,

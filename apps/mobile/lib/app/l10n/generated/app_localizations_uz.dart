@@ -2375,7 +2375,7 @@ class AppLocalizationsUz extends AppLocalizations {
   String get methodManualHost => 'Manzilni kiritish';
 
   @override
-  String get methodManualHostBody => 'Kameraning IP manzilini kiriting, konnektor uni aniqlaydi';
+  String get methodManualHostBody => 'Kameraning IP manzilini kiriting, ilova uni aniqlaydi';
 
   @override
   String get methodNvrImport => 'Registratordan import qilish';
@@ -2747,4 +2747,8 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get errorTooMany => 'Urinishlar juda koʻp. Bir daqiqa kuting va qayta urinib koʻring.';
+
+  @override
+  String get onboardingCameraBodyDirect =>
+      'Kamera video uchun ishlatadigan loginni kiriting. Server uni shifrlangan holda saqlaydi va faqat kameraga ulanish uchun ishlatadi.';
 }

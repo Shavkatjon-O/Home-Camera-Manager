@@ -30,11 +30,13 @@ class _NvrImportScreenState extends ConsumerState<NvrImportScreen> {
   late DiscoveredCamera? recorder = widget.pairing.discovered?.nvr == true
       ? widget.pairing.discovered
       : null;
-  late final Future<List<DiscoveredCamera>> recorders = ref
-      .read(backendProvider)
-      .devices
-      .discovered(widget.pairing.connector!.id)
-      .then((list) => list.where((d) => d.nvr && d.cameraId == null).toList());
+  late final Future<List<DiscoveredCamera>> recorders = widget.pairing.connector == null
+      ? Future.value(const <DiscoveredCamera>[])
+      : ref
+            .read(backendProvider)
+            .devices
+            .discovered(widget.pairing.connector!.id)
+            .then((list) => list.where((d) => d.nvr && d.cameraId == null).toList());
   final username = TextEditingController(text: 'admin');
   final password = TextEditingController();
   List<NvrChannel>? channels;
@@ -62,7 +64,7 @@ class _NvrImportScreenState extends ConsumerState<NvrImportScreen> {
           .read(backendProvider)
           .pairing
           .nvrChannels(
-            connectorId: widget.pairing.connector!.id,
+            connectorId: widget.pairing.connector?.id,
             nvr: nvr,
             username: username.text.trim(),
             password: password.text,
@@ -92,7 +94,7 @@ class _NvrImportScreenState extends ConsumerState<NvrImportScreen> {
           .pairing
           .addChannels(
             siteId: widget.pairing.siteId,
-            connectorId: widget.pairing.connector!.id,
+            connectorId: widget.pairing.connector?.id,
             nvr: nvr,
             channels: list.where((c) => selected.contains(c.index)).toList(),
             username: username.text.trim(),

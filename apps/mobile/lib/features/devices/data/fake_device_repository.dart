@@ -33,7 +33,7 @@ class FakeDeviceRepository implements DeviceRepository {
 
   @override
   Future<StreamTest> testCamera({
-    required String connectorId,
+    String? connectorId,
     required DiscoveredCamera camera,
     String? username,
     String? password,
@@ -58,7 +58,7 @@ class FakeDeviceRepository implements DeviceRepository {
   @override
   Future<Camera> addCamera({
     required String siteId,
-    required String connectorId,
+    String? connectorId,
     required DiscoveredCamera camera,
     required String name,
     String? username,

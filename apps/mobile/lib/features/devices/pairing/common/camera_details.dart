@@ -75,7 +75,6 @@ class _CameraDetailsScreenState extends ConsumerState<CameraDetailsScreen> {
 
   Future<void> runTest() async {
     final connector = widget.pairing.connector;
-    if (connector == null) return;
     widget.session.step('test');
     setState(() {
       testing = true;
@@ -86,7 +85,7 @@ class _CameraDetailsScreenState extends ConsumerState<CameraDetailsScreen> {
           .read(backendProvider)
           .devices
           .testCamera(
-            connectorId: connector.id,
+            connectorId: connector?.id,
             camera: widget.camera,
             username: user,
             password: secret,
@@ -107,7 +106,7 @@ class _CameraDetailsScreenState extends ConsumerState<CameraDetailsScreen> {
 
   Future<void> save() async {
     final connector = widget.pairing.connector;
-    if (connector == null || !form.currentState!.validate()) return;
+    if (!form.currentState!.validate()) return;
     widget.session.step('add');
     setState(() => saving = true);
     try {
@@ -116,7 +115,7 @@ class _CameraDetailsScreenState extends ConsumerState<CameraDetailsScreen> {
           .devices
           .addCamera(
             siteId: widget.pairing.siteId,
-            connectorId: connector.id,
+            connectorId: connector?.id,
             camera: widget.camera,
             name: name.text.trim(),
             username: user,
@@ -155,7 +154,11 @@ class _CameraDetailsScreenState extends ConsumerState<CameraDetailsScreen> {
     widget.session.step('credentials');
     return FlowScaffold(
       title: l10n.onboardingCameraTitle,
-      subtitle: widget.needsLogin ? l10n.onboardingCameraBody : null,
+      subtitle: !widget.needsLogin
+          ? null
+          : widget.pairing.hasConnector
+          ? l10n.onboardingCameraBody
+          : l10n.onboardingCameraBodyDirect,
       bottom: BusyButton(
         label: l10n.onboardingSaveCamera,
         busy: saving,

@@ -5,7 +5,7 @@ import 'package:smart_surveillance/features/devices/domain/pairing_models.dart';
 abstract interface class PairingRepository {
   /// Returns the pairing methods for the site [siteId], optionally for a scanned [label] or
   /// [discoveredId].
-  Future<List<PairingCatalogEntry>> catalog(String siteId, {String? label, String? discoveredId});
+  Future<PairingCatalog> catalog(String siteId, {String? label, String? discoveredId});
 
   /// Claims the connector with the pairing [code] for the site [siteId], optionally named [name].
   Future<Connector> claimConnector({required String siteId, required String code, String? name});
@@ -15,7 +15,7 @@ abstract interface class PairingRepository {
 
   /// Probes [host] through [connectorId] and returns the camera found there.
   Future<DiscoveredCamera> identifyHost({
-    required String connectorId,
+    String? connectorId,
     required String host,
     int? port,
     String? username,
@@ -24,7 +24,7 @@ abstract interface class PairingRepository {
 
   /// Lists the channels of the recorder [nvr] reached through [connectorId].
   Future<List<NvrChannel>> nvrChannels({
-    required String connectorId,
+    String? connectorId,
     required DiscoveredCamera nvr,
     String? username,
     String? password,
@@ -33,7 +33,7 @@ abstract interface class PairingRepository {
   /// Adds the recorder [channels] of [nvr] to the site [siteId] as cameras.
   Future<List<Camera>> addChannels({
     required String siteId,
-    required String connectorId,
+    String? connectorId,
     required DiscoveredCamera nvr,
     required List<NvrChannel> channels,
     String? username,

@@ -2440,7 +2440,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get methodManualHost => 'Ввести адрес';
 
   @override
-  String get methodManualHostBody => 'Введите IP-адрес камеры, и коннектор ее определит';
+  String get methodManualHostBody => 'Введите IP-адрес камеры, и приложение её определит';
 
   @override
   String get methodNvrImport => 'Импорт с регистратора';
@@ -2824,4 +2824,8 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get errorTooMany => 'Слишком много попыток. Подождите минуту и попробуйте снова.';
+
+  @override
+  String get onboardingCameraBodyDirect =>
+      'Введите логин, который камера использует для видео. Сервер хранит его в зашифрованном виде и использует только для подключения к камере.';
 }

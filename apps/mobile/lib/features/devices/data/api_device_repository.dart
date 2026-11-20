@@ -132,7 +132,7 @@ class ApiDeviceRepository implements DeviceRepository {
   /// The identify request for [camera] with [username] and [password], through [connectorId].
   static api.IdentifyRequest requestFor(
     DiscoveredCamera camera,
-    String connectorId,
+    String? connectorId,
     String? username,
     String? password,
   ) {
@@ -154,7 +154,7 @@ class ApiDeviceRepository implements DeviceRepository {
 
   @override
   Future<StreamTest> testCamera({
-    required String connectorId,
+    String? connectorId,
     required DiscoveredCamera camera,
     String? username,
     String? password,
@@ -211,7 +211,7 @@ class ApiDeviceRepository implements DeviceRepository {
   @override
   Future<Camera> addCamera({
     required String siteId,
-    required String connectorId,
+    String? connectorId,
     required DiscoveredCamera camera,
     required String name,
     String? username,

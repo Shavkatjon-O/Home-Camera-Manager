@@ -14,7 +14,7 @@ abstract interface class DeviceRepository {
   /// Tests whether [camera] streams through [connectorId], optionally with [username] and
   /// [password].
   Future<StreamTest> testCamera({
-    required String connectorId,
+    String? connectorId,
     required DiscoveredCamera camera,
     String? username,
     String? password,
@@ -23,7 +23,7 @@ abstract interface class DeviceRepository {
   /// Adds [camera] found by [connectorId] to the site [siteId] as [name] with [lenses] lenses.
   Future<Camera> addCamera({
     required String siteId,
-    required String connectorId,
+    String? connectorId,
     required DiscoveredCamera camera,
     required String name,
     String? username,

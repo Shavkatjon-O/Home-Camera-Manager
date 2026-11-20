@@ -688,7 +688,7 @@
   "methodLabelQr": "Kamera yorligʻini skanerlash",
   "methodLabelQrBody": "Kamera yorligʻidagi QR kodga qarating",
   "methodManualHost": "Manzilni kiritish",
-  "methodManualHostBody": "Kameraning IP manzilini kiriting, konnektor uni aniqlaydi",
+  "methodManualHostBody": "Kameraning IP manzilini kiriting, ilova uni aniqlaydi",
   "methodNvrImport": "Registratordan import qilish",
   "methodNvrImportBody": "NVR yoki DVR kanallarini birdan qoʻshing",
   "methodRtspUrl": "RTSP havolasini qoʻyish",
@@ -800,5 +800,6 @@
   "capabilityNone": "Bu kamerada koʻrsatiladigan boshqaruv yoʻq.",
   "eventsAlertCount": "{count, plural, other{{count} ta signal}}",
   "discoveredImport": "Import",
-  "errorTooMany": "Urinishlar juda koʻp. Bir daqiqa kuting va qayta urinib koʻring."
+  "errorTooMany": "Urinishlar juda koʻp. Bir daqiqa kuting va qayta urinib koʻring.",
+  "onboardingCameraBodyDirect": "Kamera video uchun ishlatadigan loginni kiriting. Server uni shifrlangan holda saqlaydi va faqat kameraga ulanish uchun ishlatadi."
 }

@@ -688,7 +688,7 @@
   "methodLabelQr": "Сканировать наклейку камеры",
   "methodLabelQrBody": "Наведите на QR-код на наклейке камеры",
   "methodManualHost": "Ввести адрес",
-  "methodManualHostBody": "Введите IP-адрес камеры, и коннектор ее определит",
+  "methodManualHostBody": "Введите IP-адрес камеры, и приложение её определит",
   "methodNvrImport": "Импорт с регистратора",
   "methodNvrImportBody": "Добавьте сразу каналы NVR или DVR",
   "methodRtspUrl": "Вставить RTSP-ссылку",
@@ -800,5 +800,6 @@
   "capabilityNone": "У этой камеры нет элементов управления.",
   "eventsAlertCount": "{count, plural, one{{count} тревога} few{{count} тревоги} many{{count} тревог} other{{count} тревоги}}",
   "discoveredImport": "Импорт",
-  "errorTooMany": "Слишком много попыток. Подождите минуту и попробуйте снова."
+  "errorTooMany": "Слишком много попыток. Подождите минуту и попробуйте снова.",
+  "onboardingCameraBodyDirect": "Введите логин, который камера использует для видео. Сервер хранит его в зашифрованном виде и использует только для подключения к камере."
 }

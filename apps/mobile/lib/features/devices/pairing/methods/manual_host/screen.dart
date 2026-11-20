@@ -52,7 +52,7 @@ class _ManualHostScreenState extends ConsumerState<ManualHostScreen> {
           .read(backendProvider)
           .pairing
           .identifyHost(
-            connectorId: widget.pairing.connector!.id,
+            connectorId: widget.pairing.connector?.id,
             host: host.text.trim(),
             port: int.tryParse(port.text.trim()),
           );

@@ -2393,8 +2393,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get methodManualHost => 'Enter its address';
 
   @override
-  String get methodManualHostBody =>
-      'Type the camera\'s IP address and the connector identifies it';
+  String get methodManualHostBody => 'Type the camera\'s IP address and the app identifies it';
 
   @override
   String get methodNvrImport => 'Import from a recorder';
@@ -2771,4 +2770,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorTooMany => 'Too many attempts. Wait a minute and try again.';
+
+  @override
+  String get onboardingCameraBodyDirect =>
+      'Enter the login the camera uses for its video. The server keeps it encrypted and uses it only to reach the camera.';
 }

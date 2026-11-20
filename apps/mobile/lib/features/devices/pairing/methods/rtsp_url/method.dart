@@ -19,7 +19,7 @@ class RtspUrlMethod extends PairingMethod {
   IconData get icon => Icons.link_rounded;
 
   @override
-  bool supported(PairingContext context) => context.hasConnector;
+  bool supported(PairingContext context) => context.reachesCameras;
 
   @override
   String title(AppLocalizations l10n) => l10n.methodRtspUrl;

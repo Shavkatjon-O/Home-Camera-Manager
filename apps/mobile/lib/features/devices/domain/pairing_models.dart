@@ -93,3 +93,17 @@ abstract class FoundConnector with _$FoundConnector {
     String? version,
   }) = _FoundConnector;
 }
+
+/// The server's pairing catalog for a site: its ranked methods and whether it
+/// reaches cameras without a connector.
+class PairingCatalog {
+  /// Creates a catalog of [entries].
+  const PairingCatalog(this.entries, {this.direct = false});
+
+  /// The methods the server offers, in its order.
+  final List<PairingCatalogEntry> entries;
+
+  /// Whether the server reaches the site's cameras itself, so cameras can be
+  /// added by address without a connector.
+  final bool direct;
+}

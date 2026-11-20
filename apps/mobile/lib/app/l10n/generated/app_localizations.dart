@@ -4225,7 +4225,7 @@ abstract class AppLocalizations {
   /// No description provided for @methodManualHostBody.
   ///
   /// In en, this message translates to:
-  /// **'Type the camera\'s IP address and the connector identifies it'**
+  /// **'Type the camera\'s IP address and the app identifies it'**
   String get methodManualHostBody;
 
   /// No description provided for @methodNvrImport.
@@ -4899,6 +4899,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Too many attempts. Wait a minute and try again.'**
   String get errorTooMany;
+
+  /// Subtitle of the camera login step on a site the server reaches without a connector.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the login the camera uses for its video. The server keeps it encrypted and uses it only to reach the camera.'**
+  String get onboardingCameraBodyDirect;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

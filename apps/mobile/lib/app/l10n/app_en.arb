@@ -1390,7 +1390,7 @@
   "methodLabelQr": "Scan the camera's label",
   "methodLabelQrBody": "Point at the QR code on the sticker of the camera",
   "methodManualHost": "Enter its address",
-  "methodManualHostBody": "Type the camera's IP address and the connector identifies it",
+  "methodManualHostBody": "Type the camera's IP address and the app identifies it",
   "methodNvrImport": "Import from a recorder",
   "methodNvrImportBody": "Add channels of an NVR or DVR at once",
   "methodRtspUrl": "Paste an RTSP link",
@@ -1564,5 +1564,9 @@
   "@discoveredImport": {
     "description": "Action on a discovered recorder that opens its channel import."
   },
-  "errorTooMany": "Too many attempts. Wait a minute and try again."
+  "errorTooMany": "Too many attempts. Wait a minute and try again.",
+  "onboardingCameraBodyDirect": "Enter the login the camera uses for its video. The server keeps it encrypted and uses it only to reach the camera.",
+  "@onboardingCameraBodyDirect": {
+    "description": "Subtitle of the camera login step on a site the server reaches without a connector."
+  }
 }

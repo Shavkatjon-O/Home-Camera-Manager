@@ -22,7 +22,7 @@ class FakePairingRepository implements PairingRepository {
   final reports = <PairingReport>[];
 
   @override
-  Future<List<PairingCatalogEntry>> catalog(String siteId, {String? label, String? discoveredId}) =>
+  Future<PairingCatalog> catalog(String siteId, {String? label, String? discoveredId}) =>
       store.delay(() {
         final connectors = store.data.connectors.where(
           (c) => c.siteId == siteId && c.state == ConnectorState.online,
@@ -33,7 +33,7 @@ class FakePairingRepository implements PairingRepository {
             (store.data.discovered[connectors.first.id] ?? const []).any(
               (d) => d.nvr && d.cameraId == null,
             );
-        return [
+        return PairingCatalog([
           PairingCatalogEntry(
             id: 'connector_discovery',
             rank: 1,
@@ -47,7 +47,7 @@ class FakePairingRepository implements PairingRepository {
           const PairingCatalogEntry(id: 'connector_qr', rank: 10, recommended: true),
           const PairingCatalogEntry(id: 'connector_mdns', rank: 11),
           const PairingCatalogEntry(id: 'connector_code', rank: 12),
-        ];
+        ]);
       });
 
   @override
@@ -98,7 +98,7 @@ class FakePairingRepository implements PairingRepository {
 
   @override
   Future<DiscoveredCamera> identifyHost({
-    required String connectorId,
+    String? connectorId,
     required String host,
     int? port,
     String? username,
@@ -126,7 +126,7 @@ class FakePairingRepository implements PairingRepository {
 
   @override
   Future<List<NvrChannel>> nvrChannels({
-    required String connectorId,
+    String? connectorId,
     required DiscoveredCamera nvr,
     String? username,
     String? password,
@@ -138,7 +138,7 @@ class FakePairingRepository implements PairingRepository {
   @override
   Future<List<Camera>> addChannels({
     required String siteId,
-    required String connectorId,
+    String? connectorId,
     required DiscoveredCamera nvr,
     required List<NvrChannel> channels,
     String? username,

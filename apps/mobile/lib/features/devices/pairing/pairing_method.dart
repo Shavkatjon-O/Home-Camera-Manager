@@ -32,6 +32,7 @@ class PairingContext {
     this.discovered,
     this.code,
     this.first = false,
+    this.direct = false,
   });
 
   /// The site the camera or connector joins.
@@ -52,11 +53,17 @@ class PairingContext {
   /// Whether this runs inside the first setup flow.
   final bool first;
 
+  /// Whether the server reaches the site's cameras without a connector.
+  final bool direct;
+
   /// The first online connector of the site.
   Connector? get connector => connectors.where((c) => c.state == ConnectorState.online).firstOrNull;
 
   /// Whether the site has an online connector.
   bool get hasConnector => connector != null;
+
+  /// Whether cameras can be added by address, through a connector or directly.
+  bool get reachesCameras => hasConnector || direct;
 
   /// Returns a copy with the given fields replaced.
   PairingContext copyWith({
@@ -64,6 +71,7 @@ class PairingContext {
     LabelIdentity? label,
     DiscoveredCamera? discovered,
     String? code,
+    bool? direct,
   }) => PairingContext(
     siteId: siteId,
     connectors: connectors ?? this.connectors,
@@ -71,6 +79,7 @@ class PairingContext {
     discovered: discovered ?? this.discovered,
     code: code ?? this.code,
     first: first,
+    direct: direct ?? this.direct,
   );
 }
 

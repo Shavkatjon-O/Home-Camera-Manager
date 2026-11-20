@@ -18,7 +18,7 @@ import 'package:smart_surveillance/features/devices/presentation/providers.dart'
 import 'package:smart_surveillance/features/tenancy/presentation/current_site.dart';
 
 /// The server's ranked pairing methods for a site.
-final catalogProvider = FutureProvider.autoDispose.family<List<PairingCatalogEntry>, String>(
+final catalogProvider = FutureProvider.autoDispose.family<PairingCatalog, String>(
   (ref, siteId) => ref.read(backendProvider).pairing.catalog(siteId),
 );
 
@@ -156,9 +156,9 @@ class _ConnectorPairingScreenState extends ConsumerState<ConnectorPairingScreen>
         AsyncBody(
           value: catalog,
           onRetry: () => ref.invalidate(catalogProvider(widget.siteId)),
-          data: (entries) => Column(
+          data: (catalog) => Column(
             children: [
-              for (final ranked in rankMethods(entries, PairingTarget.connector, pairing))
+              for (final ranked in rankMethods(catalog.entries, PairingTarget.connector, pairing))
                 MethodCard(ranked: ranked, onTap: () => run(ranked.method)),
             ],
           ),
@@ -193,7 +193,12 @@ class _AddCameraScreenState extends ConsumerState<AddCameraScreen> {
       context,
       ref,
       method,
-      PairingContext(siteId: widget.siteId, connectors: connectors, first: widget.first),
+      PairingContext(
+        siteId: widget.siteId,
+        connectors: connectors,
+        first: widget.first,
+        direct: ref.read(catalogProvider(widget.siteId)).value?.direct ?? false,
+      ),
     );
     if (mounted) setState(() => running = null);
     if (result is! CamerasAdded || result.cameras.isEmpty || !mounted) return;
@@ -231,7 +236,10 @@ class _AddCameraScreenState extends ConsumerState<AddCameraScreen> {
             )
           : null,
       children: [
-        if (connectors.hasValue && !pairing.hasConnector)
+        if (connectors.hasValue &&
+            catalog.hasValue &&
+            !pairing.hasConnector &&
+            !catalog.value!.direct)
           Padding(
             padding: const EdgeInsets.only(bottom: Gaps.lg),
             child: Panel(
@@ -273,9 +281,13 @@ class _AddCameraScreenState extends ConsumerState<AddCameraScreen> {
         AsyncBody(
           value: catalog,
           onRetry: () => ref.invalidate(catalogProvider(widget.siteId)),
-          data: (entries) => Column(
+          data: (catalog) => Column(
             children: [
-              for (final ranked in rankMethods(entries, PairingTarget.camera, pairing))
+              for (final ranked in rankMethods(
+                catalog.entries,
+                PairingTarget.camera,
+                pairing.copyWith(direct: catalog.direct),
+              ))
                 MethodCard(
                   ranked: ranked,
                   busy: running == ranked.method.id,
