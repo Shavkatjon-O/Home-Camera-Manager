@@ -34,7 +34,7 @@ The camera page's sidebar reads and writes what the camera itself offers over ON
 - Journeys (beta): a person's tracks on different cameras linked by appearance, such as Yard, then Entrance, then Corridor, and Find this person across cameras on the Events and Search pages.
 - Auto-follow on a moving PTZ lens, off on every view by default.
 
-analytics/README.md describes the pipeline, the rules and every feature in detail.
+services/analytics/README.md describes the pipeline, the rules and every feature in detail.
 
 ### Faces, people and search
 
@@ -51,7 +51,7 @@ analytics/README.md describes the pipeline, the rules and every feature in detai
 
 ### TV
 
-tv/ holds an Android TV app that connects straight to the cameras on the local Wi-Fi and needs nothing from this computer: a grid of every camera, fullscreen with sound and PTZ from the remote. tv/README.md describes it.
+apps/tv holds an Android TV app that connects straight to the cameras on the local Wi-Fi and needs nothing from this computer: a grid of every camera, fullscreen with sound and PTZ from the remote. apps/tv/README.md describes it.
 
 ## Supported cameras
 
@@ -144,7 +144,7 @@ A Jetson Orin Nano profile exists but has not run on a Jetson; see Jetson Orin N
    scripts/download-secondary-models.sh
    ```
 
-   The first fetches RF-DETR and exports it to ONNX, the second the InsightFace face models, which are published for non-commercial research only, and the third the appearance, pose and plate models. The scripts read SSS_ANALYTICS_MODELS_DIR and SSS_ANALYTICS_FACE_MODELS_DIR from the shell, not from .env, and default to analytics/models and analytics/models/face, the folders compose mounts by default.
+   The first fetches RF-DETR and exports it to ONNX, the second the InsightFace face models, which are published for non-commercial research only, and the third the appearance, pose and plate models. The scripts read SSS_ANALYTICS_MODELS_DIR and SSS_ANALYTICS_FACE_MODELS_DIR from the shell, not from .env, and default to services/analytics/models and services/analytics/models/face, the folders compose mounts by default.
 
 3. Start the stack:
 
@@ -212,7 +212,7 @@ Every variable lives in .env, which mirrors .env.example group by group.
 | V380_PTZ_2_HOST | none | Address of the second V380 camera |
 | V380_PTZ_2_ID | none | Device ID of the second V380 camera |
 
-The face recognition thresholds and the analytics service's own settings are in analytics/README.md.
+The face recognition thresholds and the analytics service's own settings are in services/analytics/README.md.
 
 ## Privacy
 
@@ -258,7 +258,7 @@ The weights are never committed. The DeepStream base image is under the NVIDIA D
 
 ### Streaming
 
-The backend registers two go2rtc streams per enabled camera, main and sub, each with the camera's RTSP URL followed by an ffmpeg H.264 video transcode without audio, and reconciles go2rtc with the registry on every monitor tick. The browser player asks for H.264 only, so H.265 cameras play through the transcode; with sound on, the camera page also asks for audio, which go2rtc takes from the camera's own source. go2rtc.yaml holds no camera streams and is mounted read-only, so camera credentials stay out of files; its h264 template encodes with h264_nvenc and decodes on the CPU.
+The backend registers two go2rtc streams per enabled camera, main and sub, each with the camera's RTSP URL followed by an ffmpeg H.264 video transcode without audio, and reconciles go2rtc with the registry on every monitor tick. The browser player asks for H.264 only, so H.265 cameras play through the transcode; with sound on, the camera page also asks for audio, which go2rtc takes from the camera's own source. deploy/go2rtc/go2rtc.yaml holds no camera streams and is mounted read-only, so camera credentials stay out of files; its h264 template encodes with h264_nvenc and decodes on the CPU.
 
 ### Events
 
@@ -270,14 +270,14 @@ Every enabled network device and camera is probed with a TCP connect every SSS_H
 
 ### Composed TV streams
 
-The backend also serves the PC side of an earlier TV path: TV clients pair with a code through /api/v1/tv, and go2rtc's exec streams tv_wall and tv_tile_0 to tv_tile_15 in go2rtc.yaml run go2rtc-tv.sh, which composes the cameras with ffmpeg on h264_nvenc. The Android TV app in tv/ does not use this path.
+The backend also serves the PC side of an earlier TV path: TV clients pair with a code through /api/v1/tv, and go2rtc's exec streams tv_wall and tv_tile_0 to tv_tile_15 in deploy/go2rtc/go2rtc.yaml run deploy/go2rtc/go2rtc-tv.sh, which composes the cameras with ffmpeg on h264_nvenc. The Android TV app in tv/ does not use this path.
 
 ## Jetson Orin Nano
 
-compose.jetson.yml runs the stack on a Jetson Orin Nano with DeepStream 9.1 or newer on JetPack 7.2, which has no hardware video encoder:
+docker-compose.jetson.yml runs the stack on a Jetson Orin Nano with DeepStream 9.1 or newer on JetPack 7.2, which has no hardware video encoder:
 
 ```
-docker compose -f compose.yml -f compose.jetson.yml up -d --build
+docker compose -f docker-compose.yml -f docker-compose.jetson.yml up -d --build
 ```
 
 The analytics service uses RF-DETR Nano at 4 frames per second, encodes clips with libx264, keeps one minute of buffer, reads no number plates and is capped at 3 GB; go2rtc runs from the plain image with a libx264 transcode template and no GPU reservation. Export the detectors on a PC with scripts/download-models.sh --all and copy the model folder over. Verified on a PC: the merged configuration, that the DeepStream 9.1 image has an arm64 variant with CUDA 13.2, and the libx264 clip path. Not verified: the stack has never run on a Jetson, so the arm64 build of the analytics image and its parser library, RF-DETR Nano's speed there and the CPU cost of go2rtc's browser transcodes are open, and the composed TV streams still need h264_nvenc.
@@ -286,8 +286,8 @@ The analytics service uses RF-DETR Nano at 4 frames per second, encodes clips wi
 
 The host needs no Node or Python; every tool runs in a container as your own user. AGENTS.md lists the exact commands and the rules the code follows.
 
-- Backend: FastAPI in backend/app, with one folder per module under app/modules holding its models, schemas, services, routers and dependencies; Alembic migrations in backend/migrations are generated by autogenerate only. Tests run with uv, ruff and pytest.
-- Analytics: the service in analytics/app, the custom RF-DETR box parser in analytics/parsers and the tests in analytics/tests, run with the test stage of analytics/Dockerfile.
-- Frontend: Next.js static export in frontend, checked with pnpm lint, typecheck and build.
-- TV app: Kotlin in tv/app with unit tests run by Gradle.
-- OpenCV viewer: cv/ holds a separate desktop viewer for the EZVIZ streams, described in cv/README.md.
+- Backend: FastAPI in services/api/app, with one folder per module under app/modules holding its models, schemas, services, routers and dependencies; Alembic migrations in services/api/migrations are generated by autogenerate only. Tests run with uv, ruff and pytest.
+- Analytics: the service in services/analytics/app, the custom RF-DETR box parser in services/analytics/parsers and the tests in services/analytics/tests, run with the test stage of services/analytics/Dockerfile.
+- Console: Next.js static export in apps/console, checked with pnpm lint, typecheck and build.
+- TV app: Kotlin in apps/tv/app with unit tests run by Gradle.
+- OpenCV viewer: tools/cv-viewer holds a separate desktop viewer for the EZVIZ streams, described in tools/cv-viewer/README.md.

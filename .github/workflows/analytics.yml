@@ -1,0 +1,40 @@
+name: analytics
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "services/analytics/**"
+      - ".github/workflows/analytics.yml"
+  pull_request:
+    paths:
+      - "services/analytics/**"
+      - ".github/workflows/analytics.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analytics:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: services/analytics
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install the pure-Python dependencies, none of which needs DeepStream
+        run: pip install numpy pyyaml pillow pytest ruff
+      - name: Lint
+        run: ruff check .
+      - name: Check formatting
+        run: ruff format --check .
+      - name: Test
+        run: pytest -q -p no:cacheprovider

@@ -1,0 +1,183 @@
+version: 1
+
+confidence:
+  tested: checked against devices of this kind with this repository
+  documented: taken from the vendor's own documentation or the ONVIF standard
+  guessed: inferred from public descriptions and not checked against a device
+
+entries:
+  - id: ezviz
+    vendor: EZVIZ
+    adapter: ezviz
+    kind: camera
+    confidence: tested
+    match:
+      manufacturers: ["ezviz"]
+      models: ["^CS-"]
+      ports: [8000]
+      oui: []
+    urls:
+      main: /Streaming/Channels/{channel}01
+      sub: /Streaming/Channels/{channel}02
+    ports:
+      onvif: 80
+      rtsp: 554
+    quirks:
+      media2_encoding: true
+      motion_sensitivity_offset: true
+    pairing: [label_qr, connector_discovery, manual_host]
+
+  - id: v380
+    vendor: Macro-Video V380
+    adapter: v380
+    kind: camera
+    confidence: tested
+    match:
+      manufacturers: ["macro-video"]
+      models: []
+      ports: [8800]
+      oui: []
+    urls:
+      main: /live
+    ports:
+      onvif: 8080
+      rtsp: 8554
+    quirks:
+      bridge: true
+      reports_h264_streams_h265: true
+    pairing: [label_qr, manual_host]
+
+  - id: hikvision
+    vendor: Hikvision
+    adapter: onvif
+    kind: camera
+    confidence: documented
+    match:
+      manufacturers: ["hikvision"]
+      models: ["^DS-2"]
+      ports: [8000]
+      http_servers: ["hikvision", "app-webs"]
+      oui: []
+    urls:
+      main: /Streaming/Channels/{channel}01
+      sub: /Streaming/Channels/{channel}02
+    ports:
+      onvif: 80
+      rtsp: 554
+    quirks: {}
+    pairing: [connector_discovery, manual_host]
+
+  - id: hikvision-recorder
+    vendor: Hikvision
+    adapter: onvif
+    kind: nvr
+    confidence: documented
+    match:
+      manufacturers: ["hikvision"]
+      models: ["^DS-[0-9]+N", "^DS-[0-9]+H"]
+      ports: [8000]
+      oui: []
+    urls:
+      main: /Streaming/Channels/{channel}01
+      sub: /Streaming/Channels/{channel}02
+    ports:
+      onvif: 80
+      rtsp: 554
+    quirks: {}
+    pairing: [connector_discovery, manual_host, nvr_import]
+
+  - id: dahua
+    vendor: Dahua
+    adapter: onvif
+    kind: camera
+    confidence: documented
+    match:
+      manufacturers: ["dahua"]
+      models: ["^IPC-", "^DH-IPC"]
+      ports: [37777]
+      oui: []
+    urls:
+      main: /cam/realmonitor?channel={channel}&subtype=0
+      sub: /cam/realmonitor?channel={channel}&subtype=1
+    ports:
+      onvif: 80
+      rtsp: 554
+    quirks: {}
+    pairing: [connector_discovery, manual_host]
+
+  - id: dahua-recorder
+    vendor: Dahua
+    adapter: onvif
+    kind: nvr
+    confidence: documented
+    match:
+      manufacturers: ["dahua"]
+      models: ["NVR", "XVR"]
+      ports: [37777]
+      oui: []
+    urls:
+      main: /cam/realmonitor?channel={channel}&subtype=0
+      sub: /cam/realmonitor?channel={channel}&subtype=1
+    ports:
+      onvif: 80
+      rtsp: 554
+    quirks: {}
+    pairing: [connector_discovery, manual_host, nvr_import]
+
+  - id: reolink
+    vendor: Reolink
+    adapter: onvif
+    kind: camera
+    confidence: documented
+    match:
+      manufacturers: ["reolink"]
+      models: ["^RLC-", "^E1", "^RLN"]
+      ports: [9000]
+      oui: []
+    urls:
+      main: /h264Preview_{channel02}_main
+      sub: /h264Preview_{channel02}_sub
+    ports:
+      onvif: 8000
+      rtsp: 554
+    quirks: {}
+    pairing: [connector_discovery, manual_host]
+
+  - id: tapo
+    vendor: TP-Link Tapo
+    adapter: onvif
+    kind: camera
+    confidence: documented
+    match:
+      manufacturers: ["tp-link", "tapo"]
+      models: ["^C[0-9]{3}", "^Tapo"]
+      ports: [2020]
+      oui: []
+    urls:
+      main: /stream1
+      sub: /stream2
+    ports:
+      onvif: 2020
+      rtsp: 554
+    quirks:
+      separate_camera_account: true
+    pairing: [connector_discovery, manual_host]
+
+  - id: simulated
+    vendor: Simulated
+    adapter: onvif
+    kind: camera
+    confidence: tested
+    match:
+      manufacturers: ["simulated"]
+      models: ["^SIM-"]
+      ports: []
+      oui: []
+    urls:
+      main: /main
+      sub: /sub
+    ports:
+      onvif: 80
+      rtsp: 554
+    quirks: {}
+    pairing: [connector_discovery, manual_host]

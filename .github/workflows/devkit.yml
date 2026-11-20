@@ -1,0 +1,37 @@
+name: devkit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "tools/devkit/**"
+      - ".github/workflows/devkit.yml"
+  pull_request:
+    paths:
+      - "tools/devkit/**"
+      - ".github/workflows/devkit.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  devkit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install
+        run: pip install pytest ruff
+      - name: Lint
+        working-directory: tools/devkit
+        run: ruff check .
+      - name: Test
+        working-directory: tools/devkit/camera
+        run: pytest -q
