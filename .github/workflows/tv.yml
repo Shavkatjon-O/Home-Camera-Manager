@@ -1,0 +1,36 @@
+name: tv
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/tv/**"
+      - ".github/workflows/tv.yml"
+  pull_request:
+    paths:
+      - "apps/tv/**"
+      - ".github/workflows/tv.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tv:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: apps/tv
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Unit tests
+        run: ./gradlew testDebugUnitTest
