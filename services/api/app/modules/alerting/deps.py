@@ -5,9 +5,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.context import UserContext
 from app.core.database import get_db
-from app.modules.alerting.services import AnalyticsSettingsService, PushTargetService
+from app.modules.alerting.services import AnalyticsSettingsService, PushTargetService, TelegramService
 from app.modules.identity.deps import get_current_user
-from app.modules.tenancy.deps import get_site_access
+from app.modules.tenancy.deps import get_site_access, require_admin
 from app.modules.tenancy.services.access import SiteAccess
 
 
@@ -40,3 +40,18 @@ def get_settings_service(
         The service.
     """
     return AnalyticsSettingsService(session)
+
+
+def get_telegram_service(
+    session: AsyncSession = Depends(get_db), access: SiteAccess = Depends(require_admin)
+) -> TelegramService:
+    """Build the Telegram chat service for an admin of the request's site.
+
+    Args:
+        session: Request-scoped database session, limited to the site and organisation.
+        access: Access of the signed-in admin.
+
+    Returns:
+        The service.
+    """
+    return TelegramService(session, access)

@@ -12,6 +12,8 @@ from app.core.exceptions import Conflict, Forbidden, NotFound, Unprocessable
 from app.core.mail import Mailer, invitation_mail, mailer
 from app.core.security import hash_token, new_token
 from app.models import Invitation, Membership, Organisation, Site, User
+from app.modules.billing.enums import Limit
+from app.modules.billing.services.entitlements import require_capacity
 from app.modules.tenancy.enums import Role
 from app.modules.tenancy.schemas import (
     InvitationCreate,
@@ -143,6 +145,7 @@ class InvitationService:
         """
         access = await resolve_organisation_access(self.session, self.actor, organisation_uuid, Role.ADMIN)
         organisation = access.organisation
+        await require_capacity(self.session, organisation.id, Limit.MEMBERS)
         member = await self.session.scalar(
             select(Membership.id)
             .join(User, User.id == Membership.user_id)

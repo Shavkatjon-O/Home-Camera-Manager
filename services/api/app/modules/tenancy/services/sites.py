@@ -9,6 +9,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.context import UserContext
 from app.core.exceptions import Forbidden
 from app.models import Camera, Connector, Membership, Organisation, Site
+from app.modules.billing.enums import Limit
+from app.modules.billing.services.entitlements import require_capacity
 from app.modules.tenancy.enums import Role, SiteKind
 from app.modules.tenancy.schemas import SiteCreate, SiteList, SiteRead, SiteUpdate
 from app.modules.tenancy.services.access import (
@@ -160,6 +162,7 @@ class SiteService:
             Forbidden: The member is not an admin covering every site.
         """
         access = await resolve_organisation_access(self.session, self.actor, organisation_uuid, Role.ADMIN)
+        await require_capacity(self.session, access.organisation.id, Limit.SITES)
         if access.site_ids is not None:
             raise Forbidden("all_sites_required", "Only an admin of every site can add sites")
         highest = await self.session.scalar(

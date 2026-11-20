@@ -3,9 +3,12 @@
 from app.models.base import BaseModel
 from app.modules.alerting.models.settings import AnalyticsSettings
 from app.modules.alerting.models.targets import PushTarget
+from app.modules.alerting.models.telegram import TelegramChat, TelegramLink
 from app.modules.analytics.models.lines import AnalyticsLine
 from app.modules.analytics.models.views import AnalyticsView
 from app.modules.analytics.models.zones import AnalyticsZone
+from app.modules.billing.models.plans import Plan
+from app.modules.billing.models.usage import UsageRollup
 from app.modules.devices.models.cameras import Camera
 from app.modules.devices.models.connectors import Connector
 from app.modules.devices.models.devices import Device
@@ -24,6 +27,7 @@ from app.modules.investigation.models.clusters import UnknownCluster
 from app.modules.investigation.models.journeys import AnalyticsJourney
 from app.modules.investigation.models.people import Person
 from app.modules.investigation.models.samples import FaceSample
+from app.modules.operations.models.audit import AuditRecord
 from app.modules.operations.models.devices import NetworkDevice
 from app.modules.operations.models.floorplans import FloorPlan
 from app.modules.operations.models.links import CameraLink
@@ -45,6 +49,7 @@ __all__ = [
     "AnalyticsSettings",
     "AnalyticsView",
     "AnalyticsZone",
+    "AuditRecord",
     "AuthSession",
     "BaseModel",
     "Camera",
@@ -66,11 +71,15 @@ __all__ = [
     "Outage",
     "PairingAttempt",
     "Person",
+    "Plan",
     "PushTarget",
     "RefreshToken",
     "Site",
+    "TelegramChat",
+    "TelegramLink",
     "TvDevice",
     "TvPairing",
     "UnknownCluster",
+    "UsageRollup",
     "User",
 ]

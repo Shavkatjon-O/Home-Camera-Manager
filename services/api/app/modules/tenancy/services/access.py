@@ -103,6 +103,19 @@ def check_role(role: Role, needed: Role) -> None:
         raise Forbidden("role_required", f"This needs the {needed.value} role or a stronger one")
 
 
+def refuse_suspended(organisation: Organisation) -> None:
+    """Refuse members of an organisation a platform admin suspended.
+
+    Args:
+        organisation: The organisation.
+
+    Raises:
+        Forbidden: The organisation is suspended.
+    """
+    if organisation.suspended_at is not None:
+        raise Forbidden("organisation_suspended", "This organisation is suspended; contact support")
+
+
 def site_rows(user_id: int):
     """Build the query of the sites a user's memberships cover, in a stable order.
 
@@ -165,6 +178,7 @@ async def resolve_site_access(
     if row is None:
         raise Forbidden("no_site", "Create an organisation with a site, or accept an invitation, first")
     site, membership, organisation = row
+    refuse_suspended(organisation)
     return SiteAccess(
         user=user,
         organisation_id=organisation.id,
@@ -210,6 +224,7 @@ async def resolve_organisation_access(
     if row is None:
         raise NotFound("organisation_not_found", f"Organisation {organisation_uuid} does not exist")
     organisation, membership = row
+    refuse_suspended(organisation)
     role = Role(membership.role)
     check_role(role, needed)
     site_ids = None

@@ -1,6 +1,8 @@
 from uuid import uuid4
 
 from app.auth.context import UserContext
+from app.modules.billing.enums import Feature
+from app.modules.billing.services.entitlements import Entitlements
 from app.modules.tenancy.enums import Role
 from app.modules.tenancy.services.access import SiteAccess
 
@@ -17,3 +19,16 @@ def site_access(role: Role = Role.OWNER, faces: bool = True) -> SiteAccess:
         timezone="UTC",
         faces_enabled=faces,
     )
+
+
+def entitlements(**changes) -> Entitlements:
+    values = {
+        "organisation_id": 1,
+        "plan": "internal",
+        "plan_name": "Internal",
+        "limits": {},
+        "features": frozenset(feature.value for feature in Feature),
+        "suspended": False,
+    }
+    values.update(changes)
+    return Entitlements(**values)

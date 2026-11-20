@@ -4,6 +4,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Response, status
 
+from app.modules.operations.deps import audited_account
+from app.modules.operations.enums import AuditAction
 from app.modules.tenancy.deps import get_organisation_service
 from app.modules.tenancy.schemas import (
     FacesConsent,
@@ -31,7 +33,12 @@ async def list_organisations(service: OrganisationService = Depends(get_organisa
     return await service.list()
 
 
-@router.post("", response_model=OrganisationRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=OrganisationRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(audited_account(AuditAction.ORGANISATION_CREATE, "organisation", target="organisation"))],
+)
 async def create_organisation(
     payload: OrganisationCreate, service: OrganisationService = Depends(get_organisation_service)
 ) -> OrganisationRead:
@@ -73,7 +80,11 @@ async def get_organisation(
     return await service.read(organisation)
 
 
-@router.patch("/{organisation}", response_model=OrganisationRead)
+@router.patch(
+    "/{organisation}",
+    response_model=OrganisationRead,
+    dependencies=[Depends(audited_account(AuditAction.ORGANISATION_UPDATE, "organisation", target="organisation"))],
+)
 async def update_organisation(
     organisation: UUID, payload: OrganisationUpdate, service: OrganisationService = Depends(get_organisation_service)
 ) -> OrganisationRead:
@@ -90,7 +101,12 @@ async def update_organisation(
     return await service.update(organisation, payload)
 
 
-@router.delete("/{organisation}", status_code=status.HTTP_204_NO_CONTENT, response_class=Response)
+@router.delete(
+    "/{organisation}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+    dependencies=[Depends(audited_account(AuditAction.ORGANISATION_DELETE, "organisation", target="organisation"))],
+)
 async def delete_organisation(
     organisation: UUID, service: OrganisationService = Depends(get_organisation_service)
 ) -> Response:
@@ -107,7 +123,11 @@ async def delete_organisation(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@router.post("/{organisation}/transfer", response_model=OrganisationRead)
+@router.post(
+    "/{organisation}/transfer",
+    response_model=OrganisationRead,
+    dependencies=[Depends(audited_account(AuditAction.OWNERSHIP_TRANSFER, "organisation", target="organisation"))],
+)
 async def transfer_ownership(
     organisation: UUID, payload: OwnershipTransfer, service: OrganisationService = Depends(get_organisation_service)
 ) -> OrganisationRead:
