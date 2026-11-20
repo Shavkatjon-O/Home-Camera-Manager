@@ -62,5 +62,6 @@ alembic revision --autogenerate -m "<message>"
 - Compare appearance vectors only after centring them on the running mean of all tracks, because raw OSNet cosine is about 0.5 between any two people on these cameras.
 - Keep NVIDIA LPDNet optional behind scripts/download-secondary-models.sh --all, because its licence is the NVIDIA AI Enterprise EULA, not an open licence.
 - Keep auto-follow off by default and move a lens only through the follow controller, which records its moves and retraces them, because the owner decides whether the cameras may move by themselves.
+- Restart a moving lens's tamper reference when its picture stops lining up with it, because the PTZ lenses also turn by themselves and a plain new place otherwise looks like a blurred old one.
 - Return auto-follow by retracing its moves with one reverse command per move, not by GotoPreset, because PTZ 1 answers GotoPreset on its ONVIF device without moving and turns a fixed step of about a tenth of the picture per ContinuousMove, whatever its speed and duration.
 - Send follow moves to a camera's own ONVIF device when it offers PTZ and to the bridge otherwise, and remember the choice per camera, because a camera without device ONVIF answers only after a timeout.
