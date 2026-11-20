@@ -41,7 +41,7 @@ export function PageHeader({
     <header className="shrink-0 border-b border-hairline bg-background">
       <div
         className={cn(
-          "flex min-h-14 flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2.5 sm:px-6",
+          "flex min-h-14 flex-wrap items-center gap-x-4 gap-y-2 px-3 py-2.5 sm:px-4",
           contained && CONTAINED,
         )}
       >
@@ -65,7 +65,7 @@ export function PageHeader({
         </div>
         {actions ? <div className="flex shrink-0 flex-wrap items-center gap-1.5">{actions}</div> : null}
       </div>
-      {toolbar ? <div className={cn("px-4 pb-3 sm:px-6", contained && CONTAINED)}>{toolbar}</div> : null}
+      {toolbar ? <div className={cn("px-3 pb-3 sm:px-4", contained && CONTAINED)}>{toolbar}</div> : null}
     </header>
   )
 }
@@ -112,7 +112,7 @@ export function PageFrame({
 
 /** The padded, width-limited column of a page that reads as a document, such as Health or Counts. */
 export function PageContent({ className, ...props }: React.ComponentProps<"div">) {
-  return <div className={cn(CONTAINED, "flex flex-col gap-6 px-4 py-4 sm:px-6 sm:py-6", className)} {...props} />
+  return <div className={cn(CONTAINED, "flex flex-col gap-6 p-3 sm:p-4", className)} {...props} />
 }
 
 /** Cards in two equal columns that flow in reading order, with an odd last card across both columns. */
@@ -136,7 +136,7 @@ export function ToolbarRow({ className, ...props }: React.ComponentProps<"div">)
   return (
     <div
       className={cn(
-        "-mx-4 -my-1 flex items-center gap-2 overflow-x-auto px-4 py-1 [scrollbar-width:none] *:shrink-0 sm:-mx-6 sm:px-6 md:mx-0 md:flex-wrap md:overflow-visible md:px-0",
+        "-mx-3 -my-1 flex items-center gap-2 overflow-x-auto px-3 py-1 [scrollbar-width:none] *:shrink-0 sm:-mx-4 sm:px-4 md:mx-0 md:flex-wrap md:overflow-visible md:px-0",
         className,
       )}
       {...props}
