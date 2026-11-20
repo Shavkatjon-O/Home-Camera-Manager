@@ -266,6 +266,46 @@ async def get_service_version() -> dict:
     return {"service": APP_NAME, "version": APP_VERSION}
 
 
+SECTION_HEADINGS = ("Args:", "Returns:", "Raises:", "Yields:")
+
+
+def public_description(text: str) -> str:
+    """Keep the part of a route's docstring that describes the operation, without its code sections.
+
+    Args:
+        text: The docstring FastAPI took as the description.
+
+    Returns:
+        The paragraphs before the first Args, Returns, Raises or Yields section.
+    """
+    paragraphs = []
+    for paragraph in text.split("\n\n"):
+        if paragraph.strip().startswith(SECTION_HEADINGS):
+            break
+        paragraphs.append(paragraph)
+    return "\n\n".join(paragraphs).strip()
+
+
+generate_openapi = app.openapi
+
+
+def openapi_document() -> dict:
+    """Build the OpenAPI document once, with operation descriptions that leave out the code sections.
+
+    Returns:
+        The document.
+    """
+    if app.openapi_schema is None:
+        document = generate_openapi()
+        for operations in document.get("paths", {}).values():
+            for operation in operations.values():
+                if operation.get("description"):
+                    operation["description"] = public_description(operation["description"])
+    return app.openapi_schema
+
+
+app.openapi = openapi_document
+
 app.include_router(health_router, include_in_schema=False)
 app.include_router(health_router, prefix="/api/v1")
 app.include_router(v1_routers, prefix="/api/v1")
