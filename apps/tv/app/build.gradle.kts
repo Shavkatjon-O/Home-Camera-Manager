@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.detekt)
 }
 
 val camerasFile = rootProject.file("cameras.local.properties").takeIf { it.exists() }
@@ -65,4 +66,11 @@ dependencies {
     implementation(libs.androidx.tv.material)
 
     testImplementation(libs.junit)
+}
+
+detekt {
+    buildUponDefaultConfig = false
+    config.setFrom(rootProject.file("config/detekt.yml"))
+    source.setFrom("src/main/kotlin")
+    ignoreFailures = true
 }
