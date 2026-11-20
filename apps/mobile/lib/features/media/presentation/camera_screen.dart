@@ -143,7 +143,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
                 fit: StackFit.expand,
                 children: [
                   LiveVideo(camera: camera, lens: lens, quality: quality, audio: sound, overlay: overlay),
-                  Positioned(left: 10, top: 10, child: Tag(l10n.liveBadge, tone: TagTone.alert, icon: Icons.circle, dense: true)),
+                  Positioned(right: 10, top: 10, child: Tag(l10n.liveBadge, tone: TagTone.alert, icon: Icons.circle, dense: true)),
                   Positioned(
                     right: 6,
                     bottom: 6,

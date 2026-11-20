@@ -2735,4 +2735,10 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get capabilityNone => 'Bu kamerada koʻrsatiladigan boshqaruv yoʻq.';
+
+  @override
+  String eventsAlertCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count ta signal');
+    return '$_temp0';
+  }
 }

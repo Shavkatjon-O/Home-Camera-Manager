@@ -681,7 +681,7 @@
   "pairingPermissionDenied": "Нужно разрешение, которое телефон не получил. Разрешите его в настройках телефона или выберите другой способ.",
   "pairingDemoCode": "Использовать демо-код",
   "pairingWaiting": "Ждем подтверждения от коннектора",
-  "pairingCamerasAdded": "{count, plural, =1{Камера добавлена} one{{count} камера добавлена} few{{count} камеры добавлены} many{{count} камер добавлено} other{{count} камеры добавлено}}",
+  "pairingCamerasAdded": "{count, plural, one{{count} камера добавлена} few{{count} камеры добавлены} many{{count} камер добавлено} other{{count} камеры добавлено}}",
   "validationConnectorCode": "Введите 8-значный код, например ABCD-1234",
   "methodConnectorDiscovery": "Камеры в сети",
   "methodConnectorDiscoveryBody": "Выберите одну из камер, найденных коннектором",
@@ -722,7 +722,7 @@
   "nvrLogin": "Логин регистратора",
   "nvrLoad": "Показать каналы",
   "nvrChannels": "Каналы",
-  "nvrAdd": "{count, plural, =0{Выберите каналы} =1{Добавить 1 камеру} one{Добавить {count} камеру} few{Добавить {count} камеры} many{Добавить {count} камер} other{Добавить {count} камеры}}",
+  "nvrAdd": "{count, plural, =0{Выберите каналы} one{Добавить {count} камеру} few{Добавить {count} камеры} many{Добавить {count} камер} other{Добавить {count} камеры}}",
   "nvrOffline": "Нет сигнала",
   "onboardingTestPassed": "Поток работает",
   "presetZoneName": "Весь обзор",
@@ -768,7 +768,7 @@
   "telegramUnlink": "Отвязать",
   "telegramUnlinkBody": "Тревоги перестанут приходить в {chat}.",
   "telegramTest": "Отправить тест",
-  "telegramTestSent": "{count, plural, =0{Нет чата для отправки} =1{Тест отправлен в 1 чат} one{Тест отправлен в {count} чат} few{Тест отправлен в {count} чата} many{Тест отправлен в {count} чатов} other{Тест отправлен в {count} чата}}",
+  "telegramTestSent": "{count, plural, =0{Нет чата для отправки} one{Тест отправлен в {count} чат} few{Тест отправлен в {count} чата} many{Тест отправлен в {count} чатов} other{Тест отправлен в {count} чата}}",
   "telegramCannotOpen": "Не удалось открыть Telegram на этом телефоне.",
   "activityTitle": "Активность",
   "activityEmpty": "Активности пока нет",
@@ -797,5 +797,6 @@
   "actionFaceEnrol": "Добавил фото лиц",
   "actionFaceDelete": "Удалил лица",
   "actionOrgPlan": "Сменил тариф",
-  "capabilityNone": "У этой камеры нет элементов управления."
+  "capabilityNone": "У этой камеры нет элементов управления.",
+  "eventsAlertCount": "{count, plural, one{{count} тревога} few{{count} тревоги} many{{count} тревог} other{{count} тревоги}}"
 }

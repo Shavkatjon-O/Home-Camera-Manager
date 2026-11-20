@@ -173,12 +173,9 @@ class _EventScreenState extends ConsumerState<EventScreen> {
             ],
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(Gaps.page, Gaps.lg, Gaps.page, 0),
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
+        Builder(
+          builder: (context) {
+            final actions = <Widget>[
               if (event.alert && !event.acknowledged && operator)
                 FilledButton.icon(
                   onPressed: busy || site == null ? null : () => acknowledge(event, site),
@@ -197,8 +194,13 @@ class _EventScreenState extends ConsumerState<EventScreen> {
                   icon: const Icon(Icons.badge_outlined, size: 19),
                   label: Text(l10n.eventWhoIsThis),
                 ),
-            ],
-          ),
+            ];
+            if (actions.isEmpty) return const SizedBox.shrink();
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(Gaps.page, Gaps.lg, Gaps.page, 0),
+              child: Wrap(spacing: 8, runSpacing: 8, children: actions),
+            );
+          },
         ),
         if (event.face != null) FaceSection(event: event),
         SectionHeader(l10n.eventDetails),

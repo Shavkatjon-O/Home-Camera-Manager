@@ -1551,5 +1551,13 @@
   "actionFaceEnrol": "Added face photos",
   "actionFaceDelete": "Deleted faces",
   "actionOrgPlan": "Changed the plan",
-  "capabilityNone": "This camera has no controls to show."
+  "capabilityNone": "This camera has no controls to show.",
+  "eventsAlertCount": "{count, plural, =1{1 alert} other{{count} alerts}}",
+  "@eventsAlertCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

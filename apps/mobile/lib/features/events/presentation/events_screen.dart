@@ -256,7 +256,7 @@ class EventList extends ConsumerWidget {
           child: Text(
             [
               l10n.eventsTotal(counts.total),
-              if (counts.alerts > 0) '${counts.alerts} ${l10n.eventAlert.toLowerCase()}',
+              if (counts.alerts > 0) l10n.eventsAlertCount(counts.alerts),
               if (counts.unacknowledged > 0) l10n.homeUnacknowledged(counts.unacknowledged),
             ].join(', '),
             style: dataStyle(context, size: 12, color: p.text3),

@@ -2805,4 +2805,17 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get capabilityNone => 'У этой камеры нет элементов управления.';
+
+  @override
+  String eventsAlertCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count тревоги',
+      many: '$count тревог',
+      few: '$count тревоги',
+      one: '$count тревога',
+    );
+    return '$_temp0';
+  }
 }

@@ -4881,6 +4881,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This camera has no controls to show.'**
   String get capabilityNone;
+
+  /// No description provided for @eventsAlertCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 alert} other{{count} alerts}}'**
+  String eventsAlertCount(int count);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

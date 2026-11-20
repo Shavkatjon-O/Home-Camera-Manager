@@ -923,7 +923,7 @@ class Fixtures {
           outageCount: down ? 2 : (fixture.camera.position == 1 ? 1 : 0),
           parentName: connector.name,
           lastSampleAt: now.subtract(const Duration(seconds: 6)),
-          buckets: buckets(fixture.camera.id.hashCode, floor: 0.95, gapAt: down ? 22 : null),
+          buckets: buckets(fixture.camera.id.hashCode, floor: 0.985, gapAt: down ? 22 : null),
         ),
       );
       if (down) {

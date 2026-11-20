@@ -2754,4 +2754,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get capabilityNone => 'This camera has no controls to show.';
+
+  @override
+  String eventsAlertCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count alerts',
+      one: '1 alert',
+    );
+    return '$_temp0';
+  }
 }

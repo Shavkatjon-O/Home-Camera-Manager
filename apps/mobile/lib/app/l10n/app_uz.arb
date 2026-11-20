@@ -797,5 +797,6 @@
   "actionFaceEnrol": "Yuz suratlarini qoʻshdi",
   "actionFaceDelete": "Yuzlarni oʻchirdi",
   "actionOrgPlan": "Tarifni oʻzgartirdi",
-  "capabilityNone": "Bu kamerada koʻrsatiladigan boshqaruv yoʻq."
+  "capabilityNone": "Bu kamerada koʻrsatiladigan boshqaruv yoʻq.",
+  "eventsAlertCount": "{count, plural, other{{count} ta signal}}"
 }

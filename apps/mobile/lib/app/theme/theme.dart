@@ -214,13 +214,15 @@ ThemeData buildTheme(Brightness brightness) {
       backgroundColor: p.chip,
       selectedColor: p.surface3,
       disabledColor: p.chip,
-      side: BorderSide(color: p.border),
+      side: WidgetStateBorderSide.resolveWith(
+        (states) => BorderSide(color: states.contains(WidgetState.selected) ? p.text : p.border),
+      ),
       checkmarkColor: p.text,
       labelStyle: text.labelMedium?.copyWith(color: p.text),
       secondaryLabelStyle: text.labelMedium?.copyWith(color: p.text),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Radii.small + 2)),
-      showCheckmark: false,
+      showCheckmark: true,
     ),
     listTileTheme: ListTileThemeData(
       iconColor: p.text2,
