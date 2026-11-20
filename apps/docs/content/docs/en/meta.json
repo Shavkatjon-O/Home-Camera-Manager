@@ -1,0 +1,21 @@
+{
+  "title": "Documentation",
+  "pages": [
+    "---Start---",
+    "index",
+    "getting-started",
+    "---Products---",
+    "guides",
+    "analytics",
+    "cameras",
+    "---Platform---",
+    "architecture",
+    "deployment",
+    "reference",
+    "---Project---",
+    "privacy",
+    "licences",
+    "contributing",
+    "changelog"
+  ]
+}
