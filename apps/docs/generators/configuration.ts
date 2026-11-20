@@ -80,6 +80,7 @@ function readSettings(path: string): Setting[] {
   const source = readFileSync(path, "utf8")
   const reader = component(path)
   const settings: Setting[] = []
+  const helperPrefix = /environ\.get\(\s*f"([A-Z0-9_]*)\{name\}"/.exec(source)?.[1] ?? ""
   for (const found of source.matchAll(/^class (\w+)(?:\([^)]*\))?:\n\s+"""([\s\S]*?)"""([\s\S]*?)(?=^class |(?![\s\S]))/gm)) {
     const docs = attributes(found[2])
     const body = found[3]
@@ -91,7 +92,8 @@ function readSettings(path: string): Setting[] {
       const description = docs.get(attribute) ?? ""
       const helper = /\benv\w*\(\s*"([A-Z0-9_]+)"(?:\s*,\s*("[^"]*"|[^)]+))?\)/.exec(value)
       if (helper) {
-        settings.push({ name: helper[1], fallback: helper[2] ? literal(helper[2]) : null, description, reader })
+        const name = helperPrefix && !helper[1].startsWith(helperPrefix) ? `${helperPrefix}${helper[1]}` : helper[1]
+        settings.push({ name, fallback: helper[2] ? literal(helper[2]) : null, description, reader })
         continue
       }
       if (prefix === undefined || attribute === "model_config") continue
@@ -232,15 +234,24 @@ export function generateConfiguration(): string {
     "## Settings without an example line",
     "",
     "The code reads these as well; they keep their defaults unless set in the environment or the env file.",
-    "",
-    table(
-      ["Name", "Default", "Meaning", "Read by"],
-      extra.map(([name]) => {
-        const info = describe(name)
-        return [name, info.fallback, info.description, info.readBy]
-      }),
-    ),
   )
+  const readers = [...new Set(extra.flatMap(([, found]) => found.map((setting) => setting.reader)))].sort()
+  for (const reader of readers) {
+    sections.push(
+      "",
+      `### ${escape(reader)}`,
+      "",
+      table(
+        ["Name", "Default", "Meaning"],
+        extra
+          .filter(([, found]) => found.some((setting) => setting.reader === reader))
+          .map(([name]) => {
+            const info = describe(name)
+            return [name, info.fallback, info.description]
+          }),
+      ),
+    )
+  }
   writeGenerated("configuration.md", sections.join("\n"))
   return `${listed.size} example variables, ${extra.length} further settings`
 }

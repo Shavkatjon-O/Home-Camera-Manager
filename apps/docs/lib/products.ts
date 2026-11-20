@@ -68,8 +68,8 @@ export const products: Product[] = [
   {
     name: "Connector",
     path: "services/connector",
-    summary: "One container on a site's network that finds its cameras and serves them to the central backend.",
-    status: "planned",
+    summary: "One container on a site's network that finds its cameras, keeps their passwords and restreams them.",
+    status: "beta",
     href: "guides/connector",
     icon: "router",
     group: "services",

@@ -51,6 +51,7 @@ export const SOURCE_LISTS = {
       "services/api/app/core/config.py",
       "services/analytics/app/settings.py",
       "services/analytics/app/identity/settings.py",
+      "services/connector/connector_agent/settings.py",
     ],
   },
   readers: {

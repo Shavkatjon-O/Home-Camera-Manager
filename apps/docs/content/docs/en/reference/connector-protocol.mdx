@@ -4,7 +4,7 @@ description: How a connector pairs with a site by device code, reports to the AP
 icon: Cable
 ---
 
-A connector pairs with RFC 8628, the device authorization grant: a device without a keyboard shows a code, and a person who is signed in elsewhere claims it. The API's side of the protocol is implemented; the connector container itself is [planned](../getting-started/connector.mdx).
+A [connector](../guides/connector.mdx) pairs with RFC 8628, the device authorization grant: a device without a keyboard shows a code, and a person who is signed in elsewhere claims it.
 
 ```mermaid
 sequenceDiagram
@@ -22,9 +22,10 @@ sequenceDiagram
 ```
 
 - The connector sends its name, version and WireGuard public key with its request. The code lives SSS_CONNECTOR_CODE_MINUTES, 15 by default, is used once, and binds the connector to one site.
-- The connector polls every SSS_CONNECTOR_POLL_SECONDS, 5 by default, until an admin or owner claims the code; then it receives its own credential, which it sends as a bearer token on every later call.
+- The connector polls every SSS_CONNECTOR_POLL_SECONDS, 5 by default, until an admin or owner claims the code. The answer then carries the connector's own credential, which it sends as a bearer token on every later call, the key central uses for the connector's agent API, the stream login of its go2rtc, and the tunnel settings for tunnel mode.
 - Heartbeats report the connector's version, address, health and camera reachability, and a connector without one for SSS_CONNECTOR_OFFLINE_SECONDS counts as offline.
-- Central calls the connector's agent at the address the connector reports in direct mode, or at its overlay address in tunnel mode.
+- Heartbeat answers carry the version of the connector's camera list; when it changes, the connector fetches the list and reconciles.
+- Central calls the connector's agent API at the address the connector reports in direct mode, or at its overlay address in tunnel mode, which is [planned](../guides/connector.mdx#direct-and-tunnel-mode).
 
 ## Routes the connector calls
 
