@@ -15,8 +15,8 @@ from app.core.exceptions import BadGateway, Conflict, NotFound, Unprocessable
 from app.models import Camera
 from app.modules.devices.schemas import (
     AudioRead,
+    CameraDeviceRead,
     ClockRead,
-    DeviceRead,
     EncoderOptionsRead,
     EncoderRead,
     EncoderUpdate,
@@ -56,6 +56,9 @@ REPLAY_OFF = "Playback is off: the cameras reset local playback sessions right a
 AUDIO_CODECS = {"AAC": "AAC", "MP4A-LATM": "AAC", "MPEG4-GENERIC": "AAC", "OPUS": "Opus"}
 
 remembered_cells: dict[UUID, str] = {}
+
+
+CONNECTOR_REASON = "Settings of a camera behind a connector are not relayed yet; live video and PTZ work"
 
 
 class NotOffered(Exception):
@@ -199,24 +202,20 @@ class CameraControlService(BaseModelService[Camera]):
         self.directory = services
         self.replays = replays
 
-    async def get(self, uuid: UUID) -> Camera:
-        """Load a camera the backend reaches itself.
+    def reachable(self, camera: Camera) -> None:
+        """Refuse ONVIF calls to a camera the backend cannot reach itself.
+
+        Reads then answer that the setting is not offered, and changes answer not_supported, like any other camera
+        that lacks the service.
 
         Args:
-            uuid: Public id of the camera.
-
-        Returns:
-            The camera.
+            camera: The camera.
 
         Raises:
-            Conflict: The camera is reached through a connector, which does not relay camera settings yet.
+            NotOffered: The camera is reached through a connector, which does not relay camera settings yet.
         """
-        camera = await super().get(uuid)
         if camera.connector_id is not None:
-            raise Conflict(
-                "connector_camera", "Camera settings of a camera behind a connector are not available yet; PTZ is"
-            )
-        return camera
+            raise NotOffered(CONNECTOR_REASON)
 
     async def open(self, endpoint: OnvifEndpoint) -> Connection:
         """Open an ONVIF connection to an endpoint.
@@ -249,8 +248,9 @@ class CameraControlService(BaseModelService[Camera]):
             Open connection to the camera.
 
         Raises:
-            NotOffered: When the camera has no ONVIF port.
+            NotOffered: When the camera has no ONVIF port or is behind a connector.
         """
+        self.reachable(camera)
         endpoint = device_endpoint(camera)
         if endpoint is None:
             raise NotOffered("The camera has no ONVIF port")
@@ -309,7 +309,7 @@ class CameraControlService(BaseModelService[Camera]):
         """
         return BadGateway("onvif_error", str(exc))
 
-    async def device(self, uuid: UUID) -> DeviceRead:
+    async def device(self, uuid: UUID) -> CameraDeviceRead:
         """Read a camera's device details and clock.
 
         Args:
@@ -323,11 +323,11 @@ class CameraControlService(BaseModelService[Camera]):
         try:
             connection = await self.device_connection(camera)
         except NotOffered as exc:
-            return DeviceRead(camera_uuid=camera.uuid, supported=False, reason=str(exc))
+            return CameraDeviceRead(camera_uuid=camera.uuid, supported=False, reason=str(exc))
         try:
             details = system.parse_details(await self.call(connection, "device", system.DEVICE_INFORMATION))
         except OnvifError as exc:
-            return DeviceRead(camera_uuid=camera.uuid, supported=False, reason=str(exc))
+            return CameraDeviceRead(camera_uuid=camera.uuid, supported=False, reason=str(exc))
         clock = None
         try:
             parsed = system.parse_clock(await self.call(connection, "device", system.DATE_AND_TIME, secure=False))
@@ -342,7 +342,7 @@ class CameraControlService(BaseModelService[Camera]):
             )
         except OnvifError:
             pass
-        return DeviceRead(
+        return CameraDeviceRead(
             camera_uuid=camera.uuid,
             supported=True,
             endpoint=connection.endpoint.label,
@@ -355,7 +355,7 @@ class CameraControlService(BaseModelService[Camera]):
             can_reboot=True,
         )
 
-    async def sync_time(self, uuid: UUID) -> DeviceRead:
+    async def sync_time(self, uuid: UUID) -> CameraDeviceRead:
         """Set a camera's clock to this server's time.
 
         A camera using NTP is put back in NTP mode after the manual time is set. The connection's cached clock offset is
@@ -928,6 +928,7 @@ class CameraControlService(BaseModelService[Camera]):
         Raises:
             NotOffered: When no endpoint offers PTZ with a profile and preset or home support.
         """
+        self.reachable(camera)
         endpoints = [endpoint for endpoint in (device_endpoint(camera), bridge_endpoint(camera)) if endpoint]
         reason = "The camera offers no PTZ presets"
         for endpoint in endpoints:

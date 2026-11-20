@@ -9819,7 +9819,7 @@
           "control"
         ],
         "summary": "Get Camera Device",
-        "description": "Return the camera's ONVIF device details and clock.",
+        "description": "Return the camera's ONVIF device details and clock; viewers do not see the serial number and hardware id.",
         "operationId": "get_camera_device",
         "security": [
           {
@@ -9866,7 +9866,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DeviceRead"
+                  "$ref": "#/components/schemas/CameraDeviceRead"
                 }
               }
             }
@@ -10007,7 +10007,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DeviceRead"
+                  "$ref": "#/components/schemas/CameraDeviceRead"
                 }
               }
             }
@@ -25222,6 +25222,11 @@
             "type": "boolean",
             "title": "Email Verified"
           },
+          "is_platform_admin": {
+            "type": "boolean",
+            "title": "Is Platform Admin",
+            "default": false
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -25238,7 +25243,7 @@
           "created_at"
         ],
         "title": "AccountRead",
-        "description": "The signed-in user's account.\n\nAttributes:\n    uuid: Public id of the user.\n    username: Sign-in name.\n    email: Email address, if the account has one.\n    name: Display name, if given.\n    email_verified: Whether the email address is confirmed.\n    created_at: When the account was created."
+        "description": "The signed-in user's account.\n\nAttributes:\n    uuid: Public id of the user.\n    username: Sign-in name.\n    email: Email address, if the account has one.\n    name: Display name, if given.\n    email_verified: Whether the email address is confirmed.\n    is_platform_admin: Whether the account administers the whole platform.\n    created_at: When the account was created."
       },
       "AccountRegister": {
         "properties": {
@@ -26513,6 +26518,118 @@
         "title": "CameraCreate",
         "description": "Request to register a camera.\n\nFields left as None are filled from the brand defaults or, for an ONVIF camera, from the camera itself.\n\nAttributes:\n    name: Display name.\n    brand: Camera brand.\n    host: Address the streams are pulled from.\n    device_host: Address of the camera itself when it differs from host.\n    location: Free-text place the camera watches.\n    rtsp_port: RTSP port of host.\n    onvif_port: ONVIF port.\n    username: Camera login name.\n    password: Camera password.\n    main_path: RTSP path of the main stream.\n    sub_path: RTSP path of the sub stream.\n    lenses: Number of lenses the camera has.\n    ptz_enabled: Whether pan, tilt and zoom control is on.\n    enabled: Whether the camera is streamed.\n    connector: Connector of the site that reaches the camera; its password then goes to the connector and is\n        not stored by the backend."
       },
+      "CameraDeviceRead": {
+        "properties": {
+          "camera_uuid": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Camera Uuid"
+          },
+          "supported": {
+            "type": "boolean",
+            "title": "Supported"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "endpoint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Endpoint"
+          },
+          "manufacturer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Manufacturer"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "firmware": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Firmware"
+          },
+          "serial": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Serial"
+          },
+          "hardware_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hardware Id"
+          },
+          "clock": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ClockRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "can_reboot": {
+            "type": "boolean",
+            "title": "Can Reboot",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "camera_uuid",
+          "supported"
+        ],
+        "title": "CameraDeviceRead",
+        "description": "ONVIF device details of a camera.\n\nAttributes:\n    camera_uuid: Public id of the camera.\n    supported: Whether the camera could be read over ONVIF.\n    reason: Why the camera could not be read, when it could not.\n    endpoint: Label of the ONVIF endpoint that answered.\n    manufacturer: Manufacturer the camera reports.\n    model: Model the camera reports.\n    firmware: Firmware version the camera reports.\n    serial: Serial number the camera reports.\n    hardware_id: Hardware id the camera reports.\n    clock: Camera clock, when it could be read.\n    can_reboot: Whether the camera can be rebooted through this API."
+      },
       "CameraLinkRead": {
         "properties": {
           "camera_uuid": {
@@ -27251,6 +27368,82 @@
         ],
         "title": "ChannelRead",
         "description": "A video channel an adapter found.\n\nAttributes:\n    index: Channel number from 1.\n    name: Name the device gives it.\n    main_path: Main stream path.\n    sub_path: Sub stream path.\n    width: Width of the main stream.\n    height: Height of the main stream.\n    encoding: Codec of the main stream.\n    ptz: Whether it can be moved."
+      },
+      "ClockRead": {
+        "properties": {
+          "camera_utc": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Camera Utc"
+          },
+          "server_utc": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Server Utc"
+          },
+          "offset_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Offset Seconds"
+          },
+          "mode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mode"
+          },
+          "timezone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timezone"
+          },
+          "daylight_savings": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Daylight Savings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "camera_utc",
+          "server_utc",
+          "offset_seconds",
+          "mode",
+          "timezone",
+          "daylight_savings"
+        ],
+        "title": "ClockRead",
+        "description": "Camera clock compared with this server's clock.\n\nAttributes:\n    camera_utc: Camera time in UTC, or None when the camera reported none.\n    server_utc: This server's time in UTC when the camera was read.\n    offset_seconds: Camera time minus server time in seconds, or None when the camera time is unknown.\n    mode: Time setting mode the camera reports, such as manual or NTP.\n    timezone: Time zone the camera reports.\n    daylight_savings: Whether the camera applies daylight saving time."
       },
       "ClusterFacet": {
         "properties": {

@@ -800,3 +800,137 @@ export interface ViewSnapshot {
   url: string
   reference: string | null
 }
+
+export interface PlanLimits {
+  sites: number | null
+  cameras: number | null
+  members: number | null
+  event_retention_days: number | null
+  clip_retention_days: number | null
+}
+
+export interface PlanInfo {
+  key: string
+  name: string
+  limits: PlanLimits
+  features: string[]
+}
+
+export interface PlanUsage {
+  sites: number
+  cameras: number
+  members: number
+}
+
+export interface OrganisationPlan {
+  plan: PlanInfo
+  usage: PlanUsage
+  suspended: boolean
+}
+
+export interface UsageTotal {
+  metric: string
+  value: number
+}
+
+export interface UsagePoint {
+  at: string
+  metric: string
+  value: number
+}
+
+export interface OrganisationUsage {
+  since: string
+  bucket: string
+  totals: UsageTotal[]
+  series: UsagePoint[]
+}
+
+export interface AuditRecord {
+  uuid: string
+  at: string
+  action: string
+  actor: string | null
+  organisation: string | null
+  site: string | null
+  target_kind: string | null
+  target_uuid: string | null
+  details: Record<string, unknown>
+  ip: string | null
+}
+
+export interface AuditQuery {
+  organisation?: string
+  action?: string
+  since?: string
+  until?: string
+  page?: number
+  page_size?: number
+}
+
+export interface TelegramChat {
+  uuid: string
+  chat_type: string
+  title: string | null
+  enabled: boolean
+  blocked: boolean
+  created_at: string
+}
+
+export interface TelegramChatList {
+  items: TelegramChat[]
+  available: boolean
+}
+
+export interface TelegramLink {
+  url: string
+  group_url: string
+  bot: string
+  expires_at: string
+}
+
+export interface PlanOverrides {
+  limits: Record<string, number | null>
+  features: Record<string, boolean>
+}
+
+export interface PlanChoice {
+  key: string
+  name: string
+  limits: Record<string, number | null>
+  features: string[]
+}
+
+export interface AdminOrganisation {
+  uuid: string
+  name: string
+  owner: string | null
+  plan: string
+  plan_name: string
+  limits: Record<string, number | null>
+  features: string[]
+  overrides: PlanOverrides
+  usage: Record<string, number>
+  suspended_at: string | null
+  suspended_reason: string | null
+  created_at: string
+}
+
+export interface AdminOrganisationUpdate {
+  plan?: string
+  overrides?: PlanOverrides
+}
+
+export interface AdminConnector {
+  uuid: string
+  name: string
+  organisation: string | null
+  organisation_name: string | null
+  site: string | null
+  site_name: string | null
+  version: string | null
+  mode: string
+  online: boolean
+  last_seen_at: string | null
+  revoked_at: string | null
+}

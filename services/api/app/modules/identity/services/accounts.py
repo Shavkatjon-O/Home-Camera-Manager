@@ -37,6 +37,7 @@ def account_read(user: User) -> AccountRead:
         email=user.email,
         name=user.name,
         email_verified=user.email is None or user.email_verified_at is not None,
+        is_platform_admin=bool(user.is_platform_admin),
         created_at=user.created_at,
     )
 
