@@ -1,6 +1,6 @@
-# Home cameras TV
+# Smart Surveillance TV
 
-An Android TV app that shows the home cameras on the TV on its own. It connects straight to the cameras on the home Wi-Fi, decodes them on the TV and needs nothing from the PC: a grid of every camera, the D-pad moves between tiles, OK opens a tile fullscreen with its sound, Back returns to the grid. In fullscreen of a PTZ camera the arrows move the camera.
+The Android TV app of Smart Surveillance System shows the cameras on the TV on its own. It connects straight to the cameras on the local Wi-Fi, decodes them on the TV and needs nothing from the PC: a grid of every camera, the D-pad moves between tiles, OK opens a tile fullscreen with its sound, Back returns to the grid. In fullscreen of a PTZ camera the arrows move the camera.
 
 ## Build
 
@@ -17,7 +17,7 @@ The APKs land in app/build/outputs/apk/debug/app-debug.apk and app/build/outputs
 
 ## Install
 
-The TV has no adb. Copy app-release.apk to a USB stick, open it in the TV's file manager and allow installing from that source when the TV asks. A newer APK installs over the old one and keeps the settings. The app appears as Home cameras in the launcher.
+The TV has no adb. Copy app-release.apk to a USB stick, open it in the TV's file manager and allow installing from that source when the TV asks. A newer APK installs over the old one and keeps the settings. The app appears as Smart Surveillance in the launcher. The Kotlin package is uz.smartsurveillance.tv, but the applicationId stays uz.home.cameras.tv, because Android takes an APK with another applicationId for a different app and installs it beside the installed one instead of over it.
 
 ## Use
 
@@ -49,14 +49,14 @@ A V380 picture holds both lenses stacked: lens 1 is the top half and lens 2, the
 
 ## Layout
 
-- app/src/main/kotlin/uz/home/cameras/tv/camera: the camera model, the compiled defaults and the stored overrides.
-- app/src/main/kotlin/uz/home/cameras/tv/v380: the V380 protocol: packets, crypto, frames, Annex-B and SPS parsing, sound codecs, PTZ, discovery and the session client.
-- app/src/main/kotlin/uz/home/cameras/tv/rtsp: SDP, RTSP messages and digest, RTP depacketizers and the RTSP client.
-- app/src/main/kotlin/uz/home/cameras/tv/stream: the per-camera feed loop with reconnects, the MediaCodec video decoder, sound output and the decoder inventory.
-- app/src/main/kotlin/uz/home/cameras/tv/render: geometry, the shader and the GL compositor.
-- app/src/main/kotlin/uz/home/cameras/tv/wall: the wall plan and the controller that runs the feeds for the grid or one fullscreen tile.
-- app/src/main/kotlin/uz/home/cameras/tv/control: remote key mapping, grid focus movement, long press and fullscreen key actions.
-- app/src/main/kotlin/uz/home/cameras/tv/ui: Compose for TV overlays and screens.
+- app/src/main/kotlin/uz/smartsurveillance/tv/camera: the camera model, the compiled defaults and the stored overrides.
+- app/src/main/kotlin/uz/smartsurveillance/tv/v380: the V380 protocol: packets, crypto, frames, Annex-B and SPS parsing, sound codecs, PTZ, discovery and the session client.
+- app/src/main/kotlin/uz/smartsurveillance/tv/rtsp: SDP, RTSP messages and digest, RTP depacketizers and the RTSP client.
+- app/src/main/kotlin/uz/smartsurveillance/tv/stream: the per-camera feed loop with reconnects, the MediaCodec video decoder, sound output and the decoder inventory.
+- app/src/main/kotlin/uz/smartsurveillance/tv/render: geometry, the shader and the GL compositor.
+- app/src/main/kotlin/uz/smartsurveillance/tv/wall: the wall plan and the controller that runs the feeds for the grid or one fullscreen tile.
+- app/src/main/kotlin/uz/smartsurveillance/tv/control: remote key mapping, grid focus movement, long press and fullscreen key actions.
+- app/src/main/kotlin/uz/smartsurveillance/tv/ui: Compose for TV overlays and screens.
 - app/src/test: unit tests for the V380 packets, crypto, frames, SPS rewrite and sound codecs, a V380 session against a local fake camera, the RTSP parsing and depacketizers, the camera config, the wall plan, geometry, key handling and the retry policy.
 
 Debug builds log sessions, first-picture times and PTZ commands under the Feed tag.

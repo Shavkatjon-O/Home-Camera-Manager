@@ -21,7 +21,7 @@ val camerasLiteral = buildString {
 }
 
 android {
-    namespace = "uz.home.cameras.tv"
+    namespace = "uz.smartsurveillance.tv"
     compileSdk = 37
 
     defaultConfig {

@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "home-cameras-tv"
+rootProject.name = "smart-surveillance-tv"
 include(":app")
