@@ -135,7 +135,7 @@ on first use into the engine volume after the ONNX digest is checked.
 
 ## Run
 
-The service runs as the analytics service of the repository's compose.yml, which reads its views, zones and lines
+The service runs as the analytics service of the repository's docker-compose.yml, which reads its views, zones and lines
 from the backend. Download the models first:
 
 ```

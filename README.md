@@ -274,10 +274,10 @@ The backend also serves the PC side of an earlier TV path: TV clients pair with 
 
 ## Jetson Orin Nano
 
-compose.jetson.yml runs the stack on a Jetson Orin Nano with DeepStream 9.1 or newer on JetPack 7.2, which has no hardware video encoder:
+docker-compose.jetson.yml runs the stack on a Jetson Orin Nano with DeepStream 9.1 or newer on JetPack 7.2, which has no hardware video encoder:
 
 ```
-docker compose -f compose.yml -f compose.jetson.yml up -d --build
+docker compose -f docker-compose.yml -f docker-compose.jetson.yml up -d --build
 ```
 
 The analytics service uses RF-DETR Nano at 4 frames per second, encodes clips with libx264, keeps one minute of buffer, reads no number plates and is capped at 3 GB; go2rtc runs from the plain image with a libx264 transcode template and no GPU reservation. Export the detectors on a PC with scripts/download-models.sh --all and copy the model folder over. Verified on a PC: the merged configuration, that the DeepStream 9.1 image has an arm64 variant with CUDA 13.2, and the libx264 clip path. Not verified: the stack has never run on a Jetson, so the arm64 build of the analytics image and its parser library, RF-DETR Nano's speed there and the CPU cost of go2rtc's browser transcodes are open, and the composed TV streams still need h264_nvenc.
